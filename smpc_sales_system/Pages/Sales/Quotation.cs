@@ -1,9 +1,11 @@
 ﻿using smpc_app.Data;
 using smpc_app.Services.Helpers;
 using smpc_sales_app.Data;
+using smpc_sales_app.Services.Helpers;
 using smpc_sales_app.Services.Sales;
 using smpc_sales_app.Services.Setup;
 using smpc_sales_app.Utils;
+using smpc_sales_system.Services.Sales.Models;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -19,6 +21,9 @@ namespace smpc_sales_app.Pages.Sales
     public partial class Quotation : UserControl
     {
         ItemService itemService = new ItemService();
+
+        int SelectedRow = 0;
+
         public Quotation()
         {
 
@@ -29,6 +34,10 @@ namespace smpc_sales_app.Pages.Sales
             this.QuickQuotesDgvDefaultValues();
             
         }
+
+       
+
+
 
         private void panel3_Paint(object sender, PaintEventArgs e)
         {
@@ -78,11 +87,36 @@ namespace smpc_sales_app.Pages.Sales
             this.Size = new Size(1386 - 80, 2354);  // Set the desired width and height for the form
         }
 
-        private async void frm_sales_quotation_Load(object sender, EventArgs e)
-        { 
-           
+        public DataTable transactionList { get; set; } = new DataTable();
+        public  DataTable childList { get; set; } = new DataTable();
+        //public DataView dataView { get; set; } = new DataView();
+        private async void fetchQuotationDetails()
+        {
+            SalesQuotationList data = await QuotationService.GetQuotations();
+
+            transactionList = JsonHelper.ToDataTable(data.SalesQuotation);
+            childList = JsonHelper.ToDataTable(data.QuickQuote);
+
+
+            pnl_header.Enabled = true;
+            pnl_footer.Enabled = true;
+
+            toolstrip_quotation.Enabled = false;
+            dgv_quick_quote_details.Enabled = true;
+
+            // call the default values of datagridview
+            //this.quickquotesdgvdefaultvalues();
+            dgv_quick_quote_details.Enabled = true;
+            //bind(true);
+            toolstrip_quotation.Enabled = true;
+
+            if (data != null)
+            {
+                bind(true);
+            }
         }
 
+    
         private void btn_new_setup_1_Click(object sender, EventArgs e)
         {
             SetupModal setupModal = new SetupModal("Application");
@@ -97,33 +131,34 @@ namespace smpc_sales_app.Pages.Sales
         private async void btn_save_Click(object sender, EventArgs e)
         { 
             
-            Boolean isError = Helpers.ValidateControlsValues(pnl_header);
+            //Boolean isError = Helpers.ValidateControlsValues(pnl_header);
 
-            if (!isError)
-            {
-                // GET ALL INPUT VALUES
-                var data = Helpers.GetControlsValues(pnl_header);
-                DataTable dt = Helpers.ConvertDataGridViewToDataTable(dgv_quick_quote_details);
-                data.Add("quick_quote_details", dt);
-                bool isSuccess = await QuotationService.Insert(data);
+            //if (!isError)
+            //{
+            //    // GET ALL INPUT VALUES
+            //    var data = Helpers.GetControlsValues(pnl_header);
+            //    DataTable dt = Helpers.ConvertDataGridViewToDataTable(dgv_quick_quote_details);
+            //    data.Add("quick_quote_details", dt);
+            //    //bool isSuccess = await QuotationService.Insert(data);
+            //    bool isSuccess = await QuotationService.Insert(data);
 
-                if (isSuccess)
-                {
-                    // RESET INPUTS AFTER SAVE
-                    Helpers.ResetControls(pnl_header); 
-                    toolstrip_quotation.Enabled = true;
+            //    if (isSuccess)
+            //    {
+            //        // RESET INPUTS AFTER SAVE
+            //        Helpers.ResetControls(pnl_header); 
+            //        toolstrip_quotation.Enabled = true;
 
-                    pnl_header.Enabled = false;
-                    pnl_footer.Enabled = false;
+            //        pnl_header.Enabled = false;
+            //        pnl_footer.Enabled = false;
 
-                    Helpers.ShowDialogMessage("success", "sucessfully saved!");
+            //        Helpers.ShowDialogMessage("success", "sucessfully saved!");
 
-                }
-                else
-                {
-                    Helpers.ShowDialogMessage("error","something wrong!"); 
-                }
-            }
+            //    }
+            //    else
+            //    {
+            //        Helpers.ShowDialogMessage("error","something wrong!"); 
+            //    }
+            //}
         }
 
         private void toolStripButton7_Click(object sender, EventArgs e)
@@ -309,9 +344,9 @@ namespace smpc_sales_app.Pages.Sales
 
             this.tabControl.ItemSize = new Size(0, 0);
 
-            //cmb_payment_terms.DataSource = CacheData.PaymentTerms;
-            //cmb_payment_terms.DisplayMember = "code";
-            //cmb_payment_terms.ValueMember = "id";
+            cmb_payment_terms.DataSource = CacheData.PaymentTerms;
+            cmb_payment_terms.DisplayMember = "code";
+            cmb_payment_terms.ValueMember = "id";
 
             //cmb_ship_to.DataSource = CacheData.PaymentTerms;
             //cmb_ship_to.DisplayMember = "code";
@@ -321,34 +356,34 @@ namespace smpc_sales_app.Pages.Sales
             //cmb_bill_to.DisplayMember = "code";
             //cmb_bill_to.ValueMember = "id";
 
-            //cmb_application.DataSource = CacheData.ApplicationSetup;
-            //cmb_application.DisplayMember = "code";
-            //cmb_application.ValueMember = "id";
+            cmb_application.DataSource = CacheData.ApplicationSetup;
+            cmb_application.DisplayMember = "code";
+            cmb_application.ValueMember = "id";
             
-            cmb_purpose.DataSource = STATIC_QUOTATION_PURPOSE.LIST();
-            cmb_purpose.DisplayMember = "code";
-            cmb_purpose.ValueMember = "title";
+            //cmb_purpose.DataSource = STATIC_QUOTATION_PURPOSE.LIST();
+            //cmb_purpose.DisplayMember = "code";
+            //cmb_purpose.ValueMember = "title";
 
-            cmb_ship_type.DataSource = STATIC_SHIPPED_TYPE.LIST();
-            cmb_ship_type.DisplayMember = "code";
-            cmb_ship_type.ValueMember = "title";
+            //cmb_ship_type.DataSource = STATIC_SHIPPED_TYPE.LIST();
+            //cmb_ship_type.DisplayMember = "code";
+            //cmb_ship_type.ValueMember = "title";
 
             //unit.DataSource = STATIC_SHIPPED_TYPE.LIST();
             //unit.DisplayMember = "title";
             //unit.ValueMember = "value";
 
-            DataTable dtQuotationDetails = ds_quick_quote.Tables["quotation_details"];
+            //DataTable dtQuotationDetails = ds_quick_quote.Tables["quotation_details"];
 
-            foreach (DataRow item in CacheData.PaymentTerms.Rows)
-            {
-                int ID = 0;
-                int CODE = 1;
+            //foreach (DataRow item in CacheData.PaymentTerms.Rows)
+            //{
+            //    int ID = 0;
+            //    int CODE = 1;
 
-                DataRow newRow = dtQuotationDetails.NewRow();
-                newRow["title"] = item[CODE];
-                newRow["value"] = item[ID];
-                dtQuotationDetails.Rows.Add(newRow);
-            }
+            //    DataRow newRow = dtQuotationDetails.NewRow();
+            //    newRow["title"] = item[CODE];
+            //    newRow["value"] = item[ID];
+            //    dtQuotationDetails.Rows.Add(newRow);
+            //}
 
             //var data = ds_quick_quote.Tables["quotation_details"];
 
@@ -357,13 +392,29 @@ namespace smpc_sales_app.Pages.Sales
             //combobox.DisplayMember = "code";
             //combobox.ValueMember = "id";
 
-
-
-
-
-
-
+            fetchQuotationDetails();
+            
         }
+
+        private void bind(bool isBind = false) 
+        {
+            if (isBind)
+            {
+                Panel[] pnlList = { pnl_header, pnl_footer };
+                Helpers.BindControls(pnlList, transactionList, SelectedRow);
+                //dgv_quick_quote_details.DataSource = dataView;
+                // dgv_quick_quote_details.DataSource = childList;
+
+                DataView dataview = new DataView(this.childList);
+                dataview.RowFilter = "based_id = '" + this.transactionList.Rows[this.SelectedRow]["id"].ToString() + "'";
+                dgv_quick_quote_details.DataSource = dataview;
+            }
+        }
+
+
+
+
+
 
         private void txt_days_TextChanged(object sender, EventArgs e)
         {
@@ -399,9 +450,9 @@ namespace smpc_sales_app.Pages.Sales
             dgv_quick_quote_details.Enabled = true;
 
             // CALL THE DEFAULT VALUES OF DATAGRIDVIEW
-            this.QuickQuotesDgvDefaultValues();
+            //this.QuickQuotesDgvDefaultValues();
             dgv_quick_quote_details.Enabled = true;
-
+            //bind(true);
             toolstrip_quotation.Enabled = false;
         }
 
@@ -422,6 +473,25 @@ namespace smpc_sales_app.Pages.Sales
             pnl_footer.Enabled = false;
 
             toolstrip_quotation.Enabled = true;
+        }
+
+        private void btn_next_Click(object sender, EventArgs e)
+        {
+            int rowCount = transactionList.Rows.Count;
+            if (SelectedRow < rowCount - 1)
+            {
+                SelectedRow++;
+                fetchQuotationDetails();
+            }
+        }
+
+        private void btn_prev_Click(object sender, EventArgs e)
+        {
+            if (SelectedRow >= 1)
+            {
+                SelectedRow--;
+                fetchQuotationDetails();
+            }
         }
     }
 

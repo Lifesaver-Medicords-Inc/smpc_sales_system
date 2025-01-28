@@ -298,8 +298,17 @@ namespace smpc_app.Services.Helpers
                             // Check if the control is a Combobox
                             if (control is ComboBox comboBox)
                             {
-                                string key = comboBox.Name.Replace("cmb_", ""); 
-                                comboBox.Text = (string)dt.Rows[selectedIndex][column_name].ToString();
+                                if (comboBox.Tag == "DYNAMIC")
+                                {
+                                    string key = comboBox.Name.Replace("cmb_", "")+ "_id";
+                                    comboBox.SelectedValue = (string)dt.Rows[selectedIndex][key].ToString();
+                                }
+                                else
+                                {
+                                    string key = comboBox.Name.Replace("cmb_", "");
+                                    comboBox.Text = (string)dt.Rows[selectedIndex][column_name].ToString();
+                                }
+                             
                             }
 
                             // Check if the control is a Checkbox
