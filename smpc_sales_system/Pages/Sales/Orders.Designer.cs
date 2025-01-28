@@ -45,7 +45,7 @@ namespace smpc_sales_app.Pages.Sales
             this.textBox4 = new System.Windows.Forms.TextBox();
             this.label14 = new System.Windows.Forms.Label();
             this.panel4 = new System.Windows.Forms.Panel();
-            this.dataGridView1 = new System.Windows.Forms.DataGridView();
+            this.dgv_order_sales = new System.Windows.Forms.DataGridView();
             this.panel3 = new System.Windows.Forms.Panel();
             this.textBox3 = new System.Windows.Forms.TextBox();
             this.label7 = new System.Windows.Forms.Label();
@@ -98,7 +98,11 @@ namespace smpc_sales_app.Pages.Sales
             this.Column1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.panel5 = new System.Windows.Forms.Panel();
             this.panel10 = new System.Windows.Forms.Panel();
+            this.panel12 = new System.Windows.Forms.Panel();
+            this.button3 = new System.Windows.Forms.Button();
+            this.btn_save = new System.Windows.Forms.Button();
             this.panel11 = new System.Windows.Forms.Panel();
+            this.label22 = new System.Windows.Forms.Label();
             this.panel7 = new System.Windows.Forms.Panel();
             this.panel9 = new System.Windows.Forms.Panel();
             this.treeview_sales = new System.Windows.Forms.TreeView();
@@ -108,18 +112,21 @@ namespace smpc_sales_app.Pages.Sales
             this.qty = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.item_code = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.item_description = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Column11 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.delivery_preference = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.list_price = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.total_price = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.status = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.panel1.SuspendLayout();
             this.panel2.SuspendLayout();
             this.panel4.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dgv_order_sales)).BeginInit();
             this.panel3.SuspendLayout();
             this.toolStrip1.SuspendLayout();
             this.panel6.SuspendLayout();
             this.panel5.SuspendLayout();
+            this.panel10.SuspendLayout();
+            this.panel12.SuspendLayout();
+            this.panel11.SuspendLayout();
             this.panel7.SuspendLayout();
             this.panel9.SuspendLayout();
             this.panel8.SuspendLayout();
@@ -263,7 +270,7 @@ namespace smpc_sales_app.Pages.Sales
             // 
             // panel4
             // 
-            this.panel4.Controls.Add(this.dataGridView1);
+            this.panel4.Controls.Add(this.dgv_order_sales);
             this.panel4.Controls.Add(this.panel3);
             this.panel4.Controls.Add(this.toolStrip1);
             this.panel4.Controls.Add(this.panel6);
@@ -272,26 +279,26 @@ namespace smpc_sales_app.Pages.Sales
             this.panel4.Size = new System.Drawing.Size(1028, 616);
             this.panel4.TabIndex = 12;
             // 
-            // dataGridView1
+            // dgv_order_sales
             // 
-            this.dataGridView1.AllowUserToAddRows = false;
-            this.dataGridView1.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
-            this.dataGridView1.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dataGridView1.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.dgv_order_sales.AllowUserToAddRows = false;
+            this.dgv_order_sales.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
+            this.dgv_order_sales.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dgv_order_sales.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.warning,
             this.qty,
             this.item_code,
             this.item_description,
-            this.Column11,
+            this.delivery_preference,
             this.list_price,
             this.total_price,
             this.status});
-            this.dataGridView1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.dataGridView1.Location = new System.Drawing.Point(0, 243);
-            this.dataGridView1.Name = "dataGridView1";
-            this.dataGridView1.Size = new System.Drawing.Size(1028, 373);
-            this.dataGridView1.TabIndex = 7;
-            this.dataGridView1.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridView1_CellContentClick);
+            this.dgv_order_sales.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.dgv_order_sales.Location = new System.Drawing.Point(0, 243);
+            this.dgv_order_sales.Name = "dgv_order_sales";
+            this.dgv_order_sales.Size = new System.Drawing.Size(1028, 373);
+            this.dgv_order_sales.TabIndex = 7;
+            this.dgv_order_sales.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridView1_CellContentClick);
             // 
             // panel3
             // 
@@ -759,19 +766,59 @@ namespace smpc_sales_app.Pages.Sales
             // 
             // panel10
             // 
+            this.panel10.Controls.Add(this.panel12);
             this.panel10.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panel10.Location = new System.Drawing.Point(0, 325);
             this.panel10.Name = "panel10";
             this.panel10.Size = new System.Drawing.Size(1028, 240);
             this.panel10.TabIndex = 3;
             // 
+            // panel12
+            // 
+            this.panel12.Controls.Add(this.button3);
+            this.panel12.Controls.Add(this.btn_save);
+            this.panel12.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.panel12.Location = new System.Drawing.Point(0, 201);
+            this.panel12.Name = "panel12";
+            this.panel12.Size = new System.Drawing.Size(1028, 39);
+            this.panel12.TabIndex = 0;
+            // 
+            // button3
+            // 
+            this.button3.Location = new System.Drawing.Point(870, 8);
+            this.button3.Name = "button3";
+            this.button3.Size = new System.Drawing.Size(75, 23);
+            this.button3.TabIndex = 1;
+            this.button3.Text = "PRINT";
+            this.button3.UseVisualStyleBackColor = true;
+            // 
+            // btn_save
+            // 
+            this.btn_save.BackColor = System.Drawing.Color.MediumSeaGreen;
+            this.btn_save.Location = new System.Drawing.Point(941, 8);
+            this.btn_save.Name = "btn_save";
+            this.btn_save.Size = new System.Drawing.Size(75, 23);
+            this.btn_save.TabIndex = 0;
+            this.btn_save.Text = "SAVE";
+            this.btn_save.UseVisualStyleBackColor = false;
+            // 
             // panel11
             // 
+            this.panel11.Controls.Add(this.label22);
             this.panel11.Dock = System.Windows.Forms.DockStyle.Top;
             this.panel11.Location = new System.Drawing.Point(0, 266);
             this.panel11.Name = "panel11";
             this.panel11.Size = new System.Drawing.Size(1028, 59);
             this.panel11.TabIndex = 2;
+            // 
+            // label22
+            // 
+            this.label22.AutoSize = true;
+            this.label22.Location = new System.Drawing.Point(34, 23);
+            this.label22.Name = "label22";
+            this.label22.Size = new System.Drawing.Size(76, 13);
+            this.label22.TabIndex = 1;
+            this.label22.Text = "AFTERSALES";
             // 
             // panel7
             // 
@@ -827,42 +874,49 @@ namespace smpc_sales_app.Pages.Sales
             // 
             // qty
             // 
+            this.qty.DataPropertyName = "qty";
             this.qty.FillWeight = 111.3851F;
             this.qty.HeaderText = "QTY";
             this.qty.Name = "qty";
             // 
             // item_code
             // 
+            this.item_code.DataPropertyName = "item_code";
             this.item_code.FillWeight = 111.3851F;
             this.item_code.HeaderText = "ITEM CODE";
             this.item_code.Name = "item_code";
             // 
             // item_description
             // 
+            this.item_description.DataPropertyName = "item_description";
             this.item_description.FillWeight = 111.3851F;
             this.item_description.HeaderText = "ITEM DESCRIPTION";
             this.item_description.Name = "item_description";
             // 
-            // Column11
+            // delivery_preference
             // 
-            this.Column11.FillWeight = 111.3851F;
-            this.Column11.HeaderText = "DELIVERY PREFERENCE";
-            this.Column11.Name = "Column11";
+            this.delivery_preference.DataPropertyName = "delivery_preference";
+            this.delivery_preference.FillWeight = 111.3851F;
+            this.delivery_preference.HeaderText = "DELIVERY PREFERENCE";
+            this.delivery_preference.Name = "delivery_preference";
             // 
             // list_price
             // 
+            this.list_price.DataPropertyName = "list_price";
             this.list_price.FillWeight = 111.3851F;
             this.list_price.HeaderText = "LIST PRICE";
             this.list_price.Name = "list_price";
             // 
             // total_price
             // 
+            this.total_price.DataPropertyName = "total_price";
             this.total_price.FillWeight = 111.3851F;
             this.total_price.HeaderText = "TOTAL PRICE";
             this.total_price.Name = "total_price";
             // 
             // status
             // 
+            this.status.DataPropertyName = "status";
             this.status.FillWeight = 111.3851F;
             this.status.HeaderText = "STATUS";
             this.status.Name = "status";
@@ -881,7 +935,7 @@ namespace smpc_sales_app.Pages.Sales
             this.panel2.PerformLayout();
             this.panel4.ResumeLayout(false);
             this.panel4.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dgv_order_sales)).EndInit();
             this.panel3.ResumeLayout(false);
             this.panel3.PerformLayout();
             this.toolStrip1.ResumeLayout(false);
@@ -889,6 +943,10 @@ namespace smpc_sales_app.Pages.Sales
             this.panel6.ResumeLayout(false);
             this.panel6.PerformLayout();
             this.panel5.ResumeLayout(false);
+            this.panel10.ResumeLayout(false);
+            this.panel12.ResumeLayout(false);
+            this.panel11.ResumeLayout(false);
+            this.panel11.PerformLayout();
             this.panel7.ResumeLayout(false);
             this.panel9.ResumeLayout(false);
             this.panel8.ResumeLayout(false);
@@ -914,7 +972,6 @@ namespace smpc_sales_app.Pages.Sales
         private System.Windows.Forms.TextBox textBox4;
         private System.Windows.Forms.Label label14;
         private System.Windows.Forms.Panel panel4;
-        private System.Windows.Forms.DataGridView dataGridView1;
         private System.Windows.Forms.Panel panel3;
         private System.Windows.Forms.TextBox textBox3;
         private System.Windows.Forms.Label label7;
@@ -973,11 +1030,16 @@ namespace smpc_sales_app.Pages.Sales
         private System.Windows.Forms.TreeView treeview_sales;
         private System.Windows.Forms.Panel panel8;
         private System.Windows.Forms.Label label24;
+        private System.Windows.Forms.Panel panel12;
+        private System.Windows.Forms.Button button3;
+        private System.Windows.Forms.Button btn_save;
+        private System.Windows.Forms.Label label22;
+        private System.Windows.Forms.DataGridView dgv_order_sales;
         private System.Windows.Forms.DataGridViewTextBoxColumn warning;
         private System.Windows.Forms.DataGridViewTextBoxColumn qty;
         private System.Windows.Forms.DataGridViewTextBoxColumn item_code;
         private System.Windows.Forms.DataGridViewTextBoxColumn item_description;
-        private System.Windows.Forms.DataGridViewTextBoxColumn Column11;
+        private System.Windows.Forms.DataGridViewTextBoxColumn delivery_preference;
         private System.Windows.Forms.DataGridViewTextBoxColumn list_price;
         private System.Windows.Forms.DataGridViewTextBoxColumn total_price;
         private System.Windows.Forms.DataGridViewTextBoxColumn status;

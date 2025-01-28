@@ -10,6 +10,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using smpc_app.Services.Helpers;
+using smpc_sales_app.Data;
+using smpc_sales_app.Services.Sales;
 
 namespace smpc_sales_app.Pages.Sales
 {
@@ -19,11 +22,17 @@ namespace smpc_sales_app.Pages.Sales
         {
             InitializeComponent();
         }
- 
+
+        private async void FetchData()
+        {
+            CacheData.Orders = await OrderService.GetAsDatatable();
+            dgv_order_sales.DataSource = CacheData.Orders;
+        }
 
         private void Orders_Load(object sender, EventArgs e)
         {
-           // Helpers.LoadDirectory("D:\\LIFESAVER\\LIFESAVER\\TEST", treeview_sales);
+            FetchData();
+            // Helpers.LoadDirectory("D:\\LIFESAVER\\LIFESAVER\\TEST", treeview_sales);
         }
 
         private void treeview_sales_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
