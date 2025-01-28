@@ -32,12 +32,17 @@ namespace smpc_sales_app.Pages
 
         private async void btn_login_Click(object sender, EventArgs e)
         { 
-            CacheData.PaymentTerms = await PaymentTermsServices.GetAsDatatable();
+            //CacheData.PaymentTerms = await PaymentTermsServices.GetAsDatatable();
             //CacheData.ApplicationSetup = await ApplicationService.GetAsDatatable();
             this.DialogResult = DialogResult.OK;
         }
 
         private void frm_login_Load(object sender, EventArgs e)
+        {
+
+        }
+
+        private void txt_password_TextChanged(object sender, EventArgs e)
         {
 
         }

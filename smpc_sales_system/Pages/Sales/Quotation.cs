@@ -309,17 +309,17 @@ namespace smpc_sales_app.Pages.Sales
 
             this.tabControl.ItemSize = new Size(0, 0);
 
-            cmb_payment_terms.DataSource = CacheData.PaymentTerms;
-            cmb_payment_terms.DisplayMember = "code";
-            cmb_payment_terms.ValueMember = "id";
+            //cmb_payment_terms.DataSource = CacheData.PaymentTerms;
+            //cmb_payment_terms.DisplayMember = "code";
+            //cmb_payment_terms.ValueMember = "id";
 
-            cmb_ship_to.DataSource = CacheData.PaymentTerms;
-            cmb_ship_to.DisplayMember = "code";
-            cmb_ship_to.ValueMember = "id";
+            //cmb_ship_to.DataSource = CacheData.PaymentTerms;
+            //cmb_ship_to.DisplayMember = "code";
+            //cmb_ship_to.ValueMember = "id";
 
-            cmb_bill_to.DataSource = CacheData.PaymentTerms;
-            cmb_bill_to.DisplayMember = "code";
-            cmb_bill_to.ValueMember = "id";
+            //cmb_bill_to.DataSource = CacheData.PaymentTerms;
+            //cmb_bill_to.DisplayMember = "code";
+            //cmb_bill_to.ValueMember = "id";
 
             //cmb_application.DataSource = CacheData.ApplicationSetup;
             //cmb_application.DisplayMember = "code";

@@ -23,7 +23,7 @@ namespace smpc_sales_app.Pages.Sales
 
         private void Orders_Load(object sender, EventArgs e)
         {
-            Helpers.LoadDirectory("D:\\LIFESAVER\\LIFESAVER\\TEST", treeview_sales);
+           // Helpers.LoadDirectory("D:\\LIFESAVER\\LIFESAVER\\TEST", treeview_sales);
         }
 
         private void treeview_sales_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
@@ -46,6 +46,16 @@ namespace smpc_sales_app.Pages.Sales
                     }
                 }
             }
+        }
+
+        private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+
+        }
+
+        private void panel3_Paint(object sender, PaintEventArgs e)
+        {
+
         }
     }
 }
