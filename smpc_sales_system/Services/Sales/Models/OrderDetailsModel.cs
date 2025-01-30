@@ -17,5 +17,6 @@ namespace smpc_sales_app.Services.Sales.Models
         public float list_price { get; set; }
         public float total_price { get; set; }
         public string status { get; set; }
+        public bool has_stocks { get; set; }
     }
 }

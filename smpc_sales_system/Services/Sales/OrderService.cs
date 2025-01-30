@@ -18,19 +18,26 @@ namespace smpc_sales_app.Services.Sales
         static string url = "/sales/order";
 
         // GET
-        public static async Task<DataTable> GetAsDatatable()
+        //public static async Task<DataTable> GetAsDatatable()
+        //{
+        //    var response = await RequestToApi<ApiResponseModel<List<OrderDetailsModel>>>.Get(url);
+        //    DataTable orderDetailsItems = JsonHelper.ToDataTable(response.Data);
+        //    return orderDetailsItems;
+        //}
+
+        public static async Task<OrderList> GetOrders()
         {
-            var response = await RequestToApi<ApiResponseModel<List<OrderDetailsModel>>>.Get(url);
-            DataTable orderDetailsItems = JsonHelper.ToDataTable(response.Data);
-            return orderDetailsItems;
+            var response = await RequestToApi<ApiResponseModel<OrderList>>.Get(url);
+            OrderList orderData = response.Data;
+            return orderData;
         }
 
-        public static async Task<OrderDetailsModel[]> GetOrderDetails()
+        public static async Task<OrderModel[]> GetOrder()
         {
-            var response = await RequestToApi<ApiResponseModel<OrderDetailsModel[]>>.Get(url);
-            var orderDetailsData = response.Data;
+            var response = await RequestToApi<ApiResponseModel<OrderModel[]>>.Get(url);
+            var orderData = response.Data;
 
-            return orderDetailsData;
+            return orderData;
         }
 
 
@@ -42,9 +49,9 @@ namespace smpc_sales_app.Services.Sales
         }
 
         // DELETE
-        public static async Task<bool> Delete(Dictionary<string, dynamic> data)
+        public static async Task<Boolean> Delete(Dictionary<string, dynamic> data)
         {
-            var response = await RequestToApi<ApiResponseModel<OrderDetailsModel>>.Delete(url, data);
+            var response = await RequestToApi<ApiResponseModel<bool>>.Delete(url, data);
             bool isSucccess = response.Success;
             return isSucccess;
         }

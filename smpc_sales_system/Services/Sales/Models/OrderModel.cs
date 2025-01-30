@@ -8,7 +8,7 @@ namespace smpc_sales_system.Services.Sales.Models
 {
     class OrderModel
     {
-        public int order_id { get; set; }
+        public uint order_id { get; set; }
         public string customer { get; set; }
         public string code { get; set; }
         public string delivery_to { get; set; }
@@ -30,5 +30,6 @@ namespace smpc_sales_system.Services.Sales.Models
         public float total_amount_due { get; set; }
         public string approved_by { get; set; }
         public int approved_by_id { get; set; }
+        public string tin { get; set; }
     }
 }
