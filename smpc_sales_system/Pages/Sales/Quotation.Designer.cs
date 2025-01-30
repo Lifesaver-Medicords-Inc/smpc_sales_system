@@ -41,8 +41,6 @@ namespace smpc_sales_app.Pages.Sales
             this.label1 = new System.Windows.Forms.Label();
             this.panel3 = new System.Windows.Forms.Panel();
             this.tabControl = new System.Windows.Forms.TabControl();
-            this.quick_tab = new System.Windows.Forms.TabPage();
-            this.dgv_quick_quote_details = new System.Windows.Forms.DataGridView();
             this.bs_quick_quotes_details = new System.Windows.Forms.BindingSource(this.components);
             this.ds_quick_quote = new System.Data.DataSet();
             this.quotation_details = new System.Data.DataTable();
@@ -198,6 +196,8 @@ namespace smpc_sales_app.Pages.Sales
             this.btn_next = new System.Windows.Forms.ToolStripButton();
             this.btn_print = new System.Windows.Forms.ToolStripButton();
             this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
+            this.dgv_quick_quote_details = new System.Windows.Forms.DataGridView();
+            this.quick_tab = new System.Windows.Forms.TabPage();
             this.id = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.based_id = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.item_id = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -215,8 +215,6 @@ namespace smpc_sales_app.Pages.Sales
             this.panel1.SuspendLayout();
             this.panel3.SuspendLayout();
             this.tabControl.SuspendLayout();
-            this.quick_tab.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.dgv_quick_quote_details)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.bs_quick_quotes_details)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.ds_quick_quote)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.quotation_details)).BeginInit();
@@ -232,6 +230,8 @@ namespace smpc_sales_app.Pages.Sales
             this.pnl_footer.SuspendLayout();
             this.pnl_header.SuspendLayout();
             this.toolstrip_quotation.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dgv_quick_quote_details)).BeginInit();
+            this.quick_tab.SuspendLayout();
             this.SuspendLayout();
             // 
             // panel1
@@ -281,45 +281,6 @@ namespace smpc_sales_app.Pages.Sales
             this.tabControl.SizeMode = System.Windows.Forms.TabSizeMode.Fixed;
             this.tabControl.TabIndex = 50;
             this.tabControl.SelectedIndexChanged += new System.EventHandler(this.tabControl_SelectedIndexChanged);
-            // 
-            // quick_tab
-            // 
-            this.quick_tab.Controls.Add(this.dgv_quick_quote_details);
-            this.quick_tab.Location = new System.Drawing.Point(4, 37);
-            this.quick_tab.Name = "quick_tab";
-            this.quick_tab.Padding = new System.Windows.Forms.Padding(3);
-            this.quick_tab.Size = new System.Drawing.Size(1020, 2052);
-            this.quick_tab.TabIndex = 0;
-            this.quick_tab.UseVisualStyleBackColor = true;
-            // 
-            // dgv_quick_quote_details
-            // 
-            this.dgv_quick_quote_details.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
-            this.dgv_quick_quote_details.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dgv_quick_quote_details.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.id,
-            this.based_id,
-            this.item_id,
-            this.ItemCode,
-            this.ItemName,
-            this.qty,
-            this.unit,
-            this.unit_price,
-            this.percent_discount,
-            this.amount_discounted,
-            this.net_discount,
-            this.net_total,
-            this.line_total,
-            this.shortdesc});
-            this.dgv_quick_quote_details.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.dgv_quick_quote_details.Enabled = false;
-            this.dgv_quick_quote_details.Location = new System.Drawing.Point(3, 3);
-            this.dgv_quick_quote_details.Name = "dgv_quick_quote_details";
-            this.dgv_quick_quote_details.Size = new System.Drawing.Size(1014, 2046);
-            this.dgv_quick_quote_details.TabIndex = 0;
-            this.dgv_quick_quote_details.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgv_quick_quote_details_CellClick);
-            this.dgv_quick_quote_details.CellEndEdit += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgv_quick_quote_details_CellEndEdit);
-            this.dgv_quick_quote_details.KeyUp += new System.Windows.Forms.KeyEventHandler(this.dgv_quick_quote_details_KeyUp);
             // 
             // bs_quick_quotes_details
             // 
@@ -1511,7 +1472,7 @@ namespace smpc_sales_app.Pages.Sales
             this.btn_quick_quote.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(255)))), ((int)(((byte)(128)))));
             this.btn_quick_quote.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btn_quick_quote.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btn_quick_quote.Location = new System.Drawing.Point(763, 199);
+            this.btn_quick_quote.Location = new System.Drawing.Point(760, 199);
             this.btn_quick_quote.Name = "btn_quick_quote";
             this.btn_quick_quote.Size = new System.Drawing.Size(131, 23);
             this.btn_quick_quote.TabIndex = 48;
@@ -1537,7 +1498,7 @@ namespace smpc_sales_app.Pages.Sales
             this.btn_project.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(255)))), ((int)(((byte)(128)))));
             this.btn_project.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btn_project.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btn_project.Location = new System.Drawing.Point(893, 199);
+            this.btn_project.Location = new System.Drawing.Point(890, 199);
             this.btn_project.Name = "btn_project";
             this.btn_project.Size = new System.Drawing.Size(131, 23);
             this.btn_project.TabIndex = 49;
@@ -1828,6 +1789,7 @@ namespace smpc_sales_app.Pages.Sales
             this.btn_prev.Name = "btn_prev";
             this.btn_prev.Size = new System.Drawing.Size(72, 22);
             this.btn_prev.Text = "Previous";
+            this.btn_prev.Click += new System.EventHandler(this.btn_prev_Click);
             // 
             // btn_next
             // 
@@ -1836,6 +1798,7 @@ namespace smpc_sales_app.Pages.Sales
             this.btn_next.Name = "btn_next";
             this.btn_next.Size = new System.Drawing.Size(51, 22);
             this.btn_next.Text = "Next";
+            this.btn_next.Click += new System.EventHandler(this.btn_next_Click);
             // 
             // btn_print
             // 
@@ -1844,6 +1807,45 @@ namespace smpc_sales_app.Pages.Sales
             this.btn_print.Name = "btn_print";
             this.btn_print.Size = new System.Drawing.Size(52, 22);
             this.btn_print.Text = "Print";
+            // 
+            // dgv_quick_quote_details
+            // 
+            this.dgv_quick_quote_details.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
+            this.dgv_quick_quote_details.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dgv_quick_quote_details.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.id,
+            this.based_id,
+            this.item_id,
+            this.ItemCode,
+            this.ItemName,
+            this.qty,
+            this.unit,
+            this.unit_price,
+            this.percent_discount,
+            this.amount_discounted,
+            this.net_discount,
+            this.net_total,
+            this.line_total,
+            this.shortdesc});
+            this.dgv_quick_quote_details.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.dgv_quick_quote_details.Enabled = false;
+            this.dgv_quick_quote_details.Location = new System.Drawing.Point(3, 3);
+            this.dgv_quick_quote_details.Name = "dgv_quick_quote_details";
+            this.dgv_quick_quote_details.Size = new System.Drawing.Size(1014, 2046);
+            this.dgv_quick_quote_details.TabIndex = 0;
+            this.dgv_quick_quote_details.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgv_quick_quote_details_CellClick);
+            this.dgv_quick_quote_details.CellEndEdit += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgv_quick_quote_details_CellEndEdit);
+            this.dgv_quick_quote_details.KeyUp += new System.Windows.Forms.KeyEventHandler(this.dgv_quick_quote_details_KeyUp);
+            // 
+            // quick_tab
+            // 
+            this.quick_tab.Controls.Add(this.dgv_quick_quote_details);
+            this.quick_tab.Location = new System.Drawing.Point(4, 37);
+            this.quick_tab.Name = "quick_tab";
+            this.quick_tab.Padding = new System.Windows.Forms.Padding(3);
+            this.quick_tab.Size = new System.Drawing.Size(1020, 2052);
+            this.quick_tab.TabIndex = 0;
+            this.quick_tab.UseVisualStyleBackColor = true;
             // 
             // id
             // 
@@ -1907,6 +1909,7 @@ namespace smpc_sales_app.Pages.Sales
             // unit_price
             // 
             this.unit_price.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.unit_price.DataPropertyName = "unit_price";
             dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
             dataGridViewCellStyle2.Format = "N2";
             this.unit_price.DefaultCellStyle = dataGridViewCellStyle2;
@@ -1993,8 +1996,6 @@ namespace smpc_sales_app.Pages.Sales
             this.panel3.ResumeLayout(false);
             this.panel3.PerformLayout();
             this.tabControl.ResumeLayout(false);
-            this.quick_tab.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.dgv_quick_quote_details)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.bs_quick_quotes_details)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.ds_quick_quote)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.quotation_details)).EndInit();
@@ -2016,6 +2017,8 @@ namespace smpc_sales_app.Pages.Sales
             this.pnl_header.PerformLayout();
             this.toolstrip_quotation.ResumeLayout(false);
             this.toolstrip_quotation.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dgv_quick_quote_details)).EndInit();
+            this.quick_tab.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -2030,7 +2033,6 @@ namespace smpc_sales_app.Pages.Sales
         private System.Windows.Forms.TabControl tabControl;
         private System.Windows.Forms.TabPage project_tab;
         private System.ComponentModel.BackgroundWorker backgroundWorker1;
-        private System.Windows.Forms.DataGridView dgv_quick_quote_details;
         private System.Windows.Forms.Panel pnl_header;
         private System.Windows.Forms.Panel pnl_footer;
         private System.Windows.Forms.TextBox txt_short_description;
@@ -2125,7 +2127,6 @@ namespace smpc_sales_app.Pages.Sales
         private System.Windows.Forms.TextBox textBox51;
         private System.Windows.Forms.TextBox textBox56;
         private System.Windows.Forms.TextBox textBox55;
-        private System.Windows.Forms.TabPage quick_tab;
         private System.Windows.Forms.Button btn_cancel;
         private System.Windows.Forms.Button btn_save;
         private System.Windows.Forms.Label label60;
@@ -2183,6 +2184,8 @@ namespace smpc_sales_app.Pages.Sales
         private System.Data.DataTable quotation_details;
         private System.Data.DataColumn dataColumn2;
         private System.Data.DataColumn dataColumn3;
+        private System.Windows.Forms.TabPage quick_tab;
+        private System.Windows.Forms.DataGridView dgv_quick_quote_details;
         private System.Windows.Forms.DataGridViewTextBoxColumn id;
         private System.Windows.Forms.DataGridViewTextBoxColumn based_id;
         private System.Windows.Forms.DataGridViewTextBoxColumn item_id;

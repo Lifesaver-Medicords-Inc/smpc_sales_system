@@ -16,5 +16,7 @@ namespace smpc_sales_app.Data
         public static DataTable ItemList { get; set; } = new DataTable();
         public static DataTable ShipTypeSetup { get; set; } = new DataTable();
         public static DataTable Orders { get; set; } = new DataTable();
+
+
     }
 }

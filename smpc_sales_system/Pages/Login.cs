@@ -32,8 +32,8 @@ namespace smpc_sales_app.Pages
 
         private async void btn_login_Click(object sender, EventArgs e)
         { 
-            //CacheData.PaymentTerms = await PaymentTermsServices.GetAsDatatable();
-            //CacheData.ApplicationSetup = await ApplicationService.GetAsDatatable();
+            CacheData.PaymentTerms = await PaymentTermsServices.GetAsDatatable();
+            CacheData.ApplicationSetup = await ApplicationService.GetAsDatatable();
             this.DialogResult = DialogResult.OK;
         }
 
