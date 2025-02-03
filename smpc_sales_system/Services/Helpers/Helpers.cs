@@ -119,16 +119,25 @@ namespace smpc_app.Services.Helpers
                 if (control is TextBox textBox)
                 {
                     string key = textBox.Name.Replace("txt_", "");
-                    string val = "";
+                    dynamic val = "";
 
                     if (textBox.Tag == "MONEY")
-                    {
-
+                    { 
                         val = String.Format("{0}", textBox.Text.ToString().Replace(",",""));
                     }
                     else
                     {
-                        val = String.Format("'{0}'", textBox.Text.ToString());
+                        float newValue = 0;
+                        Boolean isNumber = float.TryParse(textBox.Text, out newValue);
+
+                        if (isNumber)
+                        {
+                            val = newValue;
+                        }
+                        else
+                        {
+                            val = String.Format("'{0}'", textBox.Text.ToString());
+                        }
                     }
                     values.Add(key, val);
                 }

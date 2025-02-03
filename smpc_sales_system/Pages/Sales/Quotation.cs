@@ -686,6 +686,48 @@ namespace smpc_sales_app.Pages.Sales
         }
 
 
+
+
+        // 
+        // fetching bpi parent and childrens
+        //
+         
+        DataTable bpi_general = new DataTable();
+        DataTable bpi_address = new DataTable();
+        DataTable bpi_contacts = new DataTable();
+        private async void button1_Click(object sender, EventArgs e)
+        {
+            List<int> t1 = new List<int>();
+            List<string> s1 = new List<string>();   
+            string Title = "Business Partner Info";
+            string endpoint = "/api/bpi";
+            SetupSelectionModal bpi = new SetupSelectionModal(Title, endpoint, customerList, t1, s1, 0);
+            DialogResult r = bpi.ShowDialog();
+
+            if (r == DialogResult.OK)
+            {
+               Dictionary<string, string> result = bpi.GetResult();
+
+                if(result != null)
+                {
+                    string id = "";
+
+                    var isSuccess_baseid = result.TryGetValue("id", out id);
+
+                    
+                    var data = await QuotationService.GetBpiId(id);
+                    bpi_general = JsonHelper.ToDataTable(data.general);
+                    bpi_address = JsonHelper.ToDataTable(data.address);
+                    bpi_contacts = JsonHelper.ToDataTable(data.contacts);
+                    
+
+                    Panel[] pnl_list = { pnl_header };
+                    Helpers.BindControls(pnl_list, bpi_general);
+                    Helpers.BindControls(pnl_list, bpi_address);
+                    Helpers.BindControls(pnl_list, bpi_contacts);
+                    //MessageBox.Show("" + data);
+                }
+            }
         }
     }
 

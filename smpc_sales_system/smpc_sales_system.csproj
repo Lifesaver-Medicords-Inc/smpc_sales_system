@@ -101,7 +101,7 @@
     <Compile Include="Pages\Sales\Quotation.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="Pages\Sales\Quotation.Designer.cs">
+    <Compile Include="Pages\Sales\Quotation.designer.cs">
       <DependentUpon>Quotation.cs</DependentUpon>
     </Compile>
     <Compile Include="Pages\Sales\SetupSelectionModal.cs">
