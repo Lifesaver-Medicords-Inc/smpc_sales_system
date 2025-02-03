@@ -40,7 +40,7 @@ namespace smpc_sales_app.Pages.Sales
             this.label21 = new System.Windows.Forms.Label();
             this.txt_total_amount_due = new System.Windows.Forms.TextBox();
             this.label20 = new System.Windows.Forms.Label();
-            this.txt_net_of_vat = new System.Windows.Forms.TextBox();
+            this.txt_netof_vat = new System.Windows.Forms.TextBox();
             this.label19 = new System.Windows.Forms.Label();
             this.txt_vat = new System.Windows.Forms.TextBox();
             this.label15 = new System.Windows.Forms.Label();
@@ -51,14 +51,19 @@ namespace smpc_sales_app.Pages.Sales
             this.has_stocks = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.order_details_id = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.based_id = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.item_class_id = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.percent_discount = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.net_discount = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.net_total = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.qty = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.item_code = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.unit_code = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.item_description = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.delivery_preference = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.list_price = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.total_price = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.unit_price = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.line_total = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.status = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.pnl_header = new System.Windows.Forms.Panel();
+            this.button2 = new System.Windows.Forms.Button();
             this.txt_sales_executive = new System.Windows.Forms.TextBox();
             this.label7 = new System.Windows.Forms.Label();
             this.txt_contact_no = new System.Windows.Forms.TextBox();
@@ -70,24 +75,24 @@ namespace smpc_sales_app.Pages.Sales
             this.btn_new_setup_2 = new System.Windows.Forms.Button();
             this.cmb_payment_terms = new System.Windows.Forms.ComboBox();
             this.label12 = new System.Windows.Forms.Label();
-            this.dateTimePicker1 = new System.Windows.Forms.DateTimePicker();
+            this.dtp_delivery_date = new System.Windows.Forms.DateTimePicker();
             this.label4 = new System.Windows.Forms.Label();
             this.dtp_date = new System.Windows.Forms.DateTimePicker();
             this.txt_bill_to = new System.Windows.Forms.TextBox();
-            this.txt_delivery_to = new System.Windows.Forms.TextBox();
+            this.txt_ship_to = new System.Windows.Forms.TextBox();
             this.label17 = new System.Windows.Forms.Label();
             this.label18 = new System.Windows.Forms.Label();
             this.txt_status = new System.Windows.Forms.TextBox();
             this.label13 = new System.Windows.Forms.Label();
-            this.txt_ref_doc = new System.Windows.Forms.TextBox();
             this.txt_document_no = new System.Windows.Forms.TextBox();
+            this.txt_doc = new System.Windows.Forms.TextBox();
             this.label10 = new System.Windows.Forms.Label();
             this.label11 = new System.Windows.Forms.Label();
             this.txt_days = new System.Windows.Forms.TextBox();
             this.label8 = new System.Windows.Forms.Label();
             this.label9 = new System.Windows.Forms.Label();
-            this.txt_code = new System.Windows.Forms.TextBox();
-            this.txt_customer = new System.Windows.Forms.TextBox();
+            this.txt_customer_code = new System.Windows.Forms.TextBox();
+            this.txt_customer_name = new System.Windows.Forms.TextBox();
             this.label3 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
@@ -156,7 +161,7 @@ namespace smpc_sales_app.Pages.Sales
             this.pnl_footer.Controls.Add(this.label21);
             this.pnl_footer.Controls.Add(this.txt_total_amount_due);
             this.pnl_footer.Controls.Add(this.label20);
-            this.pnl_footer.Controls.Add(this.txt_net_of_vat);
+            this.pnl_footer.Controls.Add(this.txt_netof_vat);
             this.pnl_footer.Controls.Add(this.label19);
             this.pnl_footer.Controls.Add(this.txt_vat);
             this.pnl_footer.Controls.Add(this.label15);
@@ -247,12 +252,12 @@ namespace smpc_sales_app.Pages.Sales
             this.label20.TabIndex = 168;
             this.label20.Text = "TOTAL AMOUNT DUE";
             // 
-            // txt_net_of_vat
+            // txt_netof_vat
             // 
-            this.txt_net_of_vat.Location = new System.Drawing.Point(473, 54);
-            this.txt_net_of_vat.Name = "txt_net_of_vat";
-            this.txt_net_of_vat.Size = new System.Drawing.Size(157, 20);
-            this.txt_net_of_vat.TabIndex = 167;
+            this.txt_netof_vat.Location = new System.Drawing.Point(473, 54);
+            this.txt_netof_vat.Name = "txt_netof_vat";
+            this.txt_netof_vat.Size = new System.Drawing.Size(157, 20);
+            this.txt_netof_vat.TabIndex = 167;
             // 
             // label19
             // 
@@ -312,38 +317,46 @@ namespace smpc_sales_app.Pages.Sales
             // dgv_order_sales
             // 
             this.dgv_order_sales.AllowUserToAddRows = false;
+            this.dgv_order_sales.AllowUserToDeleteRows = false;
             this.dgv_order_sales.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
             this.dgv_order_sales.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dgv_order_sales.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.has_stocks,
             this.order_details_id,
             this.based_id,
+            this.item_class_id,
+            this.percent_discount,
+            this.net_discount,
+            this.net_total,
             this.qty,
-            this.item_code,
+            this.unit_code,
             this.item_description,
             this.delivery_preference,
-            this.list_price,
-            this.total_price,
+            this.unit_price,
+            this.line_total,
             this.status});
             this.dgv_order_sales.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dgv_order_sales.Location = new System.Drawing.Point(0, 243);
             this.dgv_order_sales.Name = "dgv_order_sales";
+            this.dgv_order_sales.ReadOnly = true;
             this.dgv_order_sales.Size = new System.Drawing.Size(1028, 373);
             this.dgv_order_sales.TabIndex = 7;
             this.dgv_order_sales.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridView1_CellContentClick);
             // 
             // has_stocks
             // 
-            this.has_stocks.DataPropertyName = "has_stocks";
             this.has_stocks.FillWeight = 20.30457F;
             this.has_stocks.HeaderText = "";
             this.has_stocks.Name = "has_stocks";
+            this.has_stocks.ReadOnly = true;
+            this.has_stocks.Resizable = System.Windows.Forms.DataGridViewTriState.True;
             // 
             // order_details_id
             // 
             this.order_details_id.DataPropertyName = "order_details_id";
             this.order_details_id.HeaderText = "Column2";
             this.order_details_id.Name = "order_details_id";
+            this.order_details_id.ReadOnly = true;
             this.order_details_id.Visible = false;
             // 
             // based_id
@@ -351,59 +364,97 @@ namespace smpc_sales_app.Pages.Sales
             this.based_id.DataPropertyName = "based_id";
             this.based_id.HeaderText = "Column9";
             this.based_id.Name = "based_id";
+            this.based_id.ReadOnly = true;
             this.based_id.Visible = false;
+            // 
+            // item_class_id
+            // 
+            this.item_class_id.DataPropertyName = "item_class_id";
+            this.item_class_id.HeaderText = "Column2";
+            this.item_class_id.Name = "item_class_id";
+            this.item_class_id.ReadOnly = true;
+            this.item_class_id.Visible = false;
+            // 
+            // percent_discount
+            // 
+            this.percent_discount.DataPropertyName = "percent_discount";
+            this.percent_discount.HeaderText = "Column9";
+            this.percent_discount.Name = "percent_discount";
+            this.percent_discount.ReadOnly = true;
+            this.percent_discount.Visible = false;
+            // 
+            // net_discount
+            // 
+            this.net_discount.DataPropertyName = "net_discount";
+            this.net_discount.HeaderText = "Column10";
+            this.net_discount.Name = "net_discount";
+            this.net_discount.ReadOnly = true;
+            this.net_discount.Visible = false;
+            // 
+            // net_total
+            // 
+            this.net_total.DataPropertyName = "net_total";
+            this.net_total.HeaderText = "Column11";
+            this.net_total.Name = "net_total";
+            this.net_total.ReadOnly = true;
+            this.net_total.Visible = false;
             // 
             // qty
             // 
-            this.qty.DataPropertyName = "qty";
             this.qty.FillWeight = 111.3851F;
             this.qty.HeaderText = "QTY";
             this.qty.Name = "qty";
+            this.qty.ReadOnly = true;
             // 
-            // item_code
+            // unit_code
             // 
-            this.item_code.DataPropertyName = "item_code";
-            this.item_code.FillWeight = 111.3851F;
-            this.item_code.HeaderText = "ITEM CODE";
-            this.item_code.Name = "item_code";
+            this.unit_code.DataPropertyName = "unit_code";
+            this.unit_code.FillWeight = 111.3851F;
+            this.unit_code.HeaderText = "ITEM CODE";
+            this.unit_code.Name = "unit_code";
+            this.unit_code.ReadOnly = true;
             // 
             // item_description
             // 
-            this.item_description.DataPropertyName = "item_description";
             this.item_description.FillWeight = 111.3851F;
             this.item_description.HeaderText = "ITEM DESCRIPTION";
             this.item_description.Name = "item_description";
+            this.item_description.ReadOnly = true;
             // 
             // delivery_preference
             // 
-            this.delivery_preference.DataPropertyName = "delivery_preference";
             this.delivery_preference.FillWeight = 111.3851F;
             this.delivery_preference.HeaderText = "DELIVERY PREFERENCE";
             this.delivery_preference.Name = "delivery_preference";
+            this.delivery_preference.ReadOnly = true;
             // 
-            // list_price
+            // unit_price
             // 
-            this.list_price.DataPropertyName = "list_price";
-            this.list_price.FillWeight = 111.3851F;
-            this.list_price.HeaderText = "LIST PRICE";
-            this.list_price.Name = "list_price";
+            this.unit_price.DataPropertyName = "unit_price";
+            this.unit_price.FillWeight = 111.3851F;
+            this.unit_price.HeaderText = "LIST PRICE";
+            this.unit_price.Name = "unit_price";
+            this.unit_price.ReadOnly = true;
             // 
-            // total_price
+            // line_total
             // 
-            this.total_price.DataPropertyName = "total_price";
-            this.total_price.FillWeight = 111.3851F;
-            this.total_price.HeaderText = "TOTAL PRICE";
-            this.total_price.Name = "total_price";
+            this.line_total.DataPropertyName = "line_total";
+            this.line_total.FillWeight = 111.3851F;
+            this.line_total.HeaderText = "TOTAL PRICE";
+            this.line_total.Name = "line_total";
+            this.line_total.ReadOnly = true;
             // 
             // status
             // 
-            this.status.DataPropertyName = "status";
             this.status.FillWeight = 111.3851F;
             this.status.HeaderText = "STATUS";
             this.status.Name = "status";
+            this.status.ReadOnly = true;
+            this.status.Resizable = System.Windows.Forms.DataGridViewTriState.True;
             // 
             // pnl_header
             // 
+            this.pnl_header.Controls.Add(this.button2);
             this.pnl_header.Controls.Add(this.txt_sales_executive);
             this.pnl_header.Controls.Add(this.label7);
             this.pnl_header.Controls.Add(this.txt_contact_no);
@@ -415,24 +466,24 @@ namespace smpc_sales_app.Pages.Sales
             this.pnl_header.Controls.Add(this.btn_new_setup_2);
             this.pnl_header.Controls.Add(this.cmb_payment_terms);
             this.pnl_header.Controls.Add(this.label12);
-            this.pnl_header.Controls.Add(this.dateTimePicker1);
+            this.pnl_header.Controls.Add(this.dtp_delivery_date);
             this.pnl_header.Controls.Add(this.label4);
             this.pnl_header.Controls.Add(this.dtp_date);
             this.pnl_header.Controls.Add(this.txt_bill_to);
-            this.pnl_header.Controls.Add(this.txt_delivery_to);
+            this.pnl_header.Controls.Add(this.txt_ship_to);
             this.pnl_header.Controls.Add(this.label17);
             this.pnl_header.Controls.Add(this.label18);
             this.pnl_header.Controls.Add(this.txt_status);
             this.pnl_header.Controls.Add(this.label13);
-            this.pnl_header.Controls.Add(this.txt_ref_doc);
             this.pnl_header.Controls.Add(this.txt_document_no);
+            this.pnl_header.Controls.Add(this.txt_doc);
             this.pnl_header.Controls.Add(this.label10);
             this.pnl_header.Controls.Add(this.label11);
             this.pnl_header.Controls.Add(this.txt_days);
             this.pnl_header.Controls.Add(this.label8);
             this.pnl_header.Controls.Add(this.label9);
-            this.pnl_header.Controls.Add(this.txt_code);
-            this.pnl_header.Controls.Add(this.txt_customer);
+            this.pnl_header.Controls.Add(this.txt_customer_code);
+            this.pnl_header.Controls.Add(this.txt_customer_name);
             this.pnl_header.Controls.Add(this.label3);
             this.pnl_header.Controls.Add(this.label2);
             this.pnl_header.Dock = System.Windows.Forms.DockStyle.Top;
@@ -442,12 +493,24 @@ namespace smpc_sales_app.Pages.Sales
             this.pnl_header.TabIndex = 10;
             this.pnl_header.Paint += new System.Windows.Forms.PaintEventHandler(this.panel3_Paint);
             // 
+            // button2
+            // 
+            this.button2.Location = new System.Drawing.Point(854, 90);
+            this.button2.Name = "button2";
+            this.button2.Size = new System.Drawing.Size(141, 23);
+            this.button2.TabIndex = 259;
+            this.button2.Text = "Quotation Test";
+            this.button2.UseVisualStyleBackColor = true;
+            this.button2.Click += new System.EventHandler(this.button2_Click);
+            // 
             // txt_sales_executive
             // 
             this.txt_sales_executive.Location = new System.Drawing.Point(793, 138);
             this.txt_sales_executive.Name = "txt_sales_executive";
             this.txt_sales_executive.Size = new System.Drawing.Size(150, 20);
             this.txt_sales_executive.TabIndex = 258;
+            this.txt_sales_executive.Text = "John Llyod";
+            this.txt_sales_executive.TextChanged += new System.EventHandler(this.txt_sales_executive_TextChanged);
             // 
             // label7
             // 
@@ -497,6 +560,8 @@ namespace smpc_sales_app.Pages.Sales
             // 
             this.cmb_ship_type.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmb_ship_type.FormattingEnabled = true;
+            this.cmb_ship_type.Items.AddRange(new object[] {
+            "COD"});
             this.cmb_ship_type.Location = new System.Drawing.Point(576, 97);
             this.cmb_ship_type.Name = "cmb_ship_type";
             this.cmb_ship_type.Size = new System.Drawing.Size(147, 21);
@@ -527,6 +592,8 @@ namespace smpc_sales_app.Pages.Sales
             // 
             this.cmb_payment_terms.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmb_payment_terms.FormattingEnabled = true;
+            this.cmb_payment_terms.Items.AddRange(new object[] {
+            "INSTALLMENT"});
             this.cmb_payment_terms.Location = new System.Drawing.Point(576, 75);
             this.cmb_payment_terms.Name = "cmb_payment_terms";
             this.cmb_payment_terms.Size = new System.Drawing.Size(147, 21);
@@ -542,13 +609,13 @@ namespace smpc_sales_app.Pages.Sales
             this.label12.TabIndex = 248;
             this.label12.Text = "PAYMENT TERMS";
             // 
-            // dateTimePicker1
+            // dtp_delivery_date
             // 
-            this.dateTimePicker1.Format = System.Windows.Forms.DateTimePickerFormat.Short;
-            this.dateTimePicker1.Location = new System.Drawing.Point(576, 54);
-            this.dateTimePicker1.Name = "dateTimePicker1";
-            this.dateTimePicker1.Size = new System.Drawing.Size(103, 20);
-            this.dateTimePicker1.TabIndex = 247;
+            this.dtp_delivery_date.Format = System.Windows.Forms.DateTimePickerFormat.Short;
+            this.dtp_delivery_date.Location = new System.Drawing.Point(576, 54);
+            this.dtp_delivery_date.Name = "dtp_delivery_date";
+            this.dtp_delivery_date.Size = new System.Drawing.Size(103, 20);
+            this.dtp_delivery_date.TabIndex = 247;
             // 
             // label4
             // 
@@ -575,12 +642,12 @@ namespace smpc_sales_app.Pages.Sales
             this.txt_bill_to.Size = new System.Drawing.Size(350, 20);
             this.txt_bill_to.TabIndex = 244;
             // 
-            // txt_delivery_to
+            // txt_ship_to
             // 
-            this.txt_delivery_to.Location = new System.Drawing.Point(87, 54);
-            this.txt_delivery_to.Name = "txt_delivery_to";
-            this.txt_delivery_to.Size = new System.Drawing.Size(350, 20);
-            this.txt_delivery_to.TabIndex = 243;
+            this.txt_ship_to.Location = new System.Drawing.Point(87, 54);
+            this.txt_ship_to.Name = "txt_ship_to";
+            this.txt_ship_to.Size = new System.Drawing.Size(350, 20);
+            this.txt_ship_to.TabIndex = 243;
             // 
             // label17
             // 
@@ -608,6 +675,7 @@ namespace smpc_sales_app.Pages.Sales
             this.txt_status.Name = "txt_status";
             this.txt_status.Size = new System.Drawing.Size(89, 20);
             this.txt_status.TabIndex = 240;
+            this.txt_status.Text = "ACTIVE";
             // 
             // label13
             // 
@@ -619,27 +687,28 @@ namespace smpc_sales_app.Pages.Sales
             this.label13.TabIndex = 239;
             this.label13.Text = "STATUS";
             // 
-            // txt_ref_doc
-            // 
-            this.txt_ref_doc.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold);
-            this.txt_ref_doc.Location = new System.Drawing.Point(854, 12);
-            this.txt_ref_doc.Name = "txt_ref_doc";
-            this.txt_ref_doc.ReadOnly = true;
-            this.txt_ref_doc.Size = new System.Drawing.Size(89, 20);
-            this.txt_ref_doc.TabIndex = 238;
-            this.txt_ref_doc.Text = "1";
-            this.txt_ref_doc.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            // 
             // txt_document_no
             // 
             this.txt_document_no.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold);
-            this.txt_document_no.Location = new System.Drawing.Point(576, 12);
+            this.txt_document_no.Location = new System.Drawing.Point(854, 12);
             this.txt_document_no.Name = "txt_document_no";
             this.txt_document_no.ReadOnly = true;
-            this.txt_document_no.Size = new System.Drawing.Size(103, 20);
-            this.txt_document_no.TabIndex = 237;
-            this.txt_document_no.Text = "Q#0001";
+            this.txt_document_no.Size = new System.Drawing.Size(89, 20);
+            this.txt_document_no.TabIndex = 238;
+            this.txt_document_no.Text = "1";
             this.txt_document_no.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            // 
+            // txt_doc
+            // 
+            this.txt_doc.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold);
+            this.txt_doc.Location = new System.Drawing.Point(576, 12);
+            this.txt_doc.Name = "txt_doc";
+            this.txt_doc.ReadOnly = true;
+            this.txt_doc.Size = new System.Drawing.Size(103, 20);
+            this.txt_doc.TabIndex = 237;
+            this.txt_doc.Text = "SO#0000";
+            this.txt_doc.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.txt_doc.TextChanged += new System.EventHandler(this.txt_doc_TextChanged);
             // 
             // label10
             // 
@@ -689,21 +758,21 @@ namespace smpc_sales_app.Pages.Sales
             this.label9.TabIndex = 232;
             this.label9.Text = "DATE";
             // 
-            // txt_code
+            // txt_customer_code
             // 
-            this.txt_code.Location = new System.Drawing.Point(87, 33);
-            this.txt_code.Name = "txt_code";
-            this.txt_code.Size = new System.Drawing.Size(200, 20);
-            this.txt_code.TabIndex = 231;
-            this.txt_code.Text = "sdf";
+            this.txt_customer_code.Location = new System.Drawing.Point(87, 33);
+            this.txt_customer_code.Name = "txt_customer_code";
+            this.txt_customer_code.Size = new System.Drawing.Size(200, 20);
+            this.txt_customer_code.TabIndex = 231;
+            this.txt_customer_code.Text = "sdf";
             // 
-            // txt_customer
+            // txt_customer_name
             // 
-            this.txt_customer.Location = new System.Drawing.Point(87, 12);
-            this.txt_customer.Name = "txt_customer";
-            this.txt_customer.Size = new System.Drawing.Size(200, 20);
-            this.txt_customer.TabIndex = 230;
-            this.txt_customer.Text = "sdf";
+            this.txt_customer_name.Location = new System.Drawing.Point(87, 12);
+            this.txt_customer_name.Name = "txt_customer_name";
+            this.txt_customer_name.Size = new System.Drawing.Size(200, 20);
+            this.txt_customer_name.TabIndex = 230;
+            this.txt_customer_name.Text = "sdf";
             // 
             // label3
             // 
@@ -926,6 +995,7 @@ namespace smpc_sales_app.Pages.Sales
             this.btn_save.TabIndex = 0;
             this.btn_save.Text = "SAVE";
             this.btn_save.UseVisualStyleBackColor = false;
+            this.btn_save.Click += new System.EventHandler(this.btn_save_Click);
             // 
             // panel11
             // 
@@ -972,6 +1042,7 @@ namespace smpc_sales_app.Pages.Sales
             this.treeview_sales.Name = "treeview_sales";
             this.treeview_sales.Size = new System.Drawing.Size(1028, 225);
             this.treeview_sales.TabIndex = 0;
+            this.treeview_sales.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.treeview_sales_AfterSelect);
             this.treeview_sales.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.treeview_sales_NodeMouseClick);
             // 
             // panel8
@@ -1037,7 +1108,7 @@ namespace smpc_sales_app.Pages.Sales
         private System.Windows.Forms.Label label21;
         private System.Windows.Forms.TextBox txt_total_amount_due;
         private System.Windows.Forms.Label label20;
-        private System.Windows.Forms.TextBox txt_net_of_vat;
+        private System.Windows.Forms.TextBox txt_netof_vat;
         private System.Windows.Forms.Label label19;
         private System.Windows.Forms.TextBox txt_vat;
         private System.Windows.Forms.Label label15;
@@ -1056,24 +1127,24 @@ namespace smpc_sales_app.Pages.Sales
         private System.Windows.Forms.Button btn_new_setup_2;
         private System.Windows.Forms.ComboBox cmb_payment_terms;
         private System.Windows.Forms.Label label12;
-        private System.Windows.Forms.DateTimePicker dateTimePicker1;
+        private System.Windows.Forms.DateTimePicker dtp_delivery_date;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.DateTimePicker dtp_date;
         private System.Windows.Forms.TextBox txt_bill_to;
-        private System.Windows.Forms.TextBox txt_delivery_to;
+        private System.Windows.Forms.TextBox txt_ship_to;
         private System.Windows.Forms.Label label17;
         private System.Windows.Forms.Label label18;
         private System.Windows.Forms.TextBox txt_status;
         private System.Windows.Forms.Label label13;
-        private System.Windows.Forms.TextBox txt_ref_doc;
         private System.Windows.Forms.TextBox txt_document_no;
+        private System.Windows.Forms.TextBox txt_doc;
         private System.Windows.Forms.Label label10;
         private System.Windows.Forms.Label label11;
         private System.Windows.Forms.TextBox txt_days;
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.Label label9;
-        private System.Windows.Forms.TextBox txt_code;
-        private System.Windows.Forms.TextBox txt_customer;
+        private System.Windows.Forms.TextBox txt_customer_code;
+        private System.Windows.Forms.TextBox txt_customer_name;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.ToolStrip toolStrip1;
@@ -1109,15 +1180,20 @@ namespace smpc_sales_app.Pages.Sales
         private System.Windows.Forms.DataGridView dgv_order_sales;
         private System.Windows.Forms.Label label23;
         private System.Windows.Forms.TextBox txt_total;
+        private System.Windows.Forms.Button button2;
         private System.Windows.Forms.DataGridViewTextBoxColumn has_stocks;
         private System.Windows.Forms.DataGridViewTextBoxColumn order_details_id;
         private System.Windows.Forms.DataGridViewTextBoxColumn based_id;
+        private System.Windows.Forms.DataGridViewTextBoxColumn item_class_id;
+        private System.Windows.Forms.DataGridViewTextBoxColumn percent_discount;
+        private System.Windows.Forms.DataGridViewTextBoxColumn net_discount;
+        private System.Windows.Forms.DataGridViewTextBoxColumn net_total;
         private System.Windows.Forms.DataGridViewTextBoxColumn qty;
-        private System.Windows.Forms.DataGridViewTextBoxColumn item_code;
+        private System.Windows.Forms.DataGridViewTextBoxColumn unit_code;
         private System.Windows.Forms.DataGridViewTextBoxColumn item_description;
         private System.Windows.Forms.DataGridViewTextBoxColumn delivery_preference;
-        private System.Windows.Forms.DataGridViewTextBoxColumn list_price;
-        private System.Windows.Forms.DataGridViewTextBoxColumn total_price;
+        private System.Windows.Forms.DataGridViewTextBoxColumn unit_price;
+        private System.Windows.Forms.DataGridViewTextBoxColumn line_total;
         private System.Windows.Forms.DataGridViewTextBoxColumn status;
     }
 }
