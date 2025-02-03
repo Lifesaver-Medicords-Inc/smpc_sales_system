@@ -15,7 +15,7 @@ namespace smpc_sales_system.Services.Sales.Models
         public string unit_code { get; set; }
 
         public decimal unit_price { get; set; }
-        public decimal percent_discount { get; set; }
+        public string percent_discount { get; set; }
         public decimal net_discount { get; set; }
         public decimal net_total { get; set; }
         public decimal line_total { get; set; }
