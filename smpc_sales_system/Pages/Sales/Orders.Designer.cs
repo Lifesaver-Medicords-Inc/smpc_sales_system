@@ -48,16 +48,6 @@ namespace smpc_sales_app.Pages.Sales
             this.label14 = new System.Windows.Forms.Label();
             this.panel4 = new System.Windows.Forms.Panel();
             this.dgv_order_sales = new System.Windows.Forms.DataGridView();
-            this.has_stocks = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.order_details_id = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.based_id = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.qty = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.item_code = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.item_description = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.delivery_preference = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.list_price = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.total_price = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.status = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.pnl_header = new System.Windows.Forms.Panel();
             this.txt_sales_executive = new System.Windows.Forms.TextBox();
             this.label7 = new System.Windows.Forms.Label();
@@ -120,6 +110,16 @@ namespace smpc_sales_app.Pages.Sales
             this.treeview_sales = new System.Windows.Forms.TreeView();
             this.panel8 = new System.Windows.Forms.Panel();
             this.label24 = new System.Windows.Forms.Label();
+            this.has_stocks = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.order_details_id = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.based_id = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.qty = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.item_code = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.item_description = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.delivery_preference = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.list_price = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.total_price = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.status = new System.Windows.Forms.DataGridViewComboBoxColumn();
             this.panel1.SuspendLayout();
             this.pnl_footer.SuspendLayout();
             this.panel4.SuspendLayout();
@@ -331,76 +331,6 @@ namespace smpc_sales_app.Pages.Sales
             this.dgv_order_sales.Size = new System.Drawing.Size(1028, 373);
             this.dgv_order_sales.TabIndex = 7;
             this.dgv_order_sales.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridView1_CellContentClick);
-            // 
-            // has_stocks
-            // 
-            this.has_stocks.DataPropertyName = "has_stocks";
-            this.has_stocks.FillWeight = 20.30457F;
-            this.has_stocks.HeaderText = "";
-            this.has_stocks.Name = "has_stocks";
-            // 
-            // order_details_id
-            // 
-            this.order_details_id.DataPropertyName = "order_details_id";
-            this.order_details_id.HeaderText = "Column2";
-            this.order_details_id.Name = "order_details_id";
-            this.order_details_id.Visible = false;
-            // 
-            // based_id
-            // 
-            this.based_id.DataPropertyName = "based_id";
-            this.based_id.HeaderText = "Column9";
-            this.based_id.Name = "based_id";
-            this.based_id.Visible = false;
-            // 
-            // qty
-            // 
-            this.qty.DataPropertyName = "qty";
-            this.qty.FillWeight = 111.3851F;
-            this.qty.HeaderText = "QTY";
-            this.qty.Name = "qty";
-            // 
-            // item_code
-            // 
-            this.item_code.DataPropertyName = "item_code";
-            this.item_code.FillWeight = 111.3851F;
-            this.item_code.HeaderText = "ITEM CODE";
-            this.item_code.Name = "item_code";
-            // 
-            // item_description
-            // 
-            this.item_description.DataPropertyName = "item_description";
-            this.item_description.FillWeight = 111.3851F;
-            this.item_description.HeaderText = "ITEM DESCRIPTION";
-            this.item_description.Name = "item_description";
-            // 
-            // delivery_preference
-            // 
-            this.delivery_preference.DataPropertyName = "delivery_preference";
-            this.delivery_preference.FillWeight = 111.3851F;
-            this.delivery_preference.HeaderText = "DELIVERY PREFERENCE";
-            this.delivery_preference.Name = "delivery_preference";
-            // 
-            // list_price
-            // 
-            this.list_price.DataPropertyName = "list_price";
-            this.list_price.FillWeight = 111.3851F;
-            this.list_price.HeaderText = "LIST PRICE";
-            this.list_price.Name = "list_price";
-            // 
-            // total_price
-            // 
-            this.total_price.DataPropertyName = "total_price";
-            this.total_price.FillWeight = 111.3851F;
-            this.total_price.HeaderText = "TOTAL PRICE";
-            this.total_price.Name = "total_price";
-            // 
-            // status
-            // 
-            this.status.DataPropertyName = "status";
-            this.status.FillWeight = 111.3851F;
-            this.status.HeaderText = "STATUS";
-            this.status.Name = "status";
             // 
             // pnl_header
             // 
@@ -993,6 +923,89 @@ namespace smpc_sales_app.Pages.Sales
             this.label24.TabIndex = 0;
             this.label24.Text = "SALES";
             // 
+            // has_stocks
+            // 
+            this.has_stocks.DataPropertyName = "has_stocks";
+            this.has_stocks.FillWeight = 20.30457F;
+            this.has_stocks.HeaderText = "";
+            this.has_stocks.Name = "has_stocks";
+            this.has_stocks.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+            // 
+            // order_details_id
+            // 
+            this.order_details_id.DataPropertyName = "order_details_id";
+            this.order_details_id.HeaderText = "Column2";
+            this.order_details_id.Name = "order_details_id";
+            this.order_details_id.Visible = false;
+            // 
+            // based_id
+            // 
+            this.based_id.DataPropertyName = "based_id";
+            this.based_id.HeaderText = "Column9";
+            this.based_id.Name = "based_id";
+            this.based_id.Visible = false;
+            // 
+            // qty
+            // 
+            this.qty.DataPropertyName = "qty";
+            this.qty.FillWeight = 111.3851F;
+            this.qty.HeaderText = "QTY";
+            this.qty.Name = "qty";
+            // 
+            // item_code
+            // 
+            this.item_code.DataPropertyName = "item_code";
+            this.item_code.FillWeight = 111.3851F;
+            this.item_code.HeaderText = "ITEM CODE";
+            this.item_code.Name = "item_code";
+            // 
+            // item_description
+            // 
+            this.item_description.DataPropertyName = "item_description";
+            this.item_description.FillWeight = 111.3851F;
+            this.item_description.HeaderText = "ITEM DESCRIPTION";
+            this.item_description.Name = "item_description";
+            // 
+            // delivery_preference
+            // 
+            this.delivery_preference.DataPropertyName = "delivery_preference";
+            this.delivery_preference.FillWeight = 111.3851F;
+            this.delivery_preference.HeaderText = "DELIVERY PREFERENCE";
+            this.delivery_preference.Name = "delivery_preference";
+            // 
+            // list_price
+            // 
+            this.list_price.DataPropertyName = "list_price";
+            this.list_price.FillWeight = 111.3851F;
+            this.list_price.HeaderText = "LIST PRICE";
+            this.list_price.Name = "list_price";
+            // 
+            // total_price
+            // 
+            this.total_price.DataPropertyName = "total_price";
+            this.total_price.FillWeight = 111.3851F;
+            this.total_price.HeaderText = "TOTAL PRICE";
+            this.total_price.Name = "total_price";
+            // 
+            // status
+            // 
+            this.status.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.status.DataPropertyName = "status";
+            this.status.FillWeight = 111.3851F;
+            this.status.HeaderText = "STATUS";
+            this.status.Items.AddRange(new object[] {
+            "",
+            "STOCK INTERVENTION",
+            "PURCHASE REQUEST",
+            "PURCHASING",
+            "PRODUCTION",
+            "SCHEDULED DISPATCH",
+            "DELIVERY",
+            "WAITING"});
+            this.status.Name = "status";
+            this.status.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+            this.status.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
+            // 
             // Orders
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -1118,6 +1131,6 @@ namespace smpc_sales_app.Pages.Sales
         private System.Windows.Forms.DataGridViewTextBoxColumn delivery_preference;
         private System.Windows.Forms.DataGridViewTextBoxColumn list_price;
         private System.Windows.Forms.DataGridViewTextBoxColumn total_price;
-        private System.Windows.Forms.DataGridViewTextBoxColumn status;
+        private System.Windows.Forms.DataGridViewComboBoxColumn status;
     }
 }

@@ -16,6 +16,7 @@ namespace smpc_sales_app.Services.Sales
     internal static class OrderService
     {
         static string url = "/sales/order";
+        static string childurl = "/sales/child/order";
 
         // GET
         //public static async Task<DataTable> GetAsDatatable()

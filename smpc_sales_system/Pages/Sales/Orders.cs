@@ -36,14 +36,14 @@ namespace smpc_sales_app.Pages.Sales
             DetailsList = JsonHelper.ToDataTable(data.orderdetails);
 
             // Add a default row to DetailsList
-            if (DetailsList != null)
-            {
-                DataRow defaultRow = DetailsList.NewRow();
-                defaultRow["based_id"] = OrderList.Rows[SelectedRow]["order_id"];
-                defaultRow["qty"] = "ADD NEW ITEM";
-                defaultRow["has_stocks"] = DBNull.Value;
-                DetailsList.Rows.Add(defaultRow);
-            }
+            //if (DetailsList != null)
+            //{
+            //    DataRow defaultRow = DetailsList.NewRow();
+            //    defaultRow["based_id"] = OrderList.Rows[SelectedRow]["order_id"];
+            //    defaultRow["qty"] = "ADD NEW ITEM";
+            //    defaultRow["has_stocks"] = DBNull.Value;
+            //    DetailsList.Rows.Add(defaultRow);
+            //}
 
             if (data != null)
             {
@@ -149,49 +149,49 @@ namespace smpc_sales_app.Pages.Sales
 
         private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
-            // Ensure we are not clicking on header row or invalid rows
-            if (e.RowIndex >= 0)
-            {
-                DataGridViewRow clickedRow = dgv_order_sales.Rows[e.RowIndex];
+            //// Ensure we are not clicking on header row or invalid rows
+            //if (e.RowIndex >= 0)
+            //{
+            //    DataGridViewRow clickedRow = dgv_order_sales.Rows[e.RowIndex];
 
-                // Check if the clicked row is the default row (last row)
-                if (clickedRow.Index == dgv_order_sales.Rows.Count - 1)
-                {
-                    // Show the modal dialog for the default row
-                    ItemModal itemModal = new ItemModal();
-                    DialogResult r = itemModal.ShowDialog();
+            //    // Check if the clicked row is the default row (last row)
+            //    if (clickedRow.Index == dgv_order_sales.Rows.Count - 1)
+            //    {
+            //        // Show the modal dialog for the default row
+            //        ItemModal itemModal = new ItemModal();
+            //        DialogResult r = itemModal.ShowDialog();
 
-                    if (r == DialogResult.OK)
-                    {
-                        Dictionary<string, string> result = itemModal.GetResult();
+            //        if (r == DialogResult.OK)
+            //        {
+            //            Dictionary<string, string> result = itemModal.GetResult();
 
-                        if (result != null)
-                        {
-                            string code = "";
-                            string name = "";
-                            string unit_price = "";
-                            string short_desc = "N/A";
+            //            if (result != null)
+            //            {
+            //                string code = "";
+            //                string name = "";
+            //                string unit_price = "";
+            //                string short_desc = "N/A";
 
-                            result.TryGetValue("name", out name);
-                            result.TryGetValue("code", out code);
-                            result.TryGetValue("unitprice", out unit_price);
-                            result.TryGetValue("short_desc", out short_desc);
+            //                result.TryGetValue("name", out name);
+            //                result.TryGetValue("code", out code);
+            //                result.TryGetValue("unitprice", out unit_price);
+            //                result.TryGetValue("short_desc", out short_desc);
 
-                            DataRow newRow = DetailsList.NewRow();
-                            newRow["based_id"] = OrderList.Rows[SelectedRow]["order_id"];
-                            newRow["item_code"] = code;
-                            newRow["total_price"] = unit_price;
-                            newRow["item_description"] = short_desc;
+            //                DataRow newRow = DetailsList.NewRow();
+            //                newRow["based_id"] = OrderList.Rows[SelectedRow]["order_id"];
+            //                newRow["item_code"] = code;
+            //                newRow["total_price"] = unit_price;
+            //                newRow["item_description"] = short_desc;
 
-                            //newRow["qty"] = 1;
-                            //newRow["unit_measure"] = "COD";
+            //                //newRow["qty"] = 1;
+            //                //newRow["unit_measure"] = "COD";
                             
-                            DetailsList.Rows.InsertAt(newRow, DetailsList.Rows.Count - 1);
-                            CalculateTotalPrice();
-                        }
-                    }
-                }
-            }
+            //                DetailsList.Rows.InsertAt(newRow, DetailsList.Rows.Count - 1);
+            //                CalculateTotalPrice();
+            //            }
+            //        }
+            //    }
+            //}
         }
 
         private void panel3_Paint(object sender, PaintEventArgs e)
