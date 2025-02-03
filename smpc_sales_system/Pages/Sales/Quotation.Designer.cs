@@ -30,18 +30,23 @@ namespace smpc_sales_app.Pages.Sales
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle5 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle6 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle7 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle8 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle9 = new System.Windows.Forms.DataGridViewCellStyle();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Quotation));
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle5 = new System.Windows.Forms.DataGridViewCellStyle();
             this.panel1 = new System.Windows.Forms.Panel();
             this.label1 = new System.Windows.Forms.Label();
             this.panel3 = new System.Windows.Forms.Panel();
             this.tabControl = new System.Windows.Forms.TabControl();
             this.quick_tab = new System.Windows.Forms.TabPage();
             this.dgv_quick_quote_details = new System.Windows.Forms.DataGridView();
+            this.bs_unit = new System.Windows.Forms.BindingSource(this.components);
             this.ds_quick_quote = new System.Data.DataSet();
             this.dataTable1 = new System.Data.DataTable();
             this.based_id = new System.Data.DataColumn();
@@ -167,13 +172,13 @@ namespace smpc_sales_app.Pages.Sales
             this.cmb_application = new System.Windows.Forms.ComboBox();
             this.cmb_purpose = new System.Windows.Forms.ComboBox();
             this.txt_contact_no_2 = new System.Windows.Forms.TextBox();
-            this.txt_contact_no_1 = new System.Windows.Forms.TextBox();
+            this.txt_number = new System.Windows.Forms.TextBox();
             this.label19 = new System.Windows.Forms.Label();
             this.btn_quick_quote = new System.Windows.Forms.Button();
             this.label20 = new System.Windows.Forms.Label();
             this.btn_project = new System.Windows.Forms.Button();
             this.txt_thru = new System.Windows.Forms.TextBox();
-            this.txt_addressed_to = new System.Windows.Forms.TextBox();
+            this.txt_location = new System.Windows.Forms.TextBox();
             this.label17 = new System.Windows.Forms.Label();
             this.label18 = new System.Windows.Forms.Label();
             this.label14 = new System.Windows.Forms.Label();
@@ -193,7 +198,7 @@ namespace smpc_sales_app.Pages.Sales
             this.label8 = new System.Windows.Forms.Label();
             this.label9 = new System.Windows.Forms.Label();
             this.txt_customer_code = new System.Windows.Forms.TextBox();
-            this.txt_customer_name = new System.Windows.Forms.TextBox();
+            this.txt_branch_name = new System.Windows.Forms.TextBox();
             this.label5 = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
@@ -213,7 +218,7 @@ namespace smpc_sales_app.Pages.Sales
             this.net_discount = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.net_total = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.line_total = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.bs_unit = new System.Windows.Forms.BindingSource(this.components);
+            this.btn_add_customer = new System.Windows.Forms.Button();
             this.Column2 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.basedidDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Column3 = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -232,6 +237,7 @@ namespace smpc_sales_app.Pages.Sales
             this.tabControl.SuspendLayout();
             this.quick_tab.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgv_quick_quote_details)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.bs_unit)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.ds_quick_quote)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dataTable1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dataTable2)).BeginInit();
@@ -248,7 +254,6 @@ namespace smpc_sales_app.Pages.Sales
             this.pnl_footer.SuspendLayout();
             this.pnl_header.SuspendLayout();
             this.toolstrip_quotation.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.bs_unit)).BeginInit();
             this.SuspendLayout();
             // 
             // panel1
@@ -338,6 +343,11 @@ namespace smpc_sales_app.Pages.Sales
             this.dgv_quick_quote_details.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgv_quick_quote_details_CellClick);
             this.dgv_quick_quote_details.CellEndEdit += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgv_quick_quote_details_CellEndEdit);
             this.dgv_quick_quote_details.KeyUp += new System.Windows.Forms.KeyEventHandler(this.dgv_quick_quote_details_KeyUp);
+            // 
+            // bs_unit
+            // 
+            this.bs_unit.DataMember = "tbl_unit";
+            this.bs_unit.DataSource = this.ds_quick_quote;
             // 
             // ds_quick_quote
             // 
@@ -1377,6 +1387,7 @@ namespace smpc_sales_app.Pages.Sales
             // 
             // pnl_header
             // 
+            this.pnl_header.Controls.Add(this.btn_add_customer);
             this.pnl_header.Controls.Add(this.label60);
             this.pnl_header.Controls.Add(this.cmb_warranty);
             this.pnl_header.Controls.Add(this.dtp_valid_until);
@@ -1389,13 +1400,13 @@ namespace smpc_sales_app.Pages.Sales
             this.pnl_header.Controls.Add(this.cmb_application);
             this.pnl_header.Controls.Add(this.cmb_purpose);
             this.pnl_header.Controls.Add(this.txt_contact_no_2);
-            this.pnl_header.Controls.Add(this.txt_contact_no_1);
+            this.pnl_header.Controls.Add(this.txt_number);
             this.pnl_header.Controls.Add(this.label19);
             this.pnl_header.Controls.Add(this.btn_quick_quote);
             this.pnl_header.Controls.Add(this.label20);
             this.pnl_header.Controls.Add(this.btn_project);
             this.pnl_header.Controls.Add(this.txt_thru);
-            this.pnl_header.Controls.Add(this.txt_addressed_to);
+            this.pnl_header.Controls.Add(this.txt_location);
             this.pnl_header.Controls.Add(this.label17);
             this.pnl_header.Controls.Add(this.label18);
             this.pnl_header.Controls.Add(this.label14);
@@ -1415,7 +1426,7 @@ namespace smpc_sales_app.Pages.Sales
             this.pnl_header.Controls.Add(this.label8);
             this.pnl_header.Controls.Add(this.label9);
             this.pnl_header.Controls.Add(this.txt_customer_code);
-            this.pnl_header.Controls.Add(this.txt_customer_name);
+            this.pnl_header.Controls.Add(this.txt_branch_name);
             this.pnl_header.Controls.Add(this.label5);
             this.pnl_header.Controls.Add(this.label4);
             this.pnl_header.Controls.Add(this.label3);
@@ -1550,12 +1561,12 @@ namespace smpc_sales_app.Pages.Sales
             this.txt_contact_no_2.Size = new System.Drawing.Size(170, 20);
             this.txt_contact_no_2.TabIndex = 87;
             // 
-            // txt_contact_no_1
+            // txt_number
             // 
-            this.txt_contact_no_1.Location = new System.Drawing.Point(854, 117);
-            this.txt_contact_no_1.Name = "txt_contact_no_1";
-            this.txt_contact_no_1.Size = new System.Drawing.Size(170, 20);
-            this.txt_contact_no_1.TabIndex = 86;
+            this.txt_number.Location = new System.Drawing.Point(854, 117);
+            this.txt_number.Name = "txt_number";
+            this.txt_number.Size = new System.Drawing.Size(170, 20);
+            this.txt_number.TabIndex = 86;
             // 
             // label19
             // 
@@ -1616,12 +1627,12 @@ namespace smpc_sales_app.Pages.Sales
             this.txt_thru.Size = new System.Drawing.Size(350, 20);
             this.txt_thru.TabIndex = 83;
             // 
-            // txt_addressed_to
+            // txt_location
             // 
-            this.txt_addressed_to.Location = new System.Drawing.Point(411, 117);
-            this.txt_addressed_to.Name = "txt_addressed_to";
-            this.txt_addressed_to.Size = new System.Drawing.Size(350, 20);
-            this.txt_addressed_to.TabIndex = 82;
+            this.txt_location.Location = new System.Drawing.Point(411, 117);
+            this.txt_location.Name = "txt_location";
+            this.txt_location.Size = new System.Drawing.Size(350, 20);
+            this.txt_location.TabIndex = 82;
             // 
             // label17
             // 
@@ -1796,14 +1807,14 @@ namespace smpc_sales_app.Pages.Sales
             this.txt_customer_code.TabIndex = 55;
             this.txt_customer_code.Text = "sdf";
             // 
-            // txt_customer_name
+            // txt_branch_name
             // 
-            this.txt_customer_name.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
-            this.txt_customer_name.Location = new System.Drawing.Point(87, 12);
-            this.txt_customer_name.Name = "txt_customer_name";
-            this.txt_customer_name.Size = new System.Drawing.Size(200, 20);
-            this.txt_customer_name.TabIndex = 54;
-            this.txt_customer_name.Text = "sdf";
+            this.txt_branch_name.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
+            this.txt_branch_name.Location = new System.Drawing.Point(87, 12);
+            this.txt_branch_name.Name = "txt_branch_name";
+            this.txt_branch_name.Size = new System.Drawing.Size(200, 20);
+            this.txt_branch_name.TabIndex = 54;
+            this.txt_branch_name.Text = "sdf";
             // 
             // label5
             // 
@@ -1925,9 +1936,9 @@ namespace smpc_sales_app.Pages.Sales
             // 
             this.unit_price.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
             this.unit_price.DataPropertyName = "unit_price";
-            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
-            dataGridViewCellStyle1.Format = "N2";
-            this.unit_price.DefaultCellStyle = dataGridViewCellStyle1;
+            dataGridViewCellStyle5.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
+            dataGridViewCellStyle5.Format = "N2";
+            this.unit_price.DefaultCellStyle = dataGridViewCellStyle5;
             this.unit_price.HeaderText = "UNIT PRICE";
             this.unit_price.Name = "unit_price";
             // 
@@ -1942,11 +1953,11 @@ namespace smpc_sales_app.Pages.Sales
             // 
             this.amount_discounted.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
             this.amount_discounted.DataPropertyName = "amount_discounted";
-            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
-            dataGridViewCellStyle2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
-            dataGridViewCellStyle2.Format = "N2";
-            dataGridViewCellStyle2.NullValue = "0";
-            this.amount_discounted.DefaultCellStyle = dataGridViewCellStyle2;
+            dataGridViewCellStyle6.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
+            dataGridViewCellStyle6.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
+            dataGridViewCellStyle6.Format = "N2";
+            dataGridViewCellStyle6.NullValue = "0";
+            this.amount_discounted.DefaultCellStyle = dataGridViewCellStyle6;
             this.amount_discounted.HeaderText = "DISCOUNTED AMOUNT";
             this.amount_discounted.Name = "amount_discounted";
             this.amount_discounted.ReadOnly = true;
@@ -1955,11 +1966,11 @@ namespace smpc_sales_app.Pages.Sales
             // 
             this.net_discount.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
             this.net_discount.DataPropertyName = "net_discount";
-            dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
-            dataGridViewCellStyle3.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
-            dataGridViewCellStyle3.Format = "N2";
-            dataGridViewCellStyle3.NullValue = "0";
-            this.net_discount.DefaultCellStyle = dataGridViewCellStyle3;
+            dataGridViewCellStyle7.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
+            dataGridViewCellStyle7.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
+            dataGridViewCellStyle7.Format = "N2";
+            dataGridViewCellStyle7.NullValue = "0";
+            this.net_discount.DefaultCellStyle = dataGridViewCellStyle7;
             this.net_discount.HeaderText = "NET DISCOUNT";
             this.net_discount.Name = "net_discount";
             this.net_discount.ReadOnly = true;
@@ -1968,11 +1979,11 @@ namespace smpc_sales_app.Pages.Sales
             // 
             this.net_total.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
             this.net_total.DataPropertyName = "net_total";
-            dataGridViewCellStyle4.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
-            dataGridViewCellStyle4.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
-            dataGridViewCellStyle4.Format = "N2";
-            dataGridViewCellStyle4.NullValue = "0";
-            this.net_total.DefaultCellStyle = dataGridViewCellStyle4;
+            dataGridViewCellStyle8.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
+            dataGridViewCellStyle8.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
+            dataGridViewCellStyle8.Format = "N2";
+            dataGridViewCellStyle8.NullValue = "0";
+            this.net_total.DefaultCellStyle = dataGridViewCellStyle8;
             this.net_total.HeaderText = "NET AMOUNT";
             this.net_total.Name = "net_total";
             this.net_total.ReadOnly = true;
@@ -1981,19 +1992,27 @@ namespace smpc_sales_app.Pages.Sales
             // 
             this.line_total.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
             this.line_total.DataPropertyName = "line_total";
-            dataGridViewCellStyle5.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
-            dataGridViewCellStyle5.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
-            dataGridViewCellStyle5.Format = "N2";
-            dataGridViewCellStyle5.NullValue = "0";
-            this.line_total.DefaultCellStyle = dataGridViewCellStyle5;
+            dataGridViewCellStyle9.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
+            dataGridViewCellStyle9.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
+            dataGridViewCellStyle9.Format = "N2";
+            dataGridViewCellStyle9.NullValue = "0";
+            this.line_total.DefaultCellStyle = dataGridViewCellStyle9;
             this.line_total.HeaderText = "LINE TOTAL";
             this.line_total.Name = "line_total";
             this.line_total.ReadOnly = true;
             // 
-            // bs_unit
+            // btn_add_customer
             // 
-            this.bs_unit.DataMember = "tbl_unit";
-            this.bs_unit.DataSource = this.ds_quick_quote;
+            this.btn_add_customer.BackColor = System.Drawing.SystemColors.Control;
+            this.btn_add_customer.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("btn_add_customer.BackgroundImage")));
+            this.btn_add_customer.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.btn_add_customer.FlatAppearance.BorderSize = 0;
+            this.btn_add_customer.Location = new System.Drawing.Point(286, 11);
+            this.btn_add_customer.Name = "btn_add_customer";
+            this.btn_add_customer.Size = new System.Drawing.Size(30, 23);
+            this.btn_add_customer.TabIndex = 108;
+            this.btn_add_customer.UseVisualStyleBackColor = false;
+            this.btn_add_customer.Click += new System.EventHandler(this.button1_Click);
             // 
             // Column2
             // 
@@ -2026,7 +2045,7 @@ namespace smpc_sales_app.Pages.Sales
             // 
             // Column5
             // 
-            this.Column5.DataPropertyName = "based_id";
+            this.Column5.DataPropertyName = "item_name";
             this.Column5.HeaderText = "ITEM NAME";
             this.Column5.Name = "Column5";
             // 
@@ -2038,7 +2057,7 @@ namespace smpc_sales_app.Pages.Sales
             // 
             // cmb_unit_code
             // 
-            this.cmb_unit_code.DataPropertyName = "unit_code";
+            this.cmb_unit_code.DataPropertyName = "unit_coded";
             this.cmb_unit_code.DataSource = this.bs_unit;
             this.cmb_unit_code.DisplayMember = "code";
             this.cmb_unit_code.HeaderText = "UNIT";
@@ -2062,27 +2081,35 @@ namespace smpc_sales_app.Pages.Sales
             // netdiscountDataGridViewTextBoxColumn
             // 
             this.netdiscountDataGridViewTextBoxColumn.DataPropertyName = "net_discount";
+            dataGridViewCellStyle1.BackColor = System.Drawing.Color.LightGray;
+            this.netdiscountDataGridViewTextBoxColumn.DefaultCellStyle = dataGridViewCellStyle1;
             this.netdiscountDataGridViewTextBoxColumn.HeaderText = "DISCOUNT AMOUNT";
             this.netdiscountDataGridViewTextBoxColumn.Name = "netdiscountDataGridViewTextBoxColumn";
+            this.netdiscountDataGridViewTextBoxColumn.ReadOnly = true;
             // 
             // nettotalDataGridViewTextBoxColumn
             // 
             this.nettotalDataGridViewTextBoxColumn.DataPropertyName = "net_total";
+            dataGridViewCellStyle2.BackColor = System.Drawing.Color.LightGray;
+            this.nettotalDataGridViewTextBoxColumn.DefaultCellStyle = dataGridViewCellStyle2;
             this.nettotalDataGridViewTextBoxColumn.HeaderText = "NET DISCOUNT";
             this.nettotalDataGridViewTextBoxColumn.Name = "nettotalDataGridViewTextBoxColumn";
             // 
             // linetotalDataGridViewTextBoxColumn
             // 
             this.linetotalDataGridViewTextBoxColumn.DataPropertyName = "line_total";
+            dataGridViewCellStyle3.BackColor = System.Drawing.Color.LightGray;
+            this.linetotalDataGridViewTextBoxColumn.DefaultCellStyle = dataGridViewCellStyle3;
             this.linetotalDataGridViewTextBoxColumn.HeaderText = "NET AMOUNT";
             this.linetotalDataGridViewTextBoxColumn.Name = "linetotalDataGridViewTextBoxColumn";
             // 
             // itemclassidDataGridViewTextBoxColumn
             // 
-            this.itemclassidDataGridViewTextBoxColumn.DataPropertyName = "item_class_id";
-            this.itemclassidDataGridViewTextBoxColumn.HeaderText = "item_class_id";
+            this.itemclassidDataGridViewTextBoxColumn.DataPropertyName = "line_total";
+            dataGridViewCellStyle4.BackColor = System.Drawing.Color.LightGray;
+            this.itemclassidDataGridViewTextBoxColumn.DefaultCellStyle = dataGridViewCellStyle4;
+            this.itemclassidDataGridViewTextBoxColumn.HeaderText = "LINE TOTAL";
             this.itemclassidDataGridViewTextBoxColumn.Name = "itemclassidDataGridViewTextBoxColumn";
-            this.itemclassidDataGridViewTextBoxColumn.Visible = false;
             // 
             // Quotation
             // 
@@ -2102,6 +2129,7 @@ namespace smpc_sales_app.Pages.Sales
             this.tabControl.ResumeLayout(false);
             this.quick_tab.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.dgv_quick_quote_details)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.bs_unit)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.ds_quick_quote)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.dataTable1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.dataTable2)).EndInit();
@@ -2124,7 +2152,6 @@ namespace smpc_sales_app.Pages.Sales
             this.pnl_header.PerformLayout();
             this.toolstrip_quotation.ResumeLayout(false);
             this.toolstrip_quotation.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.bs_unit)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -2247,13 +2274,13 @@ namespace smpc_sales_app.Pages.Sales
         private System.Windows.Forms.ComboBox cmb_application;
         private System.Windows.Forms.ComboBox cmb_purpose;
         private System.Windows.Forms.TextBox txt_contact_no_2;
-        private System.Windows.Forms.TextBox txt_contact_no_1;
+        private System.Windows.Forms.TextBox txt_number;
         private System.Windows.Forms.Label label19;
         private System.Windows.Forms.Button btn_quick_quote;
         private System.Windows.Forms.Label label20;
         private System.Windows.Forms.Button btn_project;
         private System.Windows.Forms.TextBox txt_thru;
-        private System.Windows.Forms.TextBox txt_addressed_to;
+        private System.Windows.Forms.TextBox txt_location;
         private System.Windows.Forms.Label label17;
         private System.Windows.Forms.Label label18;
         private System.Windows.Forms.Label label14;
@@ -2273,7 +2300,7 @@ namespace smpc_sales_app.Pages.Sales
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.Label label9;
         private System.Windows.Forms.TextBox txt_customer_code;
-        private System.Windows.Forms.TextBox txt_customer_name;
+        private System.Windows.Forms.TextBox txt_branch_name;
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.Label label3;
@@ -2309,6 +2336,7 @@ namespace smpc_sales_app.Pages.Sales
         private System.Data.DataColumn id;
         private System.Data.DataColumn code;
         private System.Windows.Forms.BindingSource bs_unit;
+        private System.Windows.Forms.Button btn_add_customer;
         private System.Windows.Forms.DataGridViewTextBoxColumn Column2;
         private System.Windows.Forms.DataGridViewTextBoxColumn basedidDataGridViewTextBoxColumn;
         private System.Windows.Forms.DataGridViewTextBoxColumn Column3;

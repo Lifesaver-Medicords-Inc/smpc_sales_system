@@ -3,6 +3,7 @@ using smpc_app.Services.Helpers;
 using smpc_inventory_app.Services.Helpers;
 using smpc_sales_app.Services.Helpers;
 using smpc_sales_app.Services.Sales.Models;
+using smpc_sales_system.Models;
 using smpc_sales_system.Services.Sales.Models;
 using System;
 using System.Collections.Generic;
@@ -13,10 +14,12 @@ using System.Threading.Tasks;
 
 namespace smpc_sales_app.Services.Sales
 {
-    static class QuotationService
+     class QuotationService
     {
         static string url = "/sales/quotation";
-        static string url_child = "/sales/child/quotation";
+        //static string url_child = "/sales/child/quotation";
+        static string url_customer = "/bpi/customers";
+        static string url_search = "/bpi/";
 
 
         // GET
@@ -26,14 +29,28 @@ namespace smpc_sales_app.Services.Sales
             SalesQuotationList quotationData = response.Data;
             return quotationData;
         }
+       
+        public static async Task<bpi_list> GetBpiId(string id)
+        {
+            var response = await RequestToApi<ApiResponseModel<bpi_list>>.Get(url_search + id);
+            bpi_list bpiData = response.Data;
+            return bpiData;
+        }
 
-        //public static async Task<DataTable> GetAsDataTable()
+
+        public static async Task<GetBpiList> GetBpiCustomers()
+        {
+            var response = await RequestToApi<ApiResponseModel<GetBpiList>>.Get(url_customer);
+            GetBpiList customerData = response.Data;
+            return customerData;
+        }
+
+        //public static async Task<DataTable> GetBpiCustomerAsDatatable()
         //{
-        //    var response = await RequestToApi<ApiResponseModel<List<ItemModel>>>.Get(url);
-        //    DataTable itemList = JsonHelper.ToDataTable(response.Data);
-        //    return itemList;
+        //    var response = await RequestToApi<ApiResponseModel<List<BpiCustomer>>>.Get(url_customer);
+        //    DataTable customerItems = JsonHelper.ToDataTable(response.Data);
+        //    return customerItems;
         //}
-
 
 
         public static async Task<SalesQuotationModel[]> GetQuotation()
@@ -54,11 +71,11 @@ namespace smpc_sales_app.Services.Sales
         }
 
 
-        public static async Task<ApiResponseModel> InsertChild(Dictionary<string, dynamic> data)
-        {
-            var response = await RequestToApi<ApiResponseModel>.Post(url_child, data);
-            return response;
-        }
+        //public static async Task<ApiResponseModel> InsertChild(Dictionary<string, dynamic> data)
+        //{
+        //    var response = await RequestToApi<ApiResponseModel>.Post(url_child, data);
+        //    return response;
+        //}
 
 
 
