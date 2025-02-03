@@ -62,7 +62,6 @@
     <Compile Include="Data\STATIC_QUOTE_WITH_TEMP.cs" />
     <Compile Include="Data\STATIC_SHIPPED_TYPE.cs" />
     <Compile Include="Data\STATIC_WARRANTY.cs" />
-    <Compile Include="Models\ApiResponseModel.cs" />
     <Compile Include="Models\ApplicationModel.cs" />
     <Compile Include="Models\ItemModel.cs" />
     <Compile Include="Models\PaymentTermsModel.cs" />
