@@ -38,7 +38,7 @@ namespace smpc_sales_app.Services.Sales
         {
             var response = await RequestToApi<ApiResponseModel>.Post(url, data);
             return response;
-        }
+        } 
 
         // DELETE
         public static async Task<bool> Delete(Dictionary<string, dynamic> data)
