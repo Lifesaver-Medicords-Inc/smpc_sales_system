@@ -688,9 +688,14 @@ namespace smpc_sales_app.Pages.Sales
                 fetchQuotationDetails();
             }
         }
+
+        private void dgv_quick_quote_details_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+
+        }
     }
 
-   
+
 
     static class QuickQuoteDGV
     {

@@ -41,11 +41,16 @@ namespace smpc_sales_app.Services.Sales
             return orderData;
         }
 
-
         // POST
         public static async Task<ApiResponseModel> Insert(Dictionary<string, dynamic> data)
         {
             var response = await RequestToApi<ApiResponseModel>.Post(url, data);
+            return response;
+        }
+
+        public static async Task<ApiResponseModel> InsertChild(Dictionary<string, dynamic> data)
+        {
+            var response = await RequestToApi<ApiResponseModel>.Post(childurl, data);
             return response;
         }
 
@@ -57,7 +62,7 @@ namespace smpc_sales_app.Services.Sales
             return isSucccess;
         }
 
-        // UPDATE
+        // UPDATE   
         public static async Task<ApiResponseModel> Update(Dictionary<string,dynamic> data)
         {
             var response = await RequestToApi<ApiResponseModel>.Put(url, data);

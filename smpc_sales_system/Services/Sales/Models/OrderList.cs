@@ -10,8 +10,7 @@ namespace smpc_sales_system.Services.Sales.Models
     class OrderList
     {
         public List<OrderModel> order { get; set; }
-
-        public List<OrderDetailsModel> orderdetails { get; set; }
+        public List<OrderDetailsModel> sales_order_details { get; set; }
 
     }
 }

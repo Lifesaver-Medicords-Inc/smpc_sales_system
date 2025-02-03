@@ -24,16 +24,17 @@ namespace smpc_sales_app.Pages.Sales
         public Orders()
         {
             InitializeComponent();
-            
         }
         public DataTable OrderList { get; set; } = new DataTable();
         public DataTable DetailsList { get; set; } = new DataTable();
+        public DataTable transactionList { get; set; } = new DataTable();
+        public DataTable childList { get; set; } = new DataTable();
         private async void FetchData()
         {
             OrderList data = await OrderService.GetOrders();
 
             OrderList = JsonHelper.ToDataTable(data.order);
-            DetailsList = JsonHelper.ToDataTable(data.orderdetails);
+            DetailsList = JsonHelper.ToDataTable(data.sales_order_details);
 
             // Add a default row to DetailsList
             //if (DetailsList != null)
@@ -47,10 +48,57 @@ namespace smpc_sales_app.Pages.Sales
 
             if (data != null)
             {
-                bind(true);
-                CalculateTotalPrice();
+                //bind(true);
+            }
+            else
+            {
+
             }
         }
+        private async void fetchQuotationDetails()
+        {
+            SalesQuotationList data = await QuotationService.GetQuotations();
+
+            transactionList = JsonHelper.ToDataTable(data.SalesQuotation);
+            childList = JsonHelper.ToDataTable(data.SalesQuotationQuick);
+
+            if (data != null)
+            {
+                bindQuotation(true);
+                CalculateTotalPrice();
+                SOIncrementer();
+            }
+        }
+
+        private void bindQuotation(bool isBind = false)
+        {
+            if (isBind)
+            {
+                Panel[] pnlList = { pnl_header, pnl_footer };
+                Helpers.BindControls(pnlList, transactionList, SelectedRow);
+                //dgv_quick_quote_details.DataSource = dataView;
+                // dgv_quick_quote_details.DataSource = childList;
+                
+                    DataView dataview = new DataView(this.childList);
+                dataview.RowFilter = "based_id = '" + this.transactionList.Rows[this.SelectedRow]["id"].ToString() + "'";
+                //dgv_quick_quotes_show.DataSource = dataview;
+
+                dgv_order_sales.DataSource = dataview;
+                //foreach (DataGridViewRow row in dgv_order_sales.Rows)
+                //{
+                //    // Check each cell for null/DBNull and replace with "N/A"
+                //    foreach (DataGridViewCell cell in row.Cells)
+                //    {
+                //        if (cell.Value == DBNull.Value || cell.Value == null)
+                //        {
+                //            cell.Value = "N/A"; // Replace null/DBNull with "N/A"
+                //        }
+                //    }
+                //}
+                //dgv_quick_quote_details.DataSource = dataview;
+            }
+        }
+
         private void dgv_order_sales_CellClick(object sender, DataGridViewCellEventArgs e)
         {
            
@@ -100,28 +148,35 @@ namespace smpc_sales_app.Pages.Sales
 
         private void CalculateTotalPrice()
         {
-            decimal total = 0.0m; 
-            foreach (DataGridViewRow row in dgv_order_sales.Rows)
+            decimal total = 0.0m;
+
+            // Ensure the column "line_total" exists
+            if (dgv_order_sales.Columns.Contains("line_total"))
             {
-                if (row.Cells["total_price"].Value != null)
+                foreach (DataGridViewRow row in dgv_order_sales.Rows)
                 {
-                    
-                    decimal totalPrice;
-                    if (decimal.TryParse(row.Cells["total_price"].Value.ToString(), out totalPrice))
+                    if (row.Cells["line_total"].Value != null)
                     {
-                        total += totalPrice;  
+                        decimal totalPrice;
+                        if (decimal.TryParse(row.Cells["line_total"].Value.ToString(), out totalPrice))
+                        {
+                            total += totalPrice;
+                        }
                     }
                 }
             }
+            else
+            {
+                MessageBox.Show("The 'line_total' column is missing in the DataGridView.");
+            }
 
-            
-            txt_total.Text = total.ToString("0.00"); 
+            txt_total.Text = total.ToString("0.00");
         }
 
         private void Orders_Load(object sender, EventArgs e)
         {
             FetchData();
-            
+            fetchQuotationDetails();
             // Helpers.LoadDirectory("D:\\LIFESAVER\\LIFESAVER\\TEST", treeview_sales);
         }
 
@@ -193,7 +248,7 @@ namespace smpc_sales_app.Pages.Sales
             //    }
             //}
         }
-
+          
         private void panel3_Paint(object sender, PaintEventArgs e)
         {
 
@@ -201,11 +256,17 @@ namespace smpc_sales_app.Pages.Sales
 
         private void btn_next_Click(object sender, EventArgs e)
         {
-            int rowCount = OrderList.Rows.Count;
+            //int rowCount = OrderList.Rows.Count;
+            int rowCount = transactionList.Rows.Count;
             if (SelectedRow < rowCount - 1)
             {
                 SelectedRow++;
-                FetchData();
+                //FetchData();
+                Helpers.ResetControls(pnl_header);
+                Helpers.ResetControls(pnl_footer);
+                fetchQuotationDetails();
+                SOIncrementer();
+                
             }
         }
 
@@ -214,8 +275,174 @@ namespace smpc_sales_app.Pages.Sales
             if (SelectedRow >= 1)
             {
                 SelectedRow--;
-                FetchData();
+                //FetchData();
+                Helpers.ResetControls(pnl_header);
+                Helpers.ResetControls(pnl_footer);
+                fetchQuotationDetails();
+                SOIncrementer();
             }
+        }
+
+        private async void btn_save_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                // Initialize a list to hold the missing field names
+                List<string> missingFields = new List<string>();
+
+                // Check each field and add missing ones to the list
+                if (string.IsNullOrWhiteSpace(txt_receiver.Text))
+                {
+                    missingFields.Add("Receiver");
+                }
+                if (string.IsNullOrWhiteSpace(txt_contact_no.Text))
+                {
+                    missingFields.Add("Contact Number");
+                }
+                if (cmb_payment_terms.SelectedItem == null)
+                {
+                    missingFields.Add("Payment Terms");
+                }
+                if (cmb_ship_type.SelectedItem == null)
+                {
+                    missingFields.Add("Shipping Type");
+                }
+
+                // If there are any missing fields, show an alert with those fields
+                if (missingFields.Count > 0)
+                {
+                    string missingFieldsMessage = "Please fill in the following fields: " + string.Join(", ", missingFields);
+                    MessageBox.Show(missingFieldsMessage, "Missing Information", MessageBoxButtons.OK);
+                    return; // Stop further execution if validation fails
+                }
+
+                var parentDataHeader = Helpers.GetControlsValues(pnl_header);
+                var parentDataFooter = Helpers.GetControlsValues(pnl_footer);
+
+                // Merge the two dictionaries
+                var parentData = new Dictionary<string, dynamic>(parentDataHeader);
+
+                foreach (var kvp in parentDataFooter)
+                {
+                    // If the key already exists in the parentData, you can decide to overwrite or skip
+                    if (!parentData.ContainsKey(kvp.Key))
+                    {
+                        parentData.Add(kvp.Key, kvp.Value);
+                    }
+                    else
+                    {
+                        // Optionally, overwrite the existing value (if desired)
+                        parentData[kvp.Key] = kvp.Value;
+                    }
+                }
+
+                var dataSource = Helpers.ConvertDataGridViewToDataTable(dgv_order_sales);
+
+                List<Dictionary<string, dynamic>> orderDetailsList = new List<Dictionary<string, dynamic>>();
+
+                //Dictionary<string, dynamic> quickQuoteData = new Dictionary<string, dynamic>();
+
+                foreach (DataRow item in dataSource.Rows)
+                {
+                    Dictionary<string, object> data = new Dictionary<string, object>();
+
+                    data.Add("qty", item["qty"].ToString());
+                    data.Add("item_code", item["unit_code"].ToString());
+                    data.Add("item_description", item["item_description"].ToString());
+                    data.Add("delivery_preference", item["delivery_preference"].ToString());
+                    data.Add("list_price", float.Parse(item["unit_price"].ToString()));
+                    data.Add("total_price", float.Parse(item["line_total"].ToString()));
+                    data.Add("status", item["status"].ToString());
+                    //data.Add("has_stocks", bool.Parse(item["has_stocks"].ToString()));
+
+                    // data.Add("SalesQuotationQuick", childData);
+                    orderDetailsList.Add(data);
+                }
+
+
+                if (orderDetailsList != null)
+                {
+                    List<Dictionary<string, dynamic>> childCollection = new List<Dictionary<string, dynamic>>();
+
+                    // loops thru the items
+                    foreach (var childData in orderDetailsList)
+                    {
+                        //parentData["sales_quotation_quick"] = childData;
+                        childCollection.Add(childData);
+                    }
+
+
+
+                    // trims the Q# from the input
+                    if (parentData.ContainsKey("doc") && parentData["doc"] is string documentNo)
+                    {
+                        parentData["doc"] = documentNo.StartsWith("SO#")
+                            ? documentNo.Substring(3) // Remove "Q#"
+                            : documentNo; // Keep as is if "Q#" is not present
+                    }
+
+
+                    parentData["sales_order_details"] = childCollection;
+
+                    if (parentData.ContainsKey("sales_order_details"))
+                    {
+                        await OrderService.Insert(parentData);
+                        MessageBox.Show("Added data");
+                        FetchData();
+                        fetchQuotationDetails();
+                        // this should await a response in the future if the response is sucess proceed to create if not notify the user
+                        //Helpers.ResetControls(pnl_header);
+                        //Helpers.ResetControls(pnl_footer);
+                        //Helpers.ClearDataGridView(dgv_quick_quote_details);
+                        //dgv_quick_quotes_show.Visible = true;
+                        //dgv_quick_quotes_show.Enabled = false;
+                        //toolstrip_quotation.Enabled = true;
+
+
+                        // edit
+                        //dgv_quick_quote_details.Visible = false;
+
+                    }
+
+
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("err: " + ex);
+            }
+        }
+
+        private void SOIncrementer()
+        {
+            // Get the number of rows in the OrderList
+            int rowCount = OrderList.Rows.Count;
+            string docNum = (rowCount + 1).ToString().PadLeft(4, '0'); // Ensure 4 digits (e.g., 0001, 0002, etc.)
+
+            // Set the document number to the TextBox, prefix it with "SO#"
+            txt_doc.Text = "SO#" + docNum; 
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            fetchQuotationDetails();
+        }
+
+        private void txt_doc_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void treeview_sales_AfterSelect(object sender, TreeViewEventArgs e)
+        {
+
+        }
+
+        private void txt_sales_executive_TextChanged(object sender, EventArgs e)
+        {
+
         }
     }
 }
