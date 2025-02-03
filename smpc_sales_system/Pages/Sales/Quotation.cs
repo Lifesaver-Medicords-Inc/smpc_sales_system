@@ -1,10 +1,12 @@
 ﻿using smpc_app.Data;
 using smpc_app.Services.Helpers;
+using smpc_inventory_app.Pages;
 using smpc_sales_app.Data;
 using smpc_sales_app.Services.Helpers;
 using smpc_sales_app.Services.Sales;
 using smpc_sales_app.Services.Setup;
 using smpc_sales_app.Utils;
+using smpc_sales_system.Models;
 using smpc_sales_system.Services.Sales.Models;
 using System;
 using System.Collections.Generic;
@@ -93,13 +95,15 @@ namespace smpc_sales_app.Pages.Sales
 
         public DataTable transactionList { get; set; } = new DataTable();
         public DataTable childList { get; set; } = new DataTable();
+        //public DataTable customerList { get; set; } = new DataTable();
+
         //public DataView dataView { get; set; } = new DataView();
 
         // unit code 
         private async void fetchQuotationDetails()
         {
             SalesQuotationList data = await QuotationService.GetQuotations();
-
+          
             transactionList = JsonHelper.ToDataTable(data.SalesQuotation);
             childList = JsonHelper.ToDataTable(data.SalesQuotationQuick);
           
@@ -141,7 +145,7 @@ namespace smpc_sales_app.Pages.Sales
                     }
                     else
                     {
-                        // Handle parsing failure (e.g., log error or use default value)
+                        // Handle parsing failure 
                         docNum = "0001"; 
                     }
                 }
@@ -200,7 +204,7 @@ namespace smpc_sales_app.Pages.Sales
                     Dictionary<string, object> data = new Dictionary<string, object>();
 
                     data.Add("item_class_id", int.Parse(item["qty"].ToString()));
-                    data.Add("unit_code",  "'" + item["unit"].ToString() + "'" );
+                    data.Add("unit_code",  item["unit"].ToString());
                     data.Add("unit_price",  decimal.Parse(item["unit_price"].ToString()));
                     data.Add("percent_discount",  decimal.Parse(item["percent_discount"].ToString()));
                     data.Add("net_discount",  decimal.Parse(item["net_discount"].ToString()));
@@ -240,7 +244,7 @@ namespace smpc_sales_app.Pages.Sales
                     {
                         await QuotationService.Insert(parentData);
 
-                        // this should await a response in the future if the response is sucess proceed to create if not notify the user
+                        // this should await a response in the future if the response is success proceed to create if not notify the user
                         Helpers.ResetControls(pnl_header);
                         Helpers.ResetControls(pnl_footer);
                         Helpers.ClearDataGridView(dgv_quick_quote_details);
@@ -488,9 +492,9 @@ namespace smpc_sales_app.Pages.Sales
             cmb_ship_type.DisplayMember = "code";
             cmb_ship_type.ValueMember = "title";
 
-            unit.DataSource = STATIC_SHIPPED_TYPE.LIST();
-            unit.DisplayMember = "title";
-            unit.ValueMember = "value";
+            cmb_unit_code.DataSource = STATIC_SHIPPED_TYPE.LIST();
+            cmb_unit_code.DisplayMember = "title";
+            cmb_unit_code.ValueMember = "value";
 
             //DataTable dtQuotationDetails = ds_quick_quote.Tables["quotation_details"];
 
@@ -517,37 +521,31 @@ namespace smpc_sales_app.Pages.Sales
             
         }
 
-
-        private void DisplayColumnNames()
-        {
-            // Create a list or string to store column names
-            List<string> columnNames = new List<string>();
-
-            // Iterate through the columns of the DataGridView
-            foreach (DataGridViewColumn column in dgv_quick_quote_details.Columns)
-            {
-                // Add the column name to the list
-                columnNames.Add(column.Name);
-            }
-
-            // Display the column names (e.g., in a MessageBox or Console)
-            string allColumnNames = string.Join(Environment.NewLine, columnNames);
-            MessageBox.Show("Column Names:" + Environment.NewLine + allColumnNames, "Column Names");
-
-            // Alternatively, print to the console
-            Console.WriteLine("Column Names:");
-            foreach (string name in columnNames)
-            {
-                Console.WriteLine(name);
-            }
-        }
-
-
         private void bind(bool isBind = false) 
         {
+            //if (parentData.ContainsKey("document_no") && parentData["document_no"] is string documentNo)
+            //{
+            //    parentData["document_no"] = documentNo.StartsWith("Q#")
+            //        ? documentNo.Substring(2) // Remove "Q#"
+            //        : documentNo; // Keep as is if "Q#" is not present
+            //}
+
+
             if (isBind)
             {
                 Panel[] pnlList = { pnl_header, pnl_footer };
+                if (transactionList != null)
+                {
+                
+                        foreach (DataRow row in transactionList.Rows)
+                        {
+                            var doc = row["document_no"];
+                            MessageBox.Show("" + doc);
+                        }
+
+                }
+               
+                
                 Helpers.BindControls(pnlList, transactionList, SelectedRow);
                 //dgv_quick_quote_details.DataSource = dataView;
                 // dgv_quick_quote_details.DataSource = childList;
@@ -560,11 +558,6 @@ namespace smpc_sales_app.Pages.Sales
                 //dgv_quick_quote_details.DataSource = dataview;
             }
         }
-
-
-
-
-
 
         private void txt_days_TextChanged(object sender, EventArgs e)
         {
@@ -591,9 +584,12 @@ namespace smpc_sales_app.Pages.Sales
             ValidUntilDate();
         }
 
-        private void btn_new_Click_1(object sender, EventArgs e)
+        public DataTable customerList { get; set; } = new DataTable();
+        private async void btn_new_Click_1(object sender, EventArgs e)
         {
-
+            GetBpiList data = await QuotationService.GetBpiCustomers();
+            customerList = JsonHelper.ToDataTable(data.GetBpiCustomer);
+            
             Helpers.ResetControls(pnl_header);
             Helpers.ResetControls(pnl_footer);
 
@@ -689,8 +685,6 @@ namespace smpc_sales_app.Pages.Sales
             }
         }
 
-        private void dgv_quick_quote_details_CellContentClick(object sender, DataGridViewCellEventArgs e)
-        {
 
         }
     }
