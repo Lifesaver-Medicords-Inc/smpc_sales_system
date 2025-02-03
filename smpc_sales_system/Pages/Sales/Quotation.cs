@@ -16,6 +16,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
+
+
 namespace smpc_sales_app.Pages.Sales
 {
     public partial class Quotation : UserControl
@@ -31,11 +33,11 @@ namespace smpc_sales_app.Pages.Sales
 
             cmb_warranty.Text = "1 year";
             // CALL THE DEFAULT VALUES OF DATAGRIDVIEW
-            this.QuickQuotesDgvDefaultValues();
-            
+            //this.QuickQuotesDgvDefaultValues();
+
         }
 
-       
+
 
 
 
@@ -61,6 +63,8 @@ namespace smpc_sales_app.Pages.Sales
 
         private void btn_new_Click(object sender, EventArgs e)
         {
+            //Panel[] pnl_list = { pnl_header, pnl_footer };
+
 
         }
 
@@ -88,16 +92,17 @@ namespace smpc_sales_app.Pages.Sales
         }
 
         public DataTable transactionList { get; set; } = new DataTable();
-        public  DataTable childList { get; set; } = new DataTable();
+        public DataTable childList { get; set; } = new DataTable();
         //public DataView dataView { get; set; } = new DataView();
+
+        // unit code 
         private async void fetchQuotationDetails()
         {
             SalesQuotationList data = await QuotationService.GetQuotations();
 
             transactionList = JsonHelper.ToDataTable(data.SalesQuotation);
-            childList = JsonHelper.ToDataTable(data.QuickQuote);
-
-
+            childList = JsonHelper.ToDataTable(data.SalesQuotationQuick);
+          
             pnl_header.Enabled = true;
             pnl_footer.Enabled = true;
 
@@ -116,11 +121,55 @@ namespace smpc_sales_app.Pages.Sales
             }
         }
 
-    
+        private void DocumentIncrementer()
+        {
+            string docNum;
+
+            if (transactionList.Rows.Count > 0)
+            {
+                int latestIndex = transactionList.Rows.Count - 1;
+                DataRow latestRow = transactionList.Rows[latestIndex];
+
+                // Check if "document_no" is not null or DBNull
+                if (latestRow["document_no"] != DBNull.Value && !string.IsNullOrEmpty(latestRow["document_no"].ToString()))
+                {
+                    // Parse the document number
+                    if (int.TryParse(latestRow["document_no"].ToString(), out int documentNumber))
+                    {
+                        // Increment the document number
+                        docNum = (documentNumber + 1).ToString().PadLeft(4, '0'); // Pad with leading zeros
+                    }
+                    else
+                    {
+                        // Handle parsing failure (e.g., log error or use default value)
+                        docNum = "0001"; 
+                    }
+                }
+                else
+                {
+                    // Handle null or empty document_no (e.g., use default value)
+                   
+                    docNum = "0001"; // Default value
+                }
+            }
+            else
+            {
+                // Handle empty DataTable (e.g., use default value)
+                docNum = "0001";
+            }
+
+            // Assign the document number to the TextBox
+            txt_document_no.Text = "Q#" + docNum;
+            //MessageBox.Show("" + docNum);
+        }
+
+
+
+
         private void btn_new_setup_1_Click(object sender, EventArgs e)
         {
             SetupModal setupModal = new SetupModal("Application");
-            
+
 
             if (DialogResult.OK == setupModal.ShowDialog())
             {
@@ -128,37 +177,93 @@ namespace smpc_sales_app.Pages.Sales
             }
         }
 
+        //   PROBLEM FOR TOMMOROW ADD DATAA
+        //     - Add Data from parent and child
+        //     - Base on parent id for the child base id
+        //
         private async void btn_save_Click(object sender, EventArgs e)
-        { 
+        {
             
-            //Boolean isError = Helpers.ValidateControlsValues(pnl_header);
+            try
+            {
+                var parentData = Helpers.GetControlsValues(pnl_header);
 
-            //if (!isError)
-            //{
-            //    // GET ALL INPUT VALUES
-            //    var data = Helpers.GetControlsValues(pnl_header);
-            //    DataTable dt = Helpers.ConvertDataGridViewToDataTable(dgv_quick_quote_details);
-            //    data.Add("quick_quote_details", dt);
-            //    //bool isSuccess = await QuotationService.Insert(data);
-            //    bool isSuccess = await QuotationService.Insert(data);
+                var dataSource = Helpers.ConvertDataGridViewToDataTable(dgv_quick_quote_details);
 
-            //    if (isSuccess)
-            //    {
-            //        // RESET INPUTS AFTER SAVE
-            //        Helpers.ResetControls(pnl_header); 
-            //        toolstrip_quotation.Enabled = true;
+                List<Dictionary<string, dynamic>> quickQuoteList = new List<Dictionary<string, dynamic>>();
 
-            //        pnl_header.Enabled = false;
-            //        pnl_footer.Enabled = false;
+                //Dictionary<string, dynamic> quickQuoteData = new Dictionary<string, dynamic>();
 
-            //        Helpers.ShowDialogMessage("success", "sucessfully saved!");
 
-            //    }
-            //    else
-            //    {
-            //        Helpers.ShowDialogMessage("error","something wrong!"); 
-            //    }
-            //}
+                foreach (DataRow item in dataSource.Rows)
+                {
+                    Dictionary<string, object> data = new Dictionary<string, object>();
+
+                    data.Add("item_class_id", int.Parse(item["qty"].ToString()));
+                    data.Add("unit_code",  "'" + item["unit"].ToString() + "'" );
+                    data.Add("unit_price",  decimal.Parse(item["unit_price"].ToString()));
+                    data.Add("percent_discount",  decimal.Parse(item["percent_discount"].ToString()));
+                    data.Add("net_discount",  decimal.Parse(item["net_discount"].ToString()));
+                    data.Add("net_total",  decimal.Parse(item["net_total"].ToString()));
+                    data.Add("line_total", decimal.Parse(item["line_total"].ToString()));
+
+                    // data.Add("SalesQuotationQuick", childData);
+                    quickQuoteList.Add(data);
+                }
+
+
+                if (quickQuoteList != null)
+                {
+                    List<Dictionary<string, dynamic>> childCollection = new List<Dictionary<string, dynamic>>();
+                 
+                    // loops thru the items
+                    foreach (var childData in quickQuoteList)
+                    {
+                        //parentData["sales_quotation_quick"] = childData;
+                        childCollection.Add(childData);
+                    }
+
+
+
+                    // trims the Q# from the input
+                    if (parentData.ContainsKey("document_no") && parentData["document_no"] is string documentNo)
+                    {
+                        parentData["document_no"] = documentNo.StartsWith("Q#")
+                            ? documentNo.Substring(2) // Remove "Q#"
+                            : documentNo; // Keep as is if "Q#" is not present
+                    }
+
+
+                    parentData["sales_quotation_quick"] = childCollection;
+
+                    if (parentData.ContainsKey("sales_quotation_quick"))
+                    {
+                        await QuotationService.Insert(parentData);
+
+                        // this should await a response in the future if the response is sucess proceed to create if not notify the user
+                        Helpers.ResetControls(pnl_header);
+                        Helpers.ResetControls(pnl_footer);
+                        Helpers.ClearDataGridView(dgv_quick_quote_details);
+                        //dgv_quick_quotes_show.Visible = true;
+                        //dgv_quick_quotes_show.Enabled = false;
+                        toolstrip_quotation.Enabled = true;
+
+
+                        // edit
+                        dgv_quick_quote_details.Visible = false;
+
+                    }
+                   
+
+                }
+
+
+            }
+            catch(Exception ex)
+            {
+                MessageBox.Show("err: " + ex);
+            }
+           
         }
 
         private void toolStripButton7_Click(object sender, EventArgs e)
@@ -176,6 +281,7 @@ namespace smpc_sales_app.Pages.Sales
         {
             if (e.ColumnIndex == 3)
             {
+
                 DataGridViewRow clickedRow = dgv_quick_quote_details.Rows[e.RowIndex];
 
                 ItemModal itemModal = new ItemModal();
@@ -203,7 +309,7 @@ namespace smpc_sales_app.Pages.Sales
                         this.dgv_quick_quote_details.Rows[e.RowIndex].Cells[3].Value = code;
                         this.dgv_quick_quote_details.Rows[e.RowIndex].Cells[4].Value = name;
                         this.dgv_quick_quote_details.Rows[e.RowIndex].Cells[7].Value = unit_price;
-                        this.dgv_quick_quote_details.Rows[e.RowIndex].Cells[13].Value = desc;
+                        //this.dgv_quick_quote_details.Rows[e.RowIndex].Cells[13].Value = desc;
 
                     }
                     
@@ -211,17 +317,17 @@ namespace smpc_sales_app.Pages.Sales
                 }
             }
 
-            if (e.RowIndex >= 0)
-            {
-                var nameValue = dgv_quick_quote_details.Rows[e.RowIndex].Cells[13].Value;
+            //if (e.RowIndex >= 0)
+            //{
+            //    var nameValue = dgv_quick_quote_details.Rows[e.RowIndex].Cells[13].Value;
 
-                if (nameValue != null)
-                {
-                    txt_short_description.Text = nameValue.ToString();
-                }
+            //    if (nameValue != null)
+            //    {
+            //        txt_short_description.Text = nameValue.ToString();
+            //    }
 
               
-            }
+            //}
         }
 
        
@@ -229,15 +335,19 @@ namespace smpc_sales_app.Pages.Sales
         private void dgv_quick_quote_details_CellLeave(object sender, DataGridViewCellEventArgs e)
         {
 
-        } 
+        }
+
+
+
 
         private void dgv_quick_quote_details_CellEndEdit(object sender, DataGridViewCellEventArgs e)
         {
             try
             {
+                
                 var qty_cell = dgv_quick_quote_details.Rows[e.RowIndex].Cells[QuickQuoteDGV.QTY].Value;
                 var unit_price_cell = dgv_quick_quote_details.Rows[e.RowIndex].Cells[QuickQuoteDGV.UNIT_PRICE].Value;
-                var discount_cell = dgv_quick_quote_details.Rows[e.RowIndex].Cells[QuickQuoteDGV.DISCOUNT].Value.ToString();
+                var discount_cell = dgv_quick_quote_details.Rows[e.RowIndex].Cells[QuickQuoteDGV.DISCOUNT].Value == null ? "0" : dgv_quick_quote_details.Rows[e.RowIndex].Cells[QuickQuoteDGV.DISCOUNT].Value.ToString();
 
 
                 if (qty_cell != null && unit_price_cell != null && discount_cell != null)
@@ -246,7 +356,7 @@ namespace smpc_sales_app.Pages.Sales
 
                     int qty = int.Parse(this.dgv_quick_quote_details.Rows[e.RowIndex].Cells[QuickQuoteDGV.QTY].Value.ToString());
                     decimal unitPrice = decimal.Parse(this.dgv_quick_quote_details.Rows[e.RowIndex].Cells[QuickQuoteDGV.UNIT_PRICE].Value.ToString());
-                    string discountPercent = this.dgv_quick_quote_details.Rows[e.RowIndex].Cells[QuickQuoteDGV.DISCOUNT].Value.ToString();
+                    string discountPercent = this.dgv_quick_quote_details.Rows[e.RowIndex].Cells[QuickQuoteDGV.DISCOUNT].Value == null ? "0" : dgv_quick_quote_details.Rows[e.RowIndex].Cells[QuickQuoteDGV.DISCOUNT].Value.ToString();
 
                     DGVComputation DgvComputation = new DGVComputation(qty, unitPrice, discountPercent);
                     DgvComputation.ComputeQuickQuote();
@@ -301,30 +411,40 @@ namespace smpc_sales_app.Pages.Sales
                     }
                 }
 
-     
+
             }
             catch (Exception ex)
             {
 
             }
         }
+
+
+
         private void QuickQuotesDgvDefaultValues()
         {
-            
-            //// Set the initial row count to 20
-            //this.dgv_quick_quote_details.RowCount = 1;
 
-            //// Optionally, you can add default data to the rows
-            for (int i = 0; i < 1; i++)
+            //// Set the initial row count to 20
+            this.dgv_quick_quote_details.RowCount = 1;
+
+         
+            if (this.dgv_quick_quote_details.RowCount == 1)
+            {
+                this.dgv_quick_quote_details.Rows.Add();
+            }
+
+            // Optionally, you can add default data to the rows
+            for (int i = 0; i <= this.dgv_quick_quote_details.RowCount; i++)
             {
                 //this.dgv_quick_quote_details.Rows[i].Cells[QuickQuoteDGV.QTY].Value = $"1";
-                //this.dgv_quick_quote_details.Rows[i].Cells[QuickQuoteDGV.UNIT_MEASURE].Value = "COD";
-                this.dgv_quick_quote_details.Rows[i].Cells[QuickQuoteDGV.UNIT_PRICE].Value = $"0.00";
-                this.dgv_quick_quote_details.Rows[i].Cells[QuickQuoteDGV.DISCOUNT].Value = $"0";
-                //this.dgv_quick_quote_details.Rows[i].Cells[QuickQuoteDGV.DISCOUNT_AMOUNT].Value = $"0.00";
-                //this.dgv_quick_quote_details.Rows[i].Cells[QuickQuoteDGV.NET_AMOUNT].Value = $"0.00";
-                //this.dgv_quick_quote_details.Rows[i].Cells[QuickQuoteDGV.NET_DISCOUNT].Value = $"0.00";
-                //this.dgv_quick_quote_details.Rows[i].Cells[QuickQuoteDGV.LINE_TOTAL].Value = $"0.00";
+                this.dgv_quick_quote_details.Rows[i].Cells[QuickQuoteDGV.UNIT_MEASURE].Value = 2;
+                //MessageBox.Show("test");
+                this.dgv_quick_quote_details.Rows[i].Cells[QuickQuoteDGV.UNIT_PRICE].Value = 0;
+                this.dgv_quick_quote_details.Rows[i].Cells[QuickQuoteDGV.DISCOUNT].Value = 50;
+                this.dgv_quick_quote_details.Rows[i].Cells[QuickQuoteDGV.DISCOUNT_AMOUNT].Value = 0;
+                this.dgv_quick_quote_details.Rows[i].Cells[QuickQuoteDGV.NET_AMOUNT].Value = 0;
+                this.dgv_quick_quote_details.Rows[i].Cells[QuickQuoteDGV.NET_DISCOUNT].Value = 0;
+                this.dgv_quick_quote_details.Rows[i].Cells[QuickQuoteDGV.LINE_TOTAL].Value = 0;
             }
         }
 
@@ -348,29 +468,29 @@ namespace smpc_sales_app.Pages.Sales
             cmb_payment_terms.DisplayMember = "code";
             cmb_payment_terms.ValueMember = "id";
 
-            //cmb_ship_to.DataSource = CacheData.PaymentTerms;
-            //cmb_ship_to.DisplayMember = "code";
-            //cmb_ship_to.ValueMember = "id";
+            cmb_ship_to.DataSource = CacheData.PaymentTerms;
+            cmb_ship_to.DisplayMember = "code";
+            cmb_ship_to.ValueMember = "id";
 
-            //cmb_bill_to.DataSource = CacheData.PaymentTerms;
-            //cmb_bill_to.DisplayMember = "code";
-            //cmb_bill_to.ValueMember = "id";
+            cmb_bill_to.DataSource = CacheData.PaymentTerms;
+            cmb_bill_to.DisplayMember = "code";
+            cmb_bill_to.ValueMember = "id";
 
             cmb_application.DataSource = CacheData.ApplicationSetup;
             cmb_application.DisplayMember = "code";
             cmb_application.ValueMember = "id";
-            
-            //cmb_purpose.DataSource = STATIC_QUOTATION_PURPOSE.LIST();
-            //cmb_purpose.DisplayMember = "code";
-            //cmb_purpose.ValueMember = "title";
 
-            //cmb_ship_type.DataSource = STATIC_SHIPPED_TYPE.LIST();
-            //cmb_ship_type.DisplayMember = "code";
-            //cmb_ship_type.ValueMember = "title";
+            cmb_purpose.DataSource = STATIC_QUOTATION_PURPOSE.LIST();
+            cmb_purpose.DisplayMember = "code";
+            cmb_purpose.ValueMember = "title";
 
-            //unit.DataSource = STATIC_SHIPPED_TYPE.LIST();
-            //unit.DisplayMember = "title";
-            //unit.ValueMember = "value";
+            cmb_ship_type.DataSource = STATIC_SHIPPED_TYPE.LIST();
+            cmb_ship_type.DisplayMember = "code";
+            cmb_ship_type.ValueMember = "title";
+
+            unit.DataSource = STATIC_SHIPPED_TYPE.LIST();
+            unit.DisplayMember = "title";
+            unit.ValueMember = "value";
 
             //DataTable dtQuotationDetails = ds_quick_quote.Tables["quotation_details"];
 
@@ -385,9 +505,10 @@ namespace smpc_sales_app.Pages.Sales
             //    dtQuotationDetails.Rows.Add(newRow);
             //}
 
-            //var data = ds_quick_quote.Tables["quotation_details"];
+            var data = ds_quick_quote.Tables["quotation_details"];
 
-            //var combobox = (DataGridViewComboBoxColumn)dgv_quick_quote_details.Columns["unit"];
+            bs_unit.DataSource = CacheData.PaymentTerms;
+            //var combobox = (DataGridViewComboBoxColumn)dgv_quick_quote_details.Columns["cmb_unit_code"];
             //combobox.DataSource = CacheData.PaymentTerms;
             //combobox.DisplayMember = "code";
             //combobox.ValueMember = "id";
@@ -395,6 +516,32 @@ namespace smpc_sales_app.Pages.Sales
             fetchQuotationDetails();
             
         }
+
+
+        private void DisplayColumnNames()
+        {
+            // Create a list or string to store column names
+            List<string> columnNames = new List<string>();
+
+            // Iterate through the columns of the DataGridView
+            foreach (DataGridViewColumn column in dgv_quick_quote_details.Columns)
+            {
+                // Add the column name to the list
+                columnNames.Add(column.Name);
+            }
+
+            // Display the column names (e.g., in a MessageBox or Console)
+            string allColumnNames = string.Join(Environment.NewLine, columnNames);
+            MessageBox.Show("Column Names:" + Environment.NewLine + allColumnNames, "Column Names");
+
+            // Alternatively, print to the console
+            Console.WriteLine("Column Names:");
+            foreach (string name in columnNames)
+            {
+                Console.WriteLine(name);
+            }
+        }
+
 
         private void bind(bool isBind = false) 
         {
@@ -407,7 +554,10 @@ namespace smpc_sales_app.Pages.Sales
 
                 DataView dataview = new DataView(this.childList);
                 dataview.RowFilter = "based_id = '" + this.transactionList.Rows[this.SelectedRow]["id"].ToString() + "'";
-                dgv_quick_quote_details.DataSource = dataview;
+                //dgv_quick_quotes_show.DataSource = dataview;
+                 
+                bs_quick_quotes_details.DataSource = dataview;
+                //dgv_quick_quote_details.DataSource = dataview;
             }
         }
 
@@ -443,18 +593,63 @@ namespace smpc_sales_app.Pages.Sales
 
         private void btn_new_Click_1(object sender, EventArgs e)
         {
+
+            Helpers.ResetControls(pnl_header);
+            Helpers.ResetControls(pnl_footer);
+
             pnl_header.Enabled = true;
             pnl_footer.Enabled = true;
 
             toolstrip_quotation.Enabled = false;
             dgv_quick_quote_details.Enabled = true;
+            //dgv_quick_quote_details.DataSource = null;
+            //dgv_quick_quotes_show.Visible = false;
+            //dgv_quick_quotes_show.Enabled = false;
 
+
+            //clears the source
+            //dgv_quick_quote_details = new DataGridView(); 
+            bs_quick_quotes_details.DataSource = childList.Clone();
+            bind(false);
             // CALL THE DEFAULT VALUES OF DATAGRIDVIEW
+            DocumentIncrementer();
             //this.QuickQuotesDgvDefaultValues();
-            dgv_quick_quote_details.Enabled = true;
-            //bind(true);
-            toolstrip_quotation.Enabled = false;
         }
+
+        //// CREATE DEFAULT DT STRUCT
+        //private DataTable CreateDefaultDataTableStructure()
+        //{
+        //    // Create a new DataTable
+        //    DataTable defaultTable = new DataTable();
+
+        //    // Add columns with their data types
+        //    defaultTable.Columns.Add("id", typeof(int)); // Assuming 'id' is an integer
+        //    defaultTable.Columns.Add("based_id", typeof(int)); // Assuming 'based_id' is an integer
+        //    defaultTable.Columns.Add("item_id", typeof(int)); // Assuming 'item_id' is an integer
+        //    defaultTable.Columns.Add("ItemCode", typeof(string)); // Assuming 'ItemCode' is a string
+        //    defaultTable.Columns.Add("ItemName", typeof(string)); // Assuming 'ItemName' is a string
+        //    defaultTable.Columns.Add("qty", typeof(decimal)); // Assuming 'qty' is a decimal
+        //    defaultTable.Columns.Add("unit", typeof(string)); // Assuming 'unit' is a string
+        //    defaultTable.Columns.Add("unit_price", typeof(decimal)); // Assuming 'unit_price' is a decimal
+        //    defaultTable.Columns.Add("percent_discount", typeof(decimal)); // Assuming 'percent_discount' is a decimal
+        //    defaultTable.Columns.Add("amount_discounted", typeof(decimal)); // Assuming 'amount_discounted' is a decimal
+        //    defaultTable.Columns.Add("net_discount", typeof(decimal)); // Assuming 'net_discount' is a decimal
+        //    defaultTable.Columns.Add("net_total", typeof(decimal)); // Assuming 'net_total' is a decimal
+        //    defaultTable.Columns.Add("line_total", typeof(decimal)); // Assuming 'line_total' is a decimal
+
+        //    return defaultTable;
+        //}
+
+        //private void BindDefaultStructureToDataGridView()
+        //{
+        //    // Create the default DataTable structure
+        //    DataTable defaultTable = CreateDefaultDataTableStructure();
+
+        //    // Bind the DataTable to the DataGridView
+        //    dgv_quick_quote_details.DataSource = defaultTable;
+        //}
+
+
 
         private void btn_new_version_Click(object sender, EventArgs e)
         {
@@ -495,16 +690,18 @@ namespace smpc_sales_app.Pages.Sales
         }
     }
 
+   
+
     static class QuickQuoteDGV
     {
-        public static int QTY = 2;
-        public static int UNIT_MEASURE = 3;
-        public static int UNIT_PRICE = 4;
-        public static int DISCOUNT = 5;
-        public static int DISCOUNT_AMOUNT = 6;
-        public static int NET_DISCOUNT = 7;
-        public static int NET_AMOUNT = 8;
-        public static int LINE_TOTAL = 9;
+        public static int QTY = 5;
+        public static int UNIT_MEASURE = 6;
+        public static int UNIT_PRICE = 7;
+        public static int DISCOUNT = 8;
+        public static int DISCOUNT_AMOUNT = 9;
+        public static int NET_DISCOUNT = 10;
+        public static int NET_AMOUNT = 11;
+        public static int LINE_TOTAL = 12;
     }
 
     class DGVComputation
@@ -553,5 +750,7 @@ namespace smpc_sales_app.Pages.Sales
                 throw;
             }
         }
+
+
     }
 }
