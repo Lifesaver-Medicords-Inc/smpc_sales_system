@@ -16,6 +16,7 @@ namespace smpc_sales_app.Services.Sales
     static class QuotationService
     {
         static string url = "/sales/quotation";
+        static string url_child = "/sales/child/quotation";
 
 
         // GET
@@ -52,14 +53,14 @@ namespace smpc_sales_app.Services.Sales
             return response;
         }
 
-        // DELETE
-        public static async Task<Boolean> Delete(Dictionary<string, dynamic> data)
-        {
-            var response = await RequestToApi<ApiResponseModel<bool>>.Delete(url, data);
-            var isSuccess = response.Success;
 
-            return isSuccess;
+        public static async Task<ApiResponseModel> InsertChild(Dictionary<string, dynamic> data)
+        {
+            var response = await RequestToApi<ApiResponseModel>.Post(url_child, data);
+            return response;
         }
+
+
 
         // UPDATE
         public static async Task<ApiResponseModel> Update(Dictionary<string, dynamic> data)

@@ -9,9 +9,13 @@ namespace smpc_sales_system.Services.Sales.Models
     class SalesQuotationList
     {
         //public List<SalesQuotationModel> SalesQuotationModel { get; set; }
+
+        // PARENT
         public List<SalesQuotationModel> SalesQuotation { get; set; }
 
-        public List<SalesQuotationQuicks> QuickQuote { get; set; }
+
+        // CHILD
+        public List<SalesQuotationQuicks> SalesQuotationQuick { get; set; }
 
     }
 }
