@@ -1,4 +1,5 @@
 ﻿using smpc_sales_app.Pages.Sales;
+using smpc_sales_system.Pages.Sales;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -32,11 +33,12 @@ namespace smpc_sales_app.Services
             // TRANSACTIONS 
             { "Sales Quotation", new Quotation() },
             { "Sales Order", new Orders() },
+            { "Opportunities", new Opportunities() },
 
             // application setup transaction
             { "Application Setup", new Applications() },
             { "Ship Type Setup", new ShipTypeSetup() }
-            
+
 
         };
 

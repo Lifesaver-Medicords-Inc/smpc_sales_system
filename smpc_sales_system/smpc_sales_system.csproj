@@ -92,6 +92,12 @@
     <Compile Include="Pages\Sales\Applications.Designer.cs">
       <DependentUpon>Applications.cs</DependentUpon>
     </Compile>
+    <Compile Include="Pages\Sales\Opportunities.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Pages\Sales\Opportunities.Designer.cs">
+      <DependentUpon>Opportunities.cs</DependentUpon>
+    </Compile>
     <Compile Include="Pages\Sales\Orders.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -134,7 +140,9 @@
     <Compile Include="Services\Sales\ItemService.cs" />
     <Compile Include="Services\Sales\Models\ApplicationModel.cs" />
     <Compile Include="Services\Sales\Models\BpiCustomer.cs" />
+    <Compile Include="Services\Sales\Models\Combined.cs" />
     <Compile Include="Services\Sales\Models\GetBpiList.cs" />
+    <Compile Include="Services\Sales\Models\OpportunityModel.cs" />
     <Compile Include="Services\Sales\Models\OrderDetailsModel.cs" />
     <Compile Include="Services\Sales\Models\OrderList.cs" />
     <Compile Include="Services\Sales\Models\OrderModel.cs" />
@@ -142,6 +150,7 @@
     <Compile Include="Services\Sales\Models\SalesQuotationQuick.cs" />
     <Compile Include="Services\Sales\Models\SalesQuotationList.cs" />
     <Compile Include="Services\Sales\Models\ShipModel.cs" />
+    <Compile Include="Services\Sales\OpportunityService.cs" />
     <Compile Include="Services\Sales\OrderService.cs" />
     <Compile Include="Services\Sales\QuotationService.cs" />
     <Compile Include="Services\Sales\ShipService.cs" />
@@ -160,6 +169,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Pages\Sales\Applications.resx">
       <DependentUpon>Applications.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Pages\Sales\Opportunities.resx">
+      <DependentUpon>Opportunities.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Pages\Sales\Orders.resx">
       <DependentUpon>Orders.cs</DependentUpon>
