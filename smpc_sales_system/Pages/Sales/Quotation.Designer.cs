@@ -30,27 +30,31 @@ namespace smpc_sales_app.Pages.Sales
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
+ 
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Quotation));
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle9 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle10 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle11 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle12 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle13 = new System.Windows.Forms.DataGridViewCellStyle();
+ 
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
+ 
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle5 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle6 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle7 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle8 = new System.Windows.Forms.DataGridViewCellStyle();
+ 
             this.panel1 = new System.Windows.Forms.Panel();
             this.label1 = new System.Windows.Forms.Label();
             this.panel3 = new System.Windows.Forms.Panel();
             this.tabControl = new System.Windows.Forms.TabControl();
             this.quick_tab = new System.Windows.Forms.TabPage();
-            this.dgv_quick_quote_details = new System.Windows.Forms.DataGridView();
-            this.bs_quick_quotes_details = new System.Windows.Forms.BindingSource(this.components);
+            this.dgv_quick_quote_details = new System.Windows.Forms.DataGridView(); 
+            this.bs_quick_quotes_details = new System.Windows.Forms.BindingSource(this.components); 
             this.ds_quick_quote = new System.Data.DataSet();
             this.dataTable1 = new System.Data.DataTable();
             this.based_id = new System.Data.DataColumn();
@@ -63,9 +67,9 @@ namespace smpc_sales_app.Pages.Sales
             this.dataColumn8 = new System.Data.DataColumn();
             this.dataTable2 = new System.Data.DataTable();
             this.id = new System.Data.DataColumn();
-            this.code = new System.Data.DataColumn();
+            this.code = new System.Data.DataColumn(); 
             this.dataTable3 = new System.Data.DataTable();
-            this.dataColumn1 = new System.Data.DataColumn();
+            this.dataColumn1 = new System.Data.DataColumn(); 
             this.project_tab = new System.Windows.Forms.TabPage();
             this.panel7 = new System.Windows.Forms.Panel();
             this.tabControl2 = new System.Windows.Forms.TabControl();
@@ -225,6 +229,7 @@ namespace smpc_sales_app.Pages.Sales
             this.net_discount = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.net_total = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.line_total = new System.Windows.Forms.DataGridViewTextBoxColumn();
+ 
             this.Column2 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.basedidDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Column3 = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -237,6 +242,7 @@ namespace smpc_sales_app.Pages.Sales
             this.nettotalDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.linetotalDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.itemclassidDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+ 
             this.panel1.SuspendLayout();
             this.panel3.SuspendLayout();
             this.tabControl.SuspendLayout();
@@ -348,8 +354,7 @@ namespace smpc_sales_app.Pages.Sales
             this.dgv_quick_quote_details.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgv_quick_quote_details_CellClick);
             this.dgv_quick_quote_details.CellEndEdit += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgv_quick_quote_details_CellEndEdit);
             this.dgv_quick_quote_details.KeyUp += new System.Windows.Forms.KeyEventHandler(this.dgv_quick_quote_details_KeyUp);
-            // 
-            // bs_quick_quotes_details
+            //  
             // 
             this.bs_quick_quotes_details.DataMember = "tbl_quick_quote_details";
             this.bs_quick_quotes_details.DataSource = this.ds_quick_quote;
@@ -421,8 +426,7 @@ namespace smpc_sales_app.Pages.Sales
             // code
             // 
             this.code.ColumnName = "code";
-            // 
-            // dataTable3
+            //   
             // 
             this.dataTable3.Columns.AddRange(new System.Data.DataColumn[] {
             this.dataColumn1});
@@ -1448,6 +1452,20 @@ namespace smpc_sales_app.Pages.Sales
             this.pnl_header.Name = "pnl_header";
             this.pnl_header.Size = new System.Drawing.Size(1028, 232);
             this.pnl_header.TabIndex = 77;
+            this.pnl_header.Paint += new System.Windows.Forms.PaintEventHandler(this.pnl_header_Paint);
+            // 
+            // btn_add_customer
+            // 
+            this.btn_add_customer.BackColor = System.Drawing.SystemColors.Control;
+            this.btn_add_customer.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("btn_add_customer.BackgroundImage")));
+            this.btn_add_customer.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.btn_add_customer.FlatAppearance.BorderSize = 0;
+            this.btn_add_customer.Location = new System.Drawing.Point(286, 11);
+            this.btn_add_customer.Name = "btn_add_customer";
+            this.btn_add_customer.Size = new System.Drawing.Size(30, 23);
+            this.btn_add_customer.TabIndex = 108;
+            this.btn_add_customer.UseVisualStyleBackColor = false;
+            this.btn_add_customer.Click += new System.EventHandler(this.button1_Click);
             // 
             // btn_add_customer
             // 
@@ -1933,7 +1951,7 @@ namespace smpc_sales_app.Pages.Sales
             this.btn_next.Image = ((System.Drawing.Image)(resources.GetObject("btn_next.Image")));
             this.btn_next.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.btn_next.Name = "btn_next";
-            this.btn_next.Size = new System.Drawing.Size(51, 22);
+            this.btn_next.Size = new System.Drawing.Size(52, 22);
             this.btn_next.Text = "Next";
             this.btn_next.Click += new System.EventHandler(this.btn_next_Click);
             // 
@@ -2029,7 +2047,7 @@ namespace smpc_sales_app.Pages.Sales
             this.line_total.HeaderText = "LINE TOTAL";
             this.line_total.Name = "line_total";
             this.line_total.ReadOnly = true;
-            // 
+            //  
             // Column2
             // 
             this.Column2.DataPropertyName = "id";
@@ -2133,7 +2151,7 @@ namespace smpc_sales_app.Pages.Sales
             this.itemclassidDataGridViewTextBoxColumn.DefaultCellStyle = dataGridViewCellStyle8;
             this.itemclassidDataGridViewTextBoxColumn.HeaderText = "LINE TOTAL";
             this.itemclassidDataGridViewTextBoxColumn.Name = "itemclassidDataGridViewTextBoxColumn";
-            // 
+            //  
             // Quotation
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);

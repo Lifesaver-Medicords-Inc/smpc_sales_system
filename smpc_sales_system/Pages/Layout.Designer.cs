@@ -36,6 +36,7 @@ namespace smpc_sales_app.Pages
             System.Windows.Forms.TreeNode treeNode5 = new System.Windows.Forms.TreeNode("Business Partners");
             System.Windows.Forms.TreeNode treeNode6 = new System.Windows.Forms.TreeNode("Application Setup");
             System.Windows.Forms.TreeNode treeNode7 = new System.Windows.Forms.TreeNode("Ship Type Setup");
+            System.Windows.Forms.TreeNode treeNode8 = new System.Windows.Forms.TreeNode("Opportunities");
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Layout));
             this.tabContainer = new System.Windows.Forms.TabControl();
             this.panel3 = new System.Windows.Forms.Panel();
@@ -88,6 +89,8 @@ namespace smpc_sales_app.Pages
             treeNode6.Text = "Application Setup";
             treeNode7.Name = "Ship Type Setup";
             treeNode7.Text = "Ship Type Setup";
+            treeNode8.Name = "Opportunities";
+            treeNode8.Text = "Opportunities";
             this.Sidebar.Nodes.AddRange(new System.Windows.Forms.TreeNode[] {
             treeNode1,
             treeNode2,
@@ -95,7 +98,8 @@ namespace smpc_sales_app.Pages
             treeNode4,
             treeNode5,
             treeNode6,
-            treeNode7});
+            treeNode7,
+            treeNode8});
             this.Sidebar.Size = new System.Drawing.Size(200, 450);
             this.Sidebar.TabIndex = 0;
             this.Sidebar.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.Sidebar_AfterSelect);
