@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using smpc_sales_app.Models;
+using smpc_sales_system.Services.Sales.Models;
 
 namespace smpc_sales_app.Services.Helpers
 {
@@ -53,11 +54,7 @@ namespace smpc_sales_app.Services.Helpers
             return dataTable;
         }
 
-        internal static DataTable ToDatatable(List<ItemModel> data)
-        {
-            throw new NotImplementedException();
-        }
-
+   
         public static DataTable ToDataTable<T>(List<T> items)
         {
             var dataTable = new DataTable();

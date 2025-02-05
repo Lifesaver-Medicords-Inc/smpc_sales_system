@@ -28,6 +28,45 @@ namespace smpc_app.Services.Helpers
                 }
             }
         }
+
+        public static void ReadOnlyControls(Panel[] pnl_list)
+        {
+            foreach (Panel pnl in pnl_list)
+            {
+                foreach (Control ctrl in pnl.Controls)
+                {
+                    if (ctrl is TextBox)
+                    {
+                        ((TextBox)ctrl).ReadOnly = true;
+                    }
+                    if (ctrl is Button)
+                    {
+                        ((Button)ctrl).Enabled = false;
+                    }
+                }
+            }
+        }
+
+        public static void ResetReadOnlyControls(Panel[] pnl_list)
+        {
+            foreach (Panel pnl in pnl_list)
+            {
+                foreach (Control ctrl in pnl.Controls)
+                {
+                    if (ctrl is TextBox)
+                    {
+                        ((TextBox)ctrl).ReadOnly = false;
+                    }
+                    if (ctrl is Button)
+                    {
+                        ((Button)ctrl).Enabled = true;
+                    }
+                }
+            }
+        }
+
+
+
         public static Dictionary<string, dynamic> GetControlsValues(Panel pnl)
         {
             Dictionary<string,dynamic> values = new Dictionary<string, dynamic>();
