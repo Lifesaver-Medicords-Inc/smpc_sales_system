@@ -18,7 +18,6 @@ namespace smpc_sales_system.Models
     {
 
         public int based_id { get; set; }
-        //public int social_id { get; set; }
         public string branch_name { get; set; }
         public string customer_code { get; set; }
     }

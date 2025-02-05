@@ -34,13 +34,14 @@ namespace smpc_sales_app.Pages
             this.pnl_dgv = new System.Windows.Forms.Panel();
             this.dgv_itemList = new System.Windows.Forms.DataGridView();
             this.id = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Column1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.item_code = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.item_name = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.item_price = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.desc = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.ds_item_list = new System.Data.DataSet();
             this.pnl_title.SuspendLayout();
             this.pnl_dgv.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgv_itemList)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.ds_item_list)).BeginInit();
             this.SuspendLayout();
             // 
             // pnl_title
@@ -75,10 +76,9 @@ namespace smpc_sales_app.Pages
             this.dgv_itemList.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dgv_itemList.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.id,
+            this.Column1,
             this.item_code,
-            this.item_name,
-            this.item_price,
-            this.desc});
+            this.item_name});
             this.dgv_itemList.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dgv_itemList.Location = new System.Drawing.Point(0, 0);
             this.dgv_itemList.MultiSelect = false;
@@ -95,6 +95,15 @@ namespace smpc_sales_app.Pages
             this.id.HeaderText = "id";
             this.id.Name = "id";
             this.id.ReadOnly = true;
+            this.id.Visible = false;
+            // 
+            // Column1
+            // 
+            this.Column1.DataPropertyName = "item_name_id";
+            this.Column1.HeaderText = "NAME ID";
+            this.Column1.Name = "Column1";
+            this.Column1.ReadOnly = true;
+            this.Column1.Visible = false;
             // 
             // item_code
             // 
@@ -107,25 +116,14 @@ namespace smpc_sales_app.Pages
             // item_name
             // 
             this.item_name.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.item_name.DataPropertyName = "item_name_id";
+            this.item_name.DataPropertyName = "item_name";
             this.item_name.HeaderText = "ITEM NAME";
             this.item_name.Name = "item_name";
             this.item_name.ReadOnly = true;
             // 
-            // item_price
+            // ds_item_list
             // 
-            this.item_price.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.item_price.DataPropertyName = "unit_price";
-            this.item_price.HeaderText = "UNIT PRICE";
-            this.item_price.Name = "item_price";
-            this.item_price.ReadOnly = true;
-            // 
-            // desc
-            // 
-            this.desc.DataPropertyName = "long_desc";
-            this.desc.HeaderText = "desc";
-            this.desc.Name = "desc";
-            this.desc.ReadOnly = true;
+            this.ds_item_list.DataSetName = "ds_item_list";
             // 
             // ItemModal
             // 
@@ -141,6 +139,7 @@ namespace smpc_sales_app.Pages
             this.pnl_title.PerformLayout();
             this.pnl_dgv.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.dgv_itemList)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.ds_item_list)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -152,9 +151,9 @@ namespace smpc_sales_app.Pages
         private System.Windows.Forms.Panel pnl_dgv;
         private System.Windows.Forms.DataGridView dgv_itemList;
         private System.Windows.Forms.DataGridViewTextBoxColumn id;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Column1;
         private System.Windows.Forms.DataGridViewTextBoxColumn item_code;
         private System.Windows.Forms.DataGridViewTextBoxColumn item_name;
-        private System.Windows.Forms.DataGridViewTextBoxColumn item_price;
-        private System.Windows.Forms.DataGridViewTextBoxColumn desc;
+        private System.Data.DataSet ds_item_list;
     }
 }
