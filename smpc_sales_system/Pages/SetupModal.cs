@@ -1,4 +1,6 @@
-﻿using smpc_sales_app.Services.Sales;
+﻿using smpc_sales_app.Services.Helpers;
+using smpc_sales_app.Services.Sales;
+using smpc_sales_system.Services.Sales.Models;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -13,12 +15,14 @@ namespace smpc_sales_app.Pages
 {
     public partial class SetupModal : Form
     {
+        private DataTable Dt { get; set; }
         public string SetupTitle { get; set; }
-        public SetupModal(string setupTitle)
+        int result;
+        public SetupModal(string setupTitle, DataTable dt)
         {
             InitializeComponent();
             lbl_setup_title.Text = setupTitle;
-            
+            this.Dt = dt;
         }
 
         public SetupModal()
@@ -32,26 +36,72 @@ namespace smpc_sales_app.Pages
             this.Close();
         }
 
-        private async void FetchData()
+        public DataTable transactionList { get; set; } = new DataTable();
+        private async void fetchQuotationDetails()
         {
-            // 
-            // try catch block to catch errors
-            //
-            try
+
+
+            var data = Dt;
+
+            if (data != null)
             {
-                var data = await ApplicationService.GetAsDatatable();
-                dgv_application_setup.DataSource = data;
+                bindQuotation(true);
             }
-            catch (Exception ex )
-            {
-                MessageBox.Show($"An error occurred: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-            
         }
 
+        private void bindQuotation(bool isBind = false)
+        {
+            if (isBind)
+            {
+                DataView dataview = new DataView(Dt);
+
+                foreach (DataRow row in this.transactionList.Rows)
+                {
+                    if (row["document_no"] != DBNull.Value)
+                    {
+                        string documentNo = row["document_no"].ToString();
+
+                        if (!documentNo.StartsWith("Q#"))
+                        {
+                            row["document_no"] = "Q#" + documentNo;
+                        }
+                    }
+                }
+
+                dgv_application_setup.DataSource = dataview;
+
+                //de other columns if they exist
+                foreach (DataGridViewColumn column in dgv_application_setup.Columns)
+                {
+                    if (column.Name != "document_no" && column.Name != "customer_name" && column.Name != "date" &&
+                        column.Name != "tag" && column.Name != "project_name" && column.Name != "client_req" &&
+                        column.Name != "value" && column.Name != "last_update" && column.Name != "stage" &&
+                        column.Name != "status" && column.Name != "special_deal")
+                    {
+                        column.Visible = false;
+                    }
+                }
+            }
+        }
+
+      
         private void SetupModal_Load(object sender, EventArgs e)
         {
-            FetchData();
+            fetchQuotationDetails();
+        }
+        public int GetResult()
+        {
+            return result;
+        }
+        private void dgv_application_setup_CellContentDoubleClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex >= 0)
+            {
+                this.result = e.RowIndex;
+                this.DialogResult = DialogResult.OK;
+                this.Close();
+            }
+
         }
     }
 }

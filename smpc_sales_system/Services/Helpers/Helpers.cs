@@ -69,30 +69,37 @@ namespace smpc_app.Services.Helpers
 
         public static Dictionary<string, dynamic> GetControlsValues(Panel pnl)
         {
-            Dictionary<string,dynamic> values = new Dictionary<string, dynamic>();
+            Dictionary<string, dynamic> values = new Dictionary<string, dynamic>();
             foreach (Control control in pnl.Controls)
             {
                 // Check if the control is a TextBox
                 if (control is TextBox textBox)
                 {
                     string key = textBox.Name.Replace("txt_", "");
-                    string val = "";
+                    dynamic val = null; 
 
-                    if (textBox.Tag == "MONEY")
+                    if (textBox.Tag != null && textBox.Tag.ToString() == "MONEY")
                     {
-
-                        val = String.Format("{0}", textBox.Text.ToString().Replace(",", ""));
+                        bool isParsed = decimal.TryParse(textBox.Text.ToString().Replace(",", ""), out decimal tempVal);
+                        if (isParsed)
+                        {
+                            val = tempVal; 
+                        }
+                        else
+                        {
+                            MessageBox.Show("Invalid money format. Please enter a valid number.");
+                            val = 0; 
+                        }
                     }
                     else
                     {
-                        val = String.Format("{0}", textBox.Text.ToString());
+                        val = textBox.Text.ToString();
                     }
-                    values.Add(key, val);
+                    values[key] = val;
                 }
 
-
-                // Check if the control is a Combobox
-                if (control is ComboBox comboBox)
+            // Check if the control is a Combobox
+            if (control is ComboBox comboBox)
                 {
                     string key = comboBox.Name.Replace("cmb_", "");
                     string val = "";
@@ -149,143 +156,86 @@ namespace smpc_app.Services.Helpers
 
             return values;
         }
-        public static Dictionary<string, dynamic> GetControlsValues(Panel pnl1, Panel pnl2)
+
+        public static Dictionary<string, dynamic> GetControlsValues(Panel[] pnl1)
         { 
             Dictionary<string, dynamic> values = new Dictionary<string, dynamic>();
-            foreach (Control control in pnl1.Controls)
+
+            foreach (Panel pnl in pnl1)
             {
-                // Check if the control is a TextBox
-                if (control is TextBox textBox)
+                foreach (Control control in pnl.Controls)
                 {
-                    string key = textBox.Name.Replace("txt_", "");
-                    dynamic val = "";
-
-                    if (textBox.Tag == "MONEY")
-                    { 
-                        val = String.Format("{0}", textBox.Text.ToString().Replace(",",""));
-                    }
-                    else
+                    // Check if the control is a TextBox
+                    if (control is TextBox textBox)
                     {
-                        float newValue = 0;
-                        Boolean isNumber = float.TryParse(textBox.Text, out newValue);
+                        string key = textBox.Name.Replace("txt_", "");
+                        dynamic val = null;
 
-                        if (isNumber)
+                        if (textBox.Tag != null && textBox.Tag.ToString() == "MONEY")
                         {
-                            val = newValue;
+                            bool isParsed = decimal.TryParse(textBox.Text.ToString().Replace(",", ""), out decimal tempVal);
+                            if (isParsed)
+                            {
+                                val = tempVal;
+                            }
+                            else
+                            {
+                                MessageBox.Show("Invalid money format. Please enter a valid number.");
+                                val = 0;
+                            }
                         }
                         else
                         {
-                            val = String.Format("'{0}'", textBox.Text.ToString());
+                            val = textBox.Text.ToString();
                         }
-                    }
-                    values.Add(key, val);
+                        values[key] = val;
                 }
+        
 
-                // Check if the control is a Combobox
-                if (control is ComboBox comboBox)
-                {
-                    string key = comboBox.Name.Replace("cmb_", "");
-                    string val = "";
-                    if (string.IsNullOrEmpty(comboBox.Text))
+                    // Check if the control is a Combobox
+                    if (control is ComboBox comboBox)
                     {
-                        val = "";
+                        string key = comboBox.Name.Replace("cmb_", "");
+                        string val = "";
+                        if (string.IsNullOrEmpty(comboBox.Text))
+                        {
+                            val = "";
+                        }
+                        else
+                        {
+                            val = String.Format("'{0}'", comboBox.Text.ToString());
+                        }
+                        values.Add(key, val);
                     }
-                    else
+
+                    // Check if the control is a Checkbox
+                    if (control is CheckBox checkbox)
                     {
-                        val = String.Format("'{0}'", comboBox.Text.ToString());
+                        string key = checkbox.Name.Replace("chk_", "");
+                        string val = String.Format("{0}", checkbox.Checked ? 1 : 0);
+                        values.Add(key, val);
                     }
-                    values.Add(key, val);
-                }
 
-                // Check if the control is a Checkbox
-                if (control is CheckBox checkbox)
-                {
-                    string key = checkbox.Name.Replace("chk_", "");
-                    string val = String.Format("{0}", checkbox.Checked ? 1 : 0);
-                    values.Add(key, val);
-                }
+                    // Check if the control is a DATETIME PICKER
+                    if (control is DateTimePicker dateTimePicker)
+                    {
+                        string key = dateTimePicker.Name.Replace("dtp_", "");
 
-                // Check if the control is a DATETIME PICKER
-                if (control is DateTimePicker dateTimePicker)
-                {
-                    string key = dateTimePicker.Name.Replace("dtp_", "");
+                        string val = String.Format("'{0:yyyy-MM-dd}'", dateTimePicker.Value);
 
-                    string val = String.Format("'{0:yyyy-MM-dd}'", dateTimePicker.Value);
+                        //string val = String.Format("'{0}'", dateTimePicker.Value);
+                        values.Add(key, val);
+                    }
 
-                    //string val = String.Format("'{0}'", dateTimePicker.Value);
-                    values.Add(key, val);
-                }
-
-                // Check if the control is a NUMERIC
-                if (control is NumericUpDown numericUpDown)
-                {
-                    string key = numericUpDown.Name.Replace("txt_", "");
-                    string val = String.Format("'{0}'", numericUpDown.Value);
-                    values.Add(key, val);
+                    // Check if the control is a NUMERIC
+                    if (control is NumericUpDown numericUpDown)
+                    {
+                        string key = numericUpDown.Name.Replace("txt_", "");
+                        string val = String.Format("'{0}'", numericUpDown.Value);
+                        values.Add(key, val);
+                    }
                 }
             }
-            foreach (Control control in pnl2.Controls)
-            {
-                // Check if the control is a TextBox
-                if (control is TextBox textBox)
-                {
-                    string key = textBox.Name.Replace("txt_", "");
-                    string val = "";
-
-                    if (textBox.Tag == "MONEY")
-                    {
-
-                        val = String.Format("'{0}'", textBox.Text.ToString().Replace(",", ""));
-                    }
-                    else
-                    {
-                        val = String.Format("'{0}'", textBox.Text.ToString().Replace(",", ""));
-                    }
-                    values.Add(key, val);
-                }
-
-                // Check if the control is a Combobox
-                if (control is ComboBox comboBox)
-                {
-                    string key = comboBox.Name.Replace("cmb_", "");
-                    string val = "";
-                    if (string.IsNullOrEmpty(comboBox.Text))
-                    {
-                        val = "";
-                    }
-                    else
-                    {
-                        val = String.Format("'{0}'", comboBox.Text.ToString());
-                    }
-                    values.Add(key, val);
-                }
-
-                // Check if the control is a Checkbox
-                if (control is CheckBox checkbox)
-                {
-                    string key = checkbox.Name.Replace("chk_", "");
-                    string val = String.Format("{0}", checkbox.Checked ? 1 : 0);
-                    values.Add(key, val);
-                }
-
-                // Check if the control is a DATETIME PICKER
-                if (control is DateTimePicker dateTimePicker)
-                {
-                    string key = dateTimePicker.Name.Replace("dtp_", "");
-                    string val = String.Format("'{0}'", dateTimePicker.Value);
-                    values.Add(key, val);
-                }
-
-                // Check if the control is a NUMERIC
-                if (control is NumericUpDown numericUpDown)
-                {
-                    string key = numericUpDown.Name.Replace("num_", "");
-                    string val = String.Format("{0}", numericUpDown.Value);
-                    values.Add(key, val);
-                }
-
-            }
-
             return values;
         }
         public static Boolean ValidateControlsValues(Panel pnl)

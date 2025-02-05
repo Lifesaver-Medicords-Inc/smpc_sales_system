@@ -62,10 +62,6 @@ namespace smpc_sales_app.Services.Sales
             return quotationData;
         }
 
-
-
-
-   
         // POST: quotation
         public static async Task<ApiResponseModel> Insert(Dictionary<string, dynamic> data)
         {
