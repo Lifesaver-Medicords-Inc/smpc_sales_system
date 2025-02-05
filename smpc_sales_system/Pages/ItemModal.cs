@@ -1,4 +1,5 @@
 ﻿using smpc_sales_app.Pages.Sales;
+using smpc_sales_app.Services.Helpers;
 using smpc_sales_app.Services.Sales;
 using System;
 using System.Collections.Generic;
@@ -24,11 +25,14 @@ namespace smpc_sales_app.Pages
 
         private async void fetchData()
         {
-            var data = await ItemService.GetAsDataTable();
-            dgv_itemList.DataSource = data;
+            //var data = await ItemService.GetAsDataTable();
+            var data = await ItemService.GetItem();
+            var test = JsonHelper.ToDataTable(data.items);
 
+            dgv_itemList.DataSource = test;
         }
 
+        // load data
         private void ItemModal_Load(object sender, EventArgs e)
         {
             fetchData();
@@ -43,21 +47,20 @@ namespace smpc_sales_app.Pages
             {
                 
                 //string id =  dgv_itemList.Rows[e.RowIndex].Cells[0].Value.ToString();
-                string code = dgv_itemList.Rows[e.RowIndex].Cells[1].Value.ToString();
-                string name =  dgv_itemList.Rows[e.RowIndex].Cells[2].Value.ToString();
-                string unit_price =  dgv_itemList.Rows[e.RowIndex].Cells[3].Value.ToString();
-                string short_desc = dgv_itemList.Rows[e.RowIndex].Cells[4].Value.ToString();
+                string name_id = dgv_itemList.Rows[e.RowIndex].Cells[1].Value.ToString();
+                
 
                 Dictionary<string, string> data = new Dictionary<string, string>()
                 {
                     //{ "id", id},
-                    { "code", code },
-                    { "name" , name},
-                    { "unitprice", unit_price},
-                    { "short_desc", short_desc}
+                    //{ "code", name_id },
+                    //{ "name" , name},
+                    //{ "unitprice", unit_price},
+                    //{ "short_desc", short_desc}
                 };
                 this.result = data;
                 this.DialogResult = DialogResult.OK;
+                MessageBox.Show(name_id);
                 this.Close();
             }
         }

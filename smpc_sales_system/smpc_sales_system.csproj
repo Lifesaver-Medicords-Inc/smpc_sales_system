@@ -65,7 +65,7 @@
     <Compile Include="Models\ApplicationModel.cs" />
     <Compile Include="Models\BPI.cs" />
     <Compile Include="Models\bpi_list.cs" />
-    <Compile Include="Models\ItemModel.cs" />
+    <Compile Include="Models\ItemParent.cs" />
     <Compile Include="Models\PaymentTermsModel.cs" />
     <Compile Include="Models\QuotationModel.cs" />
     <Compile Include="Pages\ItemModal.cs">
@@ -138,11 +138,14 @@
     <Compile Include="Services\Sales\ApplicationService.cs" />
     <Compile Include="Services\Sales\BpiService.cs" />
     <Compile Include="Services\Sales\ItemService.cs" />
+    <Compile Include="Services\Sales\Models\AdditionalSpecsModel.cs" />
     <Compile Include="Services\Sales\Models\ApplicationModel.cs" />
     <Compile Include="Services\Sales\Models\BpiCustomer.cs" />
     <Compile Include="Services\Sales\Models\Combined.cs" />
-    <Compile Include="Services\Sales\Models\GetBpiList.cs" />
-    <Compile Include="Services\Sales\Models\OpportunityModel.cs" />
+    <Compile Include="Services\Sales\Models\GetBpiList.cs" /> 
+    <Compile Include="Services\Sales\Models\OpportunityModel.cs" /> 
+    <Compile Include="Services\Sales\Models\ItemModel.cs" />
+    <Compile Include="Services\Sales\Models\ItemSpecsModel.cs" /> 
     <Compile Include="Services\Sales\Models\OrderDetailsModel.cs" />
     <Compile Include="Services\Sales\Models\OrderList.cs" />
     <Compile Include="Services\Sales\Models\OrderModel.cs" />
