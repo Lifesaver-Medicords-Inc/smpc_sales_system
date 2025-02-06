@@ -28,7 +28,6 @@ namespace smpc_app.Services.Helpers
                 }
             }
         }
-
         public static void ReadOnlyControls(Panel[] pnl_list)
         {
             foreach (Panel pnl in pnl_list)
@@ -42,6 +41,15 @@ namespace smpc_app.Services.Helpers
                     if (ctrl is Button)
                     {
                         ((Button)ctrl).Enabled = false;
+                    }
+                    if (ctrl is ComboBox)
+                    {
+                        ((ComboBox)ctrl).DropDownStyle = ComboBoxStyle.Simple;
+                        ((ComboBox)ctrl).Enabled = false;
+                    }
+                    if (ctrl is DateTimePicker)
+                    {
+                        ((DateTimePicker)ctrl).Enabled = false;
                     }
                 }
             }
@@ -60,6 +68,15 @@ namespace smpc_app.Services.Helpers
                     if (ctrl is Button)
                     {
                         ((Button)ctrl).Enabled = true;
+                    }
+                    if (ctrl is ComboBox)
+                    {
+                        ((ComboBox)ctrl).DropDownStyle = ComboBoxStyle.DropDownList;
+                        ((ComboBox)ctrl).Enabled = true;
+                    }
+                    if (ctrl is DateTimePicker)
+                    {
+                        ((DateTimePicker)ctrl).Enabled = true;
                     }
                 }
             }
@@ -189,10 +206,10 @@ namespace smpc_app.Services.Helpers
                             val = textBox.Text.ToString();
                         }
                         values[key] = val;
-                }
+                    }
         
 
-                    // Check if the control is a Combobox
+                   
                     if (control is ComboBox comboBox)
                     {
                         string key = comboBox.Name.Replace("cmb_", "");
@@ -208,7 +225,7 @@ namespace smpc_app.Services.Helpers
                         values.Add(key, val);
                     }
 
-                    // Check if the control is a Checkbox
+                    
                     if (control is CheckBox checkbox)
                     {
                         string key = checkbox.Name.Replace("chk_", "");
@@ -216,18 +233,15 @@ namespace smpc_app.Services.Helpers
                         values.Add(key, val);
                     }
 
-                    // Check if the control is a DATETIME PICKER
+                   
                     if (control is DateTimePicker dateTimePicker)
                     {
                         string key = dateTimePicker.Name.Replace("dtp_", "");
-
                         string val = String.Format("'{0:yyyy-MM-dd}'", dateTimePicker.Value);
-
-                        //string val = String.Format("'{0}'", dateTimePicker.Value);
                         values.Add(key, val);
                     }
 
-                    // Check if the control is a NUMERIC
+                    
                     if (control is NumericUpDown numericUpDown)
                     {
                         string key = numericUpDown.Name.Replace("txt_", "");
@@ -278,9 +292,10 @@ namespace smpc_app.Services.Helpers
                         {
                             string column_name = col_name.ToString();
 
-                            // Check if the control is a TextBox
-                            if (control is TextBox textBox)
-                            { 
+                            // Check if the control is a TextBox 
+                            if (control is TextBox textBox && textBox.Name.Replace("txt_", "") == column_name)
+                            {
+                               
                                 string key = textBox.Name.Replace("txt_", "");  
                                  
                                 if (textBox.Tag == "money_format")
@@ -289,6 +304,8 @@ namespace smpc_app.Services.Helpers
                                 }
                                 else
                                 {
+                                    Console.WriteLine("TextBox Name: " + textBox.Name);
+                                    Console.WriteLine("customer_name: " + dt.Rows[selectedIndex][column_name]);
                                     textBox.Text = (string)dt.Rows[selectedIndex][column_name].ToString();
                                 }
                             }

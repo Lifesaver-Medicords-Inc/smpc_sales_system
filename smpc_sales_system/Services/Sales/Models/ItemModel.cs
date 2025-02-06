@@ -8,6 +8,7 @@ namespace smpc_inventory_app.Services.Setup.Model.Item
 {
     class ItemModel
     {
+
         public int id { get; set; }
         public int item_name_id { get; set; }
         public int item_model_id { get; set; }

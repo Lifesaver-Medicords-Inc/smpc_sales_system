@@ -39,8 +39,6 @@ namespace smpc_sales_app.Pages
         public DataTable transactionList { get; set; } = new DataTable();
         private async void fetchQuotationDetails()
         {
-
-
             var data = Dt;
 
             if (data != null)
