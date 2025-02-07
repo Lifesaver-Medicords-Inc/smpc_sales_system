@@ -22,9 +22,12 @@ namespace smpc_sales_app.Pages.Sales
             InitializeComponent();
         }
 
+
+        DataTable applicationData { get; set; }  = new DataTable();
         private async void FetchData()
         {
             var data = await ApplicationService.GetAsDatatable();
+            applicationData = data;
             dgv_application_setup.DataSource = data;
         }
 
@@ -62,24 +65,13 @@ namespace smpc_sales_app.Pages.Sales
             {
                 btn_edit.Enabled = true;
                 btn_delete.Enabled = true;
+                Panel[] pnl_list = {pnl_input};
+                Helpers.BindControls(pnl_list, applicationData, e.RowIndex);
 
-                var nameValue = dgv_application_setup.Rows[e.RowIndex].Cells["NAME"].Value;
-                var codeValue = dgv_application_setup.Rows[e.RowIndex].Cells["CODE"].Value;
-                var idValue = dgv_application_setup.Rows[e.RowIndex].Cells["ID"].Value;
-
-                if (nameValue != null)
-                {
-                    txt_code.Text = codeValue.ToString();
-                    txt_id.Text = idValue.ToString();
-                    txt_name.Text = nameValue.ToString();
-
-                    txt_code.Enabled = true;
-                    txt_name.Enabled = true;
-
-                    txt_code.ReadOnly = true;
-                    txt_name.ReadOnly = true;
-
-                }
+                txt_code.Enabled = true;
+                txt_name.Enabled = true;
+                txt_code.ReadOnly = true;
+                txt_name.ReadOnly = true;
             }
         }
 
@@ -95,25 +87,35 @@ namespace smpc_sales_app.Pages.Sales
         // SAVE (either new data or updating the data)
         private async void btn_save_Click(object sender, EventArgs e)
         {
-            
             var data = Helpers.GetControlsValues(pnl_input);
             ApiResponseModel response = new ApiResponseModel();
-            
+
             string errorMessage =
-                string.IsNullOrWhiteSpace(txt_code.Text) && string.IsNullOrWhiteSpace(txt_name.Text) ? "Code and Name cannot be empty." :
-                string.IsNullOrWhiteSpace(txt_code.Text) ? "Code cannot be empty." :
                 string.IsNullOrWhiteSpace(txt_name.Text) ? "Name cannot be empty." : null;
+
             if (!string.IsNullOrEmpty(errorMessage))
             {
                 Helpers.ShowDialogMessage("error", errorMessage);
                 return;
             }
-           
+
             bool isNewRecord = string.IsNullOrWhiteSpace(txt_id.Text);
             if (isNewRecord)
             {
                 data.Remove("id");
             }
+            else
+            {
+                if (data.ContainsKey("id"))
+                {
+                    var idValue = data["id"];
+                    if (idValue is string idString && int.TryParse(idString, out int id))
+                    {
+                        data["id"] = id;
+                    }
+                }
+            }
+
             response = isNewRecord
                 ? await ApplicationService.Insert(data)
                 : await ApplicationService.Update(data);
@@ -123,10 +125,11 @@ namespace smpc_sales_app.Pages.Sales
                 Helpers.ResetControls(pnl_input);
                 FetchData();
             }
-           
+
             string message = response.Success
-                ? (isNewRecord ? "Application saved successfully." : "Application updated successfully.")
-                : (isNewRecord ? "Failed to save application.\n" + response.message : "Failed to update application.\n" + response.message);
+                ? (isNewRecord ? "Ship type saved successfully." : "Ship type updated successfully.")
+                : (isNewRecord ? "Failed to save ship type.\n" + response.message : "Failed to update ship type.\n" + response.message);
+
             Helpers.ShowDialogMessage(response.Success ? "success" : "error", message);
         }
 
@@ -146,22 +149,29 @@ namespace smpc_sales_app.Pages.Sales
         private async void btn_delete_Click(object sender, EventArgs e)
         {
             DialogResult result = MessageBox.Show("Are you sure you want to delete this item?",
-                "Confirm Deletion", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+               "Confirm Deletion", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
 
             if (result == DialogResult.Yes)
             {
-                var data = Helpers.GetControlsValues(pnl_input);
-                bool isSuccess = await ApplicationService.Delete(data);
-
-                if (isSuccess)
+                var id = txt_id.Text;
+                int appId;
+                if (int.TryParse(id, out appId))
                 {
-                    Helpers.ResetControls(pnl_input);
-                    Helpers.ShowDialogMessage("success", "Application deleted successfully!");
-                    FetchData();
-                }
-                else
-                {
-                    Helpers.ShowDialogMessage("error", "Failed to delete the application");
+                    var data = new Dictionary<string, dynamic>
+                    {
+                         { "id", appId }
+                    };
+                    bool isSuccess = await ApplicationService.Delete(data);
+                    if (isSuccess)
+                    {
+                        Helpers.ResetControls(pnl_input);
+                        Helpers.ShowDialogMessage("success", "Application deleted successfully!");
+                        FetchData();
+                    }
+                    else
+                    {
+                        Helpers.ShowDialogMessage("error", "Failed to delete the application");
+                    }
                 }
             }
         }
