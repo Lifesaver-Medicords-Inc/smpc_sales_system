@@ -53,7 +53,6 @@ namespace smpc_sales_app.Pages.Sales
             this.Column2 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.basedidDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Column3 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Column4 = new System.Windows.Forms.DataGridViewButtonColumn();
             this.Column5 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Column1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.unitpriceDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -1587,7 +1586,6 @@ namespace smpc_sales_app.Pages.Sales
             this.pnl_header.Name = "pnl_header";
             this.pnl_header.Size = new System.Drawing.Size(1028, 232);
             this.pnl_header.TabIndex = 77;
-            this.pnl_header.Paint += new System.Windows.Forms.PaintEventHandler(this.pnl_header_Paint);
             // 
             // btn_add_customer
             // 
@@ -1696,7 +1694,6 @@ namespace smpc_sales_app.Pages.Sales
             this.dtp_date.Name = "dtp_date";
             this.dtp_date.Size = new System.Drawing.Size(103, 20);
             this.dtp_date.TabIndex = 90;
-            this.dtp_date.ValueChanged += new System.EventHandler(this.dtp_date_ValueChanged);
             // 
             // cmb_application
             // 
@@ -1926,7 +1923,6 @@ namespace smpc_sales_app.Pages.Sales
             this.txt_days.Size = new System.Drawing.Size(103, 20);
             this.txt_days.TabIndex = 63;
             this.txt_days.Text = "30";
-            this.txt_days.TextChanged += new System.EventHandler(this.txt_days_TextChanged);
             // 
             // label6
             // 
