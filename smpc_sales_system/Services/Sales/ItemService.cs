@@ -15,7 +15,7 @@ namespace smpc_sales_app.Services.Sales
 {
      class ItemService
      {
-        static string url = "/sales/test";
+        static string url = "/setup/item";
         
         
         public static async Task<Items> GetItem()
