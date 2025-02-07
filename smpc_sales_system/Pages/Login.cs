@@ -1,4 +1,5 @@
 ﻿using smpc_app.Services.Helpers;
+using smpc_inventory_app.Services.Setup.Item;
 using smpc_sales_app.Data;
 using smpc_sales_app.Services.Sales;
 using smpc_sales_app.Services.Setup;
@@ -58,6 +59,7 @@ namespace smpc_sales_app.Pages
             CacheData.CurrentUser = currentUser.Data;
             CacheData.PaymentTerms = await PaymentTermsServices.GetAsDatatable();
             CacheData.ApplicationSetup = await ApplicationService.GetAsDatatable();
+            CacheData.UoM = await UnitOfMeasurementServices.GetAsDatatable();
 
             this.DialogResult = DialogResult.OK;
         }
