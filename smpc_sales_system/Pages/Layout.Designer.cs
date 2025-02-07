@@ -34,9 +34,12 @@ namespace smpc_sales_app.Pages
             System.Windows.Forms.TreeNode treeNode3 = new System.Windows.Forms.TreeNode("Sales Order");
             System.Windows.Forms.TreeNode treeNode4 = new System.Windows.Forms.TreeNode("Sales Return");
             System.Windows.Forms.TreeNode treeNode5 = new System.Windows.Forms.TreeNode("Business Partners");
-            System.Windows.Forms.TreeNode treeNode6 = new System.Windows.Forms.TreeNode("Application Setup");
+            System.Windows.Forms.TreeNode treeNode6 = new System.Windows.Forms.TreeNode("Opportunities");
             System.Windows.Forms.TreeNode treeNode7 = new System.Windows.Forms.TreeNode("Ship Type Setup");
-            System.Windows.Forms.TreeNode treeNode8 = new System.Windows.Forms.TreeNode("Opportunities");
+            System.Windows.Forms.TreeNode treeNode8 = new System.Windows.Forms.TreeNode("Application Setup");
+            System.Windows.Forms.TreeNode treeNode9 = new System.Windows.Forms.TreeNode("Setup", new System.Windows.Forms.TreeNode[] {
+            treeNode7,
+            treeNode8});
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Layout));
             this.tabContainer = new System.Windows.Forms.TabControl();
             this.panel3 = new System.Windows.Forms.Panel();
@@ -51,12 +54,12 @@ namespace smpc_sales_app.Pages
             this.toolStripStatusLabel2 = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripStatusLabel3 = new System.Windows.Forms.ToolStripStatusLabel();
             this.lbl_position = new System.Windows.Forms.ToolStripStatusLabel();
-            this.toolStripStatusLabel4 = new System.Windows.Forms.ToolStripStatusLabel();
-            this.toolStripStatusLabel5 = new System.Windows.Forms.ToolStripStatusLabel();
-            this.lbl_date_time = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripStatusLabel6 = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripStatusLabel7 = new System.Windows.Forms.ToolStripStatusLabel();
             this.lbl_department = new System.Windows.Forms.ToolStripStatusLabel();
+            this.toolStripStatusLabel4 = new System.Windows.Forms.ToolStripStatusLabel();
+            this.toolStripStatusLabel5 = new System.Windows.Forms.ToolStripStatusLabel();
+            this.lbl_date_time = new System.Windows.Forms.ToolStripStatusLabel();
             this.panel3.SuspendLayout();
             this.panel4.SuspendLayout();
             this.panel5.SuspendLayout();
@@ -94,16 +97,18 @@ namespace smpc_sales_app.Pages
             treeNode2.Text = "Sales Quotation";
             treeNode3.Name = "Sales Order";
             treeNode3.Text = "Sales Order";
-            treeNode4.Name = "SalesReturn";
+            treeNode4.Name = "Sales Return";
             treeNode4.Text = "Sales Return";
-            treeNode5.Name = "BusinessPartners";
+            treeNode5.Name = "Business Partners";
             treeNode5.Text = "Business Partners";
-            treeNode6.Name = "Application Setup";
-            treeNode6.Text = "Application Setup";
+            treeNode6.Name = "Opportunities";
+            treeNode6.Text = "Opportunities";
             treeNode7.Name = "Ship Type Setup";
             treeNode7.Text = "Ship Type Setup";
-            treeNode8.Name = "Opportunities";
-            treeNode8.Text = "Opportunities";
+            treeNode8.Name = "Application Setup";
+            treeNode8.Text = "Application Setup";
+            treeNode9.Name = "parent";
+            treeNode9.Text = "Setup";
             this.Sidebar.Nodes.AddRange(new System.Windows.Forms.TreeNode[] {
             treeNode1,
             treeNode2,
@@ -111,8 +116,7 @@ namespace smpc_sales_app.Pages
             treeNode4,
             treeNode5,
             treeNode6,
-            treeNode7,
-            treeNode8});
+            treeNode9});
             this.Sidebar.Size = new System.Drawing.Size(200, 428);
             this.Sidebar.TabIndex = 0;
             this.Sidebar.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.Sidebar_AfterSelect);
@@ -208,25 +212,6 @@ namespace smpc_sales_app.Pages
             this.lbl_position.Name = "lbl_position";
             this.lbl_position.Size = new System.Drawing.Size(0, 17);
             // 
-            // toolStripStatusLabel4
-            // 
-            this.toolStripStatusLabel4.Name = "toolStripStatusLabel4";
-            this.toolStripStatusLabel4.Size = new System.Drawing.Size(55, 17);
-            this.toolStripStatusLabel4.Text = "                ";
-            // 
-            // toolStripStatusLabel5
-            // 
-            this.toolStripStatusLabel5.Name = "toolStripStatusLabel5";
-            this.toolStripStatusLabel5.Size = new System.Drawing.Size(84, 17);
-            this.toolStripStatusLabel5.Text = "Date and time:";
-            // 
-            // lbl_date_time
-            // 
-            this.lbl_date_time.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lbl_date_time.Name = "lbl_date_time";
-            this.lbl_date_time.Size = new System.Drawing.Size(124, 17);
-            this.lbl_date_time.Text = "Feb 7, 2025 11:02AM";
-            // 
             // toolStripStatusLabel6
             // 
             this.toolStripStatusLabel6.Name = "toolStripStatusLabel6";
@@ -244,6 +229,27 @@ namespace smpc_sales_app.Pages
             this.lbl_department.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lbl_department.Name = "lbl_department";
             this.lbl_department.Size = new System.Drawing.Size(0, 17);
+            // 
+            // toolStripStatusLabel4
+            // 
+            this.toolStripStatusLabel4.Name = "toolStripStatusLabel4";
+            this.toolStripStatusLabel4.Size = new System.Drawing.Size(55, 17);
+            this.toolStripStatusLabel4.Text = "                ";
+            // 
+            // toolStripStatusLabel5
+            // 
+            this.toolStripStatusLabel5.Name = "toolStripStatusLabel5";
+            this.toolStripStatusLabel5.Size = new System.Drawing.Size(84, 17);
+            this.toolStripStatusLabel5.Text = "Date and time:";
+            this.toolStripStatusLabel5.Visible = false;
+            // 
+            // lbl_date_time
+            // 
+            this.lbl_date_time.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lbl_date_time.Name = "lbl_date_time";
+            this.lbl_date_time.Size = new System.Drawing.Size(124, 17);
+            this.lbl_date_time.Text = "Feb 7, 2025 11:02AM";
+            this.lbl_date_time.Visible = false;
             // 
             // Layout
             // 

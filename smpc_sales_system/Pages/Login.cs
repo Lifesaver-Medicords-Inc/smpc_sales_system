@@ -55,11 +55,19 @@ namespace smpc_sales_app.Pages
             data.Add("motherboard_serial_no", Helpers.GetSerialNumber());
             data.Add("machine_name", Environment.MachineName);
             var currentUser = await AuthServices.Login(data);
-            CacheData.CurrentUser = currentUser.Data;
-            CacheData.PaymentTerms = await PaymentTermsServices.GetAsDatatable();
-            CacheData.ApplicationSetup = await ApplicationService.GetAsDatatable();
+            if (currentUser.Success)
+            {
+                CacheData.CurrentUser = currentUser.Data;
+                CacheData.PaymentTerms = await PaymentTermsServices.GetAsDatatable();
+                CacheData.ApplicationSetup = await ApplicationService.GetAsDatatable();
+                this.DialogResult = DialogResult.OK;
+            }
+            else
+            {
+                Helpers.ShowDialogMessage("error", "Invalid Credentials"); 
+            }
+           
 
-            this.DialogResult = DialogResult.OK;
         }
     }
 }

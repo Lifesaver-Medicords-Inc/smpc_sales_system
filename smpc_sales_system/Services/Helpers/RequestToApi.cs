@@ -15,7 +15,12 @@ namespace smpc_inventory_app.Services.Helpers
 {
     class RequestToApi<T> where T : class
     {
-        static string baseUrl = "http://127.0.0.1:3000/api";
+        //DEV ENV
+        //static string baseUrl = "http://127.0.0.1:3000/api";
+
+        //PROD ENV
+        static string baseUrl = "http://52.76.70.203:8000/api";
+
         static Uri baseUri = new Uri(baseUrl); 
 
         // Create a CookieContainer to store cookies
