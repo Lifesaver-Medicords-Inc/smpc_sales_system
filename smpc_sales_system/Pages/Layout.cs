@@ -1,4 +1,5 @@
-﻿using smpc_sales_app.Data;
+﻿using smpc_app.Services.Helpers;
+using smpc_sales_app.Data;
 using smpc_sales_app.Services;
 using System;
 using System.Collections.Generic;
@@ -57,6 +58,12 @@ namespace smpc_sales_app.Pages
 
         private void Sidebar_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
         {
+            
+            if (e.Node.Name.Contains("Dashboard") || e.Node.Name.Contains("Sales Order") || e.Node.Name.Contains("Sales Return") || e.Node.Name.Contains("Business Partners") || e.Node.Name.Contains("Application Setup") || e.Node.Name.Contains("Ship Type Setup"))
+            {
+                Helpers.ShowDialogMessage("error", "This module is not available at the moment!");
+                return;
+            }
             if (!e.Node.Name.Contains("parent"))
             {
                 RoutesServices route = new RoutesServices(e.Node.Name);
