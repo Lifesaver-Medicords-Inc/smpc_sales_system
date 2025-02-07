@@ -76,6 +76,7 @@ namespace smpc_sales_app.Pages
             this.dgv_application_setup.ReadOnly = true;
             this.dgv_application_setup.Size = new System.Drawing.Size(400, 459);
             this.dgv_application_setup.TabIndex = 2;
+            this.dgv_application_setup.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgv_application_setup_CellContentClick);
             this.dgv_application_setup.CellContentDoubleClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgv_application_setup_CellContentDoubleClick);
             // 
             // bs_quotation_list

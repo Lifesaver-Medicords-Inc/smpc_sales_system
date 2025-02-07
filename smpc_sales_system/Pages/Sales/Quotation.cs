@@ -1,6 +1,7 @@
 ﻿using smpc_app.Data;
 using smpc_app.Services.Helpers;
 using smpc_inventory_app.Pages;
+using smpc_inventory_app.Services.Setup.Model.Item;
 using smpc_sales_app.Data;
 using smpc_sales_app.Services.Helpers;
 using smpc_sales_app.Services.Sales;
@@ -95,14 +96,29 @@ namespace smpc_sales_app.Pages.Sales
 
         public DataTable transactionList { get; set; } = new DataTable();
         public DataTable childList { get; set; } = new DataTable();
+        public DataTable ItemList { get; set; } = new DataTable();
 
         // unit code 
         private async void fetchQuotationDetails()
         {
             SalesQuotationList data = await QuotationService.GetQuotations();
+            var itemData = await ItemService.GetItem();
 
-            transactionList = JsonHelper.ToDataTable(data.SalesQuotation);
+
+            // Version filter
+            var latestQuotations = data.SalesQuotation
+                .GroupBy(q => q.document_no)
+                .Select(group => group.OrderByDescending(q => q.version_no)
+                                      .First())
+                .ToList();
+
+
+            // GET the latest version
+            transactionList = JsonHelper.ToDataTable(latestQuotations);
+           
             childList = JsonHelper.ToDataTable(data.SalesQuotationQuick);
+            // ITEM LIST
+            ItemList = JsonHelper.ToDataTable(itemData.items);
 
             pnl_header.Enabled = true;
             pnl_footer.Enabled = true;
@@ -198,14 +214,14 @@ namespace smpc_sales_app.Pages.Sales
 
                 foreach (DataRow item in dataSource.Rows)
                 {
-
                     Dictionary<string, object> data = new Dictionary<string, object>();
+                    data.Add("item_id", int.Parse(item[2].ToString()));
                     data.Add("qty", int.Parse(item[5].ToString()));
-                    data.Add("unit_price", decimal.Parse(item[6].ToString()));
-                    data.Add("percent_discount", decimal.Parse(item[7].ToString()));
-                    data.Add("net_discount", decimal.Parse(item[8].ToString()));
-                    data.Add("net_total", decimal.Parse(item[9].ToString()));
-                    data.Add("line_total", decimal.Parse(item[10].ToString()));
+                    data.Add("unit_price", decimal.Parse(item[7].ToString()));
+                    data.Add("percent_discount", decimal.Parse(item[8].ToString()));
+                    data.Add("net_discount", decimal.Parse(item[9].ToString()));
+                    data.Add("net_total", decimal.Parse(item[10].ToString()));
+                    data.Add("line_total", decimal.Parse(item[11].ToString()));
                     quickQuoteList.Add(data);
                 }
 
@@ -245,8 +261,8 @@ namespace smpc_sales_app.Pages.Sales
                         toolstrip_quotation.Enabled = true;
 
 
-                        //// edit
-                        //dgv_quick_quote_details.Visible = false;
+                        MessageBox.Show("Quotation Successfully saved");
+                        fetchQuotationDetails();
 
                     }
                 }
@@ -270,47 +286,40 @@ namespace smpc_sales_app.Pages.Sales
 
         }
 
+        int selectedItem;
         private async void dgv_quick_quote_details_CellClick(object sender, DataGridViewCellEventArgs e)
         {
             if (e.ColumnIndex == 3)
             {
-
-                DataGridViewRow clickedRow = dgv_quick_quote_details.Rows[e.RowIndex];
-
-                ItemModal itemModal = new ItemModal();
-                DialogResult r = itemModal.ShowDialog();
-
-                if (r == DialogResult.OK)
+                if (e.RowIndex == 4)
                 {
-                    // this contains datagridviewrow data, how to add it on quick quote data grid view 
-                    Dictionary<string, string> result = itemModal.GetResult();
+                    DataGridViewRow clickedRow = dgv_quick_quote_details.Rows[e.RowIndex];
 
-                    if (result != null)
+                    ItemModal itemModal = new ItemModal(ItemList);
+                    DialogResult r = itemModal.ShowDialog();
+
+                    if (r == DialogResult.OK)
                     {
+                        int selectedIndex = itemModal.GetResult(); // Get the index from the modal
 
-                        string id = "";
-
-
-                        var isSuccess_name = result.TryGetValue("code", out id);
-
-
-                        //DataTable dataDT2 = JsonHelper.ToDataTable(data.ItemName);
-                        //dgv_quick_quote_details.DataSource = dataDT;
-
-
-
-                        //this.dgv_quick_quote_details.Rows[e.RowIndex].Cells[3].Value = dataDT.Rows[e.RowIndex]["item_code"];
-                        //this.dgv_quick_quote_details.Rows[e.RowIndex].Cells[4].Value = dataDT2.Rows[e.RowIndex]["name"];
+                        if (selectedIndex >= 0 && selectedIndex < ItemList.Rows.Count) // Ensure the index is valid
+                        {
+                            // Retrieve the DataRow at the selected index
+                            DataRow selectedItem = ItemList.Rows[selectedIndex];
+                            this.dgv_quick_quote_details.Rows[e.RowIndex].Cells[2].Value = selectedItem["id"].ToString();
+                            this.dgv_quick_quote_details.Rows[e.RowIndex].Cells[3].Value = selectedItem["item_code"].ToString();
+                            this.dgv_quick_quote_details.Rows[e.RowIndex].Cells[4].Value = selectedItem["item_name"].ToString();
 
 
-
-
+                        }
+                        else
+                        {
+                            // Handle the case where the index is invalid (if needed)
+                            MessageBox.Show("Invalid selection", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }
                     }
-
-
                 }
             }
-
         }
 
 
@@ -320,10 +329,7 @@ namespace smpc_sales_app.Pages.Sales
 
         }
 
-
-
-
-        private void dgv_quick_quote_details_CellEndEdit(object sender, DataGridViewCellEventArgs e)
+        private void ComputeDgv(DataGridViewCellEventArgs e)
         {
             try
             {
@@ -337,8 +343,9 @@ namespace smpc_sales_app.Pages.Sales
                 {
                     double gross_sales = 0, vat_amount_computed_temp = 0, net_sales = 0, sub_total_before_discount = 0, percent_discount = 0, sub_total = 0, vat_amount = 0, cash_discount = 0, net_amount_due = 0, total_amount_due = 0;
 
+                    decimal unitPrice;
                     int qty = int.Parse(this.dgv_quick_quote_details.Rows[e.RowIndex].Cells[QuickQuoteDGV.QTY].Value.ToString());
-                    decimal unitPrice = decimal.Parse(this.dgv_quick_quote_details.Rows[e.RowIndex].Cells[QuickQuoteDGV.UNIT_PRICE].Value.ToString());
+                    bool unitPriceValid = decimal.TryParse(this.dgv_quick_quote_details.Rows[e.RowIndex].Cells[QuickQuoteDGV.UNIT_PRICE].Value.ToString(), out unitPrice);
                     string discountPercent = this.dgv_quick_quote_details.Rows[e.RowIndex].Cells[QuickQuoteDGV.DISCOUNT].Value == null ? "0" : dgv_quick_quote_details.Rows[e.RowIndex].Cells[QuickQuoteDGV.DISCOUNT].Value.ToString();
 
                     DGVComputation DgvComputation = new DGVComputation(qty, unitPrice, discountPercent);
@@ -394,17 +401,19 @@ namespace smpc_sales_app.Pages.Sales
                             txt_net_amount_due.Text = Helpers.MoneyFormat(net_amount_due);
                             txt_total_amount_due.Text = Helpers.MoneyFormat(total_amount_due);
                         }
-
-
                     }
                 }
-
-
             }
             catch (Exception ex)
             {
                 MessageBox.Show("err" + ex);
             }
+        }
+
+
+        private void dgv_quick_quote_details_CellEndEdit(object sender, DataGridViewCellEventArgs e)
+        {
+            ComputeDgv(e);
         }
 
 
@@ -507,37 +516,19 @@ namespace smpc_sales_app.Pages.Sales
 
         private void bind(bool isBind = false)
         {
-            //if (parentData.ContainsKey("document_no") && parentData["document_no"] is string documentNo)
-            //{
-            //    parentData["document_no"] = documentNo.StartsWith("Q#")
-            //        ? documentNo.Substring(2) // Remove "Q#"
-            //        : documentNo; // Keep as is if "Q#" is not present
-            //}
-
-
             if (isBind)
             {
-                Panel[] pnlList = { pnl_header, pnl_footer };
-                if (transactionList != null)
-                {
+                Panel[] pnlList = { pnl_header, pnl_footer};
+        
 
-                    //foreach (DataRow row in transactionList.Rows)
-                    //{
-                    //    var doc = row["document_no"];
-                    //    MessageBox.Show("" + doc);
-                    //}
-
-                }
-
-
-                Helpers.BindControls(pnlList, transactionList, SelectedRow);
-                //dgv_quick_quote_details.DataSource = dataView;
-                // dgv_quick_quote_details.DataSource = childList;
-
-                DataView dataview = new DataView(this.childList);
-                dataview.RowFilter = "based_id = '" + this.transactionList.Rows[this.SelectedRow]["id"].ToString() + "'";
-                bs_quick_quotes_details.DataSource = dataview;
-
+              
+              Helpers.BindControls(pnlList, transactionList, SelectedRow);
+              DataView dataview = new DataView(this.childList);
+              dataview.RowFilter = "based_id = '" + this.transactionList.Rows[this.SelectedRow]["id"].ToString() + "'";
+              bs_quick_quotes_details.DataSource = dataview;
+         
+            
+                    
             }
         }
 
@@ -577,6 +568,10 @@ namespace smpc_sales_app.Pages.Sales
             Panel[] pnls = { pnl_header, pnl_footer };
             Helpers.ResetReadOnlyControls(pnls);
 
+            // sets the version to 1 if new data and make it readonly to prevent editing
+            txt_version_no.Text = "1";
+            txt_version_no.ReadOnly = true;
+
             foreach (Control ctrl in pnl_footer.Controls)
             {
                 if (ctrl is TextBox)
@@ -599,6 +594,7 @@ namespace smpc_sales_app.Pages.Sales
             //dgv_quick_quote_details = new DataGridView(); 
 
             bs_quick_quotes_details.DataSource = childList.Clone();
+            //this.dgv_quick_quote_details.Rows[].Cells[QuickQuoteDGV.UNIT_PRICE].Value.ToString());
             //dgv_quick_quote_details.DataSource = null;
 
 
@@ -614,6 +610,9 @@ namespace smpc_sales_app.Pages.Sales
         {
             pnl_header.Enabled = true;
             pnl_footer.Enabled = true;
+            Panel[] pnl_list = { pnl_header, pnl_footer};
+            Helpers.ResetReadOnlyControls(pnl_list);
+
 
             toolstrip_quotation.Enabled = false;
             dgv_quick_quote_details.Enabled = true;
@@ -703,17 +702,12 @@ namespace smpc_sales_app.Pages.Sales
             {
                 int result = setup.GetResult();
 
-                if (result != null)
+                if (result != -1)
                 {
                     SelectedRow = result;
                     fetchQuotationDetails();
+                    //fetchQuotationDetails();
                 }
-
-
-
-
-                SelectedRow++;
-                fetchQuotationDetails();
             }
         }
 
@@ -778,6 +772,17 @@ namespace smpc_sales_app.Pages.Sales
                 }
             }
 
+
+        }
+
+        // When the vat is changed trigger the computation
+        private void txt_vat_percent_TextChanged(object sender, EventArgs e)
+        {
+           
+        }
+
+        private void dgv_quick_quote_details_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
 
         }
     }

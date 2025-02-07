@@ -101,5 +101,15 @@ namespace smpc_sales_app.Pages
             }
 
         }
+
+        private void dgv_application_setup_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex >= 0)
+            {
+                this.result = e.RowIndex;
+                this.DialogResult = DialogResult.OK;
+                this.Close();
+            }
+        }
     }
 }
