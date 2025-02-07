@@ -542,11 +542,11 @@ namespace smpc_sales_app.Pages.Sales
                 cmb_ship_type.DataSource = STATIC_SHIPPED_TYPE.LIST();
                 cmb_ship_type.DisplayMember = "code";
                 cmb_ship_type.ValueMember = "title";
- 
+
                 //cmb_unit_code.DataSource = STATIC_SHIPPED_TYPE.LIST();
                 //cmb_unit_code.DisplayMember = "title";
                 //cmb_unit_code.ValueMember = "value";
-  
+
                 //DataTable dtQuotationDetails = ds_quick_quote.Tables["quotation_details"];
 
                 //foreach (DataRow item in CacheData.PaymentTerms.Rows)
@@ -568,7 +568,8 @@ namespace smpc_sales_app.Pages.Sales
                 //combobox.DisplayMember = "code";
                 //combobox.ValueMember = "id";
 
-            fetchQuotationDetails();
+                fetchQuotationDetails();
+            }
         }
 
         private void bind(bool isBind = false)
