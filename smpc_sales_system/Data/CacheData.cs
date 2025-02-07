@@ -13,6 +13,7 @@ namespace smpc_sales_app.Data
     {
         public static DataTable PaymentTerms { get; set; } = new DataTable();
         public static DataTable ApplicationSetup { get; set; } = new DataTable();
+        public static DataTable UoM { get; set; } = new DataTable();
 
         public static DataTable ItemList { get; set; } = new DataTable();
         public static DataTable ShipTypeSetup { get; set; } = new DataTable();

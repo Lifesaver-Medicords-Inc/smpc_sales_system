@@ -161,10 +161,12 @@
     <Compile Include="Services\Sales\Models\SalesQuotationQuick.cs" />
     <Compile Include="Services\Sales\Models\SalesQuotationList.cs" />
     <Compile Include="Services\Sales\Models\ShipModel.cs" />
+    <Compile Include="Services\Sales\Models\UnitOfMeasurementModel.cs" />
     <Compile Include="Services\Sales\OpportunityService.cs" />
     <Compile Include="Services\Sales\OrderService.cs" />
     <Compile Include="Services\Sales\QuotationService.cs" />
     <Compile Include="Services\Sales\ShipService.cs" />
+    <Compile Include="Services\Sales\UnitOfMeasurementServices.cs" />
     <Compile Include="Services\Setup\ApplicationService.cs" />
     <Compile Include="Services\Setup\ItemClassServices.cs" />
     <Compile Include="Services\Setup\PaymentTermsServices.cs" />

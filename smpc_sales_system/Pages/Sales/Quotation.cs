@@ -482,10 +482,10 @@ namespace smpc_sales_app.Pages.Sales
 
                 var data = ds_quick_quote.Tables["quotation_details"];
 
-                bs_unit.DataSource = CacheData.PaymentTerms;
-                //var combobox = (DataGridViewComboBoxColumn)dgv_quick_quote_details.Columns["cmb_unit_code"];
-                //combobox.DataSource = CacheData.PaymentTerms;
-                //combobox.DisplayMember = "code";
+                bs_unit.DataSource = CacheData.UoM;
+                //var combobox = (DataGridViewComboBoxColumn)dgv_quick_quote_details.Columns["unit_code"];
+                //combobox.DataSource = CacheData.UoM;
+                //combobox.DisplayMember = "name";
                 //combobox.ValueMember = "id";
 
                 fetchQuotationDetails();
