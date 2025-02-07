@@ -69,17 +69,20 @@ namespace smpc_sales_app.Services.Helpers
             }
 
             // Add rows to the DataTable
-            foreach (var item in items)
+            if(items != null)
             {
-                var row = dataTable.NewRow();
-                foreach (var prop in properties)
+                foreach (var item in items)
                 {
-                    row[prop.Name] = prop.GetValue(item) ?? DBNull.Value;
+                    var row = dataTable.NewRow();
+                    foreach (var prop in properties)
+                    {
+                        row[prop.Name] = prop.GetValue(item) ?? DBNull.Value;
+                    }
+                    dataTable.Rows.Add(row);
                 }
-                dataTable.Rows.Add(row);
             }
-
-            return dataTable;
+            
+            return dataTable; 
         }
     }
 }

@@ -27,12 +27,11 @@ namespace smpc_sales_system.Pages.Sales
         public DataTable opportunities { get; set; } = new DataTable();
         private async void fetchQuotationDetails()
         {
-            SalesQuotationList data = await QuotationService.GetQuotations();
+            transactionList = await OpportunityService.GetAsDatatable(); 
 
-            transactionList = JsonHelper.ToDataTable(data.SalesQuotation);
             //childList = JsonHelper.ToDataTable(data.SalesQuotationQuick);
 
-            if (data != null)
+            if (transactionList != null)
             {
                 bindQuotation(true);
             }
@@ -42,34 +41,36 @@ namespace smpc_sales_system.Pages.Sales
         {
             if (isBind)
             {
-                DataView dataview = new DataView(this.transactionList);
+                //DataView dataview = new DataView(this.transactionList);
 
-                foreach (DataRow row in this.transactionList.Rows)
-                {
-                    if (row["document_no"] != DBNull.Value)
-                    {
-                        string documentNo = row["document_no"].ToString();
+                dgv_sales_opportunities.DataSource = transactionList;
 
-                        if (!documentNo.StartsWith("Q#"))
-                        {
-                            row["document_no"] = "Q#" + documentNo;
-                        }
-                    }
-                }
+                //foreach (DataRow row in this.transactionList.Rows)
+                //{
+                //    if (row["document_no"] != DBNull.Value)
+                //    {
+                //        string documentNo = row["document_no"].ToString();
 
-                dgv_sales_opportunities.DataSource = dataview;
+                //        if (!documentNo.StartsWith("Q#"))
+                //        {
+                //            row["document_no"] = "Q#" + documentNo;
+                //        }
+                //    }
+                //}
 
-                // Hide other columns if they exist
-                foreach (DataGridViewColumn column in dgv_sales_opportunities.Columns)
-                {
-                    if (column.Name != "document_no" && column.Name != "customer_name" && column.Name != "date" &&
-                        column.Name != "tag" && column.Name != "project_name" && column.Name != "client_req" &&
-                        column.Name != "value" && column.Name != "last_update" && column.Name != "stage" &&
-                        column.Name != "status" && column.Name != "special_deal")
-                    {
-                        column.Visible = false;
-                    }
-                }
+                //dgv_sales_opportunities.DataSource = transactionList;
+
+                //// Hide other columns if they exist
+                //foreach (DataGridViewColumn column in dgv_sales_opportunities.Columns)
+                //{
+                //    if (column.Name != "document_no" && column.Name != "customer_name" && column.Name != "date" &&
+                //        column.Name != "tag" && column.Name != "project_name" && column.Name != "client_req" &&
+                //        column.Name != "value" && column.Name != "last_update" && column.Name != "stage" &&
+                //        column.Name != "status" && column.Name != "special_deal")
+                //    {
+                //        column.Visible = false;
+                //    }
+                //}
             }
         }
 

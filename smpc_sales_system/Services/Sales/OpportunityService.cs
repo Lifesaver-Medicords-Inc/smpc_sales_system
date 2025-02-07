@@ -16,13 +16,12 @@ namespace smpc_sales_system.Services.Sales
 {
     class OpportunityService
     {
-        static string url = "/sales/opportunity";
-        static string url2 = "/sales/quotation";
+        static string url = "/sales/opportunity"; 
 
         // GET - Returns data as DataTable
         public static async Task<DataTable> GetAsDatatable()
         {
-            var response = await RequestToApi<ApiResponseModel<List<OpportunityModel>>>.Get(url);
+            var response = await RequestToApi<ApiResponseModel<List<OpportunityViewModel>>>.Get(url);
             DataTable opportunityItems = JsonHelper.ToDataTable(response.Data);
             return opportunityItems;
         }
