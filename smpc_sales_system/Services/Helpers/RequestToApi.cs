@@ -1,4 +1,5 @@
 using Newtonsoft.Json;
+using smpc_sales_app.Data;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -12,13 +13,24 @@ using System.Windows.Forms;
 
 namespace smpc_inventory_app.Services.Helpers
 {
-    static class RequestToApi<T> where T : class
+    class RequestToApi<T> where T : class
     {
+        static string baseUrl = "http://127.0.0.1:3000/api";
+        static Uri baseUri = new Uri(baseUrl); 
 
+        // Create a CookieContainer to store cookies
+        static CookieContainer cookieContainer = new CookieContainer();
+         
         static private async Task<T> SendRequestAsync(string url, HttpMethod method, string body = null)
         {
-            string baseUrl = "http://localhost:3000/api";
-            using (HttpClient client = new HttpClient())
+
+            // Create an HttpClientHandler and assign the CookieContainer to it
+            HttpClientHandler handler = new HttpClientHandler
+            {
+                CookieContainer = cookieContainer
+            };
+
+            using (HttpClient client = new HttpClient(handler))
             {
                 try
                 {
@@ -35,9 +47,13 @@ namespace smpc_inventory_app.Services.Helpers
                         Content = content
                     };
 
+                    if (CacheData.SessionToken != "")
+                    {
+                        client.DefaultRequestHeaders.Add("Authorization",   CacheData.SessionToken);
+                    } 
+
                     // Perform the HTTP request asynchronously
                     HttpResponseMessage response = await client.SendAsync(requestMessage);
-
 
 
                     // Check if the response is successful
@@ -45,6 +61,14 @@ namespace smpc_inventory_app.Services.Helpers
                     {
                         string responseContent = await response.Content.ReadAsStringAsync();
 
+                        if (string.IsNullOrEmpty(CacheData.SessionToken))
+                        { 
+
+                            List<String> tokenResponseArr = response.Headers.GetValues("Set-Cookie").ToList(); 
+                            string token = ExtractToken(tokenResponseArr[0]); 
+                            CacheData.SessionToken = token;
+                        } 
+                         
                         // Optionally, you can parse the responseContent into an object of type T
                         T result = JsonConvert.DeserializeObject<T>(responseContent);
 
@@ -69,14 +93,14 @@ namespace smpc_inventory_app.Services.Helpers
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show("Exception: " + "Call Senior Lem", "Error");
+                    MessageBox.Show("Exception: " + "Call Senior Lem" + ex.Message, "Error ");
                     return default(T);  // Return default value of T in case of exception
                 }
             }
         }
 
         //// POST Method
-        static internal async Task<T> Post(string url, HttpContent data)
+        static async Task<T> Post(string url, HttpContent data)
         {
             string jsonContent = JsonConvert.SerializeObject(data);
 
@@ -123,6 +147,27 @@ namespace smpc_inventory_app.Services.Helpers
             string jsonContent = JsonConvert.SerializeObject(data);
 
             return await SendRequestAsync(url, HttpMethod.Delete, jsonContent);
+        }
+
+        private static string ExtractToken(string cookieString)
+        {
+            // Find the starting index of the token (after 'Authorization=')
+            int tokenStartIndex = cookieString.IndexOf("Authorization=") + "Authorization=".Length;
+
+            // Find the ending index of the token (before the first semicolon)
+            int tokenEndIndex = cookieString.IndexOf(";", tokenStartIndex);
+
+            // Extract the token
+            string token = cookieString.Substring(tokenStartIndex, tokenEndIndex - tokenStartIndex);
+
+            // If the semicolon is not found (for example, if there is no expiry info), extract until the end of the string
+            if (tokenEndIndex == -1)
+            {
+                token = cookieString.Substring(tokenStartIndex);
+            }
+
+            return token;
+
         }
 
     }
