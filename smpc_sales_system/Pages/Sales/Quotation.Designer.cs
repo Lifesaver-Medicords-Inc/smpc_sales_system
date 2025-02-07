@@ -73,6 +73,8 @@ namespace smpc_sales_app.Pages.Sales
             this.dataColumn6 = new System.Data.DataColumn();
             this.dataColumn7 = new System.Data.DataColumn();
             this.dataColumn8 = new System.Data.DataColumn();
+            this.dataColumn2 = new System.Data.DataColumn();
+            this.dataColumn3 = new System.Data.DataColumn();
             this.dataTable2 = new System.Data.DataTable();
             this.id = new System.Data.DataColumn();
             this.code = new System.Data.DataColumn();
@@ -216,11 +218,11 @@ namespace smpc_sales_app.Pages.Sales
             this.label8 = new System.Windows.Forms.Label();
             this.label9 = new System.Windows.Forms.Label();
             this.txt_customer_code = new System.Windows.Forms.TextBox();
-            this.txt_branch_name = new System.Windows.Forms.TextBox();
             this.label5 = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
+            this.txt_customer_name = new System.Windows.Forms.TextBox();
             this.toolstrip_quotation = new System.Windows.Forms.ToolStrip();
             this.btn_new = new System.Windows.Forms.ToolStripButton();
             this.btn_new_version = new System.Windows.Forms.ToolStripButton();
@@ -237,6 +239,20 @@ namespace smpc_sales_app.Pages.Sales
             this.net_discount = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.net_total = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.line_total = new System.Windows.Forms.DataGridViewTextBoxColumn();
+
+            this.Column2 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.basedidDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Column3 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Column4 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Column5 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Column1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.unitpriceDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.percentdiscountDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.netdiscountDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.nettotalDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.linetotalDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.itemclassidDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+
             this.panel1.SuspendLayout();
             this.panel3.SuspendLayout();
             this.tabControl.SuspendLayout();
@@ -346,6 +362,7 @@ namespace smpc_sales_app.Pages.Sales
             this.dgv_quick_quote_details.Size = new System.Drawing.Size(1014, 2046);
             this.dgv_quick_quote_details.TabIndex = 0;
             this.dgv_quick_quote_details.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgv_quick_quote_details_CellClick);
+            this.dgv_quick_quote_details.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgv_quick_quote_details_CellContentClick);
             this.dgv_quick_quote_details.CellEndEdit += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgv_quick_quote_details_CellEndEdit);
             this.dgv_quick_quote_details.KeyUp += new System.Windows.Forms.KeyEventHandler(this.dgv_quick_quote_details_KeyUp);
             // 
@@ -476,7 +493,9 @@ namespace smpc_sales_app.Pages.Sales
             this.dataColumn5,
             this.dataColumn6,
             this.dataColumn7,
-            this.dataColumn8});
+            this.dataColumn8,
+            this.dataColumn2,
+            this.dataColumn3});
             this.dataTable1.TableName = "tbl_quick_quote_details";
             // 
             // based_id
@@ -489,7 +508,7 @@ namespace smpc_sales_app.Pages.Sales
             // 
             // unit_code
             // 
-            this.unit_code.ColumnName = "unit_code";
+            this.unit_code.ColumnName = "unit_of_measure_id";
             // 
             // dataColumn4
             // 
@@ -510,6 +529,14 @@ namespace smpc_sales_app.Pages.Sales
             // dataColumn8
             // 
             this.dataColumn8.ColumnName = "line_total";
+            // 
+            // dataColumn2
+            // 
+            this.dataColumn2.ColumnName = "qty";
+            // 
+            // dataColumn3
+            // 
+            this.dataColumn3.ColumnName = "unit_of_measure";
             // 
             // dataTable2
             // 
@@ -1286,8 +1313,10 @@ namespace smpc_sales_app.Pages.Sales
             this.txt_vat_percent.Name = "txt_vat_percent";
             this.txt_vat_percent.Size = new System.Drawing.Size(88, 20);
             this.txt_vat_percent.TabIndex = 97;
+            this.txt_vat_percent.Tag = "MONEY";
             this.txt_vat_percent.Text = "12";
             this.txt_vat_percent.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            this.txt_vat_percent.TextChanged += new System.EventHandler(this.txt_vat_percent_TextChanged);
             // 
             // txt_vat_amount
             // 
@@ -1297,6 +1326,7 @@ namespace smpc_sales_app.Pages.Sales
             this.txt_vat_amount.ReadOnly = true;
             this.txt_vat_amount.Size = new System.Drawing.Size(200, 20);
             this.txt_vat_amount.TabIndex = 96;
+            this.txt_vat_amount.Tag = "MONEY";
             this.txt_vat_amount.Text = "0.00";
             this.txt_vat_amount.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             // 
@@ -1318,6 +1348,7 @@ namespace smpc_sales_app.Pages.Sales
             this.txt_total_amount_due.ReadOnly = true;
             this.txt_total_amount_due.Size = new System.Drawing.Size(200, 20);
             this.txt_total_amount_due.TabIndex = 94;
+            this.txt_total_amount_due.Tag = "MONEY";
             this.txt_total_amount_due.Text = "0.00";
             this.txt_total_amount_due.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             // 
@@ -1330,6 +1361,7 @@ namespace smpc_sales_app.Pages.Sales
             this.txt_net_amount_due.ReadOnly = true;
             this.txt_net_amount_due.Size = new System.Drawing.Size(200, 20);
             this.txt_net_amount_due.TabIndex = 93;
+            this.txt_net_amount_due.Tag = "MONEY";
             this.txt_net_amount_due.Text = "0.00";
             this.txt_net_amount_due.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             // 
@@ -1340,6 +1372,7 @@ namespace smpc_sales_app.Pages.Sales
             this.txt_cash_discount.Name = "txt_cash_discount";
             this.txt_cash_discount.Size = new System.Drawing.Size(200, 20);
             this.txt_cash_discount.TabIndex = 92;
+            this.txt_cash_discount.Tag = "MONEY";
             this.txt_cash_discount.Text = "0.00";
             this.txt_cash_discount.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             // 
@@ -1379,6 +1412,7 @@ namespace smpc_sales_app.Pages.Sales
             this.txt_sub_total.ReadOnly = true;
             this.txt_sub_total.Size = new System.Drawing.Size(125, 20);
             this.txt_sub_total.TabIndex = 88;
+            this.txt_sub_total.Tag = "MONEY";
             this.txt_sub_total.Text = "0.00";
             this.txt_sub_total.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             // 
@@ -1391,6 +1425,7 @@ namespace smpc_sales_app.Pages.Sales
             this.txt_percent_discount.ReadOnly = true;
             this.txt_percent_discount.Size = new System.Drawing.Size(125, 20);
             this.txt_percent_discount.TabIndex = 87;
+            this.txt_percent_discount.Tag = "MONEY";
             this.txt_percent_discount.Text = "0.00";
             this.txt_percent_discount.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             // 
@@ -1403,7 +1438,7 @@ namespace smpc_sales_app.Pages.Sales
             this.txt_sub_total_before_discount.ReadOnly = true;
             this.txt_sub_total_before_discount.Size = new System.Drawing.Size(125, 20);
             this.txt_sub_total_before_discount.TabIndex = 86;
-            this.txt_sub_total_before_discount.Tag = "sub_total_before_discount";
+            this.txt_sub_total_before_discount.Tag = "MONEY";
             this.txt_sub_total_before_discount.Text = "0.00";
             this.txt_sub_total_before_discount.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             // 
@@ -1443,7 +1478,7 @@ namespace smpc_sales_app.Pages.Sales
             this.txt_net_sales.ReadOnly = true;
             this.txt_net_sales.Size = new System.Drawing.Size(125, 20);
             this.txt_net_sales.TabIndex = 82;
-            this.txt_net_sales.Tag = "money_format";
+            this.txt_net_sales.Tag = "MONEY";
             this.txt_net_sales.Text = "0.00";
             this.txt_net_sales.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             // 
@@ -1456,7 +1491,7 @@ namespace smpc_sales_app.Pages.Sales
             this.vat_amount_computed.ReadOnly = true;
             this.vat_amount_computed.Size = new System.Drawing.Size(125, 20);
             this.vat_amount_computed.TabIndex = 81;
-            this.vat_amount_computed.Tag = "money_format";
+            this.vat_amount_computed.Tag = "MONEY";
             this.vat_amount_computed.Text = "0.00";
             this.vat_amount_computed.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             // 
@@ -1469,7 +1504,7 @@ namespace smpc_sales_app.Pages.Sales
             this.txt_gross_sales.ReadOnly = true;
             this.txt_gross_sales.Size = new System.Drawing.Size(125, 20);
             this.txt_gross_sales.TabIndex = 80;
-            this.txt_gross_sales.Tag = "money_format";
+            this.txt_gross_sales.Tag = "MONEY";
             this.txt_gross_sales.Text = "0.00";
             this.txt_gross_sales.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             // 
@@ -1541,11 +1576,11 @@ namespace smpc_sales_app.Pages.Sales
             this.pnl_header.Controls.Add(this.label8);
             this.pnl_header.Controls.Add(this.label9);
             this.pnl_header.Controls.Add(this.txt_customer_code);
-            this.pnl_header.Controls.Add(this.txt_branch_name);
             this.pnl_header.Controls.Add(this.label5);
             this.pnl_header.Controls.Add(this.label4);
             this.pnl_header.Controls.Add(this.label3);
             this.pnl_header.Controls.Add(this.label2);
+            this.pnl_header.Controls.Add(this.txt_customer_name);
             this.pnl_header.Dock = System.Windows.Forms.DockStyle.Top;
             this.pnl_header.Enabled = false;
             this.pnl_header.Location = new System.Drawing.Point(0, 25);
@@ -1747,6 +1782,7 @@ namespace smpc_sales_app.Pages.Sales
             this.btn_project.TabIndex = 49;
             this.btn_project.Text = "PROJECT";
             this.btn_project.UseVisualStyleBackColor = false;
+            this.btn_project.Visible = false;
             this.btn_project.Click += new System.EventHandler(this.btn_project_Click);
             // 
             // txt_thru
@@ -1934,16 +1970,6 @@ namespace smpc_sales_app.Pages.Sales
             this.txt_customer_code.Name = "txt_customer_code";
             this.txt_customer_code.Size = new System.Drawing.Size(200, 20);
             this.txt_customer_code.TabIndex = 55;
-            this.txt_customer_code.Text = "sdf";
-            // 
-            // txt_branch_name
-            // 
-            this.txt_branch_name.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
-            this.txt_branch_name.Location = new System.Drawing.Point(87, 12);
-            this.txt_branch_name.Name = "txt_branch_name";
-            this.txt_branch_name.Size = new System.Drawing.Size(200, 20);
-            this.txt_branch_name.TabIndex = 54;
-            this.txt_branch_name.Text = "sdf";
             // 
             // label5
             // 
@@ -1980,6 +2006,13 @@ namespace smpc_sales_app.Pages.Sales
             this.label2.Size = new System.Drawing.Size(68, 13);
             this.label2.TabIndex = 50;
             this.label2.Text = "CUSTOMER";
+            // 
+            // txt_customer_name
+            // 
+            this.txt_customer_name.Location = new System.Drawing.Point(87, 9);
+            this.txt_customer_name.Name = "txt_customer_name";
+            this.txt_customer_name.Size = new System.Drawing.Size(199, 20);
+            this.txt_customer_name.TabIndex = 0;
             // 
             // toolstrip_quotation
             // 
@@ -2023,6 +2056,7 @@ namespace smpc_sales_app.Pages.Sales
             this.btn_search.Name = "btn_search";
             this.btn_search.Size = new System.Drawing.Size(62, 22);
             this.btn_search.Text = "Search";
+            this.btn_search.Click += new System.EventHandler(this.btn_search_Click);
             // 
             // btn_prev
             // 
@@ -2135,6 +2169,111 @@ namespace smpc_sales_app.Pages.Sales
             this.line_total.Name = "line_total";
             this.line_total.ReadOnly = true;
             // 
+
+            // Column2
+            // 
+            this.Column2.DataPropertyName = "id";
+            this.Column2.HeaderText = "id";
+            this.Column2.Name = "Column2";
+            this.Column2.Visible = false;
+            // 
+            // basedidDataGridViewTextBoxColumn
+            // 
+            this.basedidDataGridViewTextBoxColumn.DataPropertyName = "based_id";
+            this.basedidDataGridViewTextBoxColumn.HeaderText = "based_id";
+            this.basedidDataGridViewTextBoxColumn.Name = "basedidDataGridViewTextBoxColumn";
+            this.basedidDataGridViewTextBoxColumn.Visible = false;
+            // 
+            // Column3
+            // 
+            this.Column3.DataPropertyName = "id";
+            this.Column3.HeaderText = "item_id";
+            this.Column3.Name = "Column3";
+            this.Column3.Visible = false;
+            // 
+            // Column4
+            // 
+            this.Column4.DataPropertyName = "item_code";
+            this.Column4.HeaderText = "ITEM CODE";
+            this.Column4.Name = "Column4";
+            this.Column4.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+            // 
+            // Column5
+            // 
+            this.Column5.DataPropertyName = "item_name";
+            dataGridViewCellStyle1.BackColor = System.Drawing.Color.LightGray;
+            this.Column5.DefaultCellStyle = dataGridViewCellStyle1;
+            this.Column5.HeaderText = "ITEM NAME";
+            this.Column5.Name = "Column5";
+            this.Column5.ReadOnly = true;
+            // 
+            // Column1
+            // 
+            this.Column1.DataPropertyName = "qty";
+            dataGridViewCellStyle2.NullValue = "0";
+            this.Column1.DefaultCellStyle = dataGridViewCellStyle2;
+            this.Column1.HeaderText = "QTY";
+            this.Column1.Name = "Column1";
+            // 
+            // unitpriceDataGridViewTextBoxColumn
+            // 
+            this.unitpriceDataGridViewTextBoxColumn.DataPropertyName = "unit_price";
+            dataGridViewCellStyle3.Format = "C2";
+            dataGridViewCellStyle3.NullValue = "0";
+            this.unitpriceDataGridViewTextBoxColumn.DefaultCellStyle = dataGridViewCellStyle3;
+            this.unitpriceDataGridViewTextBoxColumn.HeaderText = "UNIT PRICE";
+            this.unitpriceDataGridViewTextBoxColumn.Name = "unitpriceDataGridViewTextBoxColumn";
+            // 
+            // percentdiscountDataGridViewTextBoxColumn
+            // 
+            this.percentdiscountDataGridViewTextBoxColumn.DataPropertyName = "percent_discount";
+            dataGridViewCellStyle4.NullValue = "0";
+            this.percentdiscountDataGridViewTextBoxColumn.DefaultCellStyle = dataGridViewCellStyle4;
+            this.percentdiscountDataGridViewTextBoxColumn.HeaderText = "DISCOUNT(%)";
+            this.percentdiscountDataGridViewTextBoxColumn.Name = "percentdiscountDataGridViewTextBoxColumn";
+            // 
+            // netdiscountDataGridViewTextBoxColumn
+            // 
+            this.netdiscountDataGridViewTextBoxColumn.DataPropertyName = "net_discount";
+            dataGridViewCellStyle5.BackColor = System.Drawing.Color.LightGray;
+            dataGridViewCellStyle5.Format = "C2";
+            dataGridViewCellStyle5.NullValue = "0";
+            this.netdiscountDataGridViewTextBoxColumn.DefaultCellStyle = dataGridViewCellStyle5;
+            this.netdiscountDataGridViewTextBoxColumn.HeaderText = "DISCOUNT AMOUNT";
+            this.netdiscountDataGridViewTextBoxColumn.Name = "netdiscountDataGridViewTextBoxColumn";
+            this.netdiscountDataGridViewTextBoxColumn.ReadOnly = true;
+            // 
+            // nettotalDataGridViewTextBoxColumn
+            // 
+            this.nettotalDataGridViewTextBoxColumn.DataPropertyName = "net_total";
+            dataGridViewCellStyle6.BackColor = System.Drawing.Color.LightGray;
+            dataGridViewCellStyle6.Format = "C2";
+            dataGridViewCellStyle6.NullValue = "0";
+            this.nettotalDataGridViewTextBoxColumn.DefaultCellStyle = dataGridViewCellStyle6;
+            this.nettotalDataGridViewTextBoxColumn.HeaderText = "NET DISCOUNT";
+            this.nettotalDataGridViewTextBoxColumn.Name = "nettotalDataGridViewTextBoxColumn";
+            // 
+            // linetotalDataGridViewTextBoxColumn
+            // 
+            this.linetotalDataGridViewTextBoxColumn.DataPropertyName = "line_total";
+            dataGridViewCellStyle7.BackColor = System.Drawing.Color.LightGray;
+            dataGridViewCellStyle7.Format = "C2";
+            dataGridViewCellStyle7.NullValue = "0";
+            this.linetotalDataGridViewTextBoxColumn.DefaultCellStyle = dataGridViewCellStyle7;
+            this.linetotalDataGridViewTextBoxColumn.HeaderText = "NET AMOUNT";
+            this.linetotalDataGridViewTextBoxColumn.Name = "linetotalDataGridViewTextBoxColumn";
+            // 
+            // itemclassidDataGridViewTextBoxColumn
+            // 
+            this.itemclassidDataGridViewTextBoxColumn.DataPropertyName = "line_total";
+            dataGridViewCellStyle8.BackColor = System.Drawing.Color.LightGray;
+            dataGridViewCellStyle8.Format = "C2";
+            dataGridViewCellStyle8.NullValue = "0";
+            this.itemclassidDataGridViewTextBoxColumn.DefaultCellStyle = dataGridViewCellStyle8;
+            this.itemclassidDataGridViewTextBoxColumn.HeaderText = "LINE TOTAL";
+            this.itemclassidDataGridViewTextBoxColumn.Name = "itemclassidDataGridViewTextBoxColumn";
+            // 
+
             // Quotation
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -2296,8 +2435,6 @@ namespace smpc_sales_app.Pages.Sales
         private System.Windows.Forms.ComboBox cmb_ship_to;
         private System.Windows.Forms.ComboBox cmb_ship_type;
         private System.Windows.Forms.DateTimePicker dtp_date;
-        private System.Windows.Forms.ComboBox cmb_application;
-        private System.Windows.Forms.ComboBox cmb_purpose;
         private System.Windows.Forms.TextBox txt_contact_no_2;
         private System.Windows.Forms.TextBox txt_number;
         private System.Windows.Forms.Label label19;
@@ -2325,7 +2462,6 @@ namespace smpc_sales_app.Pages.Sales
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.Label label9;
         private System.Windows.Forms.TextBox txt_customer_code;
-        private System.Windows.Forms.TextBox txt_branch_name;
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.Label label3;
@@ -2365,10 +2501,15 @@ namespace smpc_sales_app.Pages.Sales
         private System.Windows.Forms.DataGridViewComboBoxColumn cmb_unit_code;
         private System.Data.DataTable dataTable3;
         private System.Data.DataColumn dataColumn1;
+        private System.Data.DataColumn dataColumn2;
+        private System.Windows.Forms.ComboBox cmb_application;
+        private System.Windows.Forms.ComboBox cmb_purpose;
+        private System.Windows.Forms.TextBox txt_customer_name;
+        private System.Data.DataColumn dataColumn3;
         private System.Windows.Forms.DataGridViewTextBoxColumn Column2;
         private System.Windows.Forms.DataGridViewTextBoxColumn basedidDataGridViewTextBoxColumn;
         private System.Windows.Forms.DataGridViewTextBoxColumn Column3;
-        private System.Windows.Forms.DataGridViewButtonColumn Column4;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Column4;
         private System.Windows.Forms.DataGridViewTextBoxColumn Column5;
         private System.Windows.Forms.DataGridViewTextBoxColumn Column1;
         private System.Windows.Forms.DataGridViewTextBoxColumn unitpriceDataGridViewTextBoxColumn;

@@ -39,8 +39,6 @@ namespace smpc_sales_app.Pages
         public DataTable transactionList { get; set; } = new DataTable();
         private async void fetchQuotationDetails()
         {
-
-
             var data = Dt;
 
             if (data != null)
@@ -102,6 +100,16 @@ namespace smpc_sales_app.Pages
                 this.Close();
             }
 
+        }
+
+        private void dgv_application_setup_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex >= 0)
+            {
+                this.result = e.RowIndex;
+                this.DialogResult = DialogResult.OK;
+                this.Close();
+            }
         }
     }
 }

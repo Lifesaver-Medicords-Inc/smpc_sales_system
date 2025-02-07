@@ -17,19 +17,16 @@ namespace smpc_sales_app.Pages
     {
 
         Quotation quote = new Quotation();
-        private Dictionary<string, string> result { get; set; }
-        public ItemModal()
+        private DataTable dt;
+        public ItemModal(DataTable dgv)
         {
             InitializeComponent();
+            this.dt = dgv;
         }
 
         private async void fetchData()
         {
-            //var data = await ItemService.GetAsDataTable();
-            var data = await ItemService.GetItem();
-            var test = JsonHelper.ToDataTable(data.items);
-
-            dgv_itemList.DataSource = test;
+            dgv_itemList.DataSource = this.dt;
         }
 
         // load data
@@ -37,30 +34,35 @@ namespace smpc_sales_app.Pages
         {
             fetchData();
         }
-        public Dictionary<string, string> GetResult()
+
+        int result;
+        public int GetResult()
         {
             return result;
         }
+        //public Dictionary<string, string> GetResult()
+        //{
+        //    return result;
+        //}
         private void dgv_itemList_CellClick(object sender, DataGridViewCellEventArgs e)
         {
             if (e.RowIndex >= 0)
             {
-                
-                //string id =  dgv_itemList.Rows[e.RowIndex].Cells[0].Value.ToString();
-                string name_id = dgv_itemList.Rows[e.RowIndex].Cells[1].Value.ToString();
-                
 
-                Dictionary<string, string> data = new Dictionary<string, string>()
-                {
-                    //{ "id", id},
-                    //{ "code", name_id },
-                    //{ "name" , name},
-                    //{ "unitprice", unit_price},
-                    //{ "short_desc", short_desc}
-                };
-                this.result = data;
+                ////string id =  dgv_itemList.Rows[e.RowIndex].Cells[0].Value.ToString();
+                //string name_id = dgv_itemList.Rows[e.RowIndex].Cells[1].Value.ToString();
+
+
+                //Dictionary<string, string> data = new Dictionary<string, string>()
+                //{
+                //    //{ "id", id},
+                //    //{ "code", name_id },
+                //    //{ "name" , name},
+                //    //{ "unitprice", unit_price},
+                //    //{ "short_desc", short_desc}
+                //};
+                this.result = e.RowIndex;
                 this.DialogResult = DialogResult.OK;
-                MessageBox.Show(name_id);
                 this.Close();
             }
         }
