@@ -45,9 +45,22 @@ namespace smpc_sales_app.Pages
             this.panel5 = new System.Windows.Forms.Panel();
             this.label1 = new System.Windows.Forms.Label();
             this.panel6 = new System.Windows.Forms.Panel();
+            this.statusStrip1 = new System.Windows.Forms.StatusStrip();
+            this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
+            this.lbl_name = new System.Windows.Forms.ToolStripStatusLabel();
+            this.toolStripStatusLabel2 = new System.Windows.Forms.ToolStripStatusLabel();
+            this.toolStripStatusLabel3 = new System.Windows.Forms.ToolStripStatusLabel();
+            this.lbl_position = new System.Windows.Forms.ToolStripStatusLabel();
+            this.toolStripStatusLabel4 = new System.Windows.Forms.ToolStripStatusLabel();
+            this.toolStripStatusLabel5 = new System.Windows.Forms.ToolStripStatusLabel();
+            this.lbl_date_time = new System.Windows.Forms.ToolStripStatusLabel();
+            this.toolStripStatusLabel6 = new System.Windows.Forms.ToolStripStatusLabel();
+            this.toolStripStatusLabel7 = new System.Windows.Forms.ToolStripStatusLabel();
+            this.lbl_department = new System.Windows.Forms.ToolStripStatusLabel();
             this.panel3.SuspendLayout();
             this.panel4.SuspendLayout();
             this.panel5.SuspendLayout();
+            this.statusStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
             // tabContainer
@@ -56,7 +69,7 @@ namespace smpc_sales_app.Pages
             this.tabContainer.Location = new System.Drawing.Point(0, 0);
             this.tabContainer.Name = "tabContainer";
             this.tabContainer.SelectedIndex = 0;
-            this.tabContainer.Size = new System.Drawing.Size(406, 450);
+            this.tabContainer.Size = new System.Drawing.Size(406, 428);
             this.tabContainer.SizeMode = System.Windows.Forms.TabSizeMode.Fixed;
             this.tabContainer.TabIndex = 0;
             // 
@@ -66,7 +79,7 @@ namespace smpc_sales_app.Pages
             this.panel3.Dock = System.Windows.Forms.DockStyle.Left;
             this.panel3.Location = new System.Drawing.Point(0, 0);
             this.panel3.Name = "panel3";
-            this.panel3.Size = new System.Drawing.Size(200, 450);
+            this.panel3.Size = new System.Drawing.Size(200, 428);
             this.panel3.TabIndex = 2;
             // 
             // Sidebar
@@ -100,7 +113,7 @@ namespace smpc_sales_app.Pages
             treeNode6,
             treeNode7,
             treeNode8});
-            this.Sidebar.Size = new System.Drawing.Size(200, 450);
+            this.Sidebar.Size = new System.Drawing.Size(200, 428);
             this.Sidebar.TabIndex = 0;
             this.Sidebar.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.Sidebar_AfterSelect);
             this.Sidebar.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.Sidebar_NodeMouseClick);
@@ -112,7 +125,7 @@ namespace smpc_sales_app.Pages
             this.panel4.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panel4.Location = new System.Drawing.Point(200, 0);
             this.panel4.Name = "panel4";
-            this.panel4.Size = new System.Drawing.Size(719, 450);
+            this.panel4.Size = new System.Drawing.Size(719, 428);
             this.panel4.TabIndex = 3;
             // 
             // panel5
@@ -123,7 +136,7 @@ namespace smpc_sales_app.Pages
             this.panel5.Dock = System.Windows.Forms.DockStyle.Right;
             this.panel5.Location = new System.Drawing.Point(406, 0);
             this.panel5.Name = "panel5";
-            this.panel5.Size = new System.Drawing.Size(313, 450);
+            this.panel5.Size = new System.Drawing.Size(313, 428);
             this.panel5.TabIndex = 1;
             // 
             // label1
@@ -145,6 +158,93 @@ namespace smpc_sales_app.Pages
             this.panel6.Size = new System.Drawing.Size(312, 1);
             this.panel6.TabIndex = 0;
             // 
+            // statusStrip1
+            // 
+            this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.toolStripStatusLabel1,
+            this.lbl_name,
+            this.toolStripStatusLabel2,
+            this.toolStripStatusLabel3,
+            this.lbl_position,
+            this.toolStripStatusLabel6,
+            this.toolStripStatusLabel7,
+            this.lbl_department,
+            this.toolStripStatusLabel4,
+            this.toolStripStatusLabel5,
+            this.lbl_date_time});
+            this.statusStrip1.Location = new System.Drawing.Point(0, 428);
+            this.statusStrip1.Name = "statusStrip1";
+            this.statusStrip1.Size = new System.Drawing.Size(919, 22);
+            this.statusStrip1.TabIndex = 4;
+            this.statusStrip1.Text = "statusStrip1";
+            // 
+            // toolStripStatusLabel1
+            // 
+            this.toolStripStatusLabel1.Name = "toolStripStatusLabel1";
+            this.toolStripStatusLabel1.Size = new System.Drawing.Size(33, 17);
+            this.toolStripStatusLabel1.Text = "User:";
+            // 
+            // lbl_name
+            // 
+            this.lbl_name.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lbl_name.Name = "lbl_name";
+            this.lbl_name.Size = new System.Drawing.Size(0, 17);
+            // 
+            // toolStripStatusLabel2
+            // 
+            this.toolStripStatusLabel2.Name = "toolStripStatusLabel2";
+            this.toolStripStatusLabel2.Size = new System.Drawing.Size(55, 17);
+            this.toolStripStatusLabel2.Text = "                ";
+            // 
+            // toolStripStatusLabel3
+            // 
+            this.toolStripStatusLabel3.Name = "toolStripStatusLabel3";
+            this.toolStripStatusLabel3.Size = new System.Drawing.Size(53, 17);
+            this.toolStripStatusLabel3.Text = "Position:";
+            // 
+            // lbl_position
+            // 
+            this.lbl_position.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lbl_position.Name = "lbl_position";
+            this.lbl_position.Size = new System.Drawing.Size(0, 17);
+            // 
+            // toolStripStatusLabel4
+            // 
+            this.toolStripStatusLabel4.Name = "toolStripStatusLabel4";
+            this.toolStripStatusLabel4.Size = new System.Drawing.Size(55, 17);
+            this.toolStripStatusLabel4.Text = "                ";
+            // 
+            // toolStripStatusLabel5
+            // 
+            this.toolStripStatusLabel5.Name = "toolStripStatusLabel5";
+            this.toolStripStatusLabel5.Size = new System.Drawing.Size(84, 17);
+            this.toolStripStatusLabel5.Text = "Date and time:";
+            // 
+            // lbl_date_time
+            // 
+            this.lbl_date_time.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lbl_date_time.Name = "lbl_date_time";
+            this.lbl_date_time.Size = new System.Drawing.Size(124, 17);
+            this.lbl_date_time.Text = "Feb 7, 2025 11:02AM";
+            // 
+            // toolStripStatusLabel6
+            // 
+            this.toolStripStatusLabel6.Name = "toolStripStatusLabel6";
+            this.toolStripStatusLabel6.Size = new System.Drawing.Size(55, 17);
+            this.toolStripStatusLabel6.Text = "                ";
+            // 
+            // toolStripStatusLabel7
+            // 
+            this.toolStripStatusLabel7.Name = "toolStripStatusLabel7";
+            this.toolStripStatusLabel7.Size = new System.Drawing.Size(73, 17);
+            this.toolStripStatusLabel7.Text = "Department:";
+            // 
+            // lbl_department
+            // 
+            this.lbl_department.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lbl_department.Name = "lbl_department";
+            this.lbl_department.Size = new System.Drawing.Size(0, 17);
+            // 
             // Layout
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -152,6 +252,7 @@ namespace smpc_sales_app.Pages
             this.ClientSize = new System.Drawing.Size(919, 450);
             this.Controls.Add(this.panel4);
             this.Controls.Add(this.panel3);
+            this.Controls.Add(this.statusStrip1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "Layout";
             this.Text = "SMPC -SALES SYSTEM";
@@ -161,7 +262,10 @@ namespace smpc_sales_app.Pages
             this.panel4.ResumeLayout(false);
             this.panel5.ResumeLayout(false);
             this.panel5.PerformLayout();
+            this.statusStrip1.ResumeLayout(false);
+            this.statusStrip1.PerformLayout();
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
@@ -174,5 +278,17 @@ namespace smpc_sales_app.Pages
         private System.Windows.Forms.Panel panel5;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Panel panel6;
+        private System.Windows.Forms.StatusStrip statusStrip1;
+        private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel1;
+        private System.Windows.Forms.ToolStripStatusLabel lbl_name;
+        private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel2;
+        private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel3;
+        private System.Windows.Forms.ToolStripStatusLabel lbl_position;
+        private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel4;
+        private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel5;
+        private System.Windows.Forms.ToolStripStatusLabel lbl_date_time;
+        private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel6;
+        private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel7;
+        private System.Windows.Forms.ToolStripStatusLabel lbl_department;
     }
 }

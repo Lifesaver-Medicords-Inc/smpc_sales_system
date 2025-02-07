@@ -1,4 +1,5 @@
 ﻿using smpc_inventory_app.Services.Setup;
+using smpc_sales_system.Models;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -8,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace smpc_sales_app.Data
 {
-    public static class CacheData
+    public class CacheData
     {
         public static DataTable PaymentTerms { get; set; } = new DataTable();
         public static DataTable ApplicationSetup { get; set; } = new DataTable();
@@ -16,6 +17,11 @@ namespace smpc_sales_app.Data
         public static DataTable ItemList { get; set; } = new DataTable();
         public static DataTable ShipTypeSetup { get; set; } = new DataTable();
         public static DataTable Orders { get; set; } = new DataTable();
+
+        public static String SessionToken { get; set; } = "";
+        public static CurrentUserModel CurrentUser { get; set; } = null;
+
+
 
 
     }

@@ -1,4 +1,5 @@
-﻿using smpc_sales_app.Services;
+﻿using smpc_sales_app.Data;
+using smpc_sales_app.Services;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -68,6 +69,9 @@ namespace smpc_sales_app.Pages
             Login login = new Login();
             if (DialogResult.OK == login.ShowDialog())
             {
+                lbl_name.Text = CacheData.CurrentUser.first_name + " " + CacheData.CurrentUser.last_name;
+                lbl_position.Text = CacheData.CurrentUser.position;
+                lbl_department.Text = CacheData.CurrentUser.department;
                 this.Enabled = true;
             }
             else
