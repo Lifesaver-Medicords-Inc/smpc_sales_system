@@ -16,55 +16,49 @@ namespace smpc_sales_app.Pages
     public partial class ItemModal : Form
     {
 
-        Quotation quote = new Quotation();
         private DataTable dt;
+        Quotation quote = new Quotation();
+        int result;
+
         public ItemModal(DataTable dgv)
         {
             InitializeComponent();
             this.dt = dgv;
         }
 
+        public int GetResult()
+        {
+            return result;
+        }
+
+        private void dgv_itemList_CellClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex >= 0)
+            {
+                this.result = e.RowIndex;
+                this.DialogResult = DialogResult.OK;
+                this.Close();
+            }
+        }
+
         private async void fetchData()
         {
-            dgv_itemList.DataSource = this.dt;
+            DataView dataview = new DataView(dt);
+            dgv_itemList.DataSource = dataview;
+
+            foreach (DataGridViewColumn column in dgv_itemList.Columns)
+            {
+                if (column.Name != "item_code" && column.Name != "item_name")
+                {
+                    column.Visible = false;
+                }
+            }
         }
 
         // load data
         private void ItemModal_Load(object sender, EventArgs e)
         {
             fetchData();
-        }
-
-        int result;
-        public int GetResult()
-        {
-            return result;
-        }
-        //public Dictionary<string, string> GetResult()
-        //{
-        //    return result;
-        //}
-        private void dgv_itemList_CellClick(object sender, DataGridViewCellEventArgs e)
-        {
-            if (e.RowIndex >= 0)
-            {
-
-                ////string id =  dgv_itemList.Rows[e.RowIndex].Cells[0].Value.ToString();
-                //string name_id = dgv_itemList.Rows[e.RowIndex].Cells[1].Value.ToString();
-
-
-                //Dictionary<string, string> data = new Dictionary<string, string>()
-                //{
-                //    //{ "id", id},
-                //    //{ "code", name_id },
-                //    //{ "name" , name},
-                //    //{ "unitprice", unit_price},
-                //    //{ "short_desc", short_desc}
-                //};
-                this.result = e.RowIndex;
-                this.DialogResult = DialogResult.OK;
-                this.Close();
-            }
         }
     }
 }

@@ -69,6 +69,12 @@
     <Compile Include="Models\ItemParent.cs" />
     <Compile Include="Models\PaymentTermsModel.cs" />
     <Compile Include="Models\QuotationModel.cs" />
+    <Compile Include="Pages\VersionModal.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Pages\VersionModal.Designer.cs">
+      <DependentUpon>VersionModal.cs</DependentUpon>
+    </Compile>
     <Compile Include="Pages\ItemModal.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -192,6 +198,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Pages\SetupModal.resx">
       <DependentUpon>SetupModal.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Pages\VersionModal.resx">
+      <DependentUpon>VersionModal.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

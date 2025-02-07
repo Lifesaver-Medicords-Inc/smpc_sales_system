@@ -71,10 +71,7 @@ namespace smpc_sales_app.Pages
                 //de other columns if they exist
                 foreach (DataGridViewColumn column in dgv_application_setup.Columns)
                 {
-                    if (column.Name != "document_no" && column.Name != "customer_name" && column.Name != "date" &&
-                        column.Name != "tag" && column.Name != "project_name" && column.Name != "client_req" &&
-                        column.Name != "value" && column.Name != "last_update" && column.Name != "stage" &&
-                        column.Name != "status" && column.Name != "special_deal")
+                    if (column.Name != "document_no" && column.Name != "customer_name")
                     {
                         column.Visible = false;
                     }

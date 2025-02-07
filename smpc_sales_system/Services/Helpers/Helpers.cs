@@ -288,7 +288,7 @@ namespace smpc_app.Services.Helpers
                 { 
                     foreach (Control control in pnl.Controls)
                     {
-                        if (control.Name.Contains(col_name.ToString()))
+                        if (control.Name.Contains(col_name.ToString() ))
                         {
                             string column_name = col_name.ToString();
 

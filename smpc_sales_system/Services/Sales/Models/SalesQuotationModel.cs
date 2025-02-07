@@ -16,7 +16,6 @@ namespace smpc_sales_system.Services.Sales.Models
         public int bill_to_id { get; set; }
         public string customer_name { get; set; }
         public string customer_code { get; set; }
-        public string name { get; set; }
         public string purpose { get; set; }
         public string application { get; set; }
         public string payment_terms { get; set; }
