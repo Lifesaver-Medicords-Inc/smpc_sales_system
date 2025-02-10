@@ -94,6 +94,91 @@ namespace smpc_sales_system.Pages.Sales
         {
             fetchQuotationDetails();
         }
+        ApiResponseModel response;
+        private async void dgv_sales_opportunities_CellEndEdit(object sender, DataGridViewCellEventArgs e)
+        {
+            try
+            {
+                // Convert DataGridView to DataTable to get the current state of the rows
+                var dataSource = Helpers.ConvertDataGridViewToDataTable(dgv_sales_opportunities);
+
+                // List to hold existing data in the DataGridView (already populated)
+                List<Dictionary<string, dynamic>> opportunity = new List<Dictionary<string, dynamic>>();
+
+                // Populate the 'opportunity' list with current rows data
+                foreach (DataRow item in dataSource.Rows)
+                {
+                    Dictionary<string, object> existingData = new Dictionary<string, object>();
+
+                    for (int i = 0; i < item.ItemArray.Length; i++)
+                    {
+                        string columnName = dataSource.Columns[i].ColumnName;
+                        string columnValue = item[i].ToString();
+
+                        existingData[columnName] = string.IsNullOrWhiteSpace(columnValue) ? null : columnValue;
+                    }
+
+                    opportunity.Add(existingData);
+                }
+
+                DataRow editedItem = dataSource.Rows[e.RowIndex];
+                Dictionary<string, object> data = new Dictionary<string, object>();
+
+
+                string[] requiredColumns = { "tag", "document_no", "client_req", "stage", "status", "special_deal" };
+
+                foreach (var column in requiredColumns)
+                {
+                    // Get the value for each column
+                    string columnValue = editedItem[column].ToString();
+
+                    // Nullify the value if it is empty or whitespace
+                    data[column] = string.IsNullOrWhiteSpace(columnValue) ? null : columnValue;
+
+                    // Optionally, print the column name and value to the console
+                    Console.WriteLine($"{column}: {columnValue}");
+                }
+
+                var documentNo = data.ContainsKey("document_no") ? data["document_no"] : null;
+
+                if (documentNo != null)
+                {
+                    var existingRow = opportunity.FirstOrDefault(d => d.ContainsKey("document_no") && d["document_no"]?.ToString() == documentNo.ToString());
+
+                    
+
+                    if (existingRow != null)
+                    {
+                        // If the row already exists (matching document_no), update the record
+                        response = await OpportunityService.Update(data);
+                    }
+                    else if (existingRow == null)
+                    {
+                        // If no matching document_no is found, insert a new record
+                        response = await OpportunityService.Insert(data);
+                    }
+
+                    // Check if the operation was successful
+                    if (response != null && response.Success)
+                    {
+                        MessageBox.Show("Quotation Successfully saved");
+                        fetchQuotationDetails();  // Refresh the quotation details
+                    }
+                    else
+                    {
+                        MessageBox.Show("Failed to save quotation. Please try again.");
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("Document No. cannot be null.");
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error: " + ex.Message);
+            }
+        }
 
     }
 }
