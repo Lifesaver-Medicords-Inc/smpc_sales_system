@@ -212,6 +212,7 @@
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
     </Compile>
     <EmbeddedResource Include="Reports\Quotation\Quotation.rdlc" />
     <EmbeddedResource Include="Reports\Report1.rdlc" />
@@ -231,6 +232,9 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Pages\Setup\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\search.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

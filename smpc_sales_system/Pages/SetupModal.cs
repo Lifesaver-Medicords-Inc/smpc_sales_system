@@ -1,4 +1,5 @@
-﻿using smpc_sales_app.Services.Helpers;
+﻿using smpc_app.Services.Helpers;
+using smpc_sales_app.Services.Helpers;
 using smpc_sales_app.Services.Sales;
 using smpc_sales_system.Services.Sales.Models;
 using System;
@@ -71,7 +72,7 @@ namespace smpc_sales_app.Pages
                 //de other columns if they exist
                 foreach (DataGridViewColumn column in dgv_application_setup.Columns)
                 {
-                    if (column.Name != "document_no" && column.Name != "customer_name")
+                    if (column.Name != "d_document_no" && column.Name != "d_customer_name" && column.Name != "d_version_no")
                     {
                         column.Visible = false;
                     }
@@ -90,7 +91,7 @@ namespace smpc_sales_app.Pages
         }
         private void dgv_application_setup_CellContentDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
-            if (e.RowIndex >= 0)
+            if (e.ColumnIndex >= 0)
             {
                 this.result = e.RowIndex;
                 this.DialogResult = DialogResult.OK;
@@ -101,12 +102,19 @@ namespace smpc_sales_app.Pages
 
         private void dgv_application_setup_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
-            if (e.RowIndex >= 0)
-            {
-                this.result = e.RowIndex;
-                this.DialogResult = DialogResult.OK;
-                this.Close();
-            }
+        //    if (e.RowIndex >= 0)
+        //    {
+        //        this.result = e.RowIndex;
+        //        this.DialogResult = DialogResult.OK;
+        //        this.Close();
+        //    }
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            string searchval = txt_search.Text.ToString();
+            var data = Helpers.FilterDataTable(Dt, searchval, "document_no", "customer_name");
+            dgv_application_setup.DataSource = data;
         }
     }
 }

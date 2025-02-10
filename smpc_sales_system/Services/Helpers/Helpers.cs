@@ -95,7 +95,7 @@ namespace smpc_app.Services.Helpers
                     string key = textBox.Name.Replace("txt_", "");
                     dynamic val = null; 
 
-                    if (textBox.Tag != null && textBox.Tag.ToString() == "MONEY")
+                    if (textBox.Tag != null && textBox.Tag.ToString() == "money_format")
                     {
                         bool isParsed = decimal.TryParse(textBox.Text.ToString().Replace(",", ""), out decimal tempVal);
                         if (isParsed)
@@ -188,7 +188,7 @@ namespace smpc_app.Services.Helpers
                         string key = textBox.Name.Replace("txt_", "");
                         dynamic val = null;
 
-                        if (textBox.Tag != null && textBox.Tag.ToString() == "MONEY")
+                        if (textBox.Tag != null && textBox.Tag.ToString() == "money_format")
                         {
                             bool isParsed = decimal.TryParse(textBox.Text.ToString().Replace(",", ""), out decimal tempVal);
                             if (isParsed)
