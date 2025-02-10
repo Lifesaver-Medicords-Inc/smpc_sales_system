@@ -41,7 +41,7 @@ namespace smpc_sales_app.Pages
             }
         }
 
-        private async void fetchData()
+        private void fetchData()
         {
             DataView dataview = new DataView(dt);
             dgv_itemList.DataSource = dataview;
