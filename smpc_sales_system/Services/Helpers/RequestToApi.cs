@@ -16,10 +16,10 @@ namespace smpc_inventory_app.Services.Helpers
     class RequestToApi<T> where T : class
     {
         //DEV ENV
-        //static string baseUrl = "http://127.0.0.1:3000/api";
+       static string baseUrl = "http://127.0.0.1:3000/api";
 
         //PROD ENV
-        static string baseUrl = "http://52.76.70.203:8000/api";
+        //static string baseUrl = "http://52.76.70.203:8000/api";
 
         static Uri baseUri = new Uri(baseUrl); 
 
@@ -82,7 +82,6 @@ namespace smpc_inventory_app.Services.Helpers
 
                         return result; // Return the parsed result
                     }
-
                     else
                     {
                         string responseContent = await response.Content.ReadAsStringAsync();

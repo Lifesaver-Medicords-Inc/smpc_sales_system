@@ -30,8 +30,14 @@ namespace smpc_sales_system.Pages.Sales
         private void InitializeComponent()
         {
             this.panel1 = new System.Windows.Forms.Panel();
+            this.button1 = new System.Windows.Forms.Button();
+            this.label2 = new System.Windows.Forms.Label();
+            this.txt_search = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
             this.panel2 = new System.Windows.Forms.Panel();
+            this.panel3 = new System.Windows.Forms.Panel();
+            this.btn_cancel = new System.Windows.Forms.Button();
+            this.btn_save = new System.Windows.Forms.Button();
             this.dgv_sales_opportunities = new System.Windows.Forms.DataGridView();
             this.tag = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.document_no = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -44,16 +50,11 @@ namespace smpc_sales_system.Pages.Sales
             this.stage = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.status = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.special_deal = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.panel3 = new System.Windows.Forms.Panel();
-            this.btn_cancel = new System.Windows.Forms.Button();
-            this.btn_save = new System.Windows.Forms.Button();
-            this.txt_search = new System.Windows.Forms.TextBox();
-            this.label2 = new System.Windows.Forms.Label();
-            this.button1 = new System.Windows.Forms.Button();
+            this.Opportunity_id = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.panel1.SuspendLayout();
             this.panel2.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.dgv_sales_opportunities)).BeginInit();
             this.panel3.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dgv_sales_opportunities)).BeginInit();
             this.SuspendLayout();
             // 
             // panel1
@@ -67,6 +68,38 @@ namespace smpc_sales_system.Pages.Sales
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(1143, 64);
             this.panel1.TabIndex = 0;
+            // 
+            // button1
+            // 
+            this.button1.BackColor = System.Drawing.Color.DimGray;
+            this.button1.FlatAppearance.BorderColor = System.Drawing.Color.White;
+            this.button1.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
+            this.button1.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(255)))), ((int)(((byte)(128)))));
+            this.button1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.button1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.button1.ForeColor = System.Drawing.Color.White;
+            this.button1.Location = new System.Drawing.Point(1052, 22);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(73, 22);
+            this.button1.TabIndex = 106;
+            this.button1.Text = "Find";
+            this.button1.UseVisualStyleBackColor = false;
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(802, 26);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(41, 13);
+            this.label2.TabIndex = 3;
+            this.label2.Text = "Search";
+            // 
+            // txt_search
+            // 
+            this.txt_search.Location = new System.Drawing.Point(843, 23);
+            this.txt_search.Name = "txt_search";
+            this.txt_search.Size = new System.Drawing.Size(209, 20);
+            this.txt_search.TabIndex = 2;
             // 
             // label1
             // 
@@ -87,105 +120,6 @@ namespace smpc_sales_system.Pages.Sales
             this.panel2.Name = "panel2";
             this.panel2.Size = new System.Drawing.Size(1143, 535);
             this.panel2.TabIndex = 1;
-            // 
-            // dgv_sales_opportunities
-            // 
-            this.dgv_sales_opportunities.AllowUserToAddRows = false;
-            this.dgv_sales_opportunities.AllowUserToDeleteRows = false;
-            this.dgv_sales_opportunities.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dgv_sales_opportunities.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.tag,
-            this.document_no,
-            this.customer_name,
-            this.project_name,
-            this.date,
-            this.client_req,
-            this.value,
-            this.last_update,
-            this.stage,
-            this.status,
-            this.special_deal});
-            this.dgv_sales_opportunities.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.dgv_sales_opportunities.Location = new System.Drawing.Point(0, 0);
-            this.dgv_sales_opportunities.Name = "dgv_sales_opportunities";
-            this.dgv_sales_opportunities.Size = new System.Drawing.Size(1143, 535);
-            this.dgv_sales_opportunities.TabIndex = 0;
-            this.dgv_sales_opportunities.CellDoubleClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgv_sales_opportunities_CellDoubleClick);
-            // 
-            // tag
-            // 
-            this.tag.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.tag.DataPropertyName = "tag";
-            this.tag.HeaderText = "TAG";
-            this.tag.Name = "tag";
-            // 
-            // document_no
-            // 
-            this.document_no.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.document_no.DataPropertyName = "document_no";
-            this.document_no.HeaderText = "QUOTE REF.";
-            this.document_no.Name = "document_no";
-            this.document_no.ReadOnly = true;
-            // 
-            // customer_name
-            // 
-            this.customer_name.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.customer_name.DataPropertyName = "customer_name";
-            this.customer_name.HeaderText = "COMPANY NAME";
-            this.customer_name.Name = "customer_name";
-            this.customer_name.ReadOnly = true;
-            // 
-            // project_name
-            // 
-            this.project_name.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.project_name.HeaderText = "PROJECT NAME";
-            this.project_name.Name = "project_name";
-            this.project_name.ReadOnly = true;
-            // 
-            // date
-            // 
-            this.date.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.date.DataPropertyName = "date";
-            this.date.HeaderText = "INQUIRY DATE";
-            this.date.Name = "date";
-            this.date.ReadOnly = true;
-            // 
-            // client_req
-            // 
-            this.client_req.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.client_req.HeaderText = "CLIENT REQ";
-            this.client_req.Name = "client_req";
-            // 
-            // value
-            // 
-            this.value.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.value.HeaderText = "VALUE";
-            this.value.Name = "value";
-            this.value.ReadOnly = true;
-            // 
-            // last_update
-            // 
-            this.last_update.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.last_update.HeaderText = "LAST UPDATE";
-            this.last_update.Name = "last_update";
-            // 
-            // stage
-            // 
-            this.stage.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.stage.HeaderText = "STAGE";
-            this.stage.Name = "stage";
-            // 
-            // status
-            // 
-            this.status.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.status.HeaderText = "STATUS";
-            this.status.Name = "status";
-            // 
-            // special_deal
-            // 
-            this.special_deal.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.special_deal.HeaderText = "SPECIAL DEAL/NOTES";
-            this.special_deal.Name = "special_deal";
             // 
             // panel3
             // 
@@ -229,37 +163,119 @@ namespace smpc_sales_system.Pages.Sales
             this.btn_save.Text = "SAVE CHANGES";
             this.btn_save.UseVisualStyleBackColor = false;
             // 
-            // txt_search
+            // dgv_sales_opportunities
             // 
-            this.txt_search.Location = new System.Drawing.Point(843, 23);
-            this.txt_search.Name = "txt_search";
-            this.txt_search.Size = new System.Drawing.Size(209, 20);
-            this.txt_search.TabIndex = 2;
+            this.dgv_sales_opportunities.AllowUserToAddRows = false;
+            this.dgv_sales_opportunities.AllowUserToDeleteRows = false;
+            this.dgv_sales_opportunities.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dgv_sales_opportunities.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.tag,
+            this.document_no,
+            this.customer_name,
+            this.project_name,
+            this.date,
+            this.client_req,
+            this.value,
+            this.last_update,
+            this.stage,
+            this.status,
+            this.special_deal,
+            this.Opportunity_id});
+            this.dgv_sales_opportunities.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.dgv_sales_opportunities.Location = new System.Drawing.Point(0, 0);
+            this.dgv_sales_opportunities.Name = "dgv_sales_opportunities";
+            this.dgv_sales_opportunities.Size = new System.Drawing.Size(1143, 535);
+            this.dgv_sales_opportunities.TabIndex = 0;
+            this.dgv_sales_opportunities.CellDoubleClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgv_sales_opportunities_CellDoubleClick);
             // 
-            // label2
+            // tag
             // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(802, 26);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(41, 13);
-            this.label2.TabIndex = 3;
-            this.label2.Text = "Search";
+            this.tag.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.tag.DataPropertyName = "tag";
+            this.tag.HeaderText = "TAG";
+            this.tag.Name = "tag";
             // 
-            // button1
+            // document_no
             // 
-            this.button1.BackColor = System.Drawing.Color.DimGray;
-            this.button1.FlatAppearance.BorderColor = System.Drawing.Color.White;
-            this.button1.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
-            this.button1.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(255)))), ((int)(((byte)(128)))));
-            this.button1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.button1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.button1.ForeColor = System.Drawing.Color.White;
-            this.button1.Location = new System.Drawing.Point(1052, 22);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(73, 22);
-            this.button1.TabIndex = 106;
-            this.button1.Text = "Find";
-            this.button1.UseVisualStyleBackColor = false;
+            this.document_no.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.document_no.DataPropertyName = "document_no";
+            this.document_no.HeaderText = "QUOTE REF.";
+            this.document_no.Name = "document_no";
+            this.document_no.ReadOnly = true;
+            // 
+            // customer_name
+            // 
+            this.customer_name.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.customer_name.DataPropertyName = "customer_name";
+            this.customer_name.HeaderText = "COMPANY NAME";
+            this.customer_name.Name = "customer_name";
+            this.customer_name.ReadOnly = true;
+            // 
+            // project_name
+            // 
+            this.project_name.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.project_name.DataPropertyName = "project_name";
+            this.project_name.HeaderText = "PROJECT NAME";
+            this.project_name.Name = "project_name";
+            this.project_name.ReadOnly = true;
+            // 
+            // date
+            // 
+            this.date.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.date.DataPropertyName = "date";
+            this.date.HeaderText = "INQUIRY DATE";
+            this.date.Name = "date";
+            this.date.ReadOnly = true;
+            // 
+            // client_req
+            // 
+            this.client_req.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.client_req.DataPropertyName = "client_req";
+            this.client_req.HeaderText = "CLIENT REQ";
+            this.client_req.Name = "client_req";
+            // 
+            // value
+            // 
+            this.value.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.value.DataPropertyName = "value";
+            this.value.HeaderText = "VALUE";
+            this.value.Name = "value";
+            this.value.ReadOnly = true;
+            // 
+            // last_update
+            // 
+            this.last_update.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.last_update.DataPropertyName = "last_update";
+            this.last_update.HeaderText = "LAST UPDATE";
+            this.last_update.Name = "last_update";
+            // 
+            // stage
+            // 
+            this.stage.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.stage.DataPropertyName = "stage";
+            this.stage.HeaderText = "STAGE";
+            this.stage.Name = "stage";
+            // 
+            // status
+            // 
+            this.status.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.status.DataPropertyName = "status";
+            this.status.HeaderText = "STATUS";
+            this.status.Name = "status";
+            // 
+            // special_deal
+            // 
+            this.special_deal.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.special_deal.DataPropertyName = "special_deal";
+            this.special_deal.HeaderText = "SPECIAL DEAL/NOTES";
+            this.special_deal.Name = "special_deal";
+            // 
+            // Opportunity_id
+            // 
+            this.Opportunity_id.DataPropertyName = "id";
+            this.Opportunity_id.HeaderText = "Opportunity_id";
+            this.Opportunity_id.Name = "Opportunity_id";
+            this.Opportunity_id.Visible = false;
             // 
             // Opportunities
             // 
@@ -273,8 +289,8 @@ namespace smpc_sales_system.Pages.Sales
             this.panel1.ResumeLayout(false);
             this.panel1.PerformLayout();
             this.panel2.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.dgv_sales_opportunities)).EndInit();
             this.panel3.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.dgv_sales_opportunities)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -285,6 +301,12 @@ namespace smpc_sales_system.Pages.Sales
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Panel panel2;
         private System.Windows.Forms.DataGridView dgv_sales_opportunities;
+        private System.Windows.Forms.Panel panel3;
+        private System.Windows.Forms.Button btn_cancel;
+        private System.Windows.Forms.Button btn_save;
+        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.TextBox txt_search;
         private System.Windows.Forms.DataGridViewTextBoxColumn tag;
         private System.Windows.Forms.DataGridViewTextBoxColumn document_no;
         private System.Windows.Forms.DataGridViewTextBoxColumn customer_name;
@@ -296,11 +318,6 @@ namespace smpc_sales_system.Pages.Sales
         private System.Windows.Forms.DataGridViewTextBoxColumn stage;
         private System.Windows.Forms.DataGridViewTextBoxColumn status;
         private System.Windows.Forms.DataGridViewTextBoxColumn special_deal;
-        private System.Windows.Forms.Panel panel3;
-        private System.Windows.Forms.Button btn_cancel;
-        private System.Windows.Forms.Button btn_save;
-        private System.Windows.Forms.Button button1;
-        private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.TextBox txt_search;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Opportunity_id;
     }
 }
