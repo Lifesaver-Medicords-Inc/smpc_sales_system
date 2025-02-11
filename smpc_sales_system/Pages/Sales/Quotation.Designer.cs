@@ -231,13 +231,14 @@
             this.Column4 = new System.Windows.Forms.DataGridViewButtonColumn();
             this.Column5 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Column1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.cmb_unit_id = new System.Windows.Forms.DataGridViewComboBoxColumn();
+            this.cmb_unit = new System.Windows.Forms.DataGridViewComboBoxColumn();
             this.unitpriceDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.percentdiscountDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.netdiscountDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.nettotalDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.linetotalDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.itemclassidDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.txt_customer_id = new System.Windows.Forms.TextBox();
             this.panel1.SuspendLayout();
             this.panel3.SuspendLayout();
             this.tabControl.SuspendLayout();
@@ -333,7 +334,7 @@
             this.Column4,
             this.Column5,
             this.Column1,
-            this.cmb_unit_id,
+            this.cmb_unit,
             this.unitpriceDataGridViewTextBoxColumn,
             this.percentdiscountDataGridViewTextBoxColumn,
             this.netdiscountDataGridViewTextBoxColumn,
@@ -1411,6 +1412,7 @@
             // 
             // pnl_header
             // 
+            this.pnl_header.Controls.Add(this.txt_customer_id);
             this.pnl_header.Controls.Add(this.label59);
             this.pnl_header.Controls.Add(this.btn_add_customer);
             this.pnl_header.Controls.Add(this.label60);
@@ -2094,16 +2096,16 @@
             this.Column1.HeaderText = "QTY";
             this.Column1.Name = "Column1";
             // 
-            // cmb_unit_id
+            // cmb_unit
             // 
-            this.cmb_unit_id.DataPropertyName = "unit_id";
-            this.cmb_unit_id.DataSource = this.bs_unit;
-            this.cmb_unit_id.DisplayMember = "name";
-            this.cmb_unit_id.HeaderText = "UNIT";
-            this.cmb_unit_id.Name = "cmb_unit_id";
-            this.cmb_unit_id.Resizable = System.Windows.Forms.DataGridViewTriState.True;
-            this.cmb_unit_id.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
-            this.cmb_unit_id.ValueMember = "id";
+            this.cmb_unit.DataPropertyName = "unit_id";
+            this.cmb_unit.DataSource = this.bs_unit;
+            this.cmb_unit.DisplayMember = "name";
+            this.cmb_unit.HeaderText = "UNIT";
+            this.cmb_unit.Name = "cmb_unit";
+            this.cmb_unit.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+            this.cmb_unit.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
+            this.cmb_unit.ValueMember = "id";
             // 
             // unitpriceDataGridViewTextBoxColumn
             // 
@@ -2162,6 +2164,15 @@
             this.itemclassidDataGridViewTextBoxColumn.DefaultCellStyle = dataGridViewCellStyle8;
             this.itemclassidDataGridViewTextBoxColumn.HeaderText = "LINE TOTAL";
             this.itemclassidDataGridViewTextBoxColumn.Name = "itemclassidDataGridViewTextBoxColumn";
+            // 
+            // txt_customer_id
+            // 
+            this.txt_customer_id.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
+            this.txt_customer_id.Location = new System.Drawing.Point(322, 13);
+            this.txt_customer_id.Name = "txt_customer_id";
+            this.txt_customer_id.Size = new System.Drawing.Size(37, 20);
+            this.txt_customer_id.TabIndex = 110;
+            this.txt_customer_id.Visible = false;
             // 
             // Quotation
             // 
@@ -2400,12 +2411,13 @@
         private System.Windows.Forms.DataGridViewButtonColumn Column4;
         private System.Windows.Forms.DataGridViewTextBoxColumn Column5;
         private System.Windows.Forms.DataGridViewTextBoxColumn Column1;
-        private System.Windows.Forms.DataGridViewComboBoxColumn cmb_unit_id;
+        private System.Windows.Forms.DataGridViewComboBoxColumn cmb_unit;
         private System.Windows.Forms.DataGridViewTextBoxColumn unitpriceDataGridViewTextBoxColumn;
         private System.Windows.Forms.DataGridViewTextBoxColumn percentdiscountDataGridViewTextBoxColumn;
         private System.Windows.Forms.DataGridViewTextBoxColumn netdiscountDataGridViewTextBoxColumn;
         private System.Windows.Forms.DataGridViewTextBoxColumn nettotalDataGridViewTextBoxColumn;
         private System.Windows.Forms.DataGridViewTextBoxColumn linetotalDataGridViewTextBoxColumn;
         private System.Windows.Forms.DataGridViewTextBoxColumn itemclassidDataGridViewTextBoxColumn;
+        private System.Windows.Forms.TextBox txt_customer_id;
     }
 }
