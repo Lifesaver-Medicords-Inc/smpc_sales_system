@@ -47,8 +47,8 @@ namespace smpc_sales_system.Pages.Sales
             this.client_req = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.value = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.last_update = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.stage = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.status = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.stage = new System.Windows.Forms.DataGridViewComboBoxColumn();
+            this.status = new System.Windows.Forms.DataGridViewComboBoxColumn();
             this.special_deal = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Opportunity_id = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.panel1.SuspendLayout();
@@ -187,6 +187,7 @@ namespace smpc_sales_system.Pages.Sales
             this.dgv_sales_opportunities.Size = new System.Drawing.Size(1143, 535);
             this.dgv_sales_opportunities.TabIndex = 0;
             this.dgv_sales_opportunities.CellDoubleClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgv_sales_opportunities_CellDoubleClick);
+            dgv_sales_opportunities.CellEndEdit += dgv_sales_opportunities_CellEndEdit;
             // 
             // tag
             // 
@@ -248,20 +249,40 @@ namespace smpc_sales_system.Pages.Sales
             this.last_update.DataPropertyName = "last_update";
             this.last_update.HeaderText = "LAST UPDATE";
             this.last_update.Name = "last_update";
+            this.last_update.ReadOnly = true;
             // 
             // stage
             // 
             this.stage.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
             this.stage.DataPropertyName = "stage";
             this.stage.HeaderText = "STAGE";
+            this.stage.Items.AddRange(new object[] {
+            "QUOTED",
+            "FOLLOW-UP",
+            "PRESENTATION",
+            "NEGOTIATION",
+            "APPROVAL",
+            "CLOSED"});
             this.stage.Name = "stage";
+            this.stage.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+            this.stage.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
             // 
             // status
             // 
             this.status.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
             this.status.DataPropertyName = "status";
             this.status.HeaderText = "STATUS";
+            this.status.Items.AddRange(new object[] {
+            "QUOTED",
+            "BIDDING",
+            "WON - PO",
+            "WON - DELIVERY",
+            "WON - CLOSED",
+            "LOST",
+            "ABANDONED"});
             this.status.Name = "status";
+            this.status.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+            this.status.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
             // 
             // special_deal
             // 
@@ -315,8 +336,8 @@ namespace smpc_sales_system.Pages.Sales
         private System.Windows.Forms.DataGridViewTextBoxColumn client_req;
         private System.Windows.Forms.DataGridViewTextBoxColumn value;
         private System.Windows.Forms.DataGridViewTextBoxColumn last_update;
-        private System.Windows.Forms.DataGridViewTextBoxColumn stage;
-        private System.Windows.Forms.DataGridViewTextBoxColumn status;
+        private System.Windows.Forms.DataGridViewComboBoxColumn stage;
+        private System.Windows.Forms.DataGridViewComboBoxColumn status;
         private System.Windows.Forms.DataGridViewTextBoxColumn special_deal;
         private System.Windows.Forms.DataGridViewTextBoxColumn Opportunity_id;
     }

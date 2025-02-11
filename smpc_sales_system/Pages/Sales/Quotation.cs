@@ -150,7 +150,8 @@ namespace smpc_sales_app.Pages.Sales
         {
             // Get all the quotations from the service
             SalesQuotationList data = await QuotationService.GetQuotations();
-
+            var itemData = await ItemService.GetItem();
+            ItemList = JsonHelper.ToDataTable(itemData.items);
             // Check if data is valid
             if (data == null || string.IsNullOrEmpty(documentNo))
             {

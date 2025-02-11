@@ -15,7 +15,7 @@ namespace smpc_sales_system.Services.Sales.Models
     class OpportunityViewModel
     {
         
-        public int quote_ref { get; set; }
+        public int id { get; set; }
         public string tag { get; set; }
         public string document_no { get; set; }
         public string customer_name { get; set; }
