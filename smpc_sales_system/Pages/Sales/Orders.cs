@@ -172,6 +172,32 @@ namespace smpc_sales_app.Pages.Sales
 
             txt_total.Text = total.ToString("0.00");
         }
+        //private void CalculateTotalPrice()
+        //{
+        //    decimal total = 0.0m;
+
+        //    // Ensure the column "line_total" exists
+        //    if (dgv_order_sales.Columns.Contains("line_total"))
+        //    {
+        //        foreach (DataGridViewRow row in dgv_order_sales.Rows)
+        //        {
+        //            if (row.Cells["line_total"].Value != null)
+        //            {
+        //                decimal totalPrice;
+        //                if (decimal.TryParse(row.Cells["line_total"].Value.ToString(), out totalPrice))
+        //                {
+        //                    total += totalPrice;
+        //                }
+        //            }
+        //        }
+        //    }
+        //    else
+        //    {
+        //        MessageBox.Show("The 'line_total' column is missing in the DataGridView.");
+        //    }
+
+        //    txt_total.Text = total.ToString("0.00");
+        //}
 
         private void Orders_Load(object sender, EventArgs e)
         {
