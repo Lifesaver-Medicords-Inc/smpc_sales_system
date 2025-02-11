@@ -16,10 +16,12 @@ namespace smpc_inventory_app.Services.Helpers
     class RequestToApi<T> where T : class
     {
         //DEV ENV
-       static string baseUrl = "http://127.0.0.1:3000/api";
+        //static string baseUrl = "http://127.0.0.1:3000/api";
 
         //PROD ENV
-        //static string baseUrl = "http://52.76.70.203:8000/api";
+        static string baseUrl = "http://52.76.70.203:8000/api";
+
+        //static string baseUrl = "https://7609-2001-4451-83a9-cd00-4dc3-1a4c-96ac-b41a.ngrok-free.app/api";
 
         static Uri baseUri = new Uri(baseUrl); 
 

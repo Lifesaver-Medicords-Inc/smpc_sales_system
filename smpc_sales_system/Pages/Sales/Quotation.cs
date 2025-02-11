@@ -26,11 +26,28 @@ namespace smpc_sales_app.Pages.Sales
         public Quotation(string documentNo = null)
         {
             InitializeComponent();
-
+            //this.AutoScaleMode = AutoScaleMode.Dpi;
             cmb_warranty.Text = "1 year";
             // CALL THE DEFAULT VALUES OF DATAGRIDVIEW
             //this.QuickQuotesDgvDefaultValues();
             this.documentNo = documentNo;
+        }
+
+        private void adjustreso()
+        {
+            var screenRes = Screen.PrimaryScreen.Bounds;
+
+            if (screenRes.Width >= 1920 && screenRes.Height >= 1080)
+            {
+                
+            }
+            else if (screenRes.Height <= 720)
+            {
+
+                this.Width = 600;  // Example width for 720p
+                this.Height = 450; // Example height for 720p
+            }
+
         }
 
         private void panel3_Paint(object sender, PaintEventArgs e)
@@ -261,18 +278,26 @@ namespace smpc_sales_app.Pages.Sales
 
                     if (parentData.ContainsKey("sales_quotation_quick"))
                     {
-                        await QuotationService.Insert(parentData);
+                        
+                        var save = await QuotationService.Insert(parentData);
+                        if (save.Success)
+                        {
+                            MessageBox.Show("Quotation Successfully saved");
+                            //// this should await a response in the future if the response is success proceed to create if not notify the user
+                            Helpers.ResetControls(pnl_header);
+                            Helpers.ResetControls(pnl_footer);
+                            dgv_quick_quote_details.DataSource = this.childList.Clone();
+                            //dgv_quick_quotes_show.Visible = true;
+                            //dgv_quick_quotes_show.Enabled = false;
+                            toolstrip_quotation.Enabled = true;
+                            fetchQuotationDetails();
+                        }
+                        else
+                        {
+                            MessageBox.Show(save.message + "Failed to save the quotation");
+                        }
 
-                        //// this should await a response in the future if the response is success proceed to create if not notify the user
-                        Helpers.ResetControls(pnl_header);
-                        Helpers.ResetControls(pnl_footer);
-                        dgv_quick_quote_details.DataSource = this.childList.Clone();
-                        //dgv_quick_quotes_show.Visible = true;
-                        //dgv_quick_quotes_show.Enabled = false;
-                        toolstrip_quotation.Enabled = true;
-
-                        MessageBox.Show("Quotation Successfully saved");
-                        fetchQuotationDetails();
+                       
                     }
                 }
             }
@@ -425,6 +450,8 @@ namespace smpc_sales_app.Pages.Sales
 
         private async void Quotation_Load(object sender, EventArgs e)
         {
+
+            adjustreso();
             if (!string.IsNullOrEmpty(documentNo))
             {
                 fetchQuotationDetailsByDocumentNo(documentNo);
@@ -452,17 +479,18 @@ namespace smpc_sales_app.Pages.Sales
                 cmb_bill_to.DisplayMember = "code";
                 cmb_bill_to.ValueMember = "id";
 
+                
                 cmb_application.DataSource = CacheData.ApplicationSetup;
-                cmb_application.DisplayMember = "code";
+                cmb_application.DisplayMember = "name";
                 cmb_application.ValueMember = "id";
 
                 cmb_purpose.DataSource = STATIC_QUOTATION_PURPOSE.LIST();
-                cmb_purpose.DisplayMember = "code";
-                cmb_purpose.ValueMember = "title";
+                cmb_purpose.DisplayMember = "name";
+                cmb_purpose.ValueMember = "id";
 
-                cmb_ship_type.DataSource = STATIC_SHIPPED_TYPE.LIST();
-                cmb_ship_type.DisplayMember = "code";
-                cmb_ship_type.ValueMember = "title";
+                cmb_ship_type.DataSource = CacheData.ShipTypeSetup;
+                cmb_ship_type.DisplayMember = "value";
+                cmb_ship_type.ValueMember = "id";
 
                 //cmb_unit_code.DataSource = STATIC_SHIPPED_TYPE.LIST();
                 //cmb_unit_code.DisplayMember = "title";
@@ -499,6 +527,7 @@ namespace smpc_sales_app.Pages.Sales
             {
                 Panel[] pnlList = { pnl_header, pnl_footer };
                 Helpers.BindControls(pnlList, transactionList, SelectedRow);
+                
 
                 // Clone childList and add item_name column
                 DataTable withItemList = this.childList.Clone();
@@ -534,6 +563,7 @@ namespace smpc_sales_app.Pages.Sales
                 // Create filtered view
                 DataView dataview = new DataView(withItemList);
                 dataview.RowFilter = "based_id = '" + this.transactionList.Rows[this.SelectedRow]["id"].ToString() + "'";
+               
                 bs_quick_quotes_details.DataSource = dataview;
             }
         }

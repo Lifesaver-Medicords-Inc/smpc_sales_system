@@ -19,13 +19,17 @@ namespace smpc_app.Data
             };
 
             DataTable table = new DataTable();
-            table.Columns.Add("title");
-            table.Columns.Add("value");
+            table.Columns.Add("id", typeof(int));
+            table.Columns.Add("title", typeof(string));
+            table.Columns.Add("value", typeof(string));
+
+            int id = 1;
 
             foreach (string item in data)
             {
 
                 DataRow dr = table.NewRow();
+                dr["id"] = id++;
                 dr["title"] = item;
                 dr["value"] = item;
 

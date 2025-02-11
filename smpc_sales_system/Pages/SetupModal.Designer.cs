@@ -40,6 +40,12 @@ namespace smpc_sales_app.Pages
             this.document_no = new System.Data.DataColumn();
             this.dataColumn1 = new System.Data.DataColumn();
             this.dataTable2 = new System.Data.DataTable();
+            this.txt_search = new System.Windows.Forms.TextBox();
+            this.label1 = new System.Windows.Forms.Label();
+            this.button1 = new System.Windows.Forms.Button();
+            this.d_document_no = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.d_customer_name = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.d_version_no = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgv_application_setup)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.bs_quotation_list)).BeginInit();
@@ -50,6 +56,9 @@ namespace smpc_sales_app.Pages
             // 
             // panel1
             // 
+            this.panel1.Controls.Add(this.button1);
+            this.panel1.Controls.Add(this.label1);
+            this.panel1.Controls.Add(this.txt_search);
             this.panel1.Controls.Add(this.lbl_setup_title);
             this.panel1.Dock = System.Windows.Forms.DockStyle.Top;
             this.panel1.Location = new System.Drawing.Point(0, 0);
@@ -60,7 +69,7 @@ namespace smpc_sales_app.Pages
             // lbl_setup_title
             // 
             this.lbl_setup_title.AutoSize = true;
-            this.lbl_setup_title.Location = new System.Drawing.Point(131, 9);
+            this.lbl_setup_title.Location = new System.Drawing.Point(12, 15);
             this.lbl_setup_title.Name = "lbl_setup_title";
             this.lbl_setup_title.Size = new System.Drawing.Size(134, 13);
             this.lbl_setup_title.TabIndex = 0;
@@ -69,6 +78,10 @@ namespace smpc_sales_app.Pages
             // dgv_application_setup
             // 
             this.dgv_application_setup.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dgv_application_setup.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.d_document_no,
+            this.d_customer_name,
+            this.d_version_no});
             this.dgv_application_setup.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dgv_application_setup.Location = new System.Drawing.Point(0, 47);
             this.dgv_application_setup.MultiSelect = false;
@@ -110,6 +123,57 @@ namespace smpc_sales_app.Pages
             // 
             this.dataTable2.TableName = "Table2";
             // 
+            // txt_search
+            // 
+            this.txt_search.Location = new System.Drawing.Point(239, 12);
+            this.txt_search.Name = "txt_search";
+            this.txt_search.Size = new System.Drawing.Size(115, 20);
+            this.txt_search.TabIndex = 1;
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(194, 16);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(44, 13);
+            this.label1.TabIndex = 2;
+            this.label1.Text = "Search:";
+            // 
+            // button1
+            // 
+            this.button1.BackgroundImage = global::smpc_sales_system.Properties.Resources.search;
+            this.button1.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
+            this.button1.Image = global::smpc_sales_system.Properties.Resources.search;
+            this.button1.Location = new System.Drawing.Point(360, 10);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(26, 25);
+            this.button1.TabIndex = 3;
+            this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.button1_Click);
+            // 
+            // d_document_no
+            // 
+            this.d_document_no.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.d_document_no.DataPropertyName = "document_no";
+            this.d_document_no.HeaderText = "DOCUMENT NO.";
+            this.d_document_no.Name = "d_document_no";
+            this.d_document_no.ReadOnly = true;
+            // 
+            // d_customer_name
+            // 
+            this.d_customer_name.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.d_customer_name.DataPropertyName = "customer_name";
+            this.d_customer_name.HeaderText = "CUSTOMER NAME";
+            this.d_customer_name.Name = "d_customer_name";
+            this.d_customer_name.ReadOnly = true;
+            // 
+            // d_version_no
+            // 
+            this.d_version_no.DataPropertyName = "version_no";
+            this.d_version_no.HeaderText = "VERSION NO.";
+            this.d_version_no.Name = "d_version_no";
+            this.d_version_no.ReadOnly = true;
+            // 
             // SetupModal
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -146,5 +210,11 @@ namespace smpc_sales_app.Pages
         private System.Data.DataColumn document_no;
         private System.Data.DataColumn dataColumn1;
         private System.Data.DataTable dataTable2;
+        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.TextBox txt_search;
+        private System.Windows.Forms.DataGridViewTextBoxColumn d_document_no;
+        private System.Windows.Forms.DataGridViewTextBoxColumn d_customer_name;
+        private System.Windows.Forms.DataGridViewTextBoxColumn d_version_no;
     }
 }
