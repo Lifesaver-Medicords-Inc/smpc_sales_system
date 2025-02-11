@@ -49,10 +49,10 @@ namespace smpc_sales_app.Services.Sales
         }
 
         // GET: bpi customer view
-        public static async Task<GetBpiList> GetBpiCustomers()
+        public static async Task<Bpi_Class> GetBpiCustomers()
         {
-            var response = await RequestToApi<ApiResponseModel<GetBpiList>>.Get(url_customer);
-            GetBpiList customerData = response.Data;
+            var response = await RequestToApi<ApiResponseModel<Bpi_Class>>.Get(url_customer);
+            Bpi_Class  customerData = response.Data;
             return customerData;
         }
 

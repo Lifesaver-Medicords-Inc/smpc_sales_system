@@ -36,6 +36,7 @@ namespace smpc_sales_system.Models
         public int based_id { get; set; }
         public int social_id { get; set; }
         public string branch_name { get; set; }
+
         public string transaction_type { get; set; }
 
         public string class_name { get; set; }
@@ -52,8 +53,6 @@ namespace smpc_sales_system.Models
 
         public string branch_industry_names { get; set; }
         public string branch_industry_ids { get; set; }
-
-
 
     }
 

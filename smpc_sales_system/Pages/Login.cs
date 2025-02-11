@@ -50,7 +50,7 @@ namespace smpc_sales_app.Pages
 
         private async void btn_login_Click_1(object sender, EventArgs e)
         {
-            //CacheData.ShipTypeSetup = await ShipService.GetAsDatatable(); 
+            
 
             var data =   Helpers.GetControlsValues(pnl_auth);
             data.Add("motherboard_serial_no", Helpers.GetSerialNumber());
@@ -61,6 +61,7 @@ namespace smpc_sales_app.Pages
             if (currentUser.Success)
             {
                 CacheData.CurrentUser = currentUser.Data;
+                CacheData.ShipTypeSetup = await ShipService.GetAsDatatable(); 
                 CacheData.PaymentTerms = await PaymentTermsServices.GetAsDatatable();
                 CacheData.ApplicationSetup = await ApplicationService.GetAsDatatable();
                 CacheData.UoM = await UnitOfMeasurementServices.GetAsDatatable();
