@@ -38,8 +38,8 @@ namespace smpc_inventory_app.Pages
             this.panel3 = new System.Windows.Forms.Panel();
             this.dg_general = new System.Windows.Forms.DataGridView();
             this.id = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.code = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.name = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.b_branch_name = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.b_customer_code = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.panel_header.SuspendLayout();
             this.panel1.SuspendLayout();
             this.panel3.SuspendLayout();
@@ -119,8 +119,8 @@ namespace smpc_inventory_app.Pages
             this.dg_general.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dg_general.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.id,
-            this.code,
-            this.name});
+            this.b_branch_name,
+            this.b_customer_code});
             this.dg_general.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dg_general.Location = new System.Drawing.Point(0, 0);
             this.dg_general.Name = "dg_general";
@@ -132,24 +132,24 @@ namespace smpc_inventory_app.Pages
             // 
             // id
             // 
-            this.id.DataPropertyName = "bpi_id";
+            this.id.DataPropertyName = "id";
             this.id.HeaderText = "BASED_ID";
             this.id.Name = "id";
             this.id.Visible = false;
             // 
-            // code
+            // b_branch_name
             // 
-            this.code.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.code.DataPropertyName = "branch_name";
-            this.code.HeaderText = "CUSTOMER NAME";
-            this.code.Name = "code";
+            this.b_branch_name.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.b_branch_name.DataPropertyName = "branch_name";
+            this.b_branch_name.HeaderText = "CUSTOMER NAME";
+            this.b_branch_name.Name = "b_branch_name";
             // 
-            // name
+            // b_customer_code
             // 
-            this.name.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.name.DataPropertyName = "customer_code";
-            this.name.HeaderText = "CUSTOMER CODE";
-            this.name.Name = "name";
+            this.b_customer_code.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.b_customer_code.DataPropertyName = "customer_code";
+            this.b_customer_code.HeaderText = "CUSTOMER CODE";
+            this.b_customer_code.Name = "b_customer_code";
             // 
             // SetupSelectionModal
             // 
@@ -187,7 +187,7 @@ namespace smpc_inventory_app.Pages
         private System.Windows.Forms.Panel panel3;
         private System.Windows.Forms.DataGridView dg_general;
         private System.Windows.Forms.DataGridViewTextBoxColumn id;
-        private System.Windows.Forms.DataGridViewTextBoxColumn code;
-        private System.Windows.Forms.DataGridViewTextBoxColumn name;
+        private System.Windows.Forms.DataGridViewTextBoxColumn b_branch_name;
+        private System.Windows.Forms.DataGridViewTextBoxColumn b_customer_code;
     }
 }

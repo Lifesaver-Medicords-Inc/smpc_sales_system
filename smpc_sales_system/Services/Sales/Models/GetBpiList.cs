@@ -1,4 +1,5 @@
-﻿using System;
+﻿using smpc_sales_system.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,6 +9,6 @@ namespace smpc_sales_system.Services.Sales.Models
 {
     class GetBpiList
     {
-        public List<BpiCustomer> GetBpiCustomer { get; set; }
+        //public List<Bpi_Class> GetBpiCustomer { get; set; }
     }
 }

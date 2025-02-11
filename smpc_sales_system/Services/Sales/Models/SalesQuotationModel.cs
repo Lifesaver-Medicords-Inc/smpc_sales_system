@@ -14,14 +14,8 @@ namespace smpc_sales_system.Services.Sales.Models
         public int payment_terms_id { get; set; }
         public int ship_to_id { get; set; }
         public int bill_to_id { get; set; }
-        public string customer_name { get; set; }
-        public string customer_code { get; set; }
+        public int ship_type_id { get; set; }
         public string purpose { get; set; }
-        public string application { get; set; }
-        public string payment_terms { get; set; }
-        public string ship_type { get; set; }
-        public string ship_to { get; set; }
-        public string bill_to { get; set; }
         public string date { get; set; }
         public string validity_days { get; set; }
         public string valid_until { get; set; }
