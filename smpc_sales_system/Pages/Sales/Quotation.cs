@@ -817,7 +817,7 @@ namespace smpc_sales_app.Pages.Sales
                     if (this.Qty > 0 && this.UnitPrice > 0)
                     {
                         // COMPUTE NET AMOUNT
-                        this.NetAmount = this.Qty * this.UnitPrice;
+                        this.NetAmount = this.Qty * this.UnitPrice;      
 
                         //// COMPUTE DISCOUNTED AMOUNT
                         if (!String.IsNullOrEmpty(this.DiscountPercent) && this.DiscountPercent != "0")

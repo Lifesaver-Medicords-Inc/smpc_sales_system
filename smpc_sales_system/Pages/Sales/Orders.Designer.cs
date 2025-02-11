@@ -38,11 +38,11 @@ namespace smpc_sales_app.Pages.Sales
             this.button1 = new System.Windows.Forms.Button();
             this.txt_approved_by = new System.Windows.Forms.TextBox();
             this.label21 = new System.Windows.Forms.Label();
-            this.txt_total_amount_due = new System.Windows.Forms.TextBox();
+            this.txt_net_amount_due = new System.Windows.Forms.TextBox();
             this.label20 = new System.Windows.Forms.Label();
-            this.txt_netof_vat = new System.Windows.Forms.TextBox();
+            this.txt_gross_sales = new System.Windows.Forms.TextBox();
             this.label19 = new System.Windows.Forms.Label();
-            this.txt_vat = new System.Windows.Forms.TextBox();
+            this.txt_vat_amount = new System.Windows.Forms.TextBox();
             this.label15 = new System.Windows.Forms.Label();
             this.txt_remarks = new System.Windows.Forms.TextBox();
             this.label14 = new System.Windows.Forms.Label();
@@ -159,11 +159,11 @@ namespace smpc_sales_app.Pages.Sales
             this.pnl_footer.Controls.Add(this.button1);
             this.pnl_footer.Controls.Add(this.txt_approved_by);
             this.pnl_footer.Controls.Add(this.label21);
-            this.pnl_footer.Controls.Add(this.txt_total_amount_due);
+            this.pnl_footer.Controls.Add(this.txt_net_amount_due);
             this.pnl_footer.Controls.Add(this.label20);
-            this.pnl_footer.Controls.Add(this.txt_netof_vat);
+            this.pnl_footer.Controls.Add(this.txt_gross_sales);
             this.pnl_footer.Controls.Add(this.label19);
-            this.pnl_footer.Controls.Add(this.txt_vat);
+            this.pnl_footer.Controls.Add(this.txt_vat_amount);
             this.pnl_footer.Controls.Add(this.label15);
             this.pnl_footer.Controls.Add(this.txt_remarks);
             this.pnl_footer.Controls.Add(this.label14);
@@ -235,12 +235,12 @@ namespace smpc_sales_app.Pages.Sales
             this.label21.TabIndex = 170;
             this.label21.Text = "SO APPROVED BY";
             // 
-            // txt_total_amount_due
+            // txt_net_amount_due
             // 
-            this.txt_total_amount_due.Location = new System.Drawing.Point(859, 54);
-            this.txt_total_amount_due.Name = "txt_total_amount_due";
-            this.txt_total_amount_due.Size = new System.Drawing.Size(157, 20);
-            this.txt_total_amount_due.TabIndex = 169;
+            this.txt_net_amount_due.Location = new System.Drawing.Point(859, 54);
+            this.txt_net_amount_due.Name = "txt_net_amount_due";
+            this.txt_net_amount_due.Size = new System.Drawing.Size(157, 20);
+            this.txt_net_amount_due.TabIndex = 169;
             // 
             // label20
             // 
@@ -252,12 +252,12 @@ namespace smpc_sales_app.Pages.Sales
             this.label20.TabIndex = 168;
             this.label20.Text = "TOTAL AMOUNT DUE";
             // 
-            // txt_netof_vat
+            // txt_gross_sales
             // 
-            this.txt_netof_vat.Location = new System.Drawing.Point(473, 54);
-            this.txt_netof_vat.Name = "txt_netof_vat";
-            this.txt_netof_vat.Size = new System.Drawing.Size(157, 20);
-            this.txt_netof_vat.TabIndex = 167;
+            this.txt_gross_sales.Location = new System.Drawing.Point(473, 54);
+            this.txt_gross_sales.Name = "txt_gross_sales";
+            this.txt_gross_sales.Size = new System.Drawing.Size(157, 20);
+            this.txt_gross_sales.TabIndex = 167;
             // 
             // label19
             // 
@@ -269,12 +269,12 @@ namespace smpc_sales_app.Pages.Sales
             this.label19.TabIndex = 166;
             this.label19.Text = "NET OF VAT";
             // 
-            // txt_vat
+            // txt_vat_amount
             // 
-            this.txt_vat.Location = new System.Drawing.Point(473, 33);
-            this.txt_vat.Name = "txt_vat";
-            this.txt_vat.Size = new System.Drawing.Size(157, 20);
-            this.txt_vat.TabIndex = 165;
+            this.txt_vat_amount.Location = new System.Drawing.Point(473, 33);
+            this.txt_vat_amount.Name = "txt_vat_amount";
+            this.txt_vat_amount.Size = new System.Drawing.Size(157, 20);
+            this.txt_vat_amount.TabIndex = 165;
             // 
             // label15
             // 
@@ -1106,11 +1106,11 @@ namespace smpc_sales_app.Pages.Sales
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.TextBox txt_approved_by;
         private System.Windows.Forms.Label label21;
-        private System.Windows.Forms.TextBox txt_total_amount_due;
+        private System.Windows.Forms.TextBox txt_net_amount_due;
         private System.Windows.Forms.Label label20;
-        private System.Windows.Forms.TextBox txt_netof_vat;
+        private System.Windows.Forms.TextBox txt_gross_sales;
         private System.Windows.Forms.Label label19;
-        private System.Windows.Forms.TextBox txt_vat;
+        private System.Windows.Forms.TextBox txt_vat_amount;
         private System.Windows.Forms.Label label15;
         private System.Windows.Forms.TextBox txt_remarks;
         private System.Windows.Forms.Label label14;

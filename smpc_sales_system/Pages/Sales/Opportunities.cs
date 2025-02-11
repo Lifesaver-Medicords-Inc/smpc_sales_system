@@ -14,20 +14,25 @@ using System.Drawing;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using smpc_sales_app.Pages;
 
 namespace smpc_sales_system.Pages.Sales
 {
+    public delegate void HandleShowForm(string tabTitle, Control control);
+
     public partial class Opportunities : UserControl
     {
         public Opportunities()
         {
             InitializeComponent();
+ 
+            //showQuotation += Layout.Instance.showForm;
         }
         public DataTable transactionList { get; set; } = new DataTable();
         public DataTable opportunities { get; set; } = new DataTable();
         private async void fetchQuotationDetails()
         {
-            transactionList = await OpportunityService.GetAsDatatable(); 
+            transactionList = await OpportunityService.GetAsDatatable();
 
             //childList = JsonHelper.ToDataTable(data.SalesQuotationQuick);
 
@@ -74,6 +79,7 @@ namespace smpc_sales_system.Pages.Sales
             }
         }
 
+        private event HandleShowForm showQuotation;
         private void dgv_sales_opportunities_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
             if (e.RowIndex >= 0)
@@ -87,6 +93,7 @@ namespace smpc_sales_system.Pages.Sales
 
                 this.Parent.Controls.Add(quotationPage);
 
+                //showQuotation.Invoke("Sales Quotation", quotationPage);
                 this.Hide();
             }
         }
@@ -94,6 +101,7 @@ namespace smpc_sales_system.Pages.Sales
         {
             fetchQuotationDetails();
         }
+
         ApiResponseModel response;
         private async void dgv_sales_opportunities_CellEndEdit(object sender, DataGridViewCellEventArgs e)
         {
@@ -105,7 +113,7 @@ namespace smpc_sales_system.Pages.Sales
                 // List to hold existing data in the DataGridView (already populated)
                 List<Dictionary<string, dynamic>> opportunity = new List<Dictionary<string, dynamic>>();
 
-                // Populate the 'opportunity' list with current rows data
+                // Iterate through the DataTable and populate the opportunity list
                 foreach (DataRow item in dataSource.Rows)
                 {
                     Dictionary<string, object> existingData = new Dictionary<string, object>();
@@ -117,52 +125,50 @@ namespace smpc_sales_system.Pages.Sales
 
                         existingData[columnName] = string.IsNullOrWhiteSpace(columnValue) ? null : columnValue;
                     }
-
                     opportunity.Add(existingData);
                 }
 
+                // Get the edited item from the DataGridView
                 DataRow editedItem = dataSource.Rows[e.RowIndex];
                 Dictionary<string, object> data = new Dictionary<string, object>();
 
-
+                // Define the columns to be processed
                 string[] requiredColumns = { "tag", "document_no", "client_req", "stage", "status", "special_deal" };
 
+                // Populate the data dictionary with the required columns' values
                 foreach (var column in requiredColumns)
                 {
-                    // Get the value for each column
                     string columnValue = editedItem[column].ToString();
-
-                    // Nullify the value if it is empty or whitespace
                     data[column] = string.IsNullOrWhiteSpace(columnValue) ? null : columnValue;
-
-                    // Optionally, print the column name and value to the console
-                    Console.WriteLine($"{column}: {columnValue}");
                 }
 
+                // Extract document_no from the edited row
                 var documentNo = data.ContainsKey("document_no") ? data["document_no"] : null;
 
                 if (documentNo != null)
                 {
-                    var existingRow = opportunity.FirstOrDefault(d => d.ContainsKey("document_no") && d["document_no"]?.ToString() == documentNo.ToString());
+                    // Check for the row with the corresponding document_no
+                    var matchingRow = opportunity.FirstOrDefault(d =>
+                    d.ContainsKey("document_no") && d["document_no"]?.ToString().Trim() == documentNo.ToString().Trim());
 
-                    
-
-                    if (existingRow != null)
+                    if (matchingRow != null)
                     {
-                        // If the row already exists (matching document_no), update the record
-                        response = await OpportunityService.Update(data);
-                    }
-                    else if (existingRow == null)
-                    {
-                        // If no matching document_no is found, insert a new record
-                        response = await OpportunityService.Insert(data);
+                        var opportunityId = matchingRow.ContainsKey("Opportunity_id") ? matchingRow["Opportunity_id"]?.ToString().Trim() : null;
+
+                        if (opportunityId == "0")
+                        {
+                            response = await OpportunityService.Insert(data);
+                        }
+                        else
+                        {
+                            response = await OpportunityService.Update(data);
+                        }
                     }
 
-                    // Check if the operation was successful
                     if (response != null && response.Success)
                     {
                         MessageBox.Show("Quotation Successfully saved");
-                        fetchQuotationDetails();  // Refresh the quotation details
+                        fetchQuotationDetails();
                     }
                     else
                     {
@@ -179,6 +185,13 @@ namespace smpc_sales_system.Pages.Sales
                 MessageBox.Show("Error: " + ex.Message);
             }
         }
+        private void btn_find_Click(object sender, EventArgs e)
+        {
+            string searchval = txt_search.Text.ToString();
+            var data = Helpers.FilterDataTable(transactionList, searchval, "tag", "document_no", "stage", "status", "special_deal", "customer_name", "project_name");
+            dgv_sales_opportunities.DataSource = data;
+        }
+
 
     }
 }

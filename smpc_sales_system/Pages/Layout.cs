@@ -15,8 +15,23 @@ namespace smpc_sales_app.Pages
 {
     public partial class Layout : Form
     {
+         
+            private static Layout _instance;
 
-        private int tabCount = 0;
+            public static Layout Instance
+            {
+                get
+                {
+                    if (_instance == null)
+                    {
+                        _instance = new Layout();
+                    }
+                    return _instance;
+                }
+            }
+
+
+            private int tabCount = 0;
         public Layout()
         {
             InitializeComponent();
@@ -27,7 +42,7 @@ namespace smpc_sales_app.Pages
 
         }
 
-        private void showForm(string tabTitle, Control control)
+        public void showForm(string tabTitle, Control control)
         {
             tabCount++;
             Button closeButton = new Button();
@@ -53,13 +68,12 @@ namespace smpc_sales_app.Pages
         {
             tabContainer.TabPages.Remove(tabContainer.SelectedTab);
             //tabControl1.SelectTab();
-
         }
 
         private void Sidebar_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
         {
-            
-            if (e.Node.Name.Contains("Dashboard") || e.Node.Name.Contains("Sales Order") || e.Node.Name.Contains("Sales Return") || e.Node.Name.Contains("Business Partners") || e.Node.Name.Contains("Application Setup") || e.Node.Name.Contains("Ship Type Setup"))
+            // || e.Node.Name.Contains("Sales Order") || e.Node.Name.Contains("Ship Type Setup")
+            if (e.Node.Name.Contains("Dashboard") || e.Node.Name.Contains("Sales Return") || e.Node.Name.Contains("Business Partners") || e.Node.Name.Contains("Application Setup") )
             {
                 Helpers.ShowDialogMessage("error", "This module is not available at the moment!");
                 return;

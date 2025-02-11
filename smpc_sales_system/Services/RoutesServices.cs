@@ -1,4 +1,5 @@
-﻿using smpc_sales_app.Pages.Sales;
+﻿using smpc_sales_app.Pages;
+using smpc_sales_app.Pages.Sales;
 using smpc_sales_system.Pages.Sales;
 using System;
 using System.Collections.Generic;
@@ -11,6 +12,7 @@ namespace smpc_sales_app.Services
 {
     class RoutesServices
     {
+
         private Dictionary<string, Control> _pages = new Dictionary<string, Control>()
         {
             //========================================================================
