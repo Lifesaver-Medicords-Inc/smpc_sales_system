@@ -20,12 +20,14 @@ namespace smpc_sales_app.Services.Sales
     {
         static string url = "/sales/quotation";
         static string url_customer = "/bpi/customers";
-        static string url_bpi = "/bpi";
+        static string url_search = "/bpi/";
 
 
-        //GET: quotations list
+        // GET: quotations list
         public static async Task<SalesQuotationList> GetQuotations()
         {
+
+           
             var response = await RequestToApi<ApiResponseModel<SalesQuotationList>>.Get(url);
             SalesQuotationList quotationData = response.Data;
             return quotationData;
@@ -38,11 +40,19 @@ namespace smpc_sales_app.Services.Sales
             return quotationData;
         }
 
-        // GET: bpi customer view
-        public static async Task<Bpi_Class> GetBpiCustomers()
+        // GET: bpi by id
+        public static async Task<bpi_list> GetBpiId(string id)
         {
-            var response = await RequestToApi<ApiResponseModel<Bpi_Class>>.Get(url_bpi);
-            Bpi_Class customerData = response.Data;
+            var response = await RequestToApi<ApiResponseModel<bpi_list>>.Get(url_search + id);
+            bpi_list bpiData = response.Data;
+            return bpiData;
+        }
+
+        // GET: bpi customer view
+        public static async Task<GetBpiList> GetBpiCustomers()
+        {
+            var response = await RequestToApi<ApiResponseModel<GetBpiList>>.Get(url_customer);
+            GetBpiList customerData = response.Data;
             return customerData;
         }
 

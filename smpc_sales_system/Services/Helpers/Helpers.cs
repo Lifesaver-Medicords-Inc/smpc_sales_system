@@ -252,66 +252,6 @@ namespace smpc_app.Services.Helpers
             }
             return values;
         }
-
-        //public static void GetValueByID (DataTable dt, DataTable dt_base, string id, params string[] columnName)
-        //{
-
-        //}
-
-        //public static void GetValueByID(DataTable dt, DataTable dt_base, string id, params string[] columnName)
-        //{
-        //    // Ensure the base DataTable and column names are valid
-        //    if (dt_base == null || dt == null || string.IsNullOrEmpty(id) || columnName == null || columnName.Length == 0)
-        //    {
-        //        throw new ArgumentException("Invalid arguments passed to GetValueByID.");
-        //    }
-
-        //    // Look for a row in the base DataTable with the matching ID
-        //    DataRow[] foundRows = dt_base.Select($"id = '{id}'");
-
-        //    // If no matching row is found, return or handle appropriately
-        //    if (foundRows.Length == 0)
-        //    {
-        //        Console.WriteLine("No matching row found.");
-        //        return;
-        //    }
-
-        //    // Get the first matching row (assuming there's only one matching row for the given ID)
-        //    DataRow baseRow = foundRows[0];
-
-        //    // Iterate through each column name provided and retrieve its value from baseRow
-        //    foreach (string colName in columnName)
-        //    {
-        //        // Check if the base row contains the column
-        //        if (baseRow.Table.Columns.Contains(colName))
-        //        {
-        //            // Add the column to the target DataTable if not already added
-        //            if (!dt.Columns.Contains(colName))
-        //            {
-        //                dt.Columns.Add(colName, baseRow[colName].GetType());
-        //            }
-
-        //            // Create a new row in the target DataTable
-        //            DataRow newRow = dt.NewRow();
-
-        //            // Populate the value for the specific column
-        //            newRow[colName] = baseRow[colName];
-
-        //            // Add the populated row to the target DataTable
-        //            dt.Rows.Add(newRow);
-        //        }
-        //        else
-        //        {
-        //            Console.WriteLine($"Column '{colName}' not found in the base DataTable.");
-        //        }
-        //    }
-        //}
-
-
-
-
-
-
         public static Boolean ValidateControlsValues(Panel pnl)
         {
             Boolean isError = false;
@@ -443,7 +383,6 @@ namespace smpc_app.Services.Helpers
 
             return localIP;
         }
-
         public static string GetSerialNumber()
         {
             try

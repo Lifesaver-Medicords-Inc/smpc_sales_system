@@ -26,6 +26,8 @@ namespace smpc_inventory_app.Pages
        
             lbl_title.Text = title;
             this.Text = title;
+
+           
             this.EndPoint = api;
 
 
@@ -39,16 +41,11 @@ namespace smpc_inventory_app.Pages
         }
 
         private void SelectionModal_Load(object sender, EventArgs e)
+
         {
+
             dg_general.DataSource = this.Dt;
 
-            foreach (DataGridViewColumn column in dg_general.Columns)
-            {
-                if (column.Name != "b_id" && column.Name != "b_branch_name" && column.Name != "b_customer_code")
-                {
-                    column.Visible = false;
-                }
-            }
         }
 
 
@@ -70,7 +67,7 @@ namespace smpc_inventory_app.Pages
 
                 Dictionary<string, string> data = new Dictionary<string, string>()
                 {
-                    { "id", base_id}
+                    { "bpi_id", base_id}
                 };
 
                 this.result = data;
