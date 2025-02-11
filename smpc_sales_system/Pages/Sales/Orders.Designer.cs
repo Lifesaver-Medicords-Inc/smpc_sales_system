@@ -42,7 +42,7 @@ namespace smpc_sales_app.Pages.Sales
             this.label20 = new System.Windows.Forms.Label();
             this.txt_netof_vat = new System.Windows.Forms.TextBox();
             this.label19 = new System.Windows.Forms.Label();
-            this.txt_vat = new System.Windows.Forms.TextBox();
+            this.txt_vat_amount = new System.Windows.Forms.TextBox();
             this.label15 = new System.Windows.Forms.Label();
             this.txt_remarks = new System.Windows.Forms.TextBox();
             this.label14 = new System.Windows.Forms.Label();
@@ -163,7 +163,7 @@ namespace smpc_sales_app.Pages.Sales
             this.pnl_footer.Controls.Add(this.label20);
             this.pnl_footer.Controls.Add(this.txt_netof_vat);
             this.pnl_footer.Controls.Add(this.label19);
-            this.pnl_footer.Controls.Add(this.txt_vat);
+            this.pnl_footer.Controls.Add(this.txt_vat_amount);
             this.pnl_footer.Controls.Add(this.label15);
             this.pnl_footer.Controls.Add(this.txt_remarks);
             this.pnl_footer.Controls.Add(this.label14);
@@ -269,12 +269,12 @@ namespace smpc_sales_app.Pages.Sales
             this.label19.TabIndex = 166;
             this.label19.Text = "NET OF VAT";
             // 
-            // txt_vat
+            // txt_vat_amount
             // 
-            this.txt_vat.Location = new System.Drawing.Point(473, 33);
-            this.txt_vat.Name = "txt_vat";
-            this.txt_vat.Size = new System.Drawing.Size(157, 20);
-            this.txt_vat.TabIndex = 165;
+            this.txt_vat_amount.Location = new System.Drawing.Point(473, 33);
+            this.txt_vat_amount.Name = "txt_vat_amount";
+            this.txt_vat_amount.Size = new System.Drawing.Size(157, 20);
+            this.txt_vat_amount.TabIndex = 165;
             // 
             // label15
             // 
@@ -1110,7 +1110,7 @@ namespace smpc_sales_app.Pages.Sales
         private System.Windows.Forms.Label label20;
         private System.Windows.Forms.TextBox txt_netof_vat;
         private System.Windows.Forms.Label label19;
-        private System.Windows.Forms.TextBox txt_vat;
+        private System.Windows.Forms.TextBox txt_vat_amount;
         private System.Windows.Forms.Label label15;
         private System.Windows.Forms.TextBox txt_remarks;
         private System.Windows.Forms.Label label14;
