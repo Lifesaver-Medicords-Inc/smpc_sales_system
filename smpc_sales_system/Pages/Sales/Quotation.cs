@@ -5,6 +5,7 @@ using smpc_sales_app.Data;
 using smpc_sales_app.Services.Helpers;
 using smpc_sales_app.Services.Sales;
 using smpc_sales_app.Utils;
+using smpc_sales_system.Models;
 using smpc_sales_system.Pages;
 using smpc_sales_system.Services.Sales.Models;
 using System;
@@ -26,28 +27,11 @@ namespace smpc_sales_app.Pages.Sales
         public Quotation(string documentNo = null)
         {
             InitializeComponent();
-            //this.AutoScaleMode = AutoScaleMode.Dpi;
+
             cmb_warranty.Text = "1 year";
             // CALL THE DEFAULT VALUES OF DATAGRIDVIEW
             //this.QuickQuotesDgvDefaultValues();
             this.documentNo = documentNo;
-        }
-
-        private void adjustreso()
-        {
-            var screenRes = Screen.PrimaryScreen.Bounds;
-
-            if (screenRes.Width >= 1920 && screenRes.Height >= 1080)
-            {
-                
-            }
-            else if (screenRes.Height <= 720)
-            {
-
-                this.Width = 600;  // Example width for 720p
-                this.Height = 450; // Example height for 720p
-            }
-
         }
 
         private void panel3_Paint(object sender, PaintEventArgs e)
@@ -98,39 +82,67 @@ namespace smpc_sales_app.Pages.Sales
         public DataTable childList { get; set; } = new DataTable();
         public DataTable ItemList { get; set; } = new DataTable();
 
-        // unit code
+        private async void fetchItemData()
+        {
+            var itemData = await ItemService.GetItem();
+            ItemList = JsonHelper.ToDataTable(itemData.items);
+        }
+
+        private async void fetchBpiData()
+        {
+            Bpi_Class bpi_data = await QuotationService.GetBpiCustomers();
+
+            bpi_dt = JsonHelper.ToDataTable(bpi_data.bpi);
+            bpi_general = JsonHelper.ToDataTable(bpi_data.general);
+            bpi_address = JsonHelper.ToDataTable(bpi_data.address);
+            bpi_contacts = JsonHelper.ToDataTable(bpi_data.contacts);
+
+            customerList.Merge(bpi_dt);
+            customerList.Merge(bpi_general);
+            customerList.Merge(bpi_address);
+            customerList.Merge(bpi_contacts);
+        }
+
+
+
         private async void fetchQuotationDetails()
         {
             SalesQuotationList data = await QuotationService.GetQuotations();
-            var itemData = await ItemService.GetItem();
 
-            // Version filter
-            var latestQuotations = data.SalesQuotation
-                .GroupBy(q => q.document_no)
-                .Select(group => group.OrderByDescending(q => q.version_no)
-                .First())
-                .ToList();
-
-            // GET the latest version
-            transactionList = JsonHelper.ToDataTable(latestQuotations);
-            allTransactionList = JsonHelper.ToDataTable(data.SalesQuotation);
-            childList = JsonHelper.ToDataTable(data.SalesQuotationQuick);
-            ItemList = JsonHelper.ToDataTable(itemData.items);
-
-            pnl_header.Enabled = true;
-            pnl_footer.Enabled = true;
-
-            Panel[] pnl_list = { pnl_header, pnl_footer };
-            Helpers.ReadOnlyControls(pnl_list);
-
-            toolstrip_quotation.Enabled = false;
-            dgv_quick_quote_details.Enabled = true;
-            dgv_quick_quote_details.Enabled = true;
-            toolstrip_quotation.Enabled = true;
-
-            if (data != null)
+            if (data != null && data.SalesQuotation != null && data.SalesQuotation.Any())
             {
-                bind(true);
+                // Version filter
+                var latestQuotations = data.SalesQuotation
+                    .GroupBy(q => q.document_no)
+                    .Select(group => group.OrderByDescending(q => q.version_no)
+                    .First())
+                    .ToList();
+
+                // GET the latest version
+                transactionList = JsonHelper.ToDataTable(latestQuotations);
+                allTransactionList = JsonHelper.ToDataTable(data.SalesQuotation);
+                childList = JsonHelper.ToDataTable(data.SalesQuotationQuick);
+
+
+                pnl_header.Enabled = true;
+                pnl_footer.Enabled = true;
+
+                Panel[] pnl_list = { pnl_header, pnl_footer };
+                Helpers.ReadOnlyControls(pnl_list);
+
+                toolstrip_quotation.Enabled = false;
+                dgv_quick_quote_details.Enabled = true;
+                dgv_quick_quote_details.Enabled = true;
+                toolstrip_quotation.Enabled = true;
+
+                if (data != null)
+                {
+                    bind(true);
+                }
+            }
+            else
+            {
+                MessageBox.Show("Please create a new data!");
             }
         }
 
@@ -215,7 +227,6 @@ namespace smpc_sales_app.Pages.Sales
                 else
                 {
                     // Handle null or empty document_no (e.g., use default value)
-
                     docNum = "0001"; // Default value
                 }
             }
@@ -247,6 +258,7 @@ namespace smpc_sales_app.Pages.Sales
                     Dictionary<string, object> data = new Dictionary<string, object>();
                     data.Add("item_id", int.Parse(item[2].ToString()));
                     data.Add("qty", int.Parse(item[5].ToString()));
+                    data.Add("unit_id", int.Parse(item[6].ToString()));
                     data.Add("unit_price", decimal.Parse(item[7].ToString()));
                     data.Add("percent_discount", decimal.Parse(item[8].ToString()));
                     data.Add("net_discount", decimal.Parse(item[9].ToString()));
@@ -273,30 +285,38 @@ namespace smpc_sales_app.Pages.Sales
                             : documentNo; // Keep as is if "Q#" is not present
                     }
 
+                    //
+                    // MAKE A HELPER THAT CONVERT ID TO INT 
+                    if (parentData.ContainsKey("customer_id") && parentData["customer_id"] is string customerIdStr)
+                    {
+                        if (int.TryParse(customerIdStr, out int customerId))
+                        {
+                            parentData["customer_id"] = customerId;
+                        }
+                        else
+                        {
+                            MessageBox.Show("Invalid customer ID");
+                            return;
+                        }
+                    }
+
+
                     parentData["sales_quotation_quick"] = childCollection;
 
                     if (parentData.ContainsKey("sales_quotation_quick"))
                     {
-                        
-                        var save = await QuotationService.Insert(parentData);
-                        if (save.Success)
-                        {
-                            MessageBox.Show("Quotation Successfully saved");
-                            //// this should await a response in the future if the response is success proceed to create if not notify the user
-                            Helpers.ResetControls(pnl_header);
-                            Helpers.ResetControls(pnl_footer);
-                            dgv_quick_quote_details.DataSource = this.childList.Clone();
-                            //dgv_quick_quotes_show.Visible = true;
-                            //dgv_quick_quotes_show.Enabled = false;
-                            toolstrip_quotation.Enabled = true;
-                            fetchQuotationDetails();
-                        }
-                        else
-                        {
-                            MessageBox.Show(save.message + "Failed to save the quotation");
-                        }
+                        await QuotationService.Insert(parentData);
 
-                       
+                        //// this should await a response in the future if the response is success proceed to create if not notify the user
+                        Helpers.ResetControls(pnl_header);
+                        Helpers.ResetControls(pnl_footer);
+                        dgv_quick_quote_details.DataSource = this.childList.Clone();
+                        //dgv_quick_quotes_show.Visible = true;
+                        //dgv_quick_quotes_show.Enabled = false;
+                        toolstrip_quotation.Enabled = true;
+
+                        MessageBox.Show("Quotation Successfully saved");
+                        fetchQuotationDetails();
                     }
                 }
             }
@@ -323,7 +343,7 @@ namespace smpc_sales_app.Pages.Sales
 
                     if (selectedIndex >= 0 && selectedIndex < ItemList.Rows.Count) // Ensure the index is valid
                     {
-                        // Retrieve the DataRow at the selected index
+
                         DataRow selectedItem = ItemList.Rows[selectedIndex];
                         this.dgv_quick_quote_details.Rows[e.RowIndex].Cells[2].Value = selectedItem["id"].ToString();
                         this.dgv_quick_quote_details.Rows[e.RowIndex].Cells[3].Value = selectedItem["item_code"].ToString();
@@ -331,7 +351,6 @@ namespace smpc_sales_app.Pages.Sales
                     }
                     else
                     {
-                        // Handle the case where the index is invalid (if needed)
                         MessageBox.Show("Invalid selection", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
                 }
@@ -450,7 +469,10 @@ namespace smpc_sales_app.Pages.Sales
         private async void Quotation_Load(object sender, EventArgs e)
         {
 
-            adjustreso();
+            fetchItemData();
+            fetchBpiData();
+
+
             if (!string.IsNullOrEmpty(documentNo))
             {
                 fetchQuotationDetailsByDocumentNo(documentNo);
@@ -478,18 +500,17 @@ namespace smpc_sales_app.Pages.Sales
                 cmb_bill_to.DisplayMember = "code";
                 cmb_bill_to.ValueMember = "id";
 
-                
                 cmb_application.DataSource = CacheData.ApplicationSetup;
-                cmb_application.DisplayMember = "name";
+                cmb_application.DisplayMember = "code";
                 cmb_application.ValueMember = "id";
 
                 cmb_purpose.DataSource = STATIC_QUOTATION_PURPOSE.LIST();
-                cmb_purpose.DisplayMember = "name";
-                cmb_purpose.ValueMember = "id";
+                cmb_purpose.DisplayMember = "code";
+                cmb_purpose.ValueMember = "title";
 
-                cmb_ship_type.DataSource = CacheData.ShipTypeSetup;
-                cmb_ship_type.DisplayMember = "value";
-                cmb_ship_type.ValueMember = "id";
+                cmb_ship_type.DataSource = STATIC_SHIPPED_TYPE.LIST();
+                cmb_ship_type.DisplayMember = "code";
+                cmb_ship_type.ValueMember = "title";
 
                 //cmb_unit_code.DataSource = STATIC_SHIPPED_TYPE.LIST();
                 //cmb_unit_code.DisplayMember = "title";
@@ -525,9 +546,40 @@ namespace smpc_sales_app.Pages.Sales
             if (isBind)
             {
                 Panel[] pnlList = { pnl_header, pnl_footer };
-                Helpers.BindControls(pnlList, transactionList, SelectedRow);
-                
 
+                DataTable HeaderList = this.transactionList.Clone();
+                HeaderList.Columns.Add("branch_name", typeof(string));
+                HeaderList.Columns.Add("customer_code", typeof(string));
+                HeaderList.Columns.Add("number", typeof(string));
+
+                foreach (DataRow parentRow in this.transactionList.Rows)
+                {
+                    DataRow newRow = HeaderList.NewRow();
+                    foreach (DataColumn col in this.transactionList.Columns)
+                    {
+                        newRow[col.ColumnName] = parentRow[col.ColumnName];
+                    }
+
+                    string ID = parentRow["customer_id"].ToString();
+                    DataRow[] bpiRows = customerList.Select($"based_id = '{ID}'");
+                    DataRow[] contactsRows = customerList.Select($"contacts_based_id = '{ID}'");
+
+                    if (bpiRows.Length > 0)
+                    {
+                        newRow["branch_name"] = bpiRows[0]["branch_name"].ToString();
+                        newRow["customer_code"] = bpiRows[0]["customer_code"].ToString();
+                        newRow["number"] = contactsRows[0]["number"].ToString();
+                    }
+                    else
+                    {
+                        newRow["branch_name"] = "Unknown Branch";
+                        newRow["customer_code"] = "N/A";
+                    }
+
+                    HeaderList.Rows.Add(newRow);
+                }
+
+                Helpers.BindControls(pnlList, HeaderList, SelectedRow);
                 // Clone childList and add item_name column
                 DataTable withItemList = this.childList.Clone();
                 withItemList.Columns.Add("item_name", typeof(string));
@@ -555,14 +607,12 @@ namespace smpc_sales_app.Pages.Sales
                         newRow["item_name"] = "Unknown Item";
                         newRow["item_code"] = "N/A";
                     }
-
                     withItemList.Rows.Add(newRow);
                 }
 
                 // Create filtered view
                 DataView dataview = new DataView(withItemList);
                 dataview.RowFilter = "based_id = '" + this.transactionList.Rows[this.SelectedRow]["id"].ToString() + "'";
-               
                 bs_quick_quotes_details.DataSource = dataview;
             }
         }
@@ -593,12 +643,13 @@ namespace smpc_sales_app.Pages.Sales
         }
 
         public DataTable customerList { get; set; } = new DataTable();
+        private DataTable bpi_dt = new DataTable();
+        private DataTable bpi_general = new DataTable();
+        private DataTable bpi_address = new DataTable();
+        private DataTable bpi_contacts = new DataTable();
 
         private async void btn_new_Click_1(object sender, EventArgs e)
         {
-            GetBpiList data = await QuotationService.GetBpiCustomers();
-            customerList = JsonHelper.ToDataTable(data.GetBpiCustomer);
-
             Helpers.ResetControls(pnl_header);
             Helpers.ResetControls(pnl_footer);
             Panel[] pnls = { pnl_header, pnl_footer };
@@ -626,6 +677,8 @@ namespace smpc_sales_app.Pages.Sales
 
             bind(false);
             DocumentIncrementer();
+            txt_vat_percent.Text = "12";
+            txt_vat_percent.ReadOnly = true;
             //this.QuickQuotesDgvDefaultValues();
         }
 
@@ -655,8 +708,19 @@ namespace smpc_sales_app.Pages.Sales
             int rowCount = transactionList.Rows.Count;
             if (SelectedRow < rowCount - 1)
             {
-                SelectedRow++;
-                fetchQuotationDetails();
+
+                var nextRow = transactionList.Rows.Cast<DataRow>()
+                                      .Skip(SelectedRow + 1)
+                                      .FirstOrDefault();
+                if (nextRow != null)
+                {
+                    SelectedRow = transactionList.Rows.IndexOf(nextRow);
+                    bind(true);
+                }
+
+                //SelectedRow++;
+                //bind(true);
+                //fetchQuotationDetails();
             }
         }
 
@@ -665,14 +729,9 @@ namespace smpc_sales_app.Pages.Sales
             if (SelectedRow >= 1)
             {
                 SelectedRow--;
-                fetchQuotationDetails();
+                bind(true);
             }
         }
-
-        private DataTable bpi_general = new DataTable();
-        private DataTable bpi_address = new DataTable();
-        private DataTable bpi_contacts = new DataTable();
-
         private async void button1_Click(object sender, EventArgs e)
         {
             List<int> t1 = new List<int>();
@@ -692,12 +751,8 @@ namespace smpc_sales_app.Pages.Sales
 
                     var isSuccess_baseid = result.TryGetValue("id", out id);
 
-                    var data = await QuotationService.GetBpiId(id);
-                    bpi_general = JsonHelper.ToDataTable(data.general);
-                    bpi_address = JsonHelper.ToDataTable(data.address);
-                    bpi_contacts = JsonHelper.ToDataTable(data.contacts);
-
                     Panel[] pnl_list = { pnl_header };
+                    txt_customer_id.Text = id.ToString();
                     Helpers.BindControls(pnl_list, bpi_general);
                     Helpers.BindControls(pnl_list, bpi_address);
                     Helpers.BindControls(pnl_list, bpi_contacts);
@@ -728,13 +783,13 @@ namespace smpc_sales_app.Pages.Sales
         private static class QuickQuoteDGV
         {
             public static int QTY = 5;
-            public static int UNIT_MEASURE = 6;
-            public static int UNIT_PRICE = 6;
-            public static int DISCOUNT = 7;
-            public static int DISCOUNT_AMOUNT = 8;
-            public static int NET_DISCOUNT = 9;
-            public static int NET_AMOUNT = 10;
-            public static int LINE_TOTAL = 11;
+            //public static int UNIT_MEASURE = ;
+            public static int UNIT_PRICE = 7;
+            public static int DISCOUNT = 8;
+            public static int DISCOUNT_AMOUNT = 9;
+            public static int NET_DISCOUNT = 10;
+            public static int NET_AMOUNT = 11;
+            public static int LINE_TOTAL = 12;
         }
 
         private class DGVComputation
@@ -849,8 +904,7 @@ namespace smpc_sales_app.Pages.Sales
                 if (result != -1)
                 {
                     SelectedRow = result;
-                    fetchQuotationDetails();
-                    //fetchQuotationDetails();
+                    bind(true);
                 }
             }
         }
