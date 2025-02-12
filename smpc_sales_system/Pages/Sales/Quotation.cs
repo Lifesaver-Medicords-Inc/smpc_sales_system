@@ -96,11 +96,6 @@ namespace smpc_sales_app.Pages.Sales
             bpi_general = JsonHelper.ToDataTable(bpi_data.general);
             bpi_address = JsonHelper.ToDataTable(bpi_data.address);
             bpi_contacts = JsonHelper.ToDataTable(bpi_data.contacts);
-
-            customerList.Merge(bpi_dt);
-            customerList.Merge(bpi_general);
-            customerList.Merge(bpi_address);
-            customerList.Merge(bpi_contacts);
         }
 
 
@@ -382,6 +377,10 @@ namespace smpc_sales_app.Pages.Sales
                     this.dgv_quick_quote_details.Rows[e.RowIndex].Cells[QuickQuoteDGV.NET_DISCOUNT].Value = DgvComputation.NetDiscount;
                     this.dgv_quick_quote_details.Rows[e.RowIndex].Cells[QuickQuoteDGV.DISCOUNT_AMOUNT].Value = DgvComputation.DiscountedAmount;
                     this.dgv_quick_quote_details.Rows[e.RowIndex].Cells[QuickQuoteDGV.LINE_TOTAL].Value = DgvComputation.LineTotal;
+                    
+
+
+                    //bs_quick_quotes_details.ResetBindings(true);
 
                     foreach (DataGridViewRow row in this.dgv_quick_quote_details.Rows)
                     {
@@ -389,6 +388,7 @@ namespace smpc_sales_app.Pages.Sales
                         var netDiscount = row.Cells[QuickQuoteDGV.NET_DISCOUNT].Value;
                         var discountedAmount = row.Cells[QuickQuoteDGV.DISCOUNT_AMOUNT].Value;
                         var lineTotal = row.Cells[QuickQuoteDGV.LINE_TOTAL].Value;
+
 
                         if (netAmount != null && !String.IsNullOrEmpty(netAmount.ToString()))
                         {
@@ -473,6 +473,11 @@ namespace smpc_sales_app.Pages.Sales
             fetchItemData();
             fetchBpiData();
 
+            dtp_date.Format = DateTimePickerFormat.Custom;
+            dtp_date.CustomFormat = "MMM dd yyyy";
+            dtp_valid_until.Format = DateTimePickerFormat.Custom;
+            dtp_valid_until.CustomFormat = "MMM dd yyyy";
+
 
             if (!string.IsNullOrEmpty(documentNo))
             {
@@ -488,18 +493,6 @@ namespace smpc_sales_app.Pages.Sales
                 this.Size = new Size(1386 - 80, 900);  // Set the desired width and height for the form
 
                 this.tabControl.ItemSize = new Size(0, 0);
-
-                cmb_payment_terms.DataSource = CacheData.PaymentTerms;
-                cmb_payment_terms.DisplayMember = "code";
-                cmb_payment_terms.ValueMember = "id";
-
-                cmb_ship_to.DataSource = CacheData.PaymentTerms;
-                cmb_ship_to.DisplayMember = "code";
-                cmb_ship_to.ValueMember = "id";
-
-                cmb_bill_to.DataSource = CacheData.PaymentTerms;
-                cmb_bill_to.DisplayMember = "code";
-                cmb_bill_to.ValueMember = "id";
 
                 cmb_application.DataSource = CacheData.ApplicationSetup;
                 cmb_application.DisplayMember = "code";
@@ -533,6 +526,8 @@ namespace smpc_sales_app.Pages.Sales
                 var data = ds_quick_quote.Tables["quotation_details"];
 
                 bs_unit.DataSource = CacheData.UoM;
+                bs_payment_terms.DataSource = CacheData.PaymentTerms;
+
                 //var combobox = (DataGridViewComboBoxColumn)dgv_quick_quote_details.Columns["unit_code"];
                 //combobox.DataSource = CacheData.UoM;
                 //combobox.DisplayMember = "name";
@@ -552,6 +547,7 @@ namespace smpc_sales_app.Pages.Sales
                 HeaderList.Columns.Add("branch_name", typeof(string));
                 HeaderList.Columns.Add("customer_code", typeof(string));
                 HeaderList.Columns.Add("number", typeof(string));
+               
 
                 foreach (DataRow parentRow in this.transactionList.Rows)
                 {
@@ -562,14 +558,18 @@ namespace smpc_sales_app.Pages.Sales
                     }
 
                     string ID = parentRow["customer_id"].ToString();
-                    DataRow[] bpiRows = customerList.Select($"based_id = '{ID}'");
-                    DataRow[] contactsRows = customerList.Select($"contacts_based_id = '{ID}'");
+                    DataRow[] bpiRows = bpi_general.Select($"based_id = '{ID}'");
+                    DataRow[] contactsRows = bpi_contacts.Select($"contacts_based_id = '{ID}'");
+
+                    //DataRow[] BillAddressRows = bpi_address.Select($"id = '{BillToId}'");
+                    //DataRow[] ShipAddressRows = bpi_address.Select($"id = '{ShipToId}'");
 
                     if (bpiRows.Length > 0)
                     {
                         newRow["branch_name"] = bpiRows[0]["branch_name"].ToString();
                         newRow["customer_code"] = bpiRows[0]["customer_code"].ToString();
                         newRow["number"] = contactsRows[0]["number"].ToString();
+                        
                     }
                     else
                     {
@@ -626,24 +626,35 @@ namespace smpc_sales_app.Pages.Sales
         private void ValidUntilDate()
         {
             var date = dtp_date.Value;
-            var noOfDays = txt_days.Text == "" ? "0" : txt_days.Text;
+            var noOfDays = txt_days.Text;
 
-            if (int.Parse(noOfDays) > 0 && int.Parse(noOfDays) < 1000)
+            // Default to "30" days if input is empty
+            if (string.IsNullOrEmpty(noOfDays))
             {
-                dtp_valid_until.Text = date.AddDays(double.Parse(noOfDays)).ToString();
+                noOfDays = "30";
+            }
+
+            // Parse the number of days
+            if (int.TryParse(noOfDays, out int days) && days > 0 && days < 1000)
+            {
+                // Add the valid number of days to the selected date
+                dtp_valid_until.Value = date.AddDays(days);
             }
             else
             {
+                // Invalid or out of range input, reset to default (30 days)
                 txt_days.Text = "30";
+                dtp_valid_until.Value = date.AddDays(30); // Adding 30 days as the default
             }
         }
+
 
         private void dtp_date_ValueChanged(object sender, EventArgs e)
         {
             ValidUntilDate();
         }
 
-        public DataTable customerList { get; set; } = new DataTable();
+        public  DataTable customerList { get; set; } = new DataTable();
         private DataTable bpi_dt = new DataTable();
         private DataTable bpi_general = new DataTable();
         private DataTable bpi_address = new DataTable();
@@ -654,11 +665,8 @@ namespace smpc_sales_app.Pages.Sales
             Helpers.ResetControls(pnl_header);
             Helpers.ResetControls(pnl_footer);
             Panel[] pnls = { pnl_header, pnl_footer };
-            Helpers.ResetReadOnlyControls(pnls);
-
-            // sets the version to 1 if new data and make it readonly to prevent editing
-            txt_version_no.Text = "1";
-            txt_version_no.ReadOnly = true;
+            Helpers.ReadOnlyControls(pnls);
+            btn_add_customer.Enabled = true;
 
             foreach (Control ctrl in pnl_footer.Controls)
             {
@@ -667,9 +675,6 @@ namespace smpc_sales_app.Pages.Sales
                     ((TextBox)ctrl).Text = "0";
                 }
             }
-
-            pnl_header.Enabled = true;
-            pnl_footer.Enabled = true;
 
             toolstrip_quotation.Enabled = false;
             dgv_quick_quote_details.Enabled = true;
@@ -680,7 +685,8 @@ namespace smpc_sales_app.Pages.Sales
             DocumentIncrementer();
             txt_vat_percent.Text = "12";
             txt_vat_percent.ReadOnly = true;
-            //this.QuickQuotesDgvDefaultValues();
+            
+            DataTable dt = (DataTable)bs_quick_quotes_details.DataSource;
         }
 
         private void btn_new_version_Click(object sender, EventArgs e)
@@ -693,7 +699,25 @@ namespace smpc_sales_app.Pages.Sales
             toolstrip_quotation.Enabled = false;
             dgv_quick_quote_details.Enabled = true;
 
-            txt_version_no.Text = (int.Parse(txt_version_no.Text) + 1).ToString();
+            string documentNo = txt_document_no.Text;
+
+            var latestVer = allTransactionList.AsEnumerable()
+                     .Where(row => row["document_no"].ToString() == documentNo)
+                     .GroupBy(row => row["document_no"])
+                     .Select(group => group.OrderByDescending(row => row["version_no"])
+                     .First()) 
+                     .ToList();
+
+
+            if (latestVer.Any())
+            {
+                int latestVersionNo = Convert.ToInt32(latestVer.First()["version_no"]);
+                txt_version_no.Text = (latestVersionNo + 1).ToString();
+            }
+            else
+            {
+                txt_version_no.Text = "1"; 
+            }
         }
 
         private void btn_cancel_Click(object sender, EventArgs e)
@@ -709,19 +733,9 @@ namespace smpc_sales_app.Pages.Sales
             int rowCount = transactionList.Rows.Count;
             if (SelectedRow < rowCount - 1)
             {
-
-                var nextRow = transactionList.Rows.Cast<DataRow>()
-                                      .Skip(SelectedRow + 1)
-                                      .FirstOrDefault();
-                if (nextRow != null)
-                {
-                    SelectedRow = transactionList.Rows.IndexOf(nextRow);
-                    bind(true);
-                }
-
-                //SelectedRow++;
-                //bind(true);
-                //fetchQuotationDetails();
+                SelectedRow++;
+         
+                bind(true);
             }
         }
 
@@ -733,13 +747,14 @@ namespace smpc_sales_app.Pages.Sales
                 bind(true);
             }
         }
+        DataTable PerCustomerAddressList = new DataTable();
         private async void button1_Click(object sender, EventArgs e)
         {
             List<int> t1 = new List<int>();
             List<string> s1 = new List<string>();
             string Title = "Business Partner Info";
             string endpoint = "/api/bpi";
-            SetupSelectionModal bpi = new SetupSelectionModal(Title, endpoint, customerList, t1, s1, 0);
+            SetupSelectionModal bpi = new SetupSelectionModal(Title, endpoint, bpi_general, t1, s1, 0);
             DialogResult r = bpi.ShowDialog();
 
             if (r == DialogResult.OK)
@@ -754,10 +769,32 @@ namespace smpc_sales_app.Pages.Sales
 
                     Panel[] pnl_list = { pnl_header };
                     txt_customer_id.Text = id.ToString();
-                    Helpers.BindControls(pnl_list, bpi_general);
-                    Helpers.BindControls(pnl_list, bpi_address);
-                    Helpers.BindControls(pnl_list, bpi_contacts);
-                    //MessageBox.Show("" + data);
+
+
+
+                    var GeneralBpi =  Helpers.FilterDataTable(bpi_general, id, "based_id");
+                    var BillAddress = Helpers.FilterDataTable(bpi_address, id, "address_based_id");
+                    var ShipAddress = Helpers.FilterDataTable(bpi_address, id, "address_based_id");
+
+                    cmb_ship_to.DataSource = BillAddress;
+                    cmb_ship_to.DisplayMember = "location";
+                    cmb_ship_to.ValueMember = "address_id";
+
+                    cmb_bill_to.DataSource = ShipAddress;
+                    cmb_bill_to.DisplayMember = "location";
+                    cmb_bill_to.ValueMember = "address_id";
+
+                    Helpers.BindControls(pnl_list, GeneralBpi);
+                    
+
+
+                    Helpers.ResetReadOnlyControls(pnl_list);
+
+                    // sets the version to 1 if new data and make it readonly to prevent editing
+                    txt_version_no.Text = "1";
+                    txt_version_no.ReadOnly = true;
+                    txt_document_no.ReadOnly = true;
+
                 }
             }
         }
@@ -816,9 +853,9 @@ namespace smpc_sales_app.Pages.Sales
                 {
                     if (this.Qty > 0 && this.UnitPrice > 0)
                     {
-                        // COMPUTE NET AMOUNT
                         this.NetAmount = this.Qty * this.UnitPrice;
-
+                        //MessageBox.Show("" + this.NetAmount);
+                            
                         //// COMPUTE DISCOUNTED AMOUNT
                         if (!String.IsNullOrEmpty(this.DiscountPercent) && this.DiscountPercent != "0")
                         {
@@ -826,6 +863,7 @@ namespace smpc_sales_app.Pages.Sales
                         }
                         //// COMPUTE NET DISCOUNT
                         this.NetDiscount = this.DiscountedAmount * this.Qty;
+                        //MessageBox.Show("" + this.NetDiscount);
 
                         //// COMPUTE LINE TOTAL
                         this.LineTotal = this.DiscountedAmount > 0 ? this.DiscountedAmount * this.Qty : this.NetAmount;

@@ -45,6 +45,18 @@ namespace smpc_inventory_app.Pages
         {
 
             dg_general.DataSource = this.Dt;
+            MessageBox.Show("tt");
+
+          
+
+
+            foreach (DataGridViewColumn column in dg_general.Columns)
+            {
+                if (column.Name != "cust_code" && column.Name != "cust_name")
+                {
+                    column.Visible = false;
+                }
+            }
 
         }
 
@@ -59,6 +71,7 @@ namespace smpc_inventory_app.Pages
             return result;
         }
 
+
         private void dg_general_CellClick(object sender, DataGridViewCellEventArgs e)
         {
             if (e.RowIndex >= 0)
@@ -67,7 +80,7 @@ namespace smpc_inventory_app.Pages
 
                 Dictionary<string, string> data = new Dictionary<string, string>()
                 {
-                    { "bpi_id", base_id}
+                    { "id", base_id}
                 };
 
                 this.result = data;
