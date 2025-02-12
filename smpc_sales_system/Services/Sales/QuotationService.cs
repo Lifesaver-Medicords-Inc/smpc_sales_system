@@ -19,7 +19,7 @@ namespace smpc_sales_app.Services.Sales
      class QuotationService
     {
         static string url = "/sales/quotation";
-        static string url_customer = "/bpi/customers";
+        static string url_customer = "/bpi/";
         static string url_search = "/bpi/";
 
 

@@ -544,7 +544,7 @@ namespace smpc_sales_app.Pages.Sales
 
         private void bind(bool isBind = false)
         {
-            if (isBind)
+            if (isBind) 
             {
                 Panel[] pnlList = { pnl_header, pnl_footer };
 
