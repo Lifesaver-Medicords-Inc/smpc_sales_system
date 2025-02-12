@@ -15,6 +15,7 @@ using smpc_sales_app.Data;
 using smpc_sales_app.Services.Sales;
 using smpc_sales_system.Services.Sales.Models;
 using smpc_sales_app.Services.Helpers;
+using smpc_sales_system.Models;
 
 namespace smpc_sales_app.Pages.Sales
 {
@@ -23,12 +24,20 @@ namespace smpc_sales_app.Pages.Sales
         int SelectedRow = 0;
         public Orders()
         {
+            fetchBpiData();
+            fetchItemData();
             InitializeComponent();
         }
+        private DataTable bpi_dt = new DataTable();
+        private DataTable bpi_general = new DataTable();
+        private DataTable bpi_address = new DataTable();
+        private DataTable bpi_contacts = new DataTable();
         public DataTable OrderList { get; set; } = new DataTable();
         public DataTable DetailsList { get; set; } = new DataTable();
         public DataTable transactionList { get; set; } = new DataTable();
         public DataTable childList { get; set; } = new DataTable();
+        public DataTable ItemList { get; set; } = new DataTable();
+
         private async void FetchData()
         {
             OrderList data = await OrderService.GetOrders();
@@ -55,6 +64,21 @@ namespace smpc_sales_app.Pages.Sales
 
             }
         }
+        private async void fetchItemData()
+        {
+            var itemData = await ItemService.GetItem();
+            ItemList = JsonHelper.ToDataTable(itemData.items);
+        }
+        private async void fetchBpiData()
+        {
+            Bpi_Class bpi_data = await QuotationService.GetBpiCustomers();
+
+            bpi_dt = JsonHelper.ToDataTable(bpi_data.bpi);
+            bpi_general = JsonHelper.ToDataTable(bpi_data.general);
+            bpi_address = JsonHelper.ToDataTable(bpi_data.address);
+            bpi_contacts = JsonHelper.ToDataTable(bpi_data.contacts);
+
+        }
         private async void fetchQuotationDetails()
         {
             SalesQuotationList data = await QuotationService.GetQuotations();
@@ -75,13 +99,89 @@ namespace smpc_sales_app.Pages.Sales
             if (isBind)
             {
                 Panel[] pnlList = { pnl_header, pnl_footer };
-                Helpers.BindControls(pnlList, transactionList, SelectedRow);
-                //dgv_quick_quote_details.DataSource = dataView;
-                // dgv_quick_quote_details.DataSource = childList;
-                
-                    DataView dataview = new DataView(this.childList);
+
+                DataTable HeaderList = this.transactionList.Clone();    
+                HeaderList.Columns.Add("branch_name", typeof(string));
+                //HeaderList.Columns.Add("tin", typeof(string));
+                HeaderList.Columns.Add("customer_code", typeof(string));
+                HeaderList.Columns.Add("bill_to", typeof(string));
+                HeaderList.Columns.Add("ship_to", typeof(string));
+                HeaderList.Columns.Add("tin", typeof(string));
+
+                foreach (DataRow parentRow in this.transactionList.Rows)
+                {
+                    DataRow newRow = HeaderList.NewRow();
+                    foreach (DataColumn col in this.transactionList.Columns)
+                    {
+                        newRow[col.ColumnName] = parentRow[col.ColumnName];
+                    }
+
+                    string ID = parentRow["customer_id"].ToString();
+                    string ShipID = parentRow["ship_to_id"].ToString();
+                    string BillID = parentRow["bill_to_id"].ToString();
+                    DataRow[] bpiGenRows = bpi_general.Select($"id = '{ID}'");
+                    DataRow[] billRows = bpi_address.Select($"address_id = '{BillID}'");
+                    DataRow[] shipRows = bpi_address.Select($"address_id = '{ShipID}'");
+                    
+                    if (bpiGenRows.Length > 0)
+                    {
+                        newRow["branch_name"] = bpiGenRows[0]["branch_name"].ToString();
+                        newRow["customer_code"] = bpiGenRows[0]["customer_code"].ToString();
+                        string BasedID = bpiGenRows[0]["based_id"].ToString();
+                        DataRow[] bpiRows = bpi_dt.Select($"id = '{BasedID}'");
+                        newRow["tin"] = bpiRows[0]["tin"].ToString();
+                        if (billRows.Length > 0)
+                        {
+                            newRow["bill_to"] = billRows[0]["location"].ToString();
+                            newRow["ship_to"] = shipRows[0]["location"].ToString();
+                        }
+                        else
+                        {
+                            newRow["bill_to"] = "No Location"; 
+                        }
+                    }
+                    else
+                    {
+                        newRow["branch_name"] = "Unknown Customer";
+                        newRow["customer_code"] = "N/A";
+                    }
+
+                    HeaderList.Rows.Add(newRow);
+                }
+                Helpers.BindControls(pnlList, HeaderList, SelectedRow);
+                // Clone childList and add item_name column
+                DataTable withItemList = this.childList.Clone();
+                withItemList.Columns.Add("short_desc", typeof(string));
+                withItemList.Columns.Add("item_code", typeof(string));
+
+                // Iterate through childList (not ItemList)
+                foreach (DataRow childRow in this.childList.Rows)
+                {
+                    DataRow newRow = withItemList.NewRow();
+                    foreach (DataColumn col in childList.Columns)
+                    {
+                        newRow[col.ColumnName] = childRow[col.ColumnName];
+                    }
+
+                    // Look up item name from ItemList
+                    string itemId = childRow["item_id"].ToString();
+                    DataRow[] itemRows = ItemList.Select($"id = '{itemId}'");
+                    if (itemRows.Length > 0)
+                    {
+                        newRow["short_desc"] = itemRows[0]["short_desc"].ToString();
+                        newRow["item_code"] = itemRows[0]["item_code"].ToString();
+                    }
+                    else
+                    {
+                        newRow["short_desc"] = "Unknown Item";
+                        newRow["item_code"] = "N/A";
+                    }
+                    withItemList.Rows.Add(newRow);
+                }
+
+                // Create filtered view
+                DataView dataview = new DataView(withItemList);
                 dataview.RowFilter = "based_id = '" + this.transactionList.Rows[this.SelectedRow]["id"].ToString() + "'";
-                //dgv_quick_quotes_show.DataSource = dataview;
 
                 dgv_order_sales.DataSource = dataview;
                 //foreach (DataGridViewRow row in dgv_order_sales.Rows)
@@ -198,11 +298,17 @@ namespace smpc_sales_app.Pages.Sales
 
         //    txt_total.Text = total.ToString("0.00");
         //}
-
+        
         private void Orders_Load(object sender, EventArgs e)
         {
-            FetchData();
+            //FetchData();
+            fetchItemData();
+            fetchBpiData();
             fetchQuotationDetails();
+
+            cmb_payment_terms.DataSource = CacheData.PaymentTerms;
+            cmb_payment_terms.DisplayMember = "code";
+            cmb_payment_terms.ValueMember = "id";
             // Helpers.LoadDirectory("D:\\LIFESAVER\\LIFESAVER\\TEST", treeview_sales);
         }
 
@@ -414,7 +520,7 @@ namespace smpc_sales_app.Pages.Sales
                     {
                         await OrderService.Insert(parentData);
                         MessageBox.Show("Added data");
-                        FetchData();
+                        //FetchData();
                         fetchQuotationDetails();
                         // this should await a response in the future if the response is sucess proceed to create if not notify the user
                         //Helpers.ResetControls(pnl_header);
@@ -470,5 +576,6 @@ namespace smpc_sales_app.Pages.Sales
         {
 
         }
+
     }
 }
