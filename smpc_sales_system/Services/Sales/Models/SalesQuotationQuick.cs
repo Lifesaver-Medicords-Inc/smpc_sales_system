@@ -8,6 +8,7 @@ namespace smpc_sales_system.Services.Sales.Models
 {
     class SalesQuotationQuicks
     {
+        public int id { get; set; }
         public int based_id { get; set; }
         public int item_id { get; set; }
         public int item_name_id { get; set; }
