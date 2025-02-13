@@ -39,7 +39,7 @@ namespace smpc_sales_system.Pages.Sales
             this.dgv_sales_opportunities = new System.Windows.Forms.DataGridView();
             this.tag = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.document_no = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.customer_name = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.branch_name = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.project_name = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.date = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.client_req = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -135,7 +135,7 @@ namespace smpc_sales_system.Pages.Sales
             this.dgv_sales_opportunities.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.tag,
             this.document_no,
-            this.customer_name,
+            this.branch_name,
             this.project_name,
             this.date,
             this.client_req,
@@ -168,13 +168,13 @@ namespace smpc_sales_system.Pages.Sales
             this.document_no.Name = "document_no";
             this.document_no.ReadOnly = true;
             // 
-            // customer_name
+            // branch_name
             // 
-            this.customer_name.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.customer_name.DataPropertyName = "customer_name";
-            this.customer_name.HeaderText = "COMPANY NAME";
-            this.customer_name.Name = "customer_name";
-            this.customer_name.ReadOnly = true;
+            this.branch_name.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.branch_name.DataPropertyName = "branch_name";
+            this.branch_name.HeaderText = "COMPANY NAME";
+            this.branch_name.Name = "branch_name";
+            this.branch_name.ReadOnly = true;
             // 
             // project_name
             // 
@@ -291,7 +291,7 @@ namespace smpc_sales_system.Pages.Sales
         private System.Windows.Forms.TextBox txt_search;
         private System.Windows.Forms.DataGridViewTextBoxColumn tag;
         private System.Windows.Forms.DataGridViewTextBoxColumn document_no;
-        private System.Windows.Forms.DataGridViewTextBoxColumn customer_name;
+        private System.Windows.Forms.DataGridViewTextBoxColumn branch_name;
         private System.Windows.Forms.DataGridViewTextBoxColumn project_name;
         private System.Windows.Forms.DataGridViewTextBoxColumn date;
         private System.Windows.Forms.DataGridViewTextBoxColumn client_req;

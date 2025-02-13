@@ -27,6 +27,8 @@ namespace smpc_sales_app.Pages.Sales
             fetchBpiData();
             fetchItemData();
             InitializeComponent();
+            Helpers.ResetControls(pnl_header);
+            Helpers.ResetControls(pnl_footer);
         }
         private DataTable bpi_dt = new DataTable();
         private DataTable bpi_general = new DataTable();
@@ -116,20 +118,27 @@ namespace smpc_sales_app.Pages.Sales
                         newRow[col.ColumnName] = parentRow[col.ColumnName];
                     }
 
-                    string ID = parentRow["customer_id"].ToString();
+                    int ID = (int)parentRow["customer_id"];
                     string ShipID = parentRow["ship_to_id"].ToString();
                     string BillID = parentRow["bill_to_id"].ToString();
-                    DataRow[] bpiGenRows = bpi_general.Select($"id = '{ID}'");
+                    DataRow[] bpiGenRows = bpi_general.Select($"based_id = '{ID}'");
                     DataRow[] billRows = bpi_address.Select($"address_id = '{BillID}'");
                     DataRow[] shipRows = bpi_address.Select($"address_id = '{ShipID}'");
-                    
                     if (bpiGenRows.Length > 0)
                     {
                         newRow["branch_name"] = bpiGenRows[0]["branch_name"].ToString();
                         newRow["customer_code"] = bpiGenRows[0]["customer_code"].ToString();
                         string BasedID = bpiGenRows[0]["based_id"].ToString();
                         DataRow[] bpiRows = bpi_dt.Select($"id = '{BasedID}'");
-                        newRow["tin"] = bpiRows[0]["tin"].ToString();
+                        if (bpiRows.Length > 0)
+                        {
+                            newRow["tin"] = bpiRows[0]["tin"].ToString();
+                        }
+                        else
+                        {
+                            newRow["tin"] = "No TIN";
+                        }
+
                         if (billRows.Length > 0)
                         {
                             newRow["bill_to"] = billRows[0]["location"].ToString();
@@ -251,14 +260,14 @@ namespace smpc_sales_app.Pages.Sales
             decimal total = 0.0m;
 
             // Ensure the column "line_total" exists
-            if (dgv_order_sales.Columns.Contains("line_total"))
+            if (dgv_order_sales.Columns.Contains("linetotal"))
             {
                 foreach (DataGridViewRow row in dgv_order_sales.Rows)
                 {
-                    if (row.Cells["line_total"].Value != null)
+                    if (row.Cells["linetotal"].Value != null)
                     {
                         decimal totalPrice;
-                        if (decimal.TryParse(row.Cells["line_total"].Value.ToString(), out totalPrice))
+                        if (decimal.TryParse(row.Cells["linetotal"].Value.ToString(), out totalPrice))
                         {
                             total += totalPrice;
                         }
@@ -305,10 +314,8 @@ namespace smpc_sales_app.Pages.Sales
             fetchItemData();
             fetchBpiData();
             fetchQuotationDetails();
-
-            cmb_payment_terms.DataSource = CacheData.PaymentTerms;
-            cmb_payment_terms.DisplayMember = "code";
-            cmb_payment_terms.ValueMember = "id";
+            bs_payment_terms.DataSource = CacheData.PaymentTerms;
+            bs_ship_type.DataSource = CacheData.ShipTypeSetup;
             // Helpers.LoadDirectory("D:\\LIFESAVER\\LIFESAVER\\TEST", treeview_sales);
         }
 
@@ -451,6 +458,41 @@ namespace smpc_sales_app.Pages.Sales
                 var parentDataHeader = Helpers.GetControlsValues(pnl_header);
                 var parentDataFooter = Helpers.GetControlsValues(pnl_footer);
 
+                var txtIdValue = ((TextBox)pnl_header.Controls["txt_id"]).Text;
+                parentDataHeader["quotation_id"] = txtIdValue;
+
+                if (parentDataHeader.ContainsKey("payment_terms_id") && parentDataHeader["payment_terms_id"] is string shipto)
+                {
+                    if (int.TryParse(shipto, out int shiptoId))
+                    {
+                        parentDataHeader["payment_terms_id"] = shiptoId;
+                    }
+                    else
+                    {
+                        MessageBox.Show("Invalid ship to ID");
+                        return;
+                    }
+                }
+
+                // List of columns to be converted to int
+                var columnsToConvert = new List<string> { "ship_to_id", "bill_to_id", "customer_id", "quotation_id" };
+
+                foreach (var column in columnsToConvert)
+                {
+                    if (parentDataHeader.ContainsKey(column) && parentDataHeader[column] is string columnValue)
+                    {
+                        if (int.TryParse(columnValue, out int parsedValue))
+                        {
+                            parentDataHeader[column] = parsedValue;
+                        }
+                        else
+                        {
+                            MessageBox.Show($"Invalid {column} value. It must be a valid integer.");
+                            return;
+                        }
+                    }
+                }
+
                 // Merge the two dictionaries
                 var parentData = new Dictionary<string, dynamic>(parentDataHeader);
 
@@ -478,12 +520,10 @@ namespace smpc_sales_app.Pages.Sales
                 {
                     Dictionary<string, object> data = new Dictionary<string, object>();
 
-                    data.Add("qty", item["qty"].ToString());
-                    data.Add("item_code", item["unit_code"].ToString());
-                    data.Add("item_description", item["item_description"].ToString());
+                    data.Add("based_id", int.Parse(item["basedid"].ToString()));
+                    data.Add("quotation_quick_id", int.Parse(item["quick_quote_id"].ToString()));
+                    data.Add("item_id", int.Parse(item["itemid"].ToString()));
                     data.Add("delivery_preference", item["delivery_preference"].ToString());
-                    data.Add("list_price", float.Parse(item["unit_price"].ToString()));
-                    data.Add("total_price", float.Parse(item["line_total"].ToString()));
                     data.Add("status", item["status"].ToString());
                     //data.Add("has_stocks", bool.Parse(item["has_stocks"].ToString()));
 
