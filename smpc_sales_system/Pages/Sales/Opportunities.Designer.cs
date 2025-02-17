@@ -29,6 +29,8 @@ namespace smpc_sales_system.Pages.Sales
         /// </summary>
         private void InitializeComponent()
         {
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
             this.panel1 = new System.Windows.Forms.Panel();
             this.btn_find = new System.Windows.Forms.Button();
             this.label2 = new System.Windows.Forms.Label();
@@ -145,11 +147,20 @@ namespace smpc_sales_system.Pages.Sales
             this.status,
             this.special_deal,
             this.Opportunity_id});
+            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.ControlText;
+            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.dgv_sales_opportunities.DefaultCellStyle = dataGridViewCellStyle2;
             this.dgv_sales_opportunities.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dgv_sales_opportunities.Location = new System.Drawing.Point(0, 0);
             this.dgv_sales_opportunities.Name = "dgv_sales_opportunities";
             this.dgv_sales_opportunities.Size = new System.Drawing.Size(1143, 535);
             this.dgv_sales_opportunities.TabIndex = 0;
+            this.dgv_sales_opportunities.CellBeginEdit += new System.Windows.Forms.DataGridViewCellCancelEventHandler(this.dgv_sales_opportunities_CellBeginEdit);
             this.dgv_sales_opportunities.CellDoubleClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgv_sales_opportunities_CellDoubleClick);
             this.dgv_sales_opportunities.CellEndEdit += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgv_sales_opportunities_CellEndEdit);
             // 
@@ -164,6 +175,9 @@ namespace smpc_sales_system.Pages.Sales
             // 
             this.document_no.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
             this.document_no.DataPropertyName = "document_no";
+            dataGridViewCellStyle1.BackColor = System.Drawing.Color.White;
+            dataGridViewCellStyle1.ForeColor = System.Drawing.Color.Teal;
+            this.document_no.DefaultCellStyle = dataGridViewCellStyle1;
             this.document_no.HeaderText = "QUOTE REF.";
             this.document_no.Name = "document_no";
             this.document_no.ReadOnly = true;
@@ -213,7 +227,7 @@ namespace smpc_sales_system.Pages.Sales
             this.last_update.DataPropertyName = "last_update";
             this.last_update.HeaderText = "LAST UPDATE";
             this.last_update.Name = "last_update";
-            this.last_update.ReadOnly = true;
+            this.last_update.ToolTipText = "double click to update";
             // 
             // stage
             // 

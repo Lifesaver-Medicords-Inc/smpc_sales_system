@@ -69,6 +69,12 @@
     <Compile Include="Models\ItemParent.cs" />
     <Compile Include="Models\PaymentTermsModel.cs" />
     <Compile Include="Models\QuotationModel.cs" />
+    <Compile Include="Pages\SearchOrder.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Pages\SearchOrder.Designer.cs">
+      <DependentUpon>SearchOrder.cs</DependentUpon>
+    </Compile>
     <Compile Include="Pages\VersionModal.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -197,6 +203,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Pages\Sales\ShipTypeSetup.resx">
       <DependentUpon>ShipTypeSetup.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Pages\SearchOrder.resx">
+      <DependentUpon>SearchOrder.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Pages\SetupModal.resx">
       <DependentUpon>SetupModal.cs</DependentUpon>

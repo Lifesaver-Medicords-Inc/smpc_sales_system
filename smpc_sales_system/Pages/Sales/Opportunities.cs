@@ -22,6 +22,7 @@ namespace smpc_sales_system.Pages.Sales
 
     public partial class Opportunities : UserControl
     {
+        private Layout layoutForm;
         public Opportunities()
         {
             InitializeComponent();
@@ -82,19 +83,22 @@ namespace smpc_sales_system.Pages.Sales
         private event HandleShowForm showQuotation;
         private void dgv_sales_opportunities_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
-            if (e.RowIndex >= 0)
+            if (dgv_sales_opportunities.Columns[e.ColumnIndex].Name == "document_no") 
             {
-                string documentNo = dgv_sales_opportunities.Rows[e.RowIndex].Cells["document_no"].Value.ToString();
-                if (documentNo.StartsWith("Q#"))
+                if (e.RowIndex >= 0)
                 {
-                    documentNo = documentNo.Substring(2);
+                    string documentNo = dgv_sales_opportunities.Rows[e.RowIndex].Cells["document_no"].Value.ToString();
+                    if (documentNo.StartsWith("Q#"))
+                    {
+                        documentNo = documentNo.Substring(2);
+                    }
+                    Quotation quotationPage = new Quotation(documentNo);
+
+                    this.Parent.Controls.Add(quotationPage);
+
+                    //showQuotation.Invoke("Sales Quotation", quotationPage);
+                    this.Hide();
                 }
-                Quotation quotationPage = new Quotation(documentNo);
-
-                this.Parent.Controls.Add(quotationPage);
-
-                //showQuotation.Invoke("Sales Quotation", quotationPage);
-                this.Hide();
             }
         }
         private async void Opportunities_Load(object sender, EventArgs e)
@@ -133,7 +137,7 @@ namespace smpc_sales_system.Pages.Sales
                 Dictionary<string, object> data = new Dictionary<string, object>();
 
                 // Define the columns to be processed
-                string[] requiredColumns = { "tag", "document_no", "client_req", "stage", "status", "special_deal" };
+                string[] requiredColumns = { "tag", "document_no", "client_req", "stage", "status", "special_deal", "last_update" };
 
                 // Populate the data dictionary with the required columns' values
                 foreach (var column in requiredColumns)
@@ -158,21 +162,29 @@ namespace smpc_sales_system.Pages.Sales
                         if (opportunityId == "0")
                         {
                             response = await OpportunityService.Insert(data);
+                            if (response != null && response.Success)
+                            {
+                                MessageBox.Show("Opportunity Successfully saved");
+                                fetchQuotationDetails();
+                            }
+                            else
+                            {
+                                MessageBox.Show("Failed to save quotation. Please try again.");
+                            }
                         }
                         else
                         {
                             response = await OpportunityService.Update(data);
+                            if (response != null && response.Success)
+                            {
+                                MessageBox.Show("Opportunity Successfully updated");
+                                fetchQuotationDetails();
+                            }
+                            else
+                            {
+                                MessageBox.Show("Failed to update quotation. Please try again.");
+                            }
                         }
-                    }
-
-                    if (response != null && response.Success)
-                    {
-                        MessageBox.Show("Quotation Successfully saved");
-                        fetchQuotationDetails();
-                    }
-                    else
-                    {
-                        MessageBox.Show("Failed to save quotation. Please try again.");
                     }
                 }
                 else
@@ -188,8 +200,60 @@ namespace smpc_sales_system.Pages.Sales
         private void btn_find_Click(object sender, EventArgs e)
         {
             string searchval = txt_search.Text.ToString();
-            var data = Helpers.FilterDataTable(transactionList, searchval, "tag", "document_no", "stage", "status", "special_deal", "customer_name", "project_name");
+            var data = Helpers.FilterDataTable(transactionList, searchval, "tag", "document_no", "stage", "status", "special_deal", "branch_name", "project_name", "last_update");
             dgv_sales_opportunities.DataSource = data;
+        }
+        private DateTimePicker dateTimePicker;
+
+        private void dgv_sales_opportunities_CellBeginEdit(object sender, DataGridViewCellCancelEventArgs e)
+        {
+            if (dgv_sales_opportunities.Columns[e.ColumnIndex].Name == "last_update") 
+            {
+                if (dateTimePicker != null)
+                {
+                    dgv_sales_opportunities.Controls.Remove(dateTimePicker);
+                }
+
+                dateTimePicker = new DateTimePicker();
+                dateTimePicker.Format = DateTimePickerFormat.Short; 
+                dateTimePicker.Size = new Size(dgv_sales_opportunities.Columns[e.ColumnIndex].Width, 22);
+
+                object cellValue = dgv_sales_opportunities.Rows[e.RowIndex].Cells[e.ColumnIndex].Value;
+
+                if (cellValue != DBNull.Value && cellValue != null)
+                {
+                    DateTime parsedDate;
+                    if (DateTime.TryParse(cellValue.ToString(), out parsedDate))
+                    {
+                        dateTimePicker.Value = parsedDate.Date; 
+                    }
+                    else
+                    {
+                        dateTimePicker.Value = DateTime.Now.Date;
+                    }
+                }
+                else
+                {
+                    dateTimePicker.Value = DateTime.Now.Date;
+                }
+
+                dgv_sales_opportunities.Controls.Add(dateTimePicker);
+
+                Rectangle rect = dgv_sales_opportunities.GetCellDisplayRectangle(e.ColumnIndex, e.RowIndex, true);
+                dateTimePicker.Location = new Point(rect.Left, rect.Top);
+
+                dateTimePicker.Visible = true;
+
+                // Set event for DateTimePicker value change
+                dateTimePicker.CloseUp += (sender1, e1) =>
+                {
+                    // Save the selected date in the DataGridView cell, removing the time part
+                    dgv_sales_opportunities.Rows[e.RowIndex].Cells[e.ColumnIndex].Value = dateTimePicker.Value.Date;
+
+                    // Remove the DateTimePicker control after selection
+                    dgv_sales_opportunities.Controls.Remove(dateTimePicker);
+                };
+            }
         }
 
 
