@@ -476,7 +476,17 @@ namespace smpc_sales_app.Pages.Sales
 
             if (!string.IsNullOrEmpty(documentNo))
             {
+                this.btn_quick_quote.BackColor = Color.FromArgb(255, 128, 128);
+                this.btn_project.BackColor = Color.White;
+
+                this.tabControl.SelectedIndex = 0;
+                this.tabControl.Height = 600;  // Set the desired width and height for the form
+                this.Size = new Size(1386 - 80, 900);  // Set the desired width and height for the form
+
+                this.tabControl.ItemSize = new Size(0, 0);
+
                 fetchQuotationDetailsByDocumentNo(documentNo);
+                bs_unit.DataSource = CacheData.UoM;
             }
             else
             {
