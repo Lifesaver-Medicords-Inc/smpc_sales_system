@@ -1,4 +1,5 @@
-﻿using System;
+﻿using smpc_app.Services.Helpers;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -94,6 +95,13 @@ namespace smpc_sales_system.Pages
                 this.DialogResult = DialogResult.OK;
                 this.Close();
             }
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            string searchval = txt_search.Text.ToString();
+            var data = Helpers.FilterDataTable(Dt, searchval, "document_no", "status", "doc", "quotation_id");
+            dgv_application_setup.DataSource = data;
         }
     }
 }
