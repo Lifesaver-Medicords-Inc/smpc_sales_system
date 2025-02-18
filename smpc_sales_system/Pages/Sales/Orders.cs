@@ -45,26 +45,24 @@ namespace smpc_sales_app.Pages.Sales
         {
             OrderList data = await OrderService.GetOrders();
 
-            OrderList = JsonHelper.ToDataTable(data.order);
-            DetailsList = JsonHelper.ToDataTable(data.sales_order_details);
-
-            // Add a default row to DetailsList
-            //if (DetailsList != null)
-            //{
-            //    DataRow defaultRow = DetailsList.NewRow();
-            //    defaultRow["based_id"] = OrderList.Rows[SelectedRow]["order_id"];
-            //    defaultRow["qty"] = "ADD NEW ITEM";
-            //    defaultRow["has_stocks"] = DBNull.Value;
-            //    DetailsList.Rows.Add(defaultRow);
-            //}
-
-            if (data != null)
+            if (data != null && data.order != null && data.order.Count > 0)
             {
-                //bind(true);
+                OrderList = JsonHelper.ToDataTable(data.order);
             }
             else
             {
+                // Handle the case where there is no order data, e.g., set an empty DataTable or log an error.
+                OrderList = new DataTable();
+            }
 
+            if (data != null && data.sales_order_details != null && data.sales_order_details.Count > 0)
+            {
+                DetailsList = JsonHelper.ToDataTable(data.sales_order_details);
+            }
+            else
+            {
+                // Handle the case where there is no sales_order_details data
+                DetailsList = new DataTable();
             }
         }
         private async void fetchItemData()
@@ -108,8 +106,9 @@ namespace smpc_sales_app.Pages.Sales
                 HeaderList.Columns.Add("bill_to", typeof(string));
                 HeaderList.Columns.Add("ship_to", typeof(string));
                 HeaderList.Columns.Add("tin", typeof(string));
-          
-
+                HeaderList.Columns.Add("vat_amount", typeof(string));
+                HeaderList.Columns.Add("gross_sales", typeof(string));
+                HeaderList.Columns.Add("net_amount_due", typeof(string));
                 foreach (DataRow parentRow in this.OrderList.Rows)
                 {
                     DataRow newRow = HeaderList.NewRow();
@@ -121,7 +120,9 @@ namespace smpc_sales_app.Pages.Sales
                     int quotationID = Convert.ToInt32(parentRow["quotation_id"]);
                     DataRow[] quotation = transactionList.Select($"id = '{quotationID}'");
                     string customerID = quotation[0]["customer_id"].ToString();
-
+                    newRow["vat_amount"] = quotation[0]["vat_amount"].ToString();
+                    newRow["gross_sales"] = quotation[0]["gross_sales"].ToString();
+                    newRow["net_amount_due"] = quotation[0]["net_amount_due"].ToString();
                     //int ID = (int)parentRow["customer_id"];
                     string ShipID = parentRow["ship_to_id"].ToString();
                     string BillID = parentRow["bill_to_id"].ToString();
@@ -164,13 +165,43 @@ namespace smpc_sales_app.Pages.Sales
 
 
                 Helpers.BindControls(pnlList, HeaderList, SelectedRow);
-                
+                foreach (var pnl in pnlList)
+                {
+                    foreach (Control control in pnl.Controls)
+                    {
+                        if (control is TextBox textBox && textBox.Name.Contains("txt_document_no"))
+                        {
+                            if (!textBox.Text.StartsWith("Q#"))
+                            {
+                                textBox.Text = "Q#" + textBox.Text;
+                            }
+                        }
+                        if (control is TextBox textBox2 && textBox2.Name.Contains("txt_doc"))
+                        {
+                            if (!textBox2.Text.StartsWith("SO#"))
+                            {
+                                textBox2.Text = "SO#" + textBox2.Text;
+                            }
+                        }
+                        if (control is TextBox textBox3 && textBox3.Name.Contains("txt_document_no"))
+                        {
+                            if (textBox3.Text.StartsWith("SO#"))
+                            {
+                                textBox3.Text = textBox3.Text.Substring(3);
+                            }
+                        }
+
+                    }
+                }
+
 
                 if (string.IsNullOrEmpty(txt_status.Text))
                 {
                     txt_status.Text = "-";
                 }
 
+                dtp_date.Value = Convert.ToDateTime(OrderList.Rows[SelectedRow]["date"]);
+                dtp_delivery_date.Value = Convert.ToDateTime(OrderList.Rows[SelectedRow]["delivery_date"]);
                 cmb_payment_terms.SelectedValue = this.OrderList.Rows[this.SelectedRow]["payment_terms_id"].ToString();
                 cmb_payment_terms.SelectedItem = this.OrderList.Rows[this.SelectedRow]["payment_terms_id"].ToString();
 
@@ -222,18 +253,7 @@ namespace smpc_sales_app.Pages.Sales
                 dataview.RowFilter = "based_id = '" + this.OrderList.Rows[this.SelectedRow]["order_id"].ToString() + "'";
 
                 dgv_order_sales.DataSource = dataview;
-                //foreach (DataGridViewRow row in dgv_order_sales.Rows)
-                //{
-                //    // Check each cell for null/DBNull and replace with "N/A"
-                //    foreach (DataGridViewCell cell in row.Cells)
-                //    {
-                //        if (cell.Value == DBNull.Value || cell.Value == null)
-                //        {
-                //            cell.Value = "N/A"; // Replace null/DBNull with "N/A"
-                //        }
-                //    }
-                //}
-                //dgv_quick_quote_details.DataSource = dataview;
+                CheckStatus();
             }
         }
         private void bindQuotation(bool isBind = false)
@@ -242,7 +262,7 @@ namespace smpc_sales_app.Pages.Sales
             {
                 Panel[] pnlList = { pnl_header, pnl_footer };
 
-                DataTable HeaderList = this.transactionList.Clone();    
+                DataTable HeaderList = this.transactionList.Clone();
                 HeaderList.Columns.Add("branch_name", typeof(string));
                 //HeaderList.Columns.Add("tin", typeof(string));
                 HeaderList.Columns.Add("customer_code", typeof(string));
@@ -286,7 +306,7 @@ namespace smpc_sales_app.Pages.Sales
                         }
                         else
                         {
-                            newRow["bill_to"] = "No Location"; 
+                            newRow["bill_to"] = "No Location";
                         }
                     }
                     else
@@ -300,10 +320,21 @@ namespace smpc_sales_app.Pages.Sales
 
 
                 Helpers.BindControls(pnlList, HeaderList, SelectedRow);
-                if (string.IsNullOrEmpty(txt_status.Text))
+
+                foreach (var pnl in pnlList)
                 {
-                    txt_status.Text = "-";
+                    foreach (Control control in pnl.Controls)
+                    {
+                        if (control is TextBox textBox && textBox.Name.Contains("txt_document_no"))
+                        {
+                            if (!textBox.Text.StartsWith("Q#"))
+                            {
+                                textBox.Text = "Q#" + textBox.Text;
+                            }
+                        }
+                    }
                 }
+
 
                 cmb_payment_terms.SelectedValue = this.transactionList.Rows[this.SelectedRow]["payment_terms_id"].ToString();
                 cmb_payment_terms.SelectedItem = this.transactionList.Rows[this.SelectedRow]["payment_terms_id"].ToString();
@@ -347,68 +378,8 @@ namespace smpc_sales_app.Pages.Sales
                 dataview.RowFilter = "based_id = '" + this.transactionList.Rows[this.SelectedRow]["id"].ToString() + "'";
 
                 dgv_order_sales.DataSource = dataview;
-                //foreach (DataGridViewRow row in dgv_order_sales.Rows)
-                //{
-                //    // Check each cell for null/DBNull and replace with "N/A"
-                //    foreach (DataGridViewCell cell in row.Cells)
-                //    {
-                //        if (cell.Value == DBNull.Value || cell.Value == null)
-                //        {
-                //            cell.Value = "N/A"; // Replace null/DBNull with "N/A"
-                //        }
-                //    }
-                //}
-                //dgv_quick_quote_details.DataSource = dataview;
             }
         }
-
-        private void dgv_order_sales_CellClick(object sender, DataGridViewCellEventArgs e)
-        {
-           
-        }
-        private void bind(bool isBind = false)
-        {
-            if (isBind)
-            {
-                //dgv_quick_quote_details.DataSource = dataView;
-                // dgv_quick_quote_details.DataSource = childList;
-                Panel[] pnlList = { pnl_header, pnl_footer };
-                Helpers.BindControls(pnlList, OrderList, SelectedRow);
-
-                DataView dataview = new DataView(this.DetailsList);
-                dataview.RowFilter = "based_id = '" + this.OrderList.Rows[this.SelectedRow]["order_id"].ToString() + "'";
-                dgv_order_sales.DataSource = dataview;
-
-                foreach (DataGridViewRow row in dgv_order_sales.Rows)
-                {
-                    var hasStocksValue = row.Cells["has_stocks"].Value;
-
-                    if (hasStocksValue == DBNull.Value || hasStocksValue == null)
-                    {
-                        foreach (DataGridViewCell cell in row.Cells)
-                        {
-                            if (cell.OwningColumn.Name != "qty")
-                            {
-                                cell.Style.BackColor = Color.LightGray;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        bool hasStocks = Convert.ToBoolean(hasStocksValue);  
-                        if (!hasStocks)
-                        {
-                            row.Cells["has_stocks"].Style.BackColor = Color.Red;
-                        }
-                        else
-                        {
-                            row.Cells["has_stocks"].Style.BackColor = Color.White;
-                        }
-                    }
-                }
-            }
-        }
-
         private void CalculateTotalPrice()
         {
             decimal total = 0.0m;
@@ -435,42 +406,14 @@ namespace smpc_sales_app.Pages.Sales
 
             txt_total.Text = total.ToString("0.00");
         }
-        //private void CalculateTotalPrice()
-        //{
-        //    decimal total = 0.0m;
-
-        //    // Ensure the column "line_total" exists
-        //    if (dgv_order_sales.Columns.Contains("line_total"))
-        //    {
-        //        foreach (DataGridViewRow row in dgv_order_sales.Rows)
-        //        {
-        //            if (row.Cells["line_total"].Value != null)
-        //            {
-        //                decimal totalPrice;
-        //                if (decimal.TryParse(row.Cells["line_total"].Value.ToString(), out totalPrice))
-        //                {
-        //                    total += totalPrice;
-        //                }
-        //            }
-        //        }
-        //    }
-        //    else
-        //    {
-        //        MessageBox.Show("The 'line_total' column is missing in the DataGridView.");
-        //    }
-
-        //    txt_total.Text = total.ToString("0.00");
-        //}
-        
         private void Orders_Load(object sender, EventArgs e)
         {
-            //FetchData();
-
             pnl_footer.Width = this.ClientSize.Width;
             fetchItemData();
             fetchBpiData();
             fetchQuotationDetails();
             FetchData();
+            CheckStatus();
             bs_payment_terms.DataSource = CacheData.PaymentTerms;
             bs_ship_type.DataSource = CacheData.ShipTypeSetup;
             // Helpers.LoadDirectory("D:\\LIFESAVER\\LIFESAVER\\TEST", treeview_sales);
@@ -536,7 +479,7 @@ namespace smpc_sales_app.Pages.Sales
 
             //                //newRow["qty"] = 1;
             //                //newRow["unit_measure"] = "COD";
-                            
+
             //                DetailsList.Rows.InsertAt(newRow, DetailsList.Rows.Count - 1);
             //                CalculateTotalPrice();
             //            }
@@ -544,7 +487,7 @@ namespace smpc_sales_app.Pages.Sales
             //    }
             //}
         }
-          
+
         private void panel3_Paint(object sender, PaintEventArgs e)
         {
 
@@ -562,7 +505,7 @@ namespace smpc_sales_app.Pages.Sales
                 Helpers.ResetControls(pnl_footer);
                 fetchQuotationDetails();
                 SOIncrementer();
-                
+
             }
         }
 
@@ -579,11 +522,14 @@ namespace smpc_sales_app.Pages.Sales
             }
         }
 
-        private async void btn_save_Click(object sender, EventArgs e)
+        private void btn_save_Click(object sender, EventArgs e)
+        {
+            saving();
+        }
+        private async void saving()
         {
             try
             {
-                // Initialize a list to hold the missing field names
                 List<string> missingFields = new List<string>();
 
                 // Check each field and add missing ones to the list
@@ -599,13 +545,16 @@ namespace smpc_sales_app.Pages.Sales
                 {
                     missingFields.Add("Reference PO");
                 }
+                if (string.IsNullOrEmpty(txt_status.Text))
+                {
+                    txt_status.Text = "-";
+                }
 
-                // If there are any missing fields, show an alert with those fields
                 if (missingFields.Count > 0)
                 {
                     string missingFieldsMessage = "Please fill in the following fields: " + string.Join(", ", missingFields);
                     MessageBox.Show(missingFieldsMessage, "Missing Information", MessageBoxButtons.OK);
-                    return; // Stop further execution if validation fails
+                    return;
                 }
 
                 var parentDataHeader = Helpers.GetControlsValues(pnl_header);
@@ -626,15 +575,22 @@ namespace smpc_sales_app.Pages.Sales
                         return;
                     }
                 }
-                // trims the Q# from the input
+
                 if (parentDataHeader.ContainsKey("doc") && parentDataHeader["doc"] is string documentNo)
                 {
                     parentDataHeader["doc"] = documentNo.StartsWith("SO#")
-                        ? documentNo.Substring(3) // Remove "Q#"
-                        : documentNo; // Keep as is if "Q#" is not present
+                        ? documentNo.Substring(3)
+                        : documentNo;
                 }
+                if (parentDataHeader.ContainsKey("document_no") && parentDataHeader["document_no"] is string document_no)
+                {
+                    parentDataHeader["document_no"] = document_no.StartsWith("Q#")
+                        ? document_no.Substring(2)
+                        : document_no;
+                }
+
                 // List of columns to be converted to int
-                var columnsToConvert = new List<string> { "ship_to_id", "bill_to_id", "customer_id", "quotation_id", "ref_po", "document_no", "doc" };
+                var columnsToConvert = new List<string> { "ship_to_id", "bill_to_id", "customer_id", "quotation_id", "ref_po" };
 
                 foreach (var column in columnsToConvert)
                 {
@@ -657,14 +613,12 @@ namespace smpc_sales_app.Pages.Sales
 
                 foreach (var kvp in parentDataFooter)
                 {
-                    // If the key already exists in the parentData, you can decide to overwrite or skip
                     if (!parentData.ContainsKey(kvp.Key))
                     {
                         parentData.Add(kvp.Key, kvp.Value);
                     }
                     else
                     {
-                        // Optionally, overwrite the existing value (if desired)
                         parentData[kvp.Key] = kvp.Value;
                     }
                 }
@@ -673,72 +627,76 @@ namespace smpc_sales_app.Pages.Sales
 
                 List<Dictionary<string, dynamic>> orderDetailsList = new List<Dictionary<string, dynamic>>();
 
-                //Dictionary<string, dynamic> quickQuoteData = new Dictionary<string, dynamic>();
+                // Get the document number (txt_doc) and remove the "SO#" prefix before checking
+                string docNumber = txt_doc.Text.StartsWith("SO#")
+                                    ? txt_doc.Text.Substring(3)  // Remove "SO#"
+                                    : txt_doc.Text;
 
+                // Check if the document number already exists in OrderList
+                bool isExistingDoc = OrderList.Rows.Cast<DataRow>()
+                    .Any(row => row["doc"].ToString() == docNumber);
+
+                // Loop through each row in dataSource and process
                 foreach (DataRow item in dataSource.Rows)
                 {
                     Dictionary<string, object> data = new Dictionary<string, object>();
 
+                    // Always add based_id
                     data.Add("based_id", int.Parse(item["basedid"].ToString()));
-                    data.Add("quotation_quick_id", int.Parse(item["quick_quote_id"].ToString()));
+
+                    // Only add quick_quote_id for insert, not for update
+                    if (!isExistingDoc) // If it's an insert
+                    {
+                        data.Add("quotation_quick_id", int.Parse(item["quick_quote_id"].ToString()));
+                    }
+
+                    // Always add item_id, delivery_preference, and status
                     data.Add("item_id", int.Parse(item["itemid"].ToString()));
                     data.Add("delivery_preference", item["delivery_preference"].ToString());
                     data.Add("status", item["status"].ToString());
-                    //data.Add("has_stocks", bool.Parse(item["has_stocks"].ToString()));
 
-                    // data.Add("SalesQuotationQuick", childData);
                     orderDetailsList.Add(data);
                 }
 
-
+                // If there are order details to add
                 if (orderDetailsList != null)
                 {
                     List<Dictionary<string, dynamic>> childCollection = new List<Dictionary<string, dynamic>>();
 
-                    // loops thru the items
                     foreach (var childData in orderDetailsList)
                     {
-                        //parentData["sales_quotation_quick"] = childData;
                         childCollection.Add(childData);
                     }
-
-
-
-                    
-
 
                     parentData["sales_order_details"] = childCollection;
 
                     if (parentData.ContainsKey("sales_order_details"))
                     {
-                        await OrderService.Insert(parentData);
-                        MessageBox.Show("Added data");
+                        if (isExistingDoc)
+                        {
+                            // Perform update if document number exists
+                            await OrderService.Update(parentData);
+                            MessageBox.Show("Data updated successfully");
+                        }
+                        else
+                        {
+                            // Perform insert if document number does not exist
+                            await OrderService.Insert(parentData);
+                            MessageBox.Show("Data added successfully");
+                        }
+
+                        // Refresh data
                         FetchData();
                         fetchQuotationDetails();
-                        // this should await a response in the future if the response is sucess proceed to create if not notify the user
-                        //Helpers.ResetControls(pnl_header);
-                        //Helpers.ResetControls(pnl_footer);
-                        //Helpers.ClearDataGridView(dgv_quick_quote_details);
-                        //dgv_quick_quotes_show.Visible = true;
-                        //dgv_quick_quotes_show.Enabled = false;
-                        //toolstrip_quotation.Enabled = true;
-
-
-                        // edit
-                        //dgv_quick_quote_details.Visible = false;
-
                     }
-
-
                 }
-
-
             }
             catch (Exception ex)
             {
-                MessageBox.Show("err: " + ex);
+                MessageBox.Show("Error: " + ex.Message + "\n\n" + "Stack Trace: " + ex.StackTrace);
             }
         }
+
 
         private void SOIncrementer()
         {
@@ -747,29 +705,8 @@ namespace smpc_sales_app.Pages.Sales
             string docNum = (rowCount + 1).ToString().PadLeft(4, '0'); // Ensure 4 digits (e.g., 0001, 0002, etc.)
 
             // Set the document number to the TextBox, prefix it with "SO#"
-            txt_doc.Text = "SO#" + docNum; 
+            txt_doc.Text = "SO#" + docNum;
         }
-
-        private void button2_Click(object sender, EventArgs e)
-        {
-            fetchQuotationDetails();
-        }
-
-        private void txt_doc_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void treeview_sales_AfterSelect(object sender, TreeViewEventArgs e)
-        {
-
-        }
-
-        private void txt_sales_executive_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
         private void btn_search_Click(object sender, EventArgs e)
         {
             string Title = "Order List";
@@ -784,7 +721,127 @@ namespace smpc_sales_app.Pages.Sales
                 {
                     SelectedRow = result;
                     bindOrder(true);
+                    CalculateTotalPrice();
                 }
+            }
+        }
+
+        private void Save_Click(object sender, EventArgs e)
+        {
+            saving();
+        }
+
+        private async void btn_check_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                var docIdValue = ((TextBox)pnl_header.Controls["txt_doc"]).Text;
+
+                if (docIdValue.StartsWith("SO#"))
+                {
+                    docIdValue = docIdValue.Substring(3); 
+                }
+                if (int.TryParse(docIdValue, out int selectedDoc) && selectedDoc > 0)
+                {
+                    DataRow[] selectedRows = OrderList.Select($"doc = {selectedDoc}");
+
+                    if (selectedRows.Length > 0)
+                    {
+                        DataRow selectedOrder = selectedRows[0];
+                        selectedOrder["status"] = "ACTIVE";
+
+                        var parentDataHeader = new Dictionary<string, dynamic>
+                        {
+                            { "doc", selectedOrder["doc"] },
+                            { "status", selectedOrder["status"] }
+                        };
+
+                        await OrderService.Update(parentDataHeader);
+                        MessageBox.Show("Order status updated to ACTIVE.");
+                        FetchData();
+                        bindOrder(true);
+                        CheckStatus();
+                    }
+                    else
+                    {
+                        MessageBox.Show("No order found with the selected ID.");
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("Please select a valid order to update.");
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error: " + ex.Message + "\n\n" + "Stack Trace: " + ex.StackTrace);
+            }
+        }
+        private void CheckStatus()
+        {
+            if (string.IsNullOrEmpty(txt_status.Text))
+            {
+                btn_check.Enabled = false;
+            }
+            else
+            {
+                btn_check.Enabled = true;
+            }
+            if (txt_status.Text == "ACTIVE")
+            {
+                txt_ref_po.ReadOnly = true;
+                btn_check.Enabled = false;
+            }
+            else
+            {
+                txt_ref_po.ReadOnly = false;
+            }
+        }
+
+        private async void btn_cancel_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                var docIdValue = ((TextBox)pnl_header.Controls["txt_doc"]).Text;
+
+                if (docIdValue.StartsWith("SO#"))
+                {
+                    docIdValue = docIdValue.Substring(3);
+                }
+                if (int.TryParse(docIdValue, out int selectedDoc) && selectedDoc > 0)
+                {
+                    DataRow[] selectedRows = OrderList.Select($"doc = {selectedDoc}");
+
+                    if (selectedRows.Length > 0)
+                    {
+                        DataRow selectedOrder = selectedRows[0];
+                        selectedOrder["status"] = "CANCELLED";
+
+                        var parentDataHeader = new Dictionary<string, dynamic>
+                        {
+                            { "doc", selectedOrder["doc"] },
+                            { "status", selectedOrder["status"] }
+                        };
+
+                        await OrderService.Update(parentDataHeader);
+                        MessageBox.Show("Order status updated to CANCELLED.");
+                        FetchData();
+                        bindOrder(true);
+                        CheckStatus();
+                    }
+                    else
+                    {
+                        MessageBox.Show("No order found with the selected ID.");
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("Please select a valid order to update.");
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error: " + ex.Message + "\n\n" + "Stack Trace: " + ex.StackTrace);
             }
         }
     }

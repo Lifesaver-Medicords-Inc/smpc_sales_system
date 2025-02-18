@@ -31,6 +31,10 @@ namespace smpc_sales_system.Pages
         {
             this.components = new System.ComponentModel.Container();
             this.dgv_application_setup = new System.Windows.Forms.DataGridView();
+            this.d_document_no = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.d_quote_ref = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.d_quotation = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.d_status = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.panel1 = new System.Windows.Forms.Panel();
             this.button1 = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
@@ -42,10 +46,6 @@ namespace smpc_sales_system.Pages
             this.document_no = new System.Data.DataColumn();
             this.dataColumn1 = new System.Data.DataColumn();
             this.dataTable2 = new System.Data.DataTable();
-            this.d_document_no = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.d_quote_ref = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.d_quotation = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.d_status = new System.Windows.Forms.DataGridViewTextBoxColumn();
             ((System.ComponentModel.ISupportInitialize)(this.dgv_application_setup)).BeginInit();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.bs_quotation_list)).BeginInit();
@@ -67,9 +67,39 @@ namespace smpc_sales_system.Pages
             this.dgv_application_setup.MultiSelect = false;
             this.dgv_application_setup.Name = "dgv_application_setup";
             this.dgv_application_setup.ReadOnly = true;
-            this.dgv_application_setup.Size = new System.Drawing.Size(800, 403);
+            this.dgv_application_setup.Size = new System.Drawing.Size(478, 403);
             this.dgv_application_setup.TabIndex = 4;
             this.dgv_application_setup.CellContentDoubleClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgv_application_setup_CellContentDoubleClick_1);
+            // 
+            // d_document_no
+            // 
+            this.d_document_no.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.d_document_no.DataPropertyName = "doc";
+            this.d_document_no.HeaderText = "DOCUMENT NO.";
+            this.d_document_no.Name = "d_document_no";
+            this.d_document_no.ReadOnly = true;
+            // 
+            // d_quote_ref
+            // 
+            this.d_quote_ref.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.d_quote_ref.DataPropertyName = "document_no";
+            this.d_quote_ref.HeaderText = "QUOTE REF";
+            this.d_quote_ref.Name = "d_quote_ref";
+            this.d_quote_ref.ReadOnly = true;
+            // 
+            // d_quotation
+            // 
+            this.d_quotation.DataPropertyName = "quotation_id";
+            this.d_quotation.HeaderText = "QUOTATION ID";
+            this.d_quotation.Name = "d_quotation";
+            this.d_quotation.ReadOnly = true;
+            // 
+            // d_status
+            // 
+            this.d_status.DataPropertyName = "status";
+            this.d_status.HeaderText = "STATUS";
+            this.d_status.Name = "d_status";
+            this.d_status.ReadOnly = true;
             // 
             // panel1
             // 
@@ -80,7 +110,7 @@ namespace smpc_sales_system.Pages
             this.panel1.Dock = System.Windows.Forms.DockStyle.Top;
             this.panel1.Location = new System.Drawing.Point(0, 0);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(800, 47);
+            this.panel1.Size = new System.Drawing.Size(478, 47);
             this.panel1.TabIndex = 3;
             // 
             // button1
@@ -93,6 +123,7 @@ namespace smpc_sales_system.Pages
             this.button1.Size = new System.Drawing.Size(26, 25);
             this.button1.TabIndex = 3;
             this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
             // label1
             // 
@@ -150,41 +181,11 @@ namespace smpc_sales_system.Pages
             // 
             this.dataTable2.TableName = "Table2";
             // 
-            // d_document_no
-            // 
-            this.d_document_no.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.d_document_no.DataPropertyName = "doc";
-            this.d_document_no.HeaderText = "DOCUMENT NO.";
-            this.d_document_no.Name = "d_document_no";
-            this.d_document_no.ReadOnly = true;
-            // 
-            // d_quote_ref
-            // 
-            this.d_quote_ref.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.d_quote_ref.DataPropertyName = "document_no";
-            this.d_quote_ref.HeaderText = "QUOTE REF";
-            this.d_quote_ref.Name = "d_quote_ref";
-            this.d_quote_ref.ReadOnly = true;
-            // 
-            // d_quotation
-            // 
-            this.d_quotation.DataPropertyName = "quotation_id";
-            this.d_quotation.HeaderText = "QUOTATION ID";
-            this.d_quotation.Name = "d_quotation";
-            this.d_quotation.ReadOnly = true;
-            // 
-            // d_status
-            // 
-            this.d_status.DataPropertyName = "status";
-            this.d_status.HeaderText = "STATUS";
-            this.d_status.Name = "d_status";
-            this.d_status.ReadOnly = true;
-            // 
             // SearchOrder
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(800, 450);
+            this.ClientSize = new System.Drawing.Size(478, 450);
             this.Controls.Add(this.dgv_application_setup);
             this.Controls.Add(this.panel1);
             this.Name = "SearchOrder";

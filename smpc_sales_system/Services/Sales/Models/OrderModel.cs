@@ -17,11 +17,15 @@ namespace smpc_sales_system.Services.Sales.Models
 		public uint payment_terms_id { get; set; }
 		public string approved_by { get; set; }
 		public uint approved_by_id { get; set; }
-		public uint doc { get; set; }
+		public string doc { get; set; }
 		public uint ref_po { get; set; }
 		public string date { get; set; }
 		public string delivery_date { get; set; }
-		public uint document_no { get; set; }
+		public string document_no { get; set; }
 		public string status { get; set; }
+		public string receiver { get; set; }
+		public string sales_executive { get; set; }
+		public string contact_no { get; set; }
+		public string remarks { get; set; }
     }
 }
