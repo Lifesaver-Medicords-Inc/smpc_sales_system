@@ -7,12 +7,14 @@ using smpc_sales_app.Services.Sales;
 using smpc_sales_app.Utils;
 using smpc_sales_system.Models;
 using smpc_sales_system.Pages;
+using smpc_sales_system.Pages.Sales;
 using smpc_sales_system.Services.Sales.Models;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Drawing;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace smpc_sales_app.Pages.Sales
@@ -81,11 +83,13 @@ namespace smpc_sales_app.Pages.Sales
         public DataTable transactionList { get; set; } = new DataTable();
         public DataTable childList { get; set; } = new DataTable();
         public DataTable ItemList { get; set; } = new DataTable();
+        public DataTable a { get; set; } = new DataTable();
 
         private async void fetchItemData()
         {
             var itemData = await ItemService.GetItem();
             ItemList = JsonHelper.ToDataTable(itemData.items);
+            a = JsonHelper.ToDataTable(itemData.itemspecs);
         }
 
         private async void fetchBpiData()
@@ -124,6 +128,7 @@ namespace smpc_sales_app.Pages.Sales
 
                 Panel[] pnl_list = { pnl_header, pnl_footer };
                 Helpers.ReadOnlyControls(pnl_list);
+                button1.Enabled = true;
 
                 toolstrip_quotation.Enabled = false;
                 dgv_quick_quote_details.Enabled = true;
@@ -132,6 +137,7 @@ namespace smpc_sales_app.Pages.Sales
 
                 if (data != null)
                 {
+                    await Task.Delay(2000);
                     bind(true);
                 }
             }
@@ -208,31 +214,29 @@ namespace smpc_sales_app.Pages.Sales
                 // Check if "document_no" is not null or DBNull
                 if (latestRow["document_no"] != DBNull.Value && !string.IsNullOrEmpty(latestRow["document_no"].ToString()))
                 {
-                    // Parse the document number
+                   
                     if (int.TryParse(latestRow["document_no"].ToString(), out int documentNumber))
                     {
-                        // Increment the document number
-                        docNum = (documentNumber + 1).ToString().PadLeft(4, '0'); // Pad with leading zeros
+                        
+                        docNum = (documentNumber + 1).ToString().PadLeft(4, '0'); 
                     }
                     else
                     {
-                        // Handle parsing failure
+                       
                         docNum = "0001";
                     }
                 }
                 else
                 {
-                    // Handle null or empty document_no (e.g., use default value)
-                    docNum = "0001"; // Default value
+                   
+                    docNum = "0001"; 
                 }
             }
             else
             {
-                // Handle empty DataTable (e.g., use default value)
+                
                 docNum = "0001";
             }
-
-            // Assign the document number to the TextBox
             txt_document_no.Text = "Q#" + docNum;
         }
 
@@ -257,9 +261,9 @@ namespace smpc_sales_app.Pages.Sales
                     data.Add("unit_id", int.Parse(item[6].ToString()));
                     data.Add("unit_price", decimal.Parse(item[7].ToString()));
                     data.Add("percent_discount", decimal.Parse(item[8].ToString()));
-                    data.Add("net_discount", decimal.Parse(item[9].ToString()));
-                    data.Add("net_total", decimal.Parse(item[10].ToString()));
-                    data.Add("line_total", decimal.Parse(item[11].ToString()));
+                    data.Add("net_discount", decimal.Parse(item[10].ToString()));
+                    data.Add("net_total", decimal.Parse(item[11].ToString()));
+                    data.Add("line_total", decimal.Parse(item[12].ToString()));
                     quickQuoteList.Add(data);
                 }
 
@@ -306,7 +310,7 @@ namespace smpc_sales_app.Pages.Sales
                         //// this should await a response in the future if the response is success proceed to create if not notify the user
                         Helpers.ResetControls(pnl_header);
                         Helpers.ResetControls(pnl_footer);
-                        dgv_quick_quote_details.DataSource = this.childList.Clone();
+                        //dgv_quick_quote_details.DataSource = this.childList.Clone();
                         //dgv_quick_quotes_show.Visible = true;
                         //dgv_quick_quotes_show.Enabled = false;
                         toolstrip_quotation.Enabled = true;
@@ -363,7 +367,7 @@ namespace smpc_sales_app.Pages.Sales
 
                 if (qty_cell != null && unit_price_cell != null && discount_cell != null)
                 {
-                    double gross_sales = 0, vat_amount_computed_temp = 0, net_sales = 0, sub_total_before_discount = 0, percent_discount = 0, sub_total = 0, vat_amount = 0, cash_discount = 0, net_amount_due = 0, total_amount_due = 0;
+                   
 
                     decimal unitPrice;
                     int qty = int.Parse(this.dgv_quick_quote_details.Rows[e.RowIndex].Cells[QuickQuoteDGV.QTY].Value.ToString());
@@ -377,57 +381,10 @@ namespace smpc_sales_app.Pages.Sales
                     this.dgv_quick_quote_details.Rows[e.RowIndex].Cells[QuickQuoteDGV.NET_DISCOUNT].Value = DgvComputation.NetDiscount;
                     this.dgv_quick_quote_details.Rows[e.RowIndex].Cells[QuickQuoteDGV.DISCOUNT_AMOUNT].Value = DgvComputation.DiscountedAmount;
                     this.dgv_quick_quote_details.Rows[e.RowIndex].Cells[QuickQuoteDGV.LINE_TOTAL].Value = DgvComputation.LineTotal;
-                    
 
 
-                    //bs_quick_quotes_details.ResetBindings(true);
-
-                    foreach (DataGridViewRow row in this.dgv_quick_quote_details.Rows)
-                    {
-                        var netAmount = row.Cells[QuickQuoteDGV.NET_AMOUNT].Value;
-                        var netDiscount = row.Cells[QuickQuoteDGV.NET_DISCOUNT].Value;
-                        var discountedAmount = row.Cells[QuickQuoteDGV.DISCOUNT_AMOUNT].Value;
-                        var lineTotal = row.Cells[QuickQuoteDGV.LINE_TOTAL].Value;
-
-
-                        if (netAmount != null && !String.IsNullOrEmpty(netAmount.ToString()))
-                        {
-                            double netAmountValue = double.Parse(netAmount.ToString());  // Parse once
-                            gross_sales += netAmountValue;
-
-                            Taxation Tax = new Taxation(netAmountValue, chk_isVat.Checked ? double.Parse(txt_vat_percent.Text) : 0);
-                            double vatAmount = chk_isVat.Checked
-                                ? Tax.GetVatInclusive() - netAmountValue
-                                : netAmountValue - Tax.GetVatExclusive();
-
-                            vat_amount_computed_temp += vatAmount;
-                            net_sales = gross_sales - vat_amount_computed_temp;
-
-                            sub_total_before_discount += net_sales;
-
-                            // If the discount is a percentage, ensure it's added correctly
-                            percent_discount += double.Parse(discountedAmount.ToString());  // Accumulate discount
-                            sub_total = sub_total_before_discount - percent_discount;
-
-                            vat_amount += vatAmount;
-                            net_amount_due += netAmountValue - double.Parse(txt_cash_discount.Text);
-                            total_amount_due += net_sales - (percent_discount + double.Parse(txt_cash_discount.Text));
-
-                            // Formatting results with Helpers.MoneyFormat
-                            txt_gross_sales.Text = Helpers.MoneyFormat(gross_sales);
-                            vat_amount_computed.Text = Helpers.MoneyFormat(vat_amount_computed_temp);
-                            txt_net_sales.Text = Helpers.MoneyFormat(net_sales);
-
-                            txt_sub_total_before_discount.Text = Helpers.MoneyFormat(sub_total_before_discount);
-                            txt_percent_discount.Text = Helpers.MoneyFormat(percent_discount);
-
-                            txt_sub_total.Text = Helpers.MoneyFormat(sub_total);
-                            txt_vat_amount.Text = Helpers.MoneyFormat(vat_amount);
-                            txt_cash_discount.Text = Helpers.MoneyFormat(double.Parse(cash_discount.ToString()));
-                            txt_net_amount_due.Text = Helpers.MoneyFormat(net_amount_due);
-                            txt_total_amount_due.Text = Helpers.MoneyFormat(total_amount_due);
-                        }
-                    }
+                    computationLoop();
+    
                 }
             }
             catch (Exception ex)
@@ -435,6 +392,67 @@ namespace smpc_sales_app.Pages.Sales
                 MessageBox.Show("err" + ex);
             }
         }
+
+    
+        private void computationLoop()
+        {
+            double gross_sales = 0, vat_amount = 0, net_sales = 0;
+            double percent_discount = 0;
+            double net_amount_due = 0, total_amount_due = 0;
+            double cash_discount = double.Parse(txt_cash_discount.Text);
+            const double VAT_RATE = 0.12; // 12% VAT
+            const double TAX_RATE = 0.12; // 12% Tax
+
+            // First pass: Calculate gross sales and total discounts
+            foreach (DataGridViewRow row in this.dgv_quick_quote_details.Rows)
+            {
+                if (row.Cells[QuickQuoteDGV.NET_AMOUNT].Value != null &&
+                    !String.IsNullOrEmpty(row.Cells[QuickQuoteDGV.NET_AMOUNT].Value.ToString()))
+                {
+                    // Get unit price * quantity = net total
+                    double netAmount = double.Parse(row.Cells[QuickQuoteDGV.NET_AMOUNT].Value.ToString());
+                    gross_sales += netAmount;
+
+                    // Get line total (after discount)
+                    if (row.Cells[QuickQuoteDGV.LINE_TOTAL].Value != null &&
+                        !String.IsNullOrEmpty(row.Cells[QuickQuoteDGV.LINE_TOTAL].Value.ToString()))
+                    {
+                        double lineTotal = double.Parse(row.Cells[QuickQuoteDGV.LINE_TOTAL].Value.ToString());
+                        net_sales += lineTotal;
+                    }
+                }
+            }
+
+            // Calculate percent discount
+            if (gross_sales != 0)
+            {
+                percent_discount = ((gross_sales - net_sales) / gross_sales) * 100;
+            }
+
+
+            // Calculate VAT (12% of net sales)
+            vat_amount = net_sales * VAT_RATE;
+
+            // Calculate net amount due (subtract cash discount)
+            net_amount_due = net_sales - cash_discount;
+
+            // Calculate total amount due (net amount + VAT + tax)
+            total_amount_due = net_amount_due + vat_amount;
+
+            // Format and display results
+            txt_gross_sales.Text = Helpers.MoneyFormat(gross_sales);
+            txt_vat_amount.Text = Helpers.MoneyFormat(vat_amount);
+            //txt_tax_amount.Text = Helpers.MoneyFormat(tax_amount);
+            txt_net_sales.Text = Helpers.MoneyFormat(net_sales);
+            //txt_sub_total_before_discount.Text = Helpers.MoneyFormat(sub_total_before_discount);
+            txt_percent_discount.Text = percent_discount + "%";
+            //txt_sub_total.Text = Helpers.MoneyFormat(sub_total);
+            txt_cash_discount.Text = Helpers.MoneyFormat(cash_discount);
+            txt_net_amount_due.Text = Helpers.MoneyFormat(net_amount_due);
+            txt_total_amount_due.Text = Helpers.MoneyFormat(total_amount_due);
+        }
+
+
 
         private void dgv_quick_quote_details_CellEndEdit(object sender, DataGridViewCellEventArgs e)
         {
@@ -502,10 +520,6 @@ namespace smpc_sales_app.Pages.Sales
                 cmb_purpose.DisplayMember = "code";
                 cmb_purpose.ValueMember = "title";
 
-                cmb_ship_type.DataSource = STATIC_SHIPPED_TYPE.LIST();
-                cmb_ship_type.DisplayMember = "code";
-                cmb_ship_type.ValueMember = "title";
-
                 //cmb_unit_code.DataSource = STATIC_SHIPPED_TYPE.LIST();
                 //cmb_unit_code.DisplayMember = "title";
                 //cmb_unit_code.ValueMember = "value";
@@ -527,6 +541,7 @@ namespace smpc_sales_app.Pages.Sales
 
                 bs_unit.DataSource = CacheData.UoM;
                 bs_payment_terms.DataSource = CacheData.PaymentTerms;
+                bs_ship_type.DataSource = CacheData.ShipTypeSetup;
 
                 //var combobox = (DataGridViewComboBoxColumn)dgv_quick_quote_details.Columns["unit_code"];
                 //combobox.DataSource = CacheData.UoM;
@@ -534,6 +549,7 @@ namespace smpc_sales_app.Pages.Sales
                 //combobox.ValueMember = "id";
 
                 fetchQuotationDetails();
+                
             }
         }
 
@@ -542,13 +558,15 @@ namespace smpc_sales_app.Pages.Sales
             if (isBind)
             {
                 Panel[] pnlList = { pnl_header, pnl_footer };
-
                 DataTable HeaderList = this.transactionList.Clone();
                 HeaderList.Columns.Add("branch_name", typeof(string));
                 HeaderList.Columns.Add("customer_code", typeof(string));
                 HeaderList.Columns.Add("number", typeof(string));
-               
 
+                bs_ship_to.DataSource = bpi_address;
+                bs_bill_to.DataSource = bpi_address;
+
+                
                 foreach (DataRow parentRow in this.transactionList.Rows)
                 {
                     DataRow newRow = HeaderList.NewRow();
@@ -558,18 +576,20 @@ namespace smpc_sales_app.Pages.Sales
                     }
 
                     string ID = parentRow["customer_id"].ToString();
+                    string BillToId = parentRow["bill_to_id"].ToString();
+                    string ShipToId = parentRow["ship_to_id"].ToString();
+
+
                     DataRow[] bpiRows = bpi_general.Select($"based_id = '{ID}'");
                     DataRow[] contactsRows = bpi_contacts.Select($"contacts_based_id = '{ID}'");
+                   
 
-                    //DataRow[] BillAddressRows = bpi_address.Select($"id = '{BillToId}'");
-                    //DataRow[] ShipAddressRows = bpi_address.Select($"id = '{ShipToId}'");
 
                     if (bpiRows.Length > 0)
                     {
                         newRow["branch_name"] = bpiRows[0]["branch_name"].ToString();
                         newRow["customer_code"] = bpiRows[0]["customer_code"].ToString();
                         newRow["number"] = contactsRows[0]["number"].ToString();
-                        
                     }
                     else
                     {
@@ -577,9 +597,12 @@ namespace smpc_sales_app.Pages.Sales
                         newRow["customer_code"] = "N/A";
                     }
 
+                    
+                  
                     HeaderList.Rows.Add(newRow);
                 }
 
+              
                 Helpers.BindControls(pnlList, HeaderList, SelectedRow);
                 // Clone childList and add item_name column
                 DataTable withItemList = this.childList.Clone();
@@ -664,15 +687,23 @@ namespace smpc_sales_app.Pages.Sales
         {
             Helpers.ResetControls(pnl_header);
             Helpers.ResetControls(pnl_footer);
+
+          //
+         // resets the datasource so that only customers would specific address would be seen.
+        //
+            bs_bill_to.DataSource = null;
+            bs_ship_to.DataSource = null;
             Panel[] pnls = { pnl_header, pnl_footer };
             Helpers.ReadOnlyControls(pnls);
-            btn_add_customer.Enabled = true;
+            txt_cash_discount.ReadOnly = false;
+            
 
             foreach (Control ctrl in pnl_footer.Controls)
             {
                 if (ctrl is TextBox)
                 {
-                    ((TextBox)ctrl).Text = "0";
+                    TextBox txtBox = (TextBox)ctrl;
+                    txtBox.Text = "0";
                 }
             }
 
@@ -685,7 +716,11 @@ namespace smpc_sales_app.Pages.Sales
             DocumentIncrementer();
             txt_vat_percent.Text = "12";
             txt_vat_percent.ReadOnly = true;
-            
+            btn_add_customer.Enabled = true;
+            pnl_header.Enabled = true;
+            pnl_footer.Enabled = true;
+            btn_save.Enabled = true;
+
             DataTable dt = (DataTable)bs_quick_quotes_details.DataSource;
         }
 
@@ -776,9 +811,10 @@ namespace smpc_sales_app.Pages.Sales
                     var BillAddress = Helpers.FilterDataTable(bpi_address, id, "address_based_id");
                     var ShipAddress = Helpers.FilterDataTable(bpi_address, id, "address_based_id");
 
-                    cmb_ship_to.DataSource = BillAddress;
-                    cmb_ship_to.DisplayMember = "location";
-                    cmb_ship_to.ValueMember = "address_id";
+                    bs_ship_to.DataSource = ShipAddress;
+
+
+
 
                     cmb_bill_to.DataSource = ShipAddress;
                     cmb_bill_to.DisplayMember = "location";
@@ -855,18 +891,44 @@ namespace smpc_sales_app.Pages.Sales
                     {
                         this.NetAmount = this.Qty * this.UnitPrice;
                         //MessageBox.Show("" + this.NetAmount);
-                            
+
                         //// COMPUTE DISCOUNTED AMOUNT
-                        if (!String.IsNullOrEmpty(this.DiscountPercent) && this.DiscountPercent != "0")
+                        if (!string.IsNullOrEmpty(this.DiscountPercent) && this.DiscountPercent != "0")
                         {
-                            this.DiscountedAmount = this.UnitPrice - (this.UnitPrice * (decimal.Parse(this.DiscountPercent) / 100));
+                            if (this.DiscountPercent.Contains("/"))
+                            {
+                       
+                                string[] discounts = this.DiscountPercent.Split('/');
+                                decimal cumulativeMultiplier = 1;
+
+                                foreach (string discount in discounts)
+                                {
+                                    if (decimal.TryParse(discount, out decimal discountValue))
+                                    {
+                                        cumulativeMultiplier *= (1 - (discountValue / 100));
+                                    }
+                                }
+
+                                //this.DiscountedAmount = this.UnitPrice * (1 - cumulativeMultiplier);
+                                this.DiscountedAmount = this.UnitPrice * cumulativeMultiplier;
+                            }
+                            else
+                            {
+                                // Single discount scenario
+                                this.DiscountedAmount = this.UnitPrice * (decimal.Parse(this.DiscountPercent) / 100);
+                            }
                         }
+                        else
+                        {
+                            this.DiscountedAmount = 0;
+                        }
+
+
                         //// COMPUTE NET DISCOUNT
                         this.NetDiscount = this.DiscountedAmount * this.Qty;
-                        //MessageBox.Show("" + this.NetDiscount);
 
                         //// COMPUTE LINE TOTAL
-                        this.LineTotal = this.DiscountedAmount > 0 ? this.DiscountedAmount * this.Qty : this.NetAmount;
+                        this.LineTotal = this.NetAmount - this.NetDiscount;
                     }
                 }
                 catch (Exception)
@@ -946,6 +1008,32 @@ namespace smpc_sales_app.Pages.Sales
                     bind(true);
                 }
             }
+        }
+
+        private void button1_Click_1(object sender, EventArgs e)
+        {
+            ProjectTest s = new ProjectTest();
+            s.Show();
+        }
+
+        private void cmb_purpose_ValueMemberChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void vat_amount_computed_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void txt_cash_discount_TextChanged(object sender, EventArgs e)
+        {
+           
+        }
+
+        private void txt_cash_discount_DoubleClick(object sender, EventArgs e)
+        {
+            computationLoop();
         }
     }
 }
