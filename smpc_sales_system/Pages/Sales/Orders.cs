@@ -23,13 +23,17 @@ namespace smpc_sales_app.Pages.Sales
     public partial class Orders : UserControl
     {
         int SelectedRow = 0;
-        public Orders()
+        private string documentNo;
+        public Orders(string documentNo = null)
         {
+            InitializeComponent();
             fetchBpiData();
             fetchItemData();
-            InitializeComponent();
+            fetchQuotationDetails();
+            FetchData();
             Helpers.ResetControls(pnl_header);
             Helpers.ResetControls(pnl_footer);
+            this.documentNo = documentNo;
         }
         private DataTable bpi_dt = new DataTable();
         private DataTable bpi_general = new DataTable();
@@ -41,10 +45,10 @@ namespace smpc_sales_app.Pages.Sales
         public DataTable childList { get; set; } = new DataTable();
         public DataTable ItemList { get; set; } = new DataTable();
 
-        private async void FetchData()
+        private async Task FetchData()
         {
             OrderList data = await OrderService.GetOrders();
-
+            Console.WriteLine(data);
             if (data != null && data.order != null && data.order.Count > 0)
             {
                 OrderList = JsonHelper.ToDataTable(data.order);
@@ -54,7 +58,6 @@ namespace smpc_sales_app.Pages.Sales
                 // Handle the case where there is no order data, e.g., set an empty DataTable or log an error.
                 OrderList = new DataTable();
             }
-
             if (data != null && data.sales_order_details != null && data.sales_order_details.Count > 0)
             {
                 DetailsList = JsonHelper.ToDataTable(data.sales_order_details);
@@ -63,6 +66,11 @@ namespace smpc_sales_app.Pages.Sales
             {
                 // Handle the case where there is no sales_order_details data
                 DetailsList = new DataTable();
+            }
+            if (data != null)
+            {
+                bindOrder(true);
+                CalculateTotalPrice();
             }
         }
         private async void fetchItemData()
@@ -89,7 +97,7 @@ namespace smpc_sales_app.Pages.Sales
 
             if (data != null)
             {
-                bindQuotation(true);
+                //bindQuotation(true);
                 CalculateTotalPrice();
                 SOIncrementer();
             }
@@ -256,34 +264,48 @@ namespace smpc_sales_app.Pages.Sales
                 CheckStatus();
             }
         }
-        private void bindQuotation(bool isBind = false)
+        private void bindOrderByDocNo(string documentNo, bool isBind = false)
         {
             if (isBind)
             {
                 Panel[] pnlList = { pnl_header, pnl_footer };
 
-                DataTable HeaderList = this.transactionList.Clone();
+                DataTable HeaderList = this.OrderList.Clone();
                 HeaderList.Columns.Add("branch_name", typeof(string));
-                //HeaderList.Columns.Add("tin", typeof(string));
                 HeaderList.Columns.Add("customer_code", typeof(string));
                 HeaderList.Columns.Add("bill_to", typeof(string));
                 HeaderList.Columns.Add("ship_to", typeof(string));
                 HeaderList.Columns.Add("tin", typeof(string));
+                HeaderList.Columns.Add("vat_amount", typeof(string));
+                HeaderList.Columns.Add("gross_sales", typeof(string));
+                HeaderList.Columns.Add("total_amount_due", typeof(string));
 
-                foreach (DataRow parentRow in this.transactionList.Rows)
+                // Filter the rows based on the passed documentNo
+                DataRow[] filteredRows = this.OrderList.Select($"document_no = '{documentNo}'");
+
+                if (filteredRows.Length > 0)
                 {
+                    DataRow parentRow = filteredRows[0];  // Get the first matching row
+
                     DataRow newRow = HeaderList.NewRow();
-                    foreach (DataColumn col in this.transactionList.Columns)
+                    foreach (DataColumn col in this.OrderList.Columns)
                     {
                         newRow[col.ColumnName] = parentRow[col.ColumnName];
                     }
 
-                    int ID = (int)parentRow["customer_id"];
+                    int quotationID = Convert.ToInt32(parentRow["quotation_id"]);
+                    DataRow[] quotation = transactionList.Select($"id = '{quotationID}'");
+                    string customerID = quotation[0]["customer_id"].ToString();
+                    newRow["vat_amount"] = quotation[0]["vat_amount"].ToString();
+                    newRow["gross_sales"] = quotation[0]["gross_sales"].ToString();
+                    newRow["total_amount_due"] = quotation[0]["total_amount_due"].ToString();
+
                     string ShipID = parentRow["ship_to_id"].ToString();
                     string BillID = parentRow["bill_to_id"].ToString();
-                    DataRow[] bpiGenRows = bpi_general.Select($"based_id = '{ID}'");
+                    DataRow[] bpiGenRows = bpi_general.Select($"based_id = '{customerID}'");
                     DataRow[] billRows = bpi_address.Select($"address_id = '{BillID}'");
                     DataRow[] shipRows = bpi_address.Select($"address_id = '{ShipID}'");
+
                     if (bpiGenRows.Length > 0)
                     {
                         newRow["branch_name"] = bpiGenRows[0]["branch_name"].ToString();
@@ -316,8 +338,174 @@ namespace smpc_sales_app.Pages.Sales
                     }
 
                     HeaderList.Rows.Add(newRow);
-                }
 
+                    Helpers.BindControls(pnlList, HeaderList, SelectedRow);
+
+                    cmb_payment_terms.SelectedValue = filteredRows[0]["payment_terms_id"].ToString();
+                    cmb_payment_terms.SelectedItem = filteredRows[0]["payment_terms_id"].ToString();
+
+                    cmb_ship_type.SelectedValue = filteredRows[0]["ship_type_id"].ToString();
+                    cmb_ship_type.SelectedItem = filteredRows[0]["ship_type_id"].ToString();
+
+                    // Iterate through the controls and set the document numbers
+                    foreach (var pnl in pnlList)
+                    {
+                        foreach (Control control in pnl.Controls)
+                        {
+                            if (control is TextBox textBox && textBox.Name.Contains("txt_document_no"))
+                            {
+                                if (!textBox.Text.StartsWith("Q#"))
+                                {
+                                    textBox.Text = "Q#" + textBox.Text;
+                                }
+                            }
+                            if (control is TextBox textBox2 && textBox2.Name.Contains("txt_doc"))
+                            {
+                                if (!textBox2.Text.StartsWith("SO#"))
+                                {
+                                    textBox2.Text = "SO#" + textBox2.Text;
+                                }
+                            }
+                            if (control is TextBox textBox3 && textBox3.Name.Contains("txt_document_no"))
+                            {
+                                if (textBox3.Text.StartsWith("SO#"))
+                                {
+                                    textBox3.Text = textBox3.Text.Substring(3);
+                                }
+                            }
+                        }
+                    }
+
+                    if (string.IsNullOrEmpty(txt_status.Text))
+                    {
+                        txt_status.Text = "-";
+                    }   
+
+                    dtp_date.Value = Convert.ToDateTime(parentRow["date"]);
+                    dtp_delivery_date.Value = Convert.ToDateTime(parentRow["delivery_date"]);
+
+                    // Clone childList and add item_name column
+                    DataTable withItemListTwo = this.DetailsList.Clone();
+                    withItemListTwo.Columns.Add("short_desc", typeof(string));
+                    withItemListTwo.Columns.Add("item_code", typeof(string));
+                    withItemListTwo.Columns.Add("item_model", typeof(string));
+                    withItemListTwo.Columns.Add("qty", typeof(string));
+                    withItemListTwo.Columns.Add("unit_price", typeof(string));
+                    withItemListTwo.Columns.Add("line_total", typeof(string));
+
+                    // Iterate through childList (not ItemList)
+                    foreach (DataRow childRow in this.DetailsList.Rows)
+                    {
+                        DataRow newRow2 = withItemListTwo.NewRow();
+                        foreach (DataColumn col in DetailsList.Columns)
+                        {
+                            newRow2[col.ColumnName] = childRow[col.ColumnName];
+                        }
+
+                        // Look up item name from ItemList
+                        string itemId = childRow["item_id"].ToString();
+                        string quotationId = childRow["quotation_quick_id"].ToString();
+                        DataRow[] itemRows = ItemList.Select($"id = '{itemId}'");
+                        DataRow[] quickquote = childList.Select($"id = '{quotationId}'");
+                        newRow2["qty"] = quickquote[0]["qty"].ToString();
+                        newRow2["unit_price"] = quickquote[0]["unit_price"].ToString();
+                        newRow2["line_total"] = quickquote[0]["line_total"].ToString();
+
+                        if (itemRows.Length > 0)
+                        {
+                            newRow2["short_desc"] = itemRows[0]["item_model"].ToString() + " - " + itemRows[0]["short_desc"].ToString();
+                            newRow2["item_code"] = itemRows[0]["item_code"].ToString();
+                        }
+                        else
+                        {
+                            newRow2["short_desc"] = "Unknown Item";
+                            newRow2["item_code"] = "N/A";
+                        }
+                        withItemListTwo.Rows.Add(newRow2);
+                    }
+
+                    // Create filtered view
+                    DataView dataview = new DataView(withItemListTwo);
+                    dataview.RowFilter = "based_id = '" + parentRow["order_id"].ToString() + "'";
+
+                    dgv_order_sales.DataSource = dataview;
+                    CheckStatus();
+                }
+            }
+        }
+        private void bindQuotation(string documentNo, bool isBind = false)
+        {
+            if (isBind)
+            {
+                Panel[] pnlList = { pnl_header, pnl_footer };
+
+                DataTable HeaderList = this.transactionList.Clone();
+                HeaderList.Columns.Add("branch_name", typeof(string));
+                HeaderList.Columns.Add("customer_code", typeof(string));
+                HeaderList.Columns.Add("bill_to", typeof(string));
+                HeaderList.Columns.Add("ship_to", typeof(string));
+                HeaderList.Columns.Add("tin", typeof(string));
+
+                // Filter the transactionList based on document_no
+                DataRow[] filteredRows = this.transactionList.Select($"document_no = '{documentNo}'");
+
+                if (filteredRows.Length > 0)
+                {
+                    foreach (DataRow parentRow in filteredRows)
+                    {
+                        DataRow newRow = HeaderList.NewRow();
+                        foreach (DataColumn col in this.transactionList.Columns)
+                        {
+                            newRow[col.ColumnName] = parentRow[col.ColumnName];
+                        }
+
+                        int ID = (int)parentRow["customer_id"];
+                        string ShipID = parentRow["ship_to_id"].ToString();
+                        string BillID = parentRow["bill_to_id"].ToString();
+                        DataRow[] bpiGenRows = bpi_general.Select($"based_id = '{ID}'");
+                        DataRow[] billRows = bpi_address.Select($"address_id = '{BillID}'");
+                        DataRow[] shipRows = bpi_address.Select($"address_id = '{ShipID}'");
+
+                        if (bpiGenRows.Length > 0)
+                        {
+                            newRow["branch_name"] = bpiGenRows[0]["branch_name"].ToString();
+                            newRow["customer_code"] = bpiGenRows[0]["customer_code"].ToString();
+                            string BasedID = bpiGenRows[0]["based_id"].ToString();
+                            DataRow[] bpiRows = bpi_dt.Select($"id = '{BasedID}'");
+
+                            if (bpiRows.Length > 0)
+                            {
+                                newRow["tin"] = bpiRows[0]["tin"].ToString();
+                            }
+                            else
+                            {
+                                newRow["tin"] = "No TIN";
+                            }
+
+                            if (billRows.Length > 0)
+                            {
+                                newRow["bill_to"] = billRows[0]["location"].ToString();
+                                newRow["ship_to"] = shipRows[0]["location"].ToString();
+                            }
+                            else
+                            {
+                                newRow["bill_to"] = "No Location";
+                            }
+                        }
+                        else
+                        {
+                            newRow["branch_name"] = "Unknown Customer";
+                            newRow["customer_code"] = "N/A";
+                        }
+
+                        HeaderList.Rows.Add(newRow);
+                    }
+                    cmb_payment_terms.SelectedValue = filteredRows[0]["payment_terms_id"].ToString();
+                    cmb_payment_terms.SelectedItem = filteredRows[0]["payment_terms_id"].ToString();
+
+                    cmb_ship_type.SelectedValue = filteredRows[0]["ship_type_id"].ToString();
+                    cmb_ship_type.SelectedItem = filteredRows[0]["ship_type_id"].ToString();
+                }
 
                 Helpers.BindControls(pnlList, HeaderList, SelectedRow);
 
@@ -334,14 +522,7 @@ namespace smpc_sales_app.Pages.Sales
                         }
                     }
                 }
-
-
-                cmb_payment_terms.SelectedValue = this.transactionList.Rows[this.SelectedRow]["payment_terms_id"].ToString();
-                cmb_payment_terms.SelectedItem = this.transactionList.Rows[this.SelectedRow]["payment_terms_id"].ToString();
-
-                cmb_ship_type.SelectedValue = this.transactionList.Rows[this.SelectedRow]["ship_type_id"].ToString();
-                cmb_ship_type.SelectedItem = this.transactionList.Rows[this.SelectedRow]["ship_type_id"].ToString();
-
+                
                 // Clone childList and add item_name column
                 DataTable withItemList = this.childList.Clone();
                 withItemList.Columns.Add("short_desc", typeof(string));
@@ -360,6 +541,7 @@ namespace smpc_sales_app.Pages.Sales
                     // Look up item name from ItemList
                     string itemId = childRow["item_id"].ToString();
                     DataRow[] itemRows = ItemList.Select($"id = '{itemId}'");
+
                     if (itemRows.Length > 0)
                     {
                         newRow["short_desc"] = itemRows[0]["item_model"].ToString() + " - " + itemRows[0]["short_desc"].ToString();
@@ -373,13 +555,14 @@ namespace smpc_sales_app.Pages.Sales
                     withItemList.Rows.Add(newRow);
                 }
 
-                // Create filtered view
+                // Create filtered view based on document_no
                 DataView dataview = new DataView(withItemList);
-                dataview.RowFilter = "based_id = '" + this.transactionList.Rows[this.SelectedRow]["id"].ToString() + "'";
+                dataview.RowFilter = "based_id = '" + Convert.ToInt32(filteredRows[0]["id"]) + "'";
 
                 dgv_order_sales.DataSource = dataview;
             }
         }
+
         private void CalculateTotalPrice()
         {
             decimal total = 0.0m;
@@ -406,16 +589,54 @@ namespace smpc_sales_app.Pages.Sales
 
             txt_total.Text = total.ToString("0.00");
         }
-        private void Orders_Load(object sender, EventArgs e)
+        private async void Orders_Load(object sender, EventArgs e)
         {
-            pnl_footer.Width = this.ClientSize.Width;
-            fetchItemData();
-            fetchBpiData();
-            fetchQuotationDetails();
-            FetchData();
-            CheckStatus();
+            await FetchData();
             bs_payment_terms.DataSource = CacheData.PaymentTerms;
             bs_ship_type.DataSource = CacheData.ShipTypeSetup;
+
+            if (!string.IsNullOrEmpty(documentNo))
+            {
+                // Check if the documentNo exists in the OrderList DataTable
+                DataRow[] matchingRows = OrderList.Select($"document_no = '{documentNo}'");
+
+                if (matchingRows.Length > 0)
+                {
+                    // Document number exists in OrderList, bind the order data
+                    Helpers.ResetControls(pnl_header);
+                    Helpers.ResetControls(pnl_footer);
+                    btn_search.Visible = false;
+                    btn_back.Visible = true;
+                    btn_prev.Visible = false;
+                    btn_next.Visible = false;
+                    bindOrderByDocNo(documentNo, true);
+                    CalculateTotalPrice();
+                }
+                else
+                {
+                    Helpers.ResetControls(pnl_header);
+                    Helpers.ResetControls(pnl_footer);
+                    btn_search.Visible = false;
+                    btn_back.Visible = true;
+                    btn_prev.Visible = false;
+                    btn_next.Visible = false;
+                    bindQuotation(documentNo, true);
+                    CalculateTotalPrice();
+                    SOIncrementer();
+                }
+                if (string.IsNullOrEmpty(txt_document_no.Text))
+                {
+                    Helpers.ResetControls(pnl_header);
+                    Helpers.ResetControls(pnl_footer);
+                    btn_search.Visible = true;
+                    btn_back.Visible = false;
+                    btn_prev.Visible = true;
+                    btn_next.Visible = true;
+                    FetchData();
+                    CalculateTotalPrice();
+                }
+                CheckStatus();
+            }
             // Helpers.LoadDirectory("D:\\LIFESAVER\\LIFESAVER\\TEST", treeview_sales);
         }
 
@@ -441,84 +662,27 @@ namespace smpc_sales_app.Pages.Sales
             }
         }
 
-        private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        private async void btn_next_Click(object sender, EventArgs e)
         {
-            //// Ensure we are not clicking on header row or invalid rows
-            //if (e.RowIndex >= 0)
-            //{
-            //    DataGridViewRow clickedRow = dgv_order_sales.Rows[e.RowIndex];
-
-            //    // Check if the clicked row is the default row (last row)
-            //    if (clickedRow.Index == dgv_order_sales.Rows.Count - 1)
-            //    {
-            //        // Show the modal dialog for the default row
-            //        ItemModal itemModal = new ItemModal();
-            //        DialogResult r = itemModal.ShowDialog();
-
-            //        if (r == DialogResult.OK)
-            //        {
-            //            Dictionary<string, string> result = itemModal.GetResult();
-
-            //            if (result != null)
-            //            {
-            //                string code = "";
-            //                string name = "";
-            //                string unit_price = "";
-            //                string short_desc = "N/A";
-
-            //                result.TryGetValue("name", out name);
-            //                result.TryGetValue("code", out code);
-            //                result.TryGetValue("unitprice", out unit_price);
-            //                result.TryGetValue("short_desc", out short_desc);
-
-            //                DataRow newRow = DetailsList.NewRow();
-            //                newRow["based_id"] = OrderList.Rows[SelectedRow]["order_id"];
-            //                newRow["item_code"] = code;
-            //                newRow["total_price"] = unit_price;
-            //                newRow["item_description"] = short_desc;
-
-            //                //newRow["qty"] = 1;
-            //                //newRow["unit_measure"] = "COD";
-
-            //                DetailsList.Rows.InsertAt(newRow, DetailsList.Rows.Count - 1);
-            //                CalculateTotalPrice();
-            //            }
-            //        }
-            //    }
-            //}
-        }
-
-        private void panel3_Paint(object sender, PaintEventArgs e)
-        {
-
-        }
-
-        private void btn_next_Click(object sender, EventArgs e)
-        {
-            //int rowCount = OrderList.Rows.Count;
-            int rowCount = transactionList.Rows.Count;
+            int rowCount = OrderList.Rows.Count;
+            //int rowCount = transactionList.Rows.Count;
             if (SelectedRow < rowCount - 1)
             {
                 SelectedRow++;
-                //FetchData();
+                FetchData();
                 Helpers.ResetControls(pnl_header);
                 Helpers.ResetControls(pnl_footer);
-                fetchQuotationDetails();
-                SOIncrementer();
-
             }
         }
 
-        private void btn_prev_Click_1(object sender, EventArgs e)
+        private async void btn_prev_Click_1(object sender, EventArgs e)
         {
             if (SelectedRow >= 1)
             {
                 SelectedRow--;
-                //FetchData();
+                FetchData();
                 Helpers.ResetControls(pnl_header);
                 Helpers.ResetControls(pnl_footer);
-                fetchQuotationDetails();
-                SOIncrementer();
             }
         }
 
@@ -549,6 +713,7 @@ namespace smpc_sales_app.Pages.Sales
                 {
                     txt_status.Text = "-";
                 }
+                
 
                 if (missingFields.Count > 0)
                 {
@@ -560,7 +725,14 @@ namespace smpc_sales_app.Pages.Sales
                 var parentDataHeader = Helpers.GetControlsValues(pnl_header);
                 var parentDataFooter = Helpers.GetControlsValues(pnl_footer);
 
+                var quoteIdValue = ((TextBox)pnl_header.Controls["txt_quotation_id"]).Text;
+                if (string.IsNullOrEmpty(txt_id.Text))
+                {
+                    txt_id.Text = quoteIdValue;
+                }
                 var txtIdValue = ((TextBox)pnl_header.Controls["txt_id"]).Text;
+                
+                var docno = ((TextBox)pnl_header.Controls["txt_document_no"]).Text;
                 parentDataHeader["quotation_id"] = txtIdValue;
 
                 if (parentDataHeader.ContainsKey("payment_terms_id") && parentDataHeader["payment_terms_id"] is string shipto)
@@ -677,6 +849,9 @@ namespace smpc_sales_app.Pages.Sales
                             // Perform update if document number exists
                             await OrderService.Update(parentData);
                             MessageBox.Show("Data updated successfully");
+                            FetchData();
+                            bindOrderByDocNo(docno, true);
+                            CheckStatus();
                         }
                         else
                         {
@@ -685,9 +860,7 @@ namespace smpc_sales_app.Pages.Sales
                             MessageBox.Show("Data added successfully");
                         }
 
-                        // Refresh data
-                        FetchData();
-                        fetchQuotationDetails();
+
                     }
                 }
             }
@@ -736,10 +909,14 @@ namespace smpc_sales_app.Pages.Sales
             try
             {
                 var docIdValue = ((TextBox)pnl_header.Controls["txt_doc"]).Text;
-
+                var docnoValue = ((TextBox)pnl_header.Controls["txt_document_no"]).Text;
                 if (docIdValue.StartsWith("SO#"))
                 {
                     docIdValue = docIdValue.Substring(3); 
+                }
+                if (docnoValue.StartsWith("Q#"))
+                {
+                    docnoValue = docnoValue.Substring(2);
                 }
                 if (int.TryParse(docIdValue, out int selectedDoc) && selectedDoc > 0)
                 {
@@ -759,7 +936,7 @@ namespace smpc_sales_app.Pages.Sales
                         await OrderService.Update(parentDataHeader);
                         MessageBox.Show("Order status updated to ACTIVE.");
                         FetchData();
-                        bindOrder(true);
+                        bindOrderByDocNo(docnoValue, true);
                         CheckStatus();
                     }
                     else
@@ -796,6 +973,37 @@ namespace smpc_sales_app.Pages.Sales
             {
                 txt_ref_po.ReadOnly = false;
             }
+            if (txt_status.Text == "CANCELLED")
+            {
+                txt_ref_po.ReadOnly = true;
+                dtp_date.Enabled = false;
+                dtp_delivery_date.Enabled = false;
+                txt_sales_executive.ReadOnly = true;
+                txt_receiver.ReadOnly = true;
+                txt_contact_no.ReadOnly = true;
+                txt_remarks.ReadOnly = true;
+                txt_approved_by.ReadOnly = true;
+                btn_save.Enabled = false;
+                foreach (DataGridViewColumn column in dgv_order_sales.Columns)
+                {
+                    column.ReadOnly = true;
+                }
+            }
+            else
+            {
+                dtp_date.Enabled = true;
+                dtp_delivery_date.Enabled = true;
+                txt_sales_executive.ReadOnly = false;
+                txt_receiver.ReadOnly = false;
+                txt_contact_no.ReadOnly = false;
+                txt_remarks.ReadOnly = false;
+                txt_approved_by.ReadOnly = false;
+                btn_save.Enabled = true;
+                foreach (DataGridViewColumn column in dgv_order_sales.Columns)
+                {
+                    column.ReadOnly = false;
+                }
+            }
         }
 
         private async void btn_cancel_Click(object sender, EventArgs e)
@@ -803,10 +1011,15 @@ namespace smpc_sales_app.Pages.Sales
             try
             {
                 var docIdValue = ((TextBox)pnl_header.Controls["txt_doc"]).Text;
+                var docnoValue = ((TextBox)pnl_header.Controls["txt_document_no"]).Text;
 
                 if (docIdValue.StartsWith("SO#"))
                 {
                     docIdValue = docIdValue.Substring(3);
+                }
+                if (docnoValue.StartsWith("Q#"))
+                {
+                    docnoValue = docnoValue.Substring(2);
                 }
                 if (int.TryParse(docIdValue, out int selectedDoc) && selectedDoc > 0)
                 {
@@ -826,7 +1039,7 @@ namespace smpc_sales_app.Pages.Sales
                         await OrderService.Update(parentDataHeader);
                         MessageBox.Show("Order status updated to CANCELLED.");
                         FetchData();
-                        bindOrder(true);
+                        bindOrderByDocNo(docnoValue, true);
                         CheckStatus();
                     }
                     else
@@ -843,6 +1056,14 @@ namespace smpc_sales_app.Pages.Sales
             {
                 MessageBox.Show("Error: " + ex.Message + "\n\n" + "Stack Trace: " + ex.StackTrace);
             }
+        }
+
+        private void btn_back_Click(object sender, EventArgs e)
+        {
+            Quotation quotationPage = new Quotation(documentNo);
+
+            this.Parent.Controls.Add(quotationPage);
+            this.Dispose();
         }
     }
 }
