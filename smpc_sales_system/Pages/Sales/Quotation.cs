@@ -919,5 +919,22 @@ namespace smpc_sales_app.Pages.Sales
                 }
             }
         }
+
+        private void btn_SO_Click(object sender, EventArgs e)
+        {
+            string documentNo = txt_document_no.Text.Trim();  // Assuming you have a document_no textbox in Quotation
+
+            if (string.IsNullOrEmpty(documentNo))
+            {
+                MessageBox.Show("Please enter a valid document number.");
+                return;
+            }
+
+            // Create an instance of Orders user control
+            Orders ordersPage = new Orders(documentNo);
+            this.Parent.Controls.Add(ordersPage);
+
+            this.Hide();
+        }
     }
 }
