@@ -7,6 +7,7 @@ using smpc_sales_app.Services.Sales;
 using smpc_sales_app.Utils;
 using smpc_sales_system.Models;
 using smpc_sales_system.Pages;
+using smpc_sales_system.Pages.Sales;
 using smpc_sales_system.Services.Sales.Models;
 using System;
 using System.Collections.Generic;
@@ -932,6 +933,14 @@ namespace smpc_sales_app.Pages.Sales
 
             // Create an instance of Orders user control
             Orders ordersPage = new Orders(documentNo);
+            this.Parent.Controls.Add(ordersPage);
+
+            this.Hide();
+        }
+
+        private void btn_print_Click(object sender, EventArgs e)
+        {
+            QuotationPrint ordersPage = new QuotationPrint();
             this.Parent.Controls.Add(ordersPage);
 
             this.Hide();
