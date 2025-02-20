@@ -149,6 +149,7 @@
             this.label22 = new System.Windows.Forms.Label();
             this.label21 = new System.Windows.Forms.Label();
             this.pnl_footer = new System.Windows.Forms.Panel();
+            this.btn_SO = new System.Windows.Forms.Button();
             this.btn_cancel = new System.Windows.Forms.Button();
             this.btn_save = new System.Windows.Forms.Button();
             this.txt_short_description = new System.Windows.Forms.TextBox();
@@ -239,7 +240,6 @@
             this.net_discount = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.net_total = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.line_total = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.btn_SO = new System.Windows.Forms.Button();
             this.panel1.SuspendLayout();
             this.panel3.SuspendLayout();
             this.tabControl.SuspendLayout();
@@ -1221,6 +1221,16 @@
             this.pnl_footer.Size = new System.Drawing.Size(1028, 258);
             this.pnl_footer.TabIndex = 78;
             // 
+            // btn_SO
+            // 
+            this.btn_SO.Location = new System.Drawing.Point(17, 213);
+            this.btn_SO.Name = "btn_SO";
+            this.btn_SO.Size = new System.Drawing.Size(107, 23);
+            this.btn_SO.TabIndex = 105;
+            this.btn_SO.Text = "SALES ORDER";
+            this.btn_SO.UseVisualStyleBackColor = true;
+            this.btn_SO.Click += new System.EventHandler(this.btn_SO_Click);
+            // 
             // btn_cancel
             // 
             this.btn_cancel.BackColor = System.Drawing.Color.Red;
@@ -2095,6 +2105,7 @@
             this.btn_print.Name = "btn_print";
             this.btn_print.Size = new System.Drawing.Size(52, 22);
             this.btn_print.Text = "Print";
+            this.btn_print.Click += new System.EventHandler(this.btn_print_Click);
             // 
             // unit
             // 
@@ -2175,16 +2186,6 @@
             this.line_total.HeaderText = "LINE TOTAL";
             this.line_total.Name = "line_total";
             this.line_total.ReadOnly = true;
-            // 
-            // btn_SO
-            // 
-            this.btn_SO.Location = new System.Drawing.Point(17, 213);
-            this.btn_SO.Name = "btn_SO";
-            this.btn_SO.Size = new System.Drawing.Size(107, 23);
-            this.btn_SO.TabIndex = 105;
-            this.btn_SO.Text = "SALES ORDER";
-            this.btn_SO.UseVisualStyleBackColor = true;
-            this.btn_SO.Click += new System.EventHandler(this.btn_SO_Click);
             // 
             // Quotation
             // 
