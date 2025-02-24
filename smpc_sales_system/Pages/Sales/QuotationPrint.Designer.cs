@@ -58,7 +58,7 @@ namespace smpc_sales_system.Pages.Sales
             this.toolStrip1.Location = new System.Drawing.Point(0, 47);
             this.toolStrip1.Name = "toolStrip1";
             this.toolStrip1.RenderMode = System.Windows.Forms.ToolStripRenderMode.Professional;
-            this.toolStrip1.Size = new System.Drawing.Size(749, 25);
+            this.toolStrip1.Size = new System.Drawing.Size(911, 25);
             this.toolStrip1.TabIndex = 11;
             this.toolStrip1.Text = "toolStrip1";
             // 
@@ -103,7 +103,7 @@ namespace smpc_sales_system.Pages.Sales
             this.panel6.Dock = System.Windows.Forms.DockStyle.Top;
             this.panel6.Location = new System.Drawing.Point(0, 0);
             this.panel6.Name = "panel6";
-            this.panel6.Size = new System.Drawing.Size(749, 47);
+            this.panel6.Size = new System.Drawing.Size(911, 47);
             this.panel6.TabIndex = 10;
             // 
             // label1
@@ -113,9 +113,9 @@ namespace smpc_sales_system.Pages.Sales
             this.label1.ImeMode = System.Windows.Forms.ImeMode.NoControl;
             this.label1.Location = new System.Drawing.Point(18, 10);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(237, 25);
+            this.label1.Size = new System.Drawing.Size(138, 25);
             this.label1.TabIndex = 1;
-            this.label1.Text = "Quotation Print Preview";
+            this.label1.Text = "Print Preview";
             this.label1.Click += new System.EventHandler(this.label1_Click);
             // 
             // pnl_print
@@ -124,7 +124,7 @@ namespace smpc_sales_system.Pages.Sales
             this.pnl_print.Dock = System.Windows.Forms.DockStyle.Fill;
             this.pnl_print.Location = new System.Drawing.Point(0, 72);
             this.pnl_print.Name = "pnl_print";
-            this.pnl_print.Size = new System.Drawing.Size(749, 692);
+            this.pnl_print.Size = new System.Drawing.Size(911, 692);
             this.pnl_print.TabIndex = 12;
             // 
             // pnl_dgv
@@ -133,7 +133,7 @@ namespace smpc_sales_system.Pages.Sales
             this.pnl_dgv.Dock = System.Windows.Forms.DockStyle.Fill;
             this.pnl_dgv.Location = new System.Drawing.Point(0, 0);
             this.pnl_dgv.Name = "pnl_dgv";
-            this.pnl_dgv.Size = new System.Drawing.Size(749, 692);
+            this.pnl_dgv.Size = new System.Drawing.Size(911, 692);
             this.pnl_dgv.TabIndex = 1;
             // 
             // reportViewer1
@@ -142,7 +142,7 @@ namespace smpc_sales_system.Pages.Sales
             this.reportViewer1.Location = new System.Drawing.Point(0, 0);
             this.reportViewer1.Name = "reportViewer1";
             this.reportViewer1.ServerReport.BearerToken = null;
-            this.reportViewer1.Size = new System.Drawing.Size(749, 692);
+            this.reportViewer1.Size = new System.Drawing.Size(911, 692);
             this.reportViewer1.TabIndex = 0;
             // 
             // printDialog1
@@ -157,7 +157,7 @@ namespace smpc_sales_system.Pages.Sales
             this.Controls.Add(this.toolStrip1);
             this.Controls.Add(this.panel6);
             this.Name = "QuotationPrint";
-            this.Size = new System.Drawing.Size(749, 764);
+            this.Size = new System.Drawing.Size(911, 764);
             this.Load += new System.EventHandler(this.QuotationPrint_Load);
             this.toolStrip1.ResumeLayout(false);
             this.toolStrip1.PerformLayout();

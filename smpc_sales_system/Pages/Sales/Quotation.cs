@@ -580,7 +580,7 @@ namespace smpc_sales_app.Pages.Sales
                     {
                         newRow["branch_name"] = bpiRows[0]["branch_name"].ToString();
                         newRow["customer_code"] = bpiRows[0]["customer_code"].ToString();
-                        newRow["number"] = contactsRows[0]["number"].ToString();
+                        //newRow["number"] = contactsRows[0]["number"].ToString();
                     }
                     else
                     {
@@ -940,7 +940,8 @@ namespace smpc_sales_app.Pages.Sales
 
         private void btn_print_Click(object sender, EventArgs e)
         {
-            QuotationPrint ordersPage = new QuotationPrint();
+            string documentNo = txt_document_no.Text.Trim();
+            QuotationPrint ordersPage = new QuotationPrint(documentNo);
             this.Parent.Controls.Add(ordersPage);
 
             this.Hide();
