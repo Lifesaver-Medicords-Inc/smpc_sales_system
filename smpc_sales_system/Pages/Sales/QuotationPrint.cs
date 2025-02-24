@@ -1,6 +1,7 @@
 ﻿using Microsoft.Reporting.WinForms;
 using smpc_sales_app.Services.Helpers;
 using smpc_sales_app.Services.Sales;
+using smpc_sales_system.Models;
 using smpc_sales_system.Services.Sales.Models;
 using System;
 using System.Collections.Generic;
@@ -16,9 +17,13 @@ namespace smpc_sales_system.Pages.Sales
 {
     public partial class QuotationPrint : UserControl
     {
-        public QuotationPrint()
+        private string documentNo;
+        public QuotationPrint(string documentNo = null)
         {
             InitializeComponent();
+            fetchBpiData();
+            fetchItemData();
+            this.documentNo = documentNo;
         }
 
         private void label1_Click(object sender, EventArgs e)
@@ -34,57 +39,162 @@ namespace smpc_sales_system.Pages.Sales
         public DataTable transactionList { get; set; } = new DataTable();
         public DataTable childList { get; set; } = new DataTable();
         public DataTable ItemList { get; set; } = new DataTable();
+        private DataTable bpi_dt = new DataTable();
+        private DataTable bpi_general = new DataTable();
+        private DataTable bpi_address = new DataTable();
+        private DataTable bpi_contacts = new DataTable();
 
-        private async 
-        Task
-fetchQuotationDetails()
+        //        private async 
+        //        Task
+        //fetchQuotationDetails()
+        //        {
+        //            SalesQuotationList data = await QuotationService.GetQuotations();
+
+        //            if (data != null && data.SalesQuotation != null && data.SalesQuotation.Any())
+        //            {
+        //                // Version filter
+        //                var latestQuotations = data.SalesQuotation
+        //                    .GroupBy(q => q.document_no)
+        //                    .Select(group => group.OrderByDescending(q => q.version_no)
+        //                    .First())
+        //                    .ToList();
+
+        //                // GET the latest version
+        //                transactionList = JsonHelper.ToDataTable(latestQuotations);
+        //                allTransactionList = JsonHelper.ToDataTable(data.SalesQuotation);
+        //                childList = JsonHelper.ToDataTable(data.SalesQuotationQuick);
+
+        //            }
+        //            else
+        //            {
+        //                MessageBox.Show("Please create a new data!");
+        //            }
+        //        }
+        private async void fetchItemData()
         {
+            var itemData = await ItemService.GetItem();
+            ItemList = JsonHelper.ToDataTable(itemData.items);
+        }
+        private async void fetchBpiData()
+        {
+            Bpi_Class bpi_data = await QuotationService.GetBpiCustomers();
+            bpi_dt = JsonHelper.ToDataTable(bpi_data.bpi);
+            bpi_general = JsonHelper.ToDataTable(bpi_data.general);
+            bpi_address = JsonHelper.ToDataTable(bpi_data.address);
+            bpi_contacts = JsonHelper.ToDataTable(bpi_data.contacts);
+        }
+        private async Task fetchQuotationDetailsByDocumentNo(string documentNo)
+        {
+            // Get all the quotations from the service
             SalesQuotationList data = await QuotationService.GetQuotations();
-
-            if (data != null && data.SalesQuotation != null && data.SalesQuotation.Any())
+            var itemData = await ItemService.GetItem();
+            ItemList = JsonHelper.ToDataTable(itemData.items);
+            // Check if data is valid
+            if (data == null || string.IsNullOrEmpty(documentNo))
             {
-                // Version filter
-                var latestQuotations = data.SalesQuotation
-                    .GroupBy(q => q.document_no)
-                    .Select(group => group.OrderByDescending(q => q.version_no)
-                    .First())
+                return;  // Exit if no data or documentNo is provided
+            }
+            // Filter the SalesQuotation and SalesQuotationQuick based on the converted documentNo
+            var filteredSalesQuotation = data.SalesQuotation
+                .Where(q => q.document_no == documentNo)  // Assuming document_no is int
+                .ToList();
+
+            var quotationId = filteredSalesQuotation.FirstOrDefault()?.id;
+
+            if (quotationId != null)
+            {
+                var filteredSalesQuotationQuick = data.SalesQuotationQuick
+                    .Where(q => q.based_id == quotationId)  // Filter by based_id, converted to int
                     .ToList();
+                // Convert the filtered lists to DataTables (using your helper method)
+                transactionList = JsonHelper.ToDataTable(filteredSalesQuotation);
+                childList = JsonHelper.ToDataTable(filteredSalesQuotationQuick);
 
-                // GET the latest version
-                transactionList = JsonHelper.ToDataTable(latestQuotations);
-                allTransactionList = JsonHelper.ToDataTable(data.SalesQuotation);
-                childList = JsonHelper.ToDataTable(data.SalesQuotationQuick);
-
+                // If filtered data exists, bind it to the DataGridView
+                if (filteredSalesQuotation.Any() || filteredSalesQuotationQuick.Any())
+                {
+                    //bind(true);
+                }
+                else
+                {
+                    // Optionally, handle the case where no matching documentNo was found
+                    MessageBox.Show("No records found for the provided document number.");
+                }
             }
             else
             {
-                MessageBox.Show("Please create a new data!");
+                // If no matching SalesQuotation was found
+                MessageBox.Show("No SalesQuotation found for the provided document number.");
             }
         }
+
         private async void QuotationPrint_Load(object sender, EventArgs e)
         {
-            await fetchQuotationDetails();
+            await fetchQuotationDetailsByDocumentNo(documentNo);
 
-            // Assuming the data is fetched and stored in the transactionList, childList, etc.
             if (transactionList != null && transactionList.Rows.Count > 0)
             {
-                // Create your report data source
-                ReportDataSource reportDataSource = new ReportDataSource("QuotationQuick", childList); // Assuming 'childList' holds the data for your report
+                // Filter the transactionList based on document_no (use the passed documentNo)
+                DataRow[] filteredRows = transactionList.Select($"document_no = '{documentNo}'");
 
-                // Set the report path
-                reportViewer1.LocalReport.ReportPath = @"C:\Users\SMPC\source\repos\smpc_sales_system\smpc_sales_system2\smpc_sales_system\Pages\Sales\QuotationReport.rdlc";
+                if (filteredRows.Length > 0)
+                {
+                    foreach (DataRow parentRow in filteredRows)
+                    {
+                        // Retrieve additional information based on customer_id and address_ids
+                        int customerId = (int)parentRow["customer_id"];
+                        string shipToId = parentRow["ship_to_id"].ToString();
 
-                // Clear existing data sources and add new one
-                reportViewer1.LocalReport.DataSources.Clear();
-                reportViewer1.LocalReport.DataSources.Add(reportDataSource);
+                        // Fetch related data from the bpi tables (using the customer_id and address_ids)
+                        DataRow[] bpiGenRows = bpi_general.Select($"based_id = '{customerId}'");
+                        DataRow[] shipRows = bpi_address.Select($"address_id = '{shipToId}'");
 
-                // Refresh the report to show the data
-                reportViewer1.RefreshReport();
-            }
-            else
-            {
-                MessageBox.Show("No quotation data available for the report.");
+                        // Set the text directly (without adding new columns to DataTable)
+                        if (bpiGenRows.Length > 0)
+                        {
+                            parentRow["branch_name"] = bpiGenRows[0]["branch_name"].ToString();
+                            string basedId = bpiGenRows[0]["based_id"].ToString();
+                            DataRow[] bpiRows = bpi_dt.Select($"id = '{basedId}'");
+
+                            if (shipRows.Length > 0)
+                            {
+                                parentRow["ship_to"] = shipRows[0]["location"].ToString();
+                            }
+                            else
+                            {
+                                parentRow["ship_to"] = "No Location";
+                            }
+                        }
+                        else
+                        {
+                        }
+                    }
+
+                    // Now bind the updated transactionList as the data source for the report
+                    ReportDataSource headerReportDataSource = new ReportDataSource("DataSet1", transactionList);
+                    ReportDataSource childReportDataSource = new ReportDataSource("DataSet2", childList);
+
+                    // Set the report path (use the correct path to your RDLC file)
+                    reportViewer1.LocalReport.ReportPath = @"C:\Users\SMPC\source\repos\smpc_sales_system\smpc_sales_system2\smpc_sales_system\Pages\Sales\QuotationReport.rdlc";
+
+                    // Clear any previous data sources
+                    reportViewer1.LocalReport.DataSources.Clear();
+
+                    // Add the data sources for the header and child data
+                    reportViewer1.LocalReport.DataSources.Add(headerReportDataSource);
+                    reportViewer1.LocalReport.DataSources.Add(childReportDataSource);
+
+                    // Refresh the report to show the data
+                    reportViewer1.RefreshReport();
+                }
+                else
+                {
+                    MessageBox.Show("No quotation data available for the report.");
+                }
             }
         }
+
+
+
     }
 }
