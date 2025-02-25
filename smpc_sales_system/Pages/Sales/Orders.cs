@@ -137,14 +137,14 @@ namespace smpc_sales_app.Pages.Sales
                     //int ID = (int)parentRow["customer_id"];
                     string ShipID = parentRow["ship_to_id"].ToString();
                     string BillID = parentRow["bill_to_id"].ToString();
-                    DataRow[] bpiGenRows = bpi_general.Select($"based_id = '{customerID}'");
+                    DataRow[] bpiGenRows = bpi_general.Select($"general_based_id = '{customerID}'");
                     DataRow[] billRows = bpi_address.Select($"address_id = '{BillID}'");
                     DataRow[] shipRows = bpi_address.Select($"address_id = '{ShipID}'");
                     if (bpiGenRows.Length > 0)
                     {
                         newRow["branch_name"] = bpiGenRows[0]["branch_name"].ToString();
                         newRow["customer_code"] = bpiGenRows[0]["customer_code"].ToString();
-                        string BasedID = bpiGenRows[0]["based_id"].ToString();
+                        string BasedID = bpiGenRows[0]["general_based_id"].ToString();
                         DataRow[] bpiRows = bpi_dt.Select($"id = '{BasedID}'");
                         if (bpiRows.Length > 0)
                         {
@@ -305,7 +305,7 @@ namespace smpc_sales_app.Pages.Sales
 
                     string ShipID = parentRow["ship_to_id"].ToString();
                     string BillID = parentRow["bill_to_id"].ToString();
-                    DataRow[] bpiGenRows = bpi_general.Select($"based_id = '{customerID}'");
+                    DataRow[] bpiGenRows = bpi_general.Select($"general_based_id = '{customerID}'");
                     DataRow[] billRows = bpi_address.Select($"address_id = '{BillID}'");
                     DataRow[] shipRows = bpi_address.Select($"address_id = '{ShipID}'");
 
@@ -465,7 +465,7 @@ namespace smpc_sales_app.Pages.Sales
                         int ID = (int)parentRow["customer_id"];
                         string ShipID = parentRow["ship_to_id"].ToString();
                         string BillID = parentRow["bill_to_id"].ToString();
-                        DataRow[] bpiGenRows = bpi_general.Select($"based_id = '{ID}'");
+                        DataRow[] bpiGenRows = bpi_general.Select($"general_based_id = '{ID}'");
                         DataRow[] billRows = bpi_address.Select($"address_id = '{BillID}'");
                         DataRow[] shipRows = bpi_address.Select($"address_id = '{ShipID}'");
 
@@ -473,7 +473,7 @@ namespace smpc_sales_app.Pages.Sales
                         {
                             newRow["branch_name"] = bpiGenRows[0]["branch_name"].ToString();
                             newRow["customer_code"] = bpiGenRows[0]["customer_code"].ToString();
-                            string BasedID = bpiGenRows[0]["based_id"].ToString();
+                            string BasedID = bpiGenRows[0]["general_based_id"].ToString();
                             DataRow[] bpiRows = bpi_dt.Select($"id = '{BasedID}'");
 
                             if (bpiRows.Length > 0)
