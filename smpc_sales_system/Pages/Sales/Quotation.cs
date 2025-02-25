@@ -573,7 +573,7 @@ namespace smpc_sales_app.Pages.Sales
                     }
 
                     string ID = parentRow["customer_id"].ToString();
-                    DataRow[] bpiRows = customerList.Select($"based_id = '{ID}'");
+                    DataRow[] bpiRows = customerList.Select($"general_based_id = '{ID}'");
                     DataRow[] contactsRows = customerList.Select($"contacts_based_id = '{ID}'");
 
                     if (bpiRows.Length > 0)
@@ -941,9 +941,8 @@ namespace smpc_sales_app.Pages.Sales
         private void btn_print_Click(object sender, EventArgs e)
         {
             string documentNo = txt_document_no.Text.Trim();
-            QuotationPrint ordersPage = new QuotationPrint(documentNo);
+            QPrintTemplate ordersPage = new QPrintTemplate(documentNo);
             this.Parent.Controls.Add(ordersPage);
-
             this.Hide();
         }
     }

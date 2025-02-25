@@ -34,19 +34,19 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.ReportViewer.Common, Version=15.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.ReportingServices.ReportViewerControl.Winforms.150.1652.0\lib\net40\Microsoft.ReportViewer.Common.dll</HintPath>
+      <HintPath>..\packages\Microsoft.ReportingServices.ReportViewerControl.Winforms.150.1620.0\lib\net40\Microsoft.ReportViewer.Common.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.ReportViewer.DataVisualization, Version=15.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.ReportingServices.ReportViewerControl.Winforms.150.1652.0\lib\net40\Microsoft.ReportViewer.DataVisualization.dll</HintPath>
+      <HintPath>..\packages\Microsoft.ReportingServices.ReportViewerControl.Winforms.150.1620.0\lib\net40\Microsoft.ReportViewer.DataVisualization.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.ReportViewer.Design, Version=15.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.ReportingServices.ReportViewerControl.Winforms.150.1652.0\lib\net40\Microsoft.ReportViewer.Design.dll</HintPath>
+      <HintPath>..\packages\Microsoft.ReportingServices.ReportViewerControl.Winforms.150.1620.0\lib\net40\Microsoft.ReportViewer.Design.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.ReportViewer.ProcessingObjectModel, Version=15.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.ReportingServices.ReportViewerControl.Winforms.150.1652.0\lib\net40\Microsoft.ReportViewer.ProcessingObjectModel.dll</HintPath>
+      <HintPath>..\packages\Microsoft.ReportingServices.ReportViewerControl.Winforms.150.1620.0\lib\net40\Microsoft.ReportViewer.ProcessingObjectModel.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.ReportViewer.WinForms, Version=15.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.ReportingServices.ReportViewerControl.Winforms.150.1652.0\lib\net40\Microsoft.ReportViewer.WinForms.dll</HintPath>
+      <HintPath>..\packages\Microsoft.ReportingServices.ReportViewerControl.Winforms.150.1620.0\lib\net40\Microsoft.ReportViewer.WinForms.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.SqlServer.Types, Version=14.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.SqlServer.Types.14.0.314.76\lib\net40\Microsoft.SqlServer.Types.dll</HintPath>
@@ -87,11 +87,17 @@
     <Compile Include="Models\ItemParent.cs" />
     <Compile Include="Models\PaymentTermsModel.cs" />
     <Compile Include="Models\QuotationModel.cs" />
-    <Compile Include="Pages\Sales\QuotationPrint.cs">
+    <Compile Include="Pages\Sales\QPrintTemplate.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="Pages\Sales\QuotationPrint.Designer.cs">
-      <DependentUpon>QuotationPrint.cs</DependentUpon>
+    <Compile Include="Pages\Sales\QPrintTemplate.Designer.cs">
+      <DependentUpon>QPrintTemplate.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\Sales\QuotationPrintModal.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Pages\Sales\QuotationPrintModal.Designer.cs">
+      <DependentUpon>QuotationPrintModal.cs</DependentUpon>
     </Compile>
     <Compile Include="Pages\SearchOrder.cs">
       <SubType>Form</SubType>
@@ -220,11 +226,14 @@
     <EmbeddedResource Include="Pages\Sales\Orders.resx">
       <DependentUpon>Orders.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Pages\Sales\QPrintTemplate.resx">
+      <DependentUpon>QPrintTemplate.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Pages\Sales\Quotation.resx">
       <DependentUpon>Quotation.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Pages\Sales\QuotationPrint.resx">
-      <DependentUpon>QuotationPrint.cs</DependentUpon>
+    <EmbeddedResource Include="Pages\Sales\QuotationPrintModal.resx">
+      <DependentUpon>QuotationPrintModal.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Pages\Sales\QuotationReport.rdlc" />
     <EmbeddedResource Include="Pages\Sales\SetupSelectionModal.resx">
