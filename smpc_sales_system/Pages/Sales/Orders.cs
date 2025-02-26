@@ -17,6 +17,7 @@ using smpc_sales_system.Services.Sales.Models;
 using smpc_sales_app.Services.Helpers;
 using smpc_sales_system.Models;
 using smpc_sales_system.Pages;
+using smpc_sales_system.Services.Sales;
 
 namespace smpc_sales_app.Pages.Sales
 {
@@ -44,6 +45,8 @@ namespace smpc_sales_app.Pages.Sales
         public DataTable transactionList { get; set; } = new DataTable();
         public DataTable childList { get; set; } = new DataTable();
         public DataTable ItemList { get; set; } = new DataTable();
+        public DataTable ItemSets { get; set; } = new DataTable();
+        public DataTable ProjectItemList { get; set; } = new DataTable();
 
         private async Task FetchData(bool isReload)
         {
@@ -105,6 +108,17 @@ namespace smpc_sales_app.Pages.Sales
                 SOIncrementer();
             }
         }
+        private async void fetchProject()
+        {
+            SalesProjectList data = await ProjectService.GetProjects();
+            ItemSets = JsonHelper.ToDataTable(data.sales_project_item_set);
+            ProjectItemList = JsonHelper.ToDataTable(data.sales_project_items);
+
+            if (data != null)
+            {
+                //bindQuotation(true);
+            }
+        }
         private void bindOrder(bool isBind = false)
         {
             if (isBind)
@@ -130,6 +144,14 @@ namespace smpc_sales_app.Pages.Sales
 
                     int quotationID = Convert.ToInt32(parentRow["quotation_id"]);
                     DataRow[] quotation = transactionList.Select($"id = '{quotationID}'");
+                    if (quotation.Length > 0)
+                    {
+                        // Check for project_name field in the transactionList
+                        if (quotation[0]["project_name"] != DBNull.Value && quotation[0]["project_name"].ToString() == "1")
+                        {
+                            MessageBox.Show("PROJECT TO");
+                        }
+                    }
                     string customerID = quotation[0]["customer_id"].ToString();
                     newRow["vat_amount"] = quotation[0]["vat_amount"].ToString();
                     newRow["gross_sales"] = quotation[0]["gross_sales"].ToString();
@@ -298,6 +320,15 @@ namespace smpc_sales_app.Pages.Sales
 
                     int quotationID = Convert.ToInt32(parentRow["quotation_id"]);
                     DataRow[] quotation = transactionList.Select($"id = '{quotationID}'");
+                    if (quotation.Length > 0)
+                    {
+                        // Check for project_name field in the transactionList
+                        if (quotation[0]["project_name"] != DBNull.Value && quotation[0]["project_name"].ToString() == "1")
+                        {
+                            MessageBox.Show("PROJECT TO");
+                        }
+                    }
+                    MessageBox.Show("QUOTE TO");
                     string customerID = quotation[0]["customer_id"].ToString();
                     newRow["vat_amount"] = quotation[0]["vat_amount"].ToString();
                     newRow["gross_sales"] = quotation[0]["gross_sales"].ToString();
@@ -313,7 +344,7 @@ namespace smpc_sales_app.Pages.Sales
                     {
                         newRow["branch_name"] = bpiGenRows[0]["branch_name"].ToString();
                         newRow["customer_code"] = bpiGenRows[0]["customer_code"].ToString();
-                        string BasedID = bpiGenRows[0]["based_id"].ToString();
+                        string BasedID = bpiGenRows[0]["general_based_id"].ToString();
                         DataRow[] bpiRows = bpi_dt.Select($"id = '{BasedID}'");
                         if (bpiRows.Length > 0)
                         {
@@ -503,11 +534,151 @@ namespace smpc_sales_app.Pages.Sales
 
                         HeaderList.Rows.Add(newRow);
                     }
-                    cmb_payment_terms.SelectedValue = filteredRows[0]["payment_terms_id"].ToString();
-                    cmb_payment_terms.SelectedItem = filteredRows[0]["payment_terms_id"].ToString();
+                    DataRow firstRow = filteredRows[0];
+                    if (firstRow["project_name"] != DBNull.Value && firstRow["project_name"].ToString() == "1")
+                    {
+                        MessageBox.Show("PROJECT TO");
+                        bindProject(documentNo, true);
+                    }
+                    else
+                    {
+                        MessageBox.Show("QUOTE TO");
+                        cmb_payment_terms.SelectedValue = filteredRows[0]["payment_terms_id"].ToString();
+                        cmb_payment_terms.SelectedItem = filteredRows[0]["payment_terms_id"].ToString();
 
-                    cmb_ship_type.SelectedValue = filteredRows[0]["ship_type_id"].ToString();
-                    cmb_ship_type.SelectedItem = filteredRows[0]["ship_type_id"].ToString();
+                        cmb_ship_type.SelectedValue = filteredRows[0]["ship_type_id"].ToString();
+                        cmb_ship_type.SelectedItem = filteredRows[0]["ship_type_id"].ToString();
+                        Helpers.BindControls(pnlList, HeaderList, SelectedRow);
+
+                        foreach (var pnl in pnlList)
+                        {
+                            foreach (Control control in pnl.Controls)
+                            {
+                                if (control is TextBox textBox && textBox.Name.Contains("txt_document_no"))
+                                {
+                                    if (!textBox.Text.StartsWith("Q#"))
+                                    {
+                                        textBox.Text = "Q#" + textBox.Text;
+                                    }
+                                }
+                            }
+                        }
+
+                        // Clone childList and add item_name column
+                        DataTable withItemList = this.childList.Clone();
+                        withItemList.Columns.Add("short_desc", typeof(string));
+                        withItemList.Columns.Add("item_code", typeof(string));
+                        withItemList.Columns.Add("item_model", typeof(string));
+
+                        // Iterate through childList (not ItemList)
+                        foreach (DataRow childRow in this.childList.Rows)
+                        {
+                            DataRow newRow = withItemList.NewRow();
+                            foreach (DataColumn col in childList.Columns)
+                            {
+                                newRow[col.ColumnName] = childRow[col.ColumnName];
+                            }
+
+                            // Look up item name from ItemList
+                            string itemId = childRow["item_id"].ToString();
+                            DataRow[] itemRows = ItemList.Select($"id = '{itemId}'");
+
+                            if (itemRows.Length > 0)
+                            {
+                                newRow["short_desc"] = itemRows[0]["item_model"].ToString() + " - " + itemRows[0]["short_desc"].ToString();
+                                newRow["item_code"] = itemRows[0]["item_code"].ToString();
+                            }
+                            else
+                            {
+                                newRow["short_desc"] = "Unknown Item";
+                                newRow["item_code"] = "N/A";
+                            }
+                            withItemList.Rows.Add(newRow);
+                        }
+
+                        // Create filtered view based on document_no
+                        DataView dataview = new DataView(withItemList);
+                        dataview.RowFilter = "based_id = '" + Convert.ToInt32(filteredRows[0]["id"]) + "'";
+
+                        dgv_order_sales.DataSource = dataview;
+                    }
+                }
+
+                
+            }
+        }
+        private void bindProject(string documentNo, bool isBind = false)
+        {
+            if (isBind)
+            {
+                Panel[] pnlList = { pnl_header, pnl_footer };
+
+                DataTable HeaderList = this.transactionList.Clone();
+                HeaderList.Columns.Add("branch_name", typeof(string));
+                HeaderList.Columns.Add("customer_code", typeof(string));
+                HeaderList.Columns.Add("bill_to", typeof(string));
+                HeaderList.Columns.Add("ship_to", typeof(string));
+                HeaderList.Columns.Add("tin", typeof(string));
+
+                // Filter the transactionList based on document_no
+                DataRow[] filteredRows = this.transactionList.Select($"document_no = '{documentNo}'");
+
+                if (filteredRows.Length > 0)
+                {
+                    foreach (DataRow parentRow in filteredRows)
+                    {
+                        DataRow newRow = HeaderList.NewRow();
+                        foreach (DataColumn col in this.transactionList.Columns)
+                        {
+                            newRow[col.ColumnName] = parentRow[col.ColumnName];
+                        }
+
+                        int ID = (int)parentRow["customer_id"];
+                        string ShipID = parentRow["ship_to_id"].ToString();
+                        string BillID = parentRow["bill_to_id"].ToString();
+                        DataRow[] bpiGenRows = bpi_general.Select($"general_based_id = '{ID}'");
+                        DataRow[] billRows = bpi_address.Select($"address_id = '{BillID}'");
+                        DataRow[] shipRows = bpi_address.Select($"address_id = '{ShipID}'");
+
+                        if (bpiGenRows.Length > 0)
+                        {
+                            newRow["branch_name"] = bpiGenRows[0]["branch_name"].ToString();
+                            newRow["customer_code"] = bpiGenRows[0]["customer_code"].ToString();
+                            string BasedID = bpiGenRows[0]["general_based_id"].ToString();
+                            DataRow[] bpiRows = bpi_dt.Select($"id = '{BasedID}'");
+
+                            if (bpiRows.Length > 0)
+                            {
+                                newRow["tin"] = bpiRows[0]["tin"].ToString();
+                            }
+                            else
+                            {
+                                newRow["tin"] = "No TIN";
+                            }
+
+                            if (billRows.Length > 0)
+                            {
+                                newRow["bill_to"] = billRows[0]["location"].ToString();
+                                newRow["ship_to"] = shipRows[0]["location"].ToString();
+                            }
+                            else
+                            {
+                                newRow["bill_to"] = "No Location";
+                            }
+                        }
+                        else
+                        {
+                            newRow["branch_name"] = "Unknown Customer";
+                            newRow["customer_code"] = "N/A";
+                        }
+
+                        HeaderList.Rows.Add(newRow);
+                    }
+                        cmb_payment_terms.SelectedValue = filteredRows[0]["payment_terms_id"].ToString();
+                        cmb_payment_terms.SelectedItem = filteredRows[0]["payment_terms_id"].ToString();
+
+                        cmb_ship_type.SelectedValue = filteredRows[0]["ship_type_id"].ToString();
+                        cmb_ship_type.SelectedItem = filteredRows[0]["ship_type_id"].ToString();
                 }
 
                 Helpers.BindControls(pnlList, HeaderList, SelectedRow);
@@ -525,82 +696,71 @@ namespace smpc_sales_app.Pages.Sales
                         }
                     }
                 }
-                
-                // Clone childList and add item_name column
-                DataTable withItemList = this.childList.Clone();
-                withItemList.Columns.Add("short_desc", typeof(string));
-                withItemList.Columns.Add("item_code", typeof(string));
-                withItemList.Columns.Add("item_model", typeof(string));
-
-                // Iterate through childList (not ItemList)
-                foreach (DataRow childRow in this.childList.Rows)
-                {
-                    DataRow newRow = withItemList.NewRow();
-                    foreach (DataColumn col in childList.Columns)
-                    {
-                        newRow[col.ColumnName] = childRow[col.ColumnName];
-                    }
-
-                    // Look up item name from ItemList
-                    string itemId = childRow["item_id"].ToString();
-                    DataRow[] itemRows = ItemList.Select($"id = '{itemId}'");
-
-                    if (itemRows.Length > 0)
-                    {
-                        newRow["short_desc"] = itemRows[0]["item_model"].ToString() + " - " + itemRows[0]["short_desc"].ToString();
-                        newRow["item_code"] = itemRows[0]["item_code"].ToString();
-                    }
-                    else
-                    {
-                        newRow["short_desc"] = "Unknown Item";
-                        newRow["item_code"] = "N/A";
-                    }
-                    withItemList.Rows.Add(newRow);
-                }
-
-                // Create filtered view based on document_no
-                DataView dataview = new DataView(withItemList);
+                DataView dataview = new DataView(ItemSets);
                 dataview.RowFilter = "based_id = '" + Convert.ToInt32(filteredRows[0]["id"]) + "'";
 
-                dgv_order_sales.DataSource = dataview;
+                var ids = new List<int>();
+                foreach (DataRowView rowView in dataview)
+                {
+                    int id = Convert.ToInt32(rowView["id"]);
+                    ids.Add(id);
+                }
+
+                // Check if any IDs were extracted
+                if (ids.Count > 0)
+                {
+                    // Now, filter dataview2 based on the extracted IDs
+                    string idFilter = string.Join("','", ids); // Join IDs with commas for SQL-like filtering
+                    DataView dataview2 = new DataView(ProjectItemList);
+                    dataview2.RowFilter = $"based_id IN ('{idFilter}')"; // Use IN to filter by multiple IDs
+
+                    // Set the DataSource for dgv_order_sales
+                    dgv_project.DataSource = dataview2;
+                }
+                else
+                {
+                    // If no IDs were found, you can handle this case accordingly
+                    MessageBox.Show("No matching IDs found.");
+                }
             }
         }
 
         private async void Orders_Load(object sender, EventArgs e)
-        {
-            bs_payment_terms.DataSource = CacheData.PaymentTerms;
-            bs_ship_type.DataSource = CacheData.ShipTypeSetup;
-            await FetchData(false);
-
-            if (!string.IsNullOrEmpty(documentNo))
             {
-                // Check if the documentNo exists in the OrderList DataTable
-                DataRow[] matchingRows = OrderList.Select($"document_no = '{documentNo}'");
+                bs_payment_terms.DataSource = CacheData.PaymentTerms;
+                bs_ship_type.DataSource = CacheData.ShipTypeSetup;
+                await FetchData(false);
+                fetchProject();
 
-                if (matchingRows.Length > 0)
+                if (!string.IsNullOrEmpty(documentNo))
                 {
-                    // Document number exists in OrderList, bind the order data
-                    Helpers.ResetControls(pnl_header);
-                    Helpers.ResetControls(pnl_footer);
-                    btn_search.Visible = false;
-                    btn_back.Visible = true;
-                    btn_prev.Visible = false;
-                    btn_next.Visible = false;
-                    bindOrderByDocNo(documentNo, true);
-                    CalculateTotalPrice();
-                }
-                else
-                {
-                    Helpers.ResetControls(pnl_header);
-                    Helpers.ResetControls(pnl_footer);
-                    btn_search.Visible = false;
-                    btn_back.Visible = true;
-                    btn_prev.Visible = false;
-                    btn_next.Visible = false;
-                    bindQuotation(documentNo, true);
-                    CalculateTotalPrice();
-                    SOIncrementer();
-                }
+                    // Check if the documentNo exists in the OrderList DataTable
+                    DataRow[] matchingRows = OrderList.Select($"document_no = '{documentNo}'");
+
+                    if (matchingRows.Length > 0)
+                    {
+                        // Document number exists in OrderList, bind the order data
+                        Helpers.ResetControls(pnl_header);
+                        Helpers.ResetControls(pnl_footer);
+                        btn_search.Visible = false;
+                        btn_back.Visible = true;
+                        btn_prev.Visible = false;
+                        btn_next.Visible = false;
+                        bindOrderByDocNo(documentNo, true);
+                        CalculateTotalPrice();
+                    }
+                    else
+                    {
+                        Helpers.ResetControls(pnl_header);
+                        Helpers.ResetControls(pnl_footer);
+                        btn_search.Visible = false;
+                        btn_back.Visible = true;
+                        btn_prev.Visible = false;
+                        btn_next.Visible = false;
+                        bindQuotation(documentNo, true);
+                        CalculateTotalPrice();
+                        SOIncrementer();
+                    }
                 if (string.IsNullOrEmpty(txt_document_no.Text))
                 {
                     Helpers.ResetControls(pnl_header);
@@ -611,7 +771,6 @@ namespace smpc_sales_app.Pages.Sales
                     btn_next.Visible = true;
                     FetchData(false);
                     CalculateTotalPrice();
-
                 }
                 CheckStatus();
             }

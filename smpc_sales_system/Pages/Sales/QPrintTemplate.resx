@@ -628,11 +628,14 @@
         4brr/i+mPmLnFtdvGAAAAABJRU5ErkJggg==
 </value>
   </data>
-  <metadata name="ITEM.UserAddedColumn" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+  <metadata name="img.UserAddedColumn" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
     <value>True</value>
   </metadata>
-  <metadata name="Column1.UserAddedColumn" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+  <metadata name="desc.UserAddedColumn" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
     <value>True</value>
+  </metadata>
+  <metadata name="quick_quotes.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>445, 17</value>
   </metadata>
   <metadata name="quick_quotes.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>445, 17</value>
@@ -640,7 +643,10 @@
   <metadata name="dataSet1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>346, 17</value>
   </metadata>
-  <data name="richTextBox3.Text" xml:space="preserve">
+  <metadata name="dataSet1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>346, 17</value>
+  </metadata>
+  <data name="rtxt_terms.Text" xml:space="preserve">
     <value>PAYMENT TERMS: The Buyer agrees to pay for the products according to the agreed payment terms with Sunshine Multi Plus Corporation. The agreed upon payment terms is CASH ON DELIVERY.
 QUOTATION VALIDITY: Quote is valid 30 DAYS from date hereon;  thereafter, it shall be subject to reconfirmation (On price validity, due to uncertainty, prices may change without prior notice).
 AVAILABILITY OF STOCK(S) AND/OR SERVICE(S): 4-6 MONTHS upon receipt of purchase order and approval of setting plan (Due to uncertainty, delivery lead time may change without prior notice).
@@ -652,7 +658,7 @@ WARRANTY: Sunshine Multi Plus Corporation's standard warranty shall cover all of
 IMPLEMENTATION OF SERVICES: Sunshine Multi Plus Corporation will provide the Services in a competent and skilled manner provided that the working environment is safe and healthy. Sunshine Multi Plus Corporationwill provide the Services within regular business hours in compliance with Sunshine Multi Plus Corporation's rules and regulations at the time of performace and delivery.
 LIABILITY: Sunshine Multi Plus Corporation's liability under, for the breach of, or arising out of this agreement and/or sale will be limited to repair or replacement of any defective products or a refund of the purchase price of the products as Sunshine Multi Plus Corporation's sole option as outlined above.</value>
   </data>
-  <data name="richTextBox2.Text" xml:space="preserve">
+  <data name="rtxt_exclusions.Text" xml:space="preserve">
     <value>1. Installation, piping works, and electrical
 2. Factory/ manufacturer's test certificates or other similar documents
 3. Supply of other services, materials, consumables, and accessories not mentioned in the offer
@@ -660,7 +666,7 @@ LIABILITY: Sunshine Multi Plus Corporation's liability under, for the breach of,
 5. Hauling of Equipment
 6. Processing and Delivery Permits Fee to Site</value>
   </data>
-  <data name="richTextBox1.Text" xml:space="preserve">
+  <data name="rtxt_inclusion.Text" xml:space="preserve">
     <value>1. Delivery at (place), unloading at (specific area) of the building/ site/ warehouse
 2. Testing and Commissioning at (place)
 - Validate compliance to Pre-Start-Up and Safety Checklist
@@ -672,4 +678,10 @@ LIABILITY: Sunshine Multi Plus Corporation's liability under, for the breach of,
 - Training and Orientation
 3. For Testing and Commissioning, there is an allowance of (1 VISIT TO (place) - 2 DAYS VISIT TO SITE) to be conducted during company regular working hours only. If you want more than the allowable and beyond working hours, additional chargers will be applied.</value>
   </data>
+  <metadata name="img.UserAddedColumn" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+    <value>True</value>
+  </metadata>
+  <metadata name="desc.UserAddedColumn" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+    <value>True</value>
+  </metadata>
 </root>
