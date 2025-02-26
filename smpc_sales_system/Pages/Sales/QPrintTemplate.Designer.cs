@@ -32,6 +32,9 @@ namespace smpc_sales_system.Pages.Sales
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(QPrintTemplate));
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
+            this.btn_prev = new System.Windows.Forms.ToolStripButton();
+            this.toolStripButton6 = new System.Windows.Forms.ToolStripButton();
+            this.Save = new System.Windows.Forms.ToolStripButton();
             this.panel6 = new System.Windows.Forms.Panel();
             this.label1 = new System.Windows.Forms.Label();
             this.panel2 = new System.Windows.Forms.Panel();
@@ -69,27 +72,27 @@ namespace smpc_sales_system.Pages.Sales
             this.label5 = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
             this.pnl_footer = new System.Windows.Forms.Panel();
-            this.label8 = new System.Windows.Forms.Label();
-            this.label9 = new System.Windows.Forms.Label();
-            this.label7 = new System.Windows.Forms.Label();
-            this.txt_add_discount = new System.Windows.Forms.TextBox();
-            this.label10 = new System.Windows.Forms.Label();
-            this.txt_cash_discount = new System.Windows.Forms.TextBox();
-            this.txt_net_amount_due = new System.Windows.Forms.TextBox();
-            this.txt_grand_total = new System.Windows.Forms.TextBox();
-            this.label11 = new System.Windows.Forms.Label();
-            this.richTextBox1 = new System.Windows.Forms.RichTextBox();
-            this.label12 = new System.Windows.Forms.Label();
-            this.richTextBox2 = new System.Windows.Forms.RichTextBox();
-            this.label13 = new System.Windows.Forms.Label();
-            this.richTextBox3 = new System.Windows.Forms.RichTextBox();
             this.btn_print = new System.Windows.Forms.Button();
-            this.Column1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.ITEM = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.qtyDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.unitpriceDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.percentdiscountDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.linetotalDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.rtxt_terms = new System.Windows.Forms.RichTextBox();
+            this.label13 = new System.Windows.Forms.Label();
+            this.rtxt_exclusions = new System.Windows.Forms.RichTextBox();
+            this.label12 = new System.Windows.Forms.Label();
+            this.rtxt_inclusion = new System.Windows.Forms.RichTextBox();
+            this.label11 = new System.Windows.Forms.Label();
+            this.txt_grand_total = new System.Windows.Forms.TextBox();
+            this.txt_net_amount_due = new System.Windows.Forms.TextBox();
+            this.txt_cash_discount = new System.Windows.Forms.TextBox();
+            this.label10 = new System.Windows.Forms.Label();
+            this.txt_add_discount = new System.Windows.Forms.TextBox();
+            this.label7 = new System.Windows.Forms.Label();
+            this.label9 = new System.Windows.Forms.Label();
+            this.label8 = new System.Windows.Forms.Label();
+            this.img = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.desc = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.qtys = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.unitprice = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.percentdiscount = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.amount = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.idDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.basedidDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.itemidDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -100,9 +103,6 @@ namespace smpc_sales_system.Pages.Sales
             this.nettotalDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.itemcodeDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.shortdescDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.btn_prev = new System.Windows.Forms.ToolStripButton();
-            this.toolStripButton6 = new System.Windows.Forms.ToolStripButton();
-            this.Save = new System.Windows.Forms.ToolStripButton();
             this.toolStrip1.SuspendLayout();
             this.panel6.SuspendLayout();
             this.panel2.SuspendLayout();
@@ -127,6 +127,34 @@ namespace smpc_sales_system.Pages.Sales
             this.toolStrip1.Size = new System.Drawing.Size(790, 25);
             this.toolStrip1.TabIndex = 14;
             this.toolStrip1.Text = "toolStrip1";
+            // 
+            // btn_prev
+            // 
+            this.btn_prev.Image = ((System.Drawing.Image)(resources.GetObject("btn_prev.Image")));
+            this.btn_prev.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btn_prev.Name = "btn_prev";
+            this.btn_prev.Size = new System.Drawing.Size(52, 22);
+            this.btn_prev.Text = "Back";
+            // 
+            // toolStripButton6
+            // 
+            this.toolStripButton6.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.toolStripButton6.Image = ((System.Drawing.Image)(resources.GetObject("toolStripButton6.Image")));
+            this.toolStripButton6.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.toolStripButton6.Name = "toolStripButton6";
+            this.toolStripButton6.Size = new System.Drawing.Size(23, 22);
+            this.toolStripButton6.Text = "toolStripButton6";
+            this.toolStripButton6.Visible = false;
+            // 
+            // Save
+            // 
+            this.Save.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.Save.Image = ((System.Drawing.Image)(resources.GetObject("Save.Image")));
+            this.Save.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.Save.Name = "Save";
+            this.Save.Size = new System.Drawing.Size(23, 22);
+            this.Save.Text = "Save";
+            this.Save.Visible = false;
             // 
             // panel6
             // 
@@ -165,11 +193,12 @@ namespace smpc_sales_system.Pages.Sales
             this.dgv_quote.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
             this.dgv_quote.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dgv_quote.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.ITEM,
-            this.qtyDataGridViewTextBoxColumn,
-            this.unitpriceDataGridViewTextBoxColumn,
-            this.percentdiscountDataGridViewTextBoxColumn,
-            this.linetotalDataGridViewTextBoxColumn,
+            this.img,
+            this.desc,
+            this.qtys,
+            this.unitprice,
+            this.percentdiscount,
+            this.amount,
             this.idDataGridViewTextBoxColumn,
             this.basedidDataGridViewTextBoxColumn,
             this.itemidDataGridViewTextBoxColumn,
@@ -179,8 +208,7 @@ namespace smpc_sales_system.Pages.Sales
             this.netdiscountDataGridViewTextBoxColumn,
             this.nettotalDataGridViewTextBoxColumn,
             this.itemcodeDataGridViewTextBoxColumn,
-            this.shortdescDataGridViewTextBoxColumn,
-            this.Column1});
+            this.shortdescDataGridViewTextBoxColumn});
             this.dgv_quote.DataSource = this.quick_quotes;
             this.dgv_quote.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dgv_quote.Location = new System.Drawing.Point(0, 0);
@@ -340,7 +368,6 @@ namespace smpc_sales_system.Pages.Sales
             // 
             this.txt_sales_exec.Location = new System.Drawing.Point(111, 121);
             this.txt_sales_exec.Name = "txt_sales_exec";
-            this.txt_sales_exec.ReadOnly = true;
             this.txt_sales_exec.Size = new System.Drawing.Size(90, 20);
             this.txt_sales_exec.TabIndex = 256;
             // 
@@ -364,7 +391,6 @@ namespace smpc_sales_system.Pages.Sales
             // 
             this.txt_receiver.Location = new System.Drawing.Point(111, 102);
             this.txt_receiver.Name = "txt_receiver";
-            this.txt_receiver.ReadOnly = true;
             this.txt_receiver.Size = new System.Drawing.Size(90, 20);
             this.txt_receiver.TabIndex = 253;
             // 
@@ -425,11 +451,11 @@ namespace smpc_sales_system.Pages.Sales
             // pnl_footer
             // 
             this.pnl_footer.Controls.Add(this.btn_print);
-            this.pnl_footer.Controls.Add(this.richTextBox3);
+            this.pnl_footer.Controls.Add(this.rtxt_terms);
             this.pnl_footer.Controls.Add(this.label13);
-            this.pnl_footer.Controls.Add(this.richTextBox2);
+            this.pnl_footer.Controls.Add(this.rtxt_exclusions);
             this.pnl_footer.Controls.Add(this.label12);
-            this.pnl_footer.Controls.Add(this.richTextBox1);
+            this.pnl_footer.Controls.Add(this.rtxt_inclusion);
             this.pnl_footer.Controls.Add(this.label11);
             this.pnl_footer.Controls.Add(this.txt_grand_total);
             this.pnl_footer.Controls.Add(this.txt_net_amount_due);
@@ -445,142 +471,6 @@ namespace smpc_sales_system.Pages.Sales
             this.pnl_footer.Size = new System.Drawing.Size(790, 448);
             this.pnl_footer.TabIndex = 255;
             // 
-            // label8
-            // 
-            this.label8.AutoSize = true;
-            this.label8.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label8.ImeMode = System.Windows.Forms.ImeMode.NoControl;
-            this.label8.Location = new System.Drawing.Point(563, 41);
-            this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(121, 13);
-            this.label8.TabIndex = 257;
-            this.label8.Text = "ADD. DISCOUNT   :";
-            // 
-            // label9
-            // 
-            this.label9.AutoSize = true;
-            this.label9.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label9.ImeMode = System.Windows.Forms.ImeMode.NoControl;
-            this.label9.Location = new System.Drawing.Point(563, 60);
-            this.label9.Name = "label9";
-            this.label9.Size = new System.Drawing.Size(120, 13);
-            this.label9.TabIndex = 258;
-            this.label9.Text = "CASH DISCOUNT  :";
-            // 
-            // label7
-            // 
-            this.label7.AutoSize = true;
-            this.label7.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label7.ImeMode = System.Windows.Forms.ImeMode.NoControl;
-            this.label7.Location = new System.Drawing.Point(563, 78);
-            this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(119, 13);
-            this.label7.TabIndex = 259;
-            this.label7.Text = "GRAND TOTAL     :";
-            // 
-            // txt_add_discount
-            // 
-            this.txt_add_discount.Location = new System.Drawing.Point(686, 38);
-            this.txt_add_discount.Name = "txt_add_discount";
-            this.txt_add_discount.ReadOnly = true;
-            this.txt_add_discount.Size = new System.Drawing.Size(90, 20);
-            this.txt_add_discount.TabIndex = 261;
-            // 
-            // label10
-            // 
-            this.label10.AutoSize = true;
-            this.label10.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label10.ImeMode = System.Windows.Forms.ImeMode.NoControl;
-            this.label10.Location = new System.Drawing.Point(563, 22);
-            this.label10.Name = "label10";
-            this.label10.Size = new System.Drawing.Size(120, 13);
-            this.label10.TabIndex = 256;
-            this.label10.Text = "SUB-TOTAL          :";
-            // 
-            // txt_cash_discount
-            // 
-            this.txt_cash_discount.Location = new System.Drawing.Point(686, 57);
-            this.txt_cash_discount.Name = "txt_cash_discount";
-            this.txt_cash_discount.ReadOnly = true;
-            this.txt_cash_discount.Size = new System.Drawing.Size(90, 20);
-            this.txt_cash_discount.TabIndex = 262;
-            // 
-            // txt_net_amount_due
-            // 
-            this.txt_net_amount_due.Location = new System.Drawing.Point(686, 19);
-            this.txt_net_amount_due.Name = "txt_net_amount_due";
-            this.txt_net_amount_due.ReadOnly = true;
-            this.txt_net_amount_due.Size = new System.Drawing.Size(90, 20);
-            this.txt_net_amount_due.TabIndex = 260;
-            // 
-            // txt_grand_total
-            // 
-            this.txt_grand_total.Location = new System.Drawing.Point(686, 75);
-            this.txt_grand_total.Name = "txt_grand_total";
-            this.txt_grand_total.ReadOnly = true;
-            this.txt_grand_total.Size = new System.Drawing.Size(90, 20);
-            this.txt_grand_total.TabIndex = 263;
-            // 
-            // label11
-            // 
-            this.label11.AutoSize = true;
-            this.label11.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label11.ImeMode = System.Windows.Forms.ImeMode.NoControl;
-            this.label11.Location = new System.Drawing.Point(20, 95);
-            this.label11.Name = "label11";
-            this.label11.Size = new System.Drawing.Size(86, 13);
-            this.label11.TabIndex = 264;
-            this.label11.Text = "INCLUSIONS:";
-            // 
-            // richTextBox1
-            // 
-            this.richTextBox1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(217)))), ((int)(((byte)(210)))), ((int)(((byte)(233)))));
-            this.richTextBox1.Location = new System.Drawing.Point(23, 111);
-            this.richTextBox1.Name = "richTextBox1";
-            this.richTextBox1.Size = new System.Drawing.Size(753, 72);
-            this.richTextBox1.TabIndex = 266;
-            this.richTextBox1.Text = resources.GetString("richTextBox1.Text");
-            // 
-            // label12
-            // 
-            this.label12.AutoSize = true;
-            this.label12.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label12.ImeMode = System.Windows.Forms.ImeMode.NoControl;
-            this.label12.Location = new System.Drawing.Point(20, 186);
-            this.label12.Name = "label12";
-            this.label12.Size = new System.Drawing.Size(89, 13);
-            this.label12.TabIndex = 267;
-            this.label12.Text = "EXCLUSIONS:";
-            // 
-            // richTextBox2
-            // 
-            this.richTextBox2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(217)))), ((int)(((byte)(210)))), ((int)(((byte)(233)))));
-            this.richTextBox2.Location = new System.Drawing.Point(23, 202);
-            this.richTextBox2.Name = "richTextBox2";
-            this.richTextBox2.Size = new System.Drawing.Size(753, 72);
-            this.richTextBox2.TabIndex = 268;
-            this.richTextBox2.Text = resources.GetString("richTextBox2.Text");
-            // 
-            // label13
-            // 
-            this.label13.AutoSize = true;
-            this.label13.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label13.ImeMode = System.Windows.Forms.ImeMode.NoControl;
-            this.label13.Location = new System.Drawing.Point(20, 278);
-            this.label13.Name = "label13";
-            this.label13.Size = new System.Drawing.Size(165, 13);
-            this.label13.TabIndex = 269;
-            this.label13.Text = "TERMS AND CONDITIONS:\t";
-            // 
-            // richTextBox3
-            // 
-            this.richTextBox3.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(217)))), ((int)(((byte)(210)))), ((int)(((byte)(233)))));
-            this.richTextBox3.Location = new System.Drawing.Point(23, 294);
-            this.richTextBox3.Name = "richTextBox3";
-            this.richTextBox3.Size = new System.Drawing.Size(753, 124);
-            this.richTextBox3.TabIndex = 270;
-            this.richTextBox3.Text = resources.GetString("richTextBox3.Text");
-            // 
             // btn_print
             // 
             this.btn_print.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
@@ -593,41 +483,175 @@ namespace smpc_sales_system.Pages.Sales
             this.btn_print.UseVisualStyleBackColor = true;
             this.btn_print.Click += new System.EventHandler(this.btn_print_Click);
             // 
-            // Column1
+            // rtxt_terms
             // 
-            this.Column1.HeaderText = "IMAGE";
-            this.Column1.Name = "Column1";
-            this.Column1.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+            this.rtxt_terms.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(217)))), ((int)(((byte)(210)))), ((int)(((byte)(233)))));
+            this.rtxt_terms.Location = new System.Drawing.Point(23, 294);
+            this.rtxt_terms.Name = "rtxt_terms";
+            this.rtxt_terms.Size = new System.Drawing.Size(753, 124);
+            this.rtxt_terms.TabIndex = 270;
+            this.rtxt_terms.Text = resources.GetString("rtxt_terms.Text");
             // 
-            // ITEM
+            // label13
             // 
-            this.ITEM.DataPropertyName = "short_desc";
-            this.ITEM.HeaderText = "ITEM DESCRIPTION";
-            this.ITEM.Name = "ITEM";
+            this.label13.AutoSize = true;
+            this.label13.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label13.ImeMode = System.Windows.Forms.ImeMode.NoControl;
+            this.label13.Location = new System.Drawing.Point(20, 278);
+            this.label13.Name = "label13";
+            this.label13.Size = new System.Drawing.Size(165, 13);
+            this.label13.TabIndex = 269;
+            this.label13.Text = "TERMS AND CONDITIONS:\t";
             // 
-            // qtyDataGridViewTextBoxColumn
+            // rtxt_exclusions
             // 
-            this.qtyDataGridViewTextBoxColumn.DataPropertyName = "qty";
-            this.qtyDataGridViewTextBoxColumn.HeaderText = "QTY";
-            this.qtyDataGridViewTextBoxColumn.Name = "qtyDataGridViewTextBoxColumn";
+            this.rtxt_exclusions.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(217)))), ((int)(((byte)(210)))), ((int)(((byte)(233)))));
+            this.rtxt_exclusions.Location = new System.Drawing.Point(23, 202);
+            this.rtxt_exclusions.Name = "rtxt_exclusions";
+            this.rtxt_exclusions.Size = new System.Drawing.Size(753, 72);
+            this.rtxt_exclusions.TabIndex = 268;
+            this.rtxt_exclusions.Text = resources.GetString("rtxt_exclusions.Text");
             // 
-            // unitpriceDataGridViewTextBoxColumn
+            // label12
             // 
-            this.unitpriceDataGridViewTextBoxColumn.DataPropertyName = "unit_price";
-            this.unitpriceDataGridViewTextBoxColumn.HeaderText = "UNIT_PRICE";
-            this.unitpriceDataGridViewTextBoxColumn.Name = "unitpriceDataGridViewTextBoxColumn";
+            this.label12.AutoSize = true;
+            this.label12.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label12.ImeMode = System.Windows.Forms.ImeMode.NoControl;
+            this.label12.Location = new System.Drawing.Point(20, 186);
+            this.label12.Name = "label12";
+            this.label12.Size = new System.Drawing.Size(89, 13);
+            this.label12.TabIndex = 267;
+            this.label12.Text = "EXCLUSIONS:";
             // 
-            // percentdiscountDataGridViewTextBoxColumn
+            // rtxt_inclusion
             // 
-            this.percentdiscountDataGridViewTextBoxColumn.DataPropertyName = "percent_discount";
-            this.percentdiscountDataGridViewTextBoxColumn.HeaderText = "DISCOUNT";
-            this.percentdiscountDataGridViewTextBoxColumn.Name = "percentdiscountDataGridViewTextBoxColumn";
+            this.rtxt_inclusion.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(217)))), ((int)(((byte)(210)))), ((int)(((byte)(233)))));
+            this.rtxt_inclusion.Location = new System.Drawing.Point(23, 111);
+            this.rtxt_inclusion.Name = "rtxt_inclusion";
+            this.rtxt_inclusion.Size = new System.Drawing.Size(753, 72);
+            this.rtxt_inclusion.TabIndex = 266;
+            this.rtxt_inclusion.Text = resources.GetString("rtxt_inclusion.Text");
             // 
-            // linetotalDataGridViewTextBoxColumn
+            // label11
             // 
-            this.linetotalDataGridViewTextBoxColumn.DataPropertyName = "line_total";
-            this.linetotalDataGridViewTextBoxColumn.HeaderText = "AMOUNT";
-            this.linetotalDataGridViewTextBoxColumn.Name = "linetotalDataGridViewTextBoxColumn";
+            this.label11.AutoSize = true;
+            this.label11.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label11.ImeMode = System.Windows.Forms.ImeMode.NoControl;
+            this.label11.Location = new System.Drawing.Point(20, 95);
+            this.label11.Name = "label11";
+            this.label11.Size = new System.Drawing.Size(86, 13);
+            this.label11.TabIndex = 264;
+            this.label11.Text = "INCLUSIONS:";
+            // 
+            // txt_grand_total
+            // 
+            this.txt_grand_total.Location = new System.Drawing.Point(686, 75);
+            this.txt_grand_total.Name = "txt_grand_total";
+            this.txt_grand_total.Size = new System.Drawing.Size(90, 20);
+            this.txt_grand_total.TabIndex = 263;
+            // 
+            // txt_net_amount_due
+            // 
+            this.txt_net_amount_due.Location = new System.Drawing.Point(686, 19);
+            this.txt_net_amount_due.Name = "txt_net_amount_due";
+            this.txt_net_amount_due.ReadOnly = true;
+            this.txt_net_amount_due.Size = new System.Drawing.Size(90, 20);
+            this.txt_net_amount_due.TabIndex = 260;
+            // 
+            // txt_cash_discount
+            // 
+            this.txt_cash_discount.Location = new System.Drawing.Point(686, 57);
+            this.txt_cash_discount.Name = "txt_cash_discount";
+            this.txt_cash_discount.ReadOnly = true;
+            this.txt_cash_discount.Size = new System.Drawing.Size(90, 20);
+            this.txt_cash_discount.TabIndex = 262;
+            // 
+            // label10
+            // 
+            this.label10.AutoSize = true;
+            this.label10.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label10.ImeMode = System.Windows.Forms.ImeMode.NoControl;
+            this.label10.Location = new System.Drawing.Point(563, 22);
+            this.label10.Name = "label10";
+            this.label10.Size = new System.Drawing.Size(120, 13);
+            this.label10.TabIndex = 256;
+            this.label10.Text = "SUB-TOTAL          :";
+            // 
+            // txt_add_discount
+            // 
+            this.txt_add_discount.Location = new System.Drawing.Point(686, 38);
+            this.txt_add_discount.Name = "txt_add_discount";
+            this.txt_add_discount.Size = new System.Drawing.Size(90, 20);
+            this.txt_add_discount.TabIndex = 261;
+            // 
+            // label7
+            // 
+            this.label7.AutoSize = true;
+            this.label7.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label7.ImeMode = System.Windows.Forms.ImeMode.NoControl;
+            this.label7.Location = new System.Drawing.Point(563, 78);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(119, 13);
+            this.label7.TabIndex = 259;
+            this.label7.Text = "GRAND TOTAL     :";
+            // 
+            // label9
+            // 
+            this.label9.AutoSize = true;
+            this.label9.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label9.ImeMode = System.Windows.Forms.ImeMode.NoControl;
+            this.label9.Location = new System.Drawing.Point(563, 60);
+            this.label9.Name = "label9";
+            this.label9.Size = new System.Drawing.Size(120, 13);
+            this.label9.TabIndex = 258;
+            this.label9.Text = "CASH DISCOUNT  :";
+            // 
+            // label8
+            // 
+            this.label8.AutoSize = true;
+            this.label8.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label8.ImeMode = System.Windows.Forms.ImeMode.NoControl;
+            this.label8.Location = new System.Drawing.Point(563, 41);
+            this.label8.Name = "label8";
+            this.label8.Size = new System.Drawing.Size(121, 13);
+            this.label8.TabIndex = 257;
+            this.label8.Text = "ADD. DISCOUNT   :";
+            // 
+            // img
+            // 
+            this.img.HeaderText = "IMAGE";
+            this.img.Name = "img";
+            this.img.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+            // 
+            // desc
+            // 
+            this.desc.DataPropertyName = "short_desc";
+            this.desc.HeaderText = "ITEM DESCRIPTION";
+            this.desc.Name = "desc";
+            // 
+            // qtys
+            // 
+            this.qtys.DataPropertyName = "qty";
+            this.qtys.HeaderText = "QTY";
+            this.qtys.Name = "qtys";
+            // 
+            // unitprice
+            // 
+            this.unitprice.DataPropertyName = "unit_price";
+            this.unitprice.HeaderText = "UNIT PRICE";
+            this.unitprice.Name = "unitprice";
+            // 
+            // percentdiscount
+            // 
+            this.percentdiscount.DataPropertyName = "percent_discount";
+            this.percentdiscount.HeaderText = "DISCOUNT";
+            this.percentdiscount.Name = "percentdiscount";
+            // 
+            // amount
+            // 
+            this.amount.DataPropertyName = "line_total";
+            this.amount.HeaderText = "AMOUNT";
+            this.amount.Name = "amount";
             // 
             // idDataGridViewTextBoxColumn
             // 
@@ -698,34 +722,6 @@ namespace smpc_sales_system.Pages.Sales
             this.shortdescDataGridViewTextBoxColumn.HeaderText = "short_desc";
             this.shortdescDataGridViewTextBoxColumn.Name = "shortdescDataGridViewTextBoxColumn";
             this.shortdescDataGridViewTextBoxColumn.Visible = false;
-            // 
-            // btn_prev
-            // 
-            this.btn_prev.Image = ((System.Drawing.Image)(resources.GetObject("btn_prev.Image")));
-            this.btn_prev.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.btn_prev.Name = "btn_prev";
-            this.btn_prev.Size = new System.Drawing.Size(52, 22);
-            this.btn_prev.Text = "Back";
-            // 
-            // toolStripButton6
-            // 
-            this.toolStripButton6.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.toolStripButton6.Image = ((System.Drawing.Image)(resources.GetObject("toolStripButton6.Image")));
-            this.toolStripButton6.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.toolStripButton6.Name = "toolStripButton6";
-            this.toolStripButton6.Size = new System.Drawing.Size(23, 22);
-            this.toolStripButton6.Text = "toolStripButton6";
-            this.toolStripButton6.Visible = false;
-            // 
-            // Save
-            // 
-            this.Save.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.Save.Image = ((System.Drawing.Image)(resources.GetObject("Save.Image")));
-            this.Save.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.Save.Name = "Save";
-            this.Save.Size = new System.Drawing.Size(23, 22);
-            this.Save.Text = "Save";
-            this.Save.Visible = false;
             // 
             // QPrintTemplate
             // 
@@ -800,11 +796,11 @@ namespace smpc_sales_system.Pages.Sales
         private System.Data.DataColumn short_desc;
         private System.Windows.Forms.BindingSource quick_quotes;
         private System.Windows.Forms.Panel pnl_footer;
-        private System.Windows.Forms.RichTextBox richTextBox3;
+        private System.Windows.Forms.RichTextBox rtxt_terms;
         private System.Windows.Forms.Label label13;
-        private System.Windows.Forms.RichTextBox richTextBox2;
+        private System.Windows.Forms.RichTextBox rtxt_exclusions;
         private System.Windows.Forms.Label label12;
-        private System.Windows.Forms.RichTextBox richTextBox1;
+        private System.Windows.Forms.RichTextBox rtxt_inclusion;
         private System.Windows.Forms.Label label11;
         private System.Windows.Forms.TextBox txt_grand_total;
         private System.Windows.Forms.TextBox txt_net_amount_due;
@@ -815,12 +811,12 @@ namespace smpc_sales_system.Pages.Sales
         private System.Windows.Forms.Label label9;
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.Button btn_print;
-        private System.Windows.Forms.DataGridViewTextBoxColumn Column1;
-        private System.Windows.Forms.DataGridViewTextBoxColumn ITEM;
-        private System.Windows.Forms.DataGridViewTextBoxColumn qtyDataGridViewTextBoxColumn;
-        private System.Windows.Forms.DataGridViewTextBoxColumn unitpriceDataGridViewTextBoxColumn;
-        private System.Windows.Forms.DataGridViewTextBoxColumn percentdiscountDataGridViewTextBoxColumn;
-        private System.Windows.Forms.DataGridViewTextBoxColumn linetotalDataGridViewTextBoxColumn;
+        private System.Windows.Forms.DataGridViewTextBoxColumn img;
+        private System.Windows.Forms.DataGridViewTextBoxColumn desc;
+        private System.Windows.Forms.DataGridViewTextBoxColumn qtys;
+        private System.Windows.Forms.DataGridViewTextBoxColumn unitprice;
+        private System.Windows.Forms.DataGridViewTextBoxColumn percentdiscount;
+        private System.Windows.Forms.DataGridViewTextBoxColumn amount;
         private System.Windows.Forms.DataGridViewTextBoxColumn idDataGridViewTextBoxColumn;
         private System.Windows.Forms.DataGridViewTextBoxColumn basedidDataGridViewTextBoxColumn;
         private System.Windows.Forms.DataGridViewTextBoxColumn itemidDataGridViewTextBoxColumn;

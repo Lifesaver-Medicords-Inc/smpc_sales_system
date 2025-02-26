@@ -219,8 +219,45 @@ namespace smpc_sales_system.Pages.Sales
 
         private void btn_print_Click(object sender, EventArgs e)
         {
-            QuotationPrintModal ordersPage = new QuotationPrintModal(documentNo);
-            ordersPage.ShowDialog();
+            string[] img = GetDataFromDataGridView(dgv_quote, "img");
+            string[] desc = GetDataFromDataGridView(dgv_quote, "desc");
+            string[] qtys = GetDataFromDataGridView(dgv_quote, "qtys");
+            string[] unitprice = GetDataFromDataGridView(dgv_quote, "unitprice");
+            string[] percentdiscount = GetDataFromDataGridView(dgv_quote, "percentdiscount");
+            string[] amount = GetDataFromDataGridView(dgv_quote, "amount");
+
+            string docno = txt_document_no.Text;
+            string date = txt_date.Text;
+            string company = txt_branch_name.Text;
+            string address = txt_ship_to.Text;
+            string receiver = txt_receiver.Text;
+            string exec = txt_sales_exec.Text;
+
+            string subtotal = txt_net_amount_due.Text;
+            string adddiscount = txt_add_discount.Text;
+            string cashdiscount = txt_cash_discount.Text;
+            string grandtotal = txt_grand_total.Text;
+
+            string inclusion = rtxt_inclusion.Text;
+            string exclusion = rtxt_exclusions.Text;
+            string terms = rtxt_terms.Text;
+
+            // Pass the data to the QuotationPrintModal
+            QuotationPrintModal printModal = new QuotationPrintModal(
+            img, desc, qtys, unitprice, percentdiscount, amount,
+            docno, date, company, address, receiver, exec,
+            subtotal, adddiscount, cashdiscount, grandtotal,
+            inclusion, exclusion, terms
+        );
+            printModal.ShowDialog();
+        }
+
+        private string[] GetDataFromDataGridView(DataGridView dgv, string columnName)
+        {
+            return dgv.Rows.Cast<DataGridViewRow>()
+                            .Where(row => !row.IsNewRow && row.Cells[columnName].Value != null)
+                            .Select(row => row.Cells[columnName].Value.ToString())
+                            .ToArray();
         }
     }
 }

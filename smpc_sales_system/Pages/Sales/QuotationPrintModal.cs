@@ -18,12 +18,61 @@ namespace smpc_sales_system.Pages.Sales
     public partial class QuotationPrintModal : Form
     {
         private string documentNo;
-        public QuotationPrintModal(string documentNo = null)
+        private string[] img;
+        private string[] desc;
+        private string[] qtys;
+        private string[] unitprice;
+        private string[] percentdiscount;
+        private string[] amount;
+
+        private string docno;
+        private string date;
+        private string company;
+        private string address;
+        private string receiver;
+        private string exec;
+
+        private string subtotal;
+        private string adddiscount;
+        private string cashdiscount;
+        private string grandtotal;
+
+        private string inclusion;
+        private string exclusion;
+        private string terms;
+
+        public QuotationPrintModal(string[] img, string[] desc, string[] qtys, string[] unitprice,
+                                string[] percentdiscount, string[] amount,
+                                string docno, string date, string company, string address,
+                                string receiver, string exec,
+                                string subtotal, string adddiscount, string cashdiscount,
+                                string grandtotal,
+                                string inclusion, string exclusion, string terms)
         {
-            InitializeComponent();
-            fetchBpiData();
-            fetchItemData();
+            InitializeComponent();  
             this.documentNo = documentNo;
+            this.img = img;
+            this.desc = desc;
+            this.qtys = qtys;
+            this.unitprice = unitprice;
+            this.percentdiscount = percentdiscount;
+            this.amount = amount;
+
+            this.docno = docno;
+            this.date = date;
+            this.company = company;
+            this.address = address;
+            this.receiver = receiver;
+            this.exec = exec;
+
+            this.subtotal = subtotal;
+            this.adddiscount = adddiscount;
+            this.cashdiscount = cashdiscount;
+            this.grandtotal = grandtotal;
+
+            this.inclusion = inclusion;
+            this.exclusion = exclusion;
+            this.terms = terms;
         }
 
         private void label1_Click(object sender, EventArgs e)
@@ -35,66 +84,15 @@ namespace smpc_sales_system.Pages.Sales
         {
 
         }
-        public DataTable allTransactionList { get; set; } = new DataTable();
         public DataTable transactionList { get; set; } = new DataTable();
         public DataTable childList { get; set; } = new DataTable();
-        public DataTable ItemList { get; set; } = new DataTable();
-        private DataTable bpi_dt = new DataTable();
-        private DataTable bpi_general = new DataTable();
-        private DataTable bpi_address = new DataTable();
-        private DataTable bpi_contacts = new DataTable();
-
-        //        private async 
-        //        Task
-        //fetchQuotationDetails()
-        //        {
-        //            SalesQuotationList data = await QuotationService.GetQuotations();
-
-        //            if (data != null && data.SalesQuotation != null && data.SalesQuotation.Any())
-        //            {
-        //                // Version filter
-        //                var latestQuotations = data.SalesQuotation
-        //                    .GroupBy(q => q.document_no)
-        //                    .Select(group => group.OrderByDescending(q => q.version_no)
-        //                    .First())
-        //                    .ToList();
-
-        //                // GET the latest version
-        //                transactionList = JsonHelper.ToDataTable(latestQuotations);
-        //                allTransactionList = JsonHelper.ToDataTable(data.SalesQuotation);
-        //                childList = JsonHelper.ToDataTable(data.SalesQuotationQuick);
-
-        //            }
-        //            else
-        //            {
-        //                MessageBox.Show("Please create a new data!");
-        //            }
-        //        }
-        private async void fetchItemData()
-        {
-            var itemData = await ItemService.GetItem();
-            ItemList = JsonHelper.ToDataTable(itemData.items);
-        }
-        private async void fetchBpiData()
-        {
-            Bpi_Class bpi_data = await QuotationService.GetBpiCustomers();
-            bpi_dt = JsonHelper.ToDataTable(bpi_data.bpi);
-            bpi_general = JsonHelper.ToDataTable(bpi_data.general);
-            bpi_address = JsonHelper.ToDataTable(bpi_data.address);
-            bpi_contacts = JsonHelper.ToDataTable(bpi_data.contacts);
-        }
         private async Task fetchQuotationDetailsByDocumentNo(string documentNo)
         {
-            // Get all the quotations from the service
             SalesQuotationList data = await QuotationService.GetQuotations();
-            var itemData = await ItemService.GetItem();
-            ItemList = JsonHelper.ToDataTable(itemData.items);
-            // Check if data is valid
             if (data == null || string.IsNullOrEmpty(documentNo))
             {
                 return;  // Exit if no data or documentNo is provided
             }
-            // Filter the SalesQuotation and SalesQuotationQuick based on the converted documentNo
             var filteredSalesQuotation = data.SalesQuotation
                 .Where(q => q.document_no == documentNo)  // Assuming document_no is int
                 .ToList();
@@ -109,16 +107,6 @@ namespace smpc_sales_system.Pages.Sales
                 // Convert the filtered lists to DataTables (using your helper method)
                 transactionList = JsonHelper.ToDataTable(filteredSalesQuotation);
                 childList = JsonHelper.ToDataTable(filteredSalesQuotationQuick);
-
-                // If filtered data exists, bind it to the DataGridView
-                if (filteredSalesQuotation.Any() || filteredSalesQuotationQuick.Any())
-                {
-                    //bind(true);
-                }
-                else
-                {
-                    MessageBox.Show("No records found for the provided document number.");
-                }
             }
             else
             {
@@ -135,70 +123,49 @@ namespace smpc_sales_system.Pages.Sales
         {
             await fetchQuotationDetailsByDocumentNo(documentNo);
 
-            if (transactionList != null && transactionList.Rows.Count > 0)
-            {
-                // Filter the transactionList based on document_no (use the passed documentNo)
-                DataRow[] filteredRows = transactionList.Select($"document_no = '{documentNo}'");
+            //HEADER PANEL
+            ReportDataSource childReportDataSource = new ReportDataSource("DataSet2", childList);
+            ReportParameter docnoParameter = new ReportParameter("docno", docno);
+            ReportParameter dateParameter = new ReportParameter("date", date);
+            ReportParameter companyParameter = new ReportParameter("company", company);
+            ReportParameter addressParameter = new ReportParameter("address", address);
+            ReportParameter receiverParameter = new ReportParameter("receiver", receiver);
+            ReportParameter execParameter = new ReportParameter("exec", exec);
 
-                if (filteredRows.Length > 0)
-                {
-                    int Id = (int)filteredRows[0]["id"];
-                    int customerId = (int)filteredRows[0]["customer_id"];
-                    int shiptoId = (int)filteredRows[0]["ship_to_id"];
+            //DGV
+            ReportParameter descParameter = new ReportParameter("desc", desc);
+            //ReportParameter imgParameter = new ReportParameter("img", img);
+            ReportParameter qtysParameter = new ReportParameter("qtys", qtys);
+            ReportParameter unitpriceParameter = new ReportParameter("unitprice", unitprice);
+            ReportParameter percentdiscountParameter = new ReportParameter("percentdiscount", percentdiscount);
+            ReportParameter amountParameter = new ReportParameter("amount", amount);
 
-                    DataRow[] bpiRows = bpi_general.Select($"general_based_id = '{customerId}'");
-                    DataRow[] bpiaddrows = bpi_address.Select($"address_id = '{shiptoId}'");
-                    string addressName = "Address not found";
-                    addressName = bpiaddrows[0]["location"].ToString();
+            //FOOTER PANEL
+            ReportParameter subtotalParameter = new ReportParameter("subtotal", subtotal);
+            ReportParameter adddiscountParameter = new ReportParameter("adddiscount", adddiscount);
+            ReportParameter cashdiscountParameter = new ReportParameter("cashdiscount", cashdiscount);
+            ReportParameter grandtotalParameter = new ReportParameter("grandtotal", grandtotal);
 
-                    string branchName = "Branch not found";
-                    if (bpiRows.Length > 0)
-                    {
-                        branchName = bpiRows[0]["branch_name"].ToString();
-                    }
+            ReportParameter inclusionParameter = new ReportParameter("inclusion", inclusion);
+            ReportParameter exclusionParameter = new ReportParameter("exclusion", exclusion);
+            ReportParameter termsParameter = new ReportParameter("terms", terms);
+            reportViewer1.LocalReport.ReportPath = @"C:\Users\SMPC\source\repos\smpc_sales_system\smpc_sales_system2\smpc_sales_system\Pages\Sales\QuotationReport.rdlc";
+            reportViewer1.LocalReport.DataSources.Clear();
+            //, imgParameter
+            reportViewer1.LocalReport.SetParameters(new ReportParameter[] {
+            descParameter, qtysParameter, unitpriceParameter,
+            percentdiscountParameter, amountParameter,
+            docnoParameter, dateParameter, companyParameter, addressParameter,
+            receiverParameter, execParameter,
+            subtotalParameter, adddiscountParameter, cashdiscountParameter, grandtotalParameter,
+            inclusionParameter, exclusionParameter, termsParameter
+        });
 
-                    DataRow[] quotequoteRows = childList.Select($"based_id = '{Id}'");
-                    List<string> itemDescriptions = new List<string>();
-                    if (quotequoteRows.Length > 0)
-                    {
-                        foreach (DataRow quoteRow in quotequoteRows)
-                        {
-                            int itemid = (int)quoteRow["item_id"];
-                            DataRow[] itemrows = ItemList.Select($"id = '{itemid}'");
-
-                            foreach (DataRow itemRow in itemrows)
-                            {
-                                string shortDesc = itemRow["short_desc"].ToString();
-                                string itemModel = itemRow["item_model"].ToString();
-
-                                // Concatenate the item_model and short_desc in the desired format
-                                //string itemDescription = $"{itemModel} - {shortDesc}";
-                                string itemDescription = $"{shortDesc}";
-
-                                itemDescriptions.Add(itemDescription);
-                            }
-                        }
-                    }
-                    string[] itemDescriptionArray = itemDescriptions.ToArray();
-                    ReportParameter itemDescriptionParameter = new ReportParameter("ItemDescriptions", itemDescriptionArray);
-
-                    ReportParameter branchNameParameter = new ReportParameter("BranchName", branchName);
-                    ReportParameter addressNameParameter = new ReportParameter("AddressName", addressName);
-                    ReportDataSource headerReportDataSource = new ReportDataSource("DataSet1", transactionList);
-                    ReportDataSource childReportDataSource = new ReportDataSource("DataSet2", childList);
-
-                    reportViewer1.LocalReport.ReportPath = @"C:\Users\SMPC\source\repos\smpc_sales_system\smpc_sales_system2\smpc_sales_system\Pages\Sales\QuotationReport.rdlc";
-                    reportViewer1.LocalReport.DataSources.Clear();
-                    reportViewer1.LocalReport.DataSources.Add(headerReportDataSource);
-                    reportViewer1.LocalReport.DataSources.Add(childReportDataSource);
-                    reportViewer1.LocalReport.SetParameters(new ReportParameter[] { branchNameParameter, addressNameParameter, itemDescriptionParameter });
-                    reportViewer1.RefreshReport();
+            reportViewer1.LocalReport.DataSources.Add(childReportDataSource);
+            reportViewer1.RefreshReport();
                 }
-                else
-                {
-                    MessageBox.Show("No quotation data available for the report.");
-                }
+                
             }
         }
-    }
-}
+    
+

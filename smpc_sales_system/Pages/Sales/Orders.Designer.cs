@@ -31,8 +31,8 @@ namespace smpc_sales_app.Pages.Sales
         {
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Orders));
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
             this.quick_quotes = new System.Windows.Forms.BindingSource(this.components);
             this.dataSet1 = new System.Data.DataSet();
             this.tbl_quick_quotes = new System.Data.DataTable();
@@ -155,23 +155,32 @@ namespace smpc_sales_app.Pages.Sales
             this.txt_remarks = new System.Windows.Forms.TextBox();
             this.label14 = new System.Windows.Forms.Label();
             this.bs_order_details = new System.Windows.Forms.BindingSource(this.components);
-            this.nettotalDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.netdiscountDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.percentdiscountDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.unitidDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.itemclassidDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.itemnameidDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.itemid = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.basedid = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.quick_quote_id = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.status = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.linetotal = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.unitpriceDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.delivery_preference = new System.Windows.Forms.DataGridViewComboBoxColumn();
-            this.shortdescDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.itemcodeDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.qtyDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataTable1 = new System.Data.DataTable();
+            this.dataColumn1 = new System.Data.DataColumn();
+            this.dataColumn3 = new System.Data.DataColumn();
+            this.dataColumn8 = new System.Data.DataColumn();
+            this.bs_project_item_sets = new System.Windows.Forms.BindingSource(this.components);
             this.Column10 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.qtyDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.itemcodeDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.shortdescDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.delivery_preference = new System.Windows.Forms.DataGridViewComboBoxColumn();
+            this.unitpriceDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.linetotal = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.status = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.quick_quote_id = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.basedid = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.itemid = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.itemnameidDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.itemclassidDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.unitidDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.percentdiscountDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.netdiscountDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.nettotalDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dgv_project = new System.Windows.Forms.DataGridView();
+            this.dataGridViewTextBoxColumn1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridViewComboBoxColumn1 = new System.Windows.Forms.DataGridViewComboBoxColumn();
+            this.dataGridViewTextBoxColumn7 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             ((System.ComponentModel.ISupportInitialize)(this.quick_quotes)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dataSet1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.tbl_quick_quotes)).BeginInit();
@@ -195,6 +204,9 @@ namespace smpc_sales_app.Pages.Sales
             this.panel1.SuspendLayout();
             this.pnl_footer.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.bs_order_details)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dataTable1)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.bs_project_item_sets)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dgv_project)).BeginInit();
             this.SuspendLayout();
             // 
             // quick_quotes
@@ -209,7 +221,8 @@ namespace smpc_sales_app.Pages.Sales
             this.tbl_quick_quotes,
             this.tbl_setup_ship_type,
             this.tbl_setup_payment_terms,
-            this.tbl_order_details});
+            this.tbl_order_details,
+            this.dataTable1});
             // 
             // tbl_quick_quotes
             // 
@@ -536,6 +549,7 @@ namespace smpc_sales_app.Pages.Sales
             // 
             // panel4
             // 
+            this.panel4.Controls.Add(this.dgv_project);
             this.panel4.Controls.Add(this.dgv_order_sales);
             this.panel4.Controls.Add(this.pnl_header);
             this.panel4.Controls.Add(this.toolStrip1);
@@ -1277,94 +1291,62 @@ namespace smpc_sales_app.Pages.Sales
             this.bs_order_details.DataMember = "tbl_order_details";
             this.bs_order_details.DataSource = this.dataSet1;
             // 
-            // nettotalDataGridViewTextBoxColumn
+            // dataTable1
             // 
-            this.nettotalDataGridViewTextBoxColumn.DataPropertyName = "net_total";
-            this.nettotalDataGridViewTextBoxColumn.HeaderText = "net_total";
-            this.nettotalDataGridViewTextBoxColumn.Name = "nettotalDataGridViewTextBoxColumn";
-            this.nettotalDataGridViewTextBoxColumn.Visible = false;
+            this.dataTable1.Columns.AddRange(new System.Data.DataColumn[] {
+            this.dataColumn1,
+            this.dataColumn3,
+            this.dataColumn8});
+            this.dataTable1.TableName = "tbl_project_item_sets";
             // 
-            // netdiscountDataGridViewTextBoxColumn
+            // dataColumn1
             // 
-            this.netdiscountDataGridViewTextBoxColumn.DataPropertyName = "net_discount";
-            this.netdiscountDataGridViewTextBoxColumn.HeaderText = "net_discount";
-            this.netdiscountDataGridViewTextBoxColumn.Name = "netdiscountDataGridViewTextBoxColumn";
-            this.netdiscountDataGridViewTextBoxColumn.Visible = false;
+            this.dataColumn1.ColumnName = "id";
             // 
-            // percentdiscountDataGridViewTextBoxColumn
+            // dataColumn3
             // 
-            this.percentdiscountDataGridViewTextBoxColumn.DataPropertyName = "percent_discount";
-            this.percentdiscountDataGridViewTextBoxColumn.HeaderText = "percent_discount";
-            this.percentdiscountDataGridViewTextBoxColumn.Name = "percentdiscountDataGridViewTextBoxColumn";
-            this.percentdiscountDataGridViewTextBoxColumn.Visible = false;
+            this.dataColumn3.ColumnName = "based_id";
             // 
-            // unitidDataGridViewTextBoxColumn
+            // dataColumn8
             // 
-            this.unitidDataGridViewTextBoxColumn.DataPropertyName = "unit_id";
-            this.unitidDataGridViewTextBoxColumn.HeaderText = "unit_id";
-            this.unitidDataGridViewTextBoxColumn.Name = "unitidDataGridViewTextBoxColumn";
-            this.unitidDataGridViewTextBoxColumn.Visible = false;
+            this.dataColumn8.ColumnName = "tab_number";
             // 
-            // itemclassidDataGridViewTextBoxColumn
+            // bs_project_item_sets
             // 
-            this.itemclassidDataGridViewTextBoxColumn.DataPropertyName = "item_class_id";
-            this.itemclassidDataGridViewTextBoxColumn.HeaderText = "item_class_id";
-            this.itemclassidDataGridViewTextBoxColumn.Name = "itemclassidDataGridViewTextBoxColumn";
-            this.itemclassidDataGridViewTextBoxColumn.Visible = false;
+            this.bs_project_item_sets.DataMember = "tbl_project_item_sets";
+            this.bs_project_item_sets.DataSource = this.dataSet1;
             // 
-            // itemnameidDataGridViewTextBoxColumn
+            // Column10
             // 
-            this.itemnameidDataGridViewTextBoxColumn.DataPropertyName = "item_name_id";
-            this.itemnameidDataGridViewTextBoxColumn.HeaderText = "item_name_id";
-            this.itemnameidDataGridViewTextBoxColumn.Name = "itemnameidDataGridViewTextBoxColumn";
-            this.itemnameidDataGridViewTextBoxColumn.Visible = false;
+            this.Column10.FillWeight = 20.30457F;
+            this.Column10.HeaderText = "";
+            this.Column10.MinimumWidth = 3;
+            this.Column10.Name = "Column10";
+            this.Column10.ReadOnly = true;
             // 
-            // itemid
+            // qtyDataGridViewTextBoxColumn
             // 
-            this.itemid.DataPropertyName = "item_id";
-            this.itemid.HeaderText = "item_id";
-            this.itemid.Name = "itemid";
-            this.itemid.Visible = false;
+            this.qtyDataGridViewTextBoxColumn.DataPropertyName = "qty";
+            this.qtyDataGridViewTextBoxColumn.FillWeight = 111.3851F;
+            this.qtyDataGridViewTextBoxColumn.HeaderText = "QTY";
+            this.qtyDataGridViewTextBoxColumn.Name = "qtyDataGridViewTextBoxColumn";
+            this.qtyDataGridViewTextBoxColumn.ReadOnly = true;
             // 
-            // basedid
+            // itemcodeDataGridViewTextBoxColumn
             // 
-            this.basedid.DataPropertyName = "based_id";
-            this.basedid.HeaderText = "based_id";
-            this.basedid.Name = "basedid";
-            this.basedid.Visible = false;
+            this.itemcodeDataGridViewTextBoxColumn.DataPropertyName = "item_code";
+            this.itemcodeDataGridViewTextBoxColumn.FillWeight = 111.3851F;
+            this.itemcodeDataGridViewTextBoxColumn.HeaderText = "ITEM CODE";
+            this.itemcodeDataGridViewTextBoxColumn.Name = "itemcodeDataGridViewTextBoxColumn";
+            this.itemcodeDataGridViewTextBoxColumn.ReadOnly = true;
             // 
-            // quick_quote_id
+            // shortdescDataGridViewTextBoxColumn
             // 
-            this.quick_quote_id.DataPropertyName = "id";
-            this.quick_quote_id.HeaderText = "id";
-            this.quick_quote_id.Name = "quick_quote_id";
-            this.quick_quote_id.Visible = false;
-            // 
-            // status
-            // 
-            this.status.FillWeight = 111.3851F;
-            this.status.HeaderText = "STATUS";
-            this.status.Name = "status";
-            // 
-            // linetotal
-            // 
-            this.linetotal.DataPropertyName = "line_total";
-            dataGridViewCellStyle3.Format = "C2";
-            dataGridViewCellStyle3.NullValue = null;
-            this.linetotal.DefaultCellStyle = dataGridViewCellStyle3;
-            this.linetotal.FillWeight = 111.3851F;
-            this.linetotal.HeaderText = "TOTAL PRICE";
-            this.linetotal.Name = "linetotal";
-            // 
-            // unitpriceDataGridViewTextBoxColumn
-            // 
-            this.unitpriceDataGridViewTextBoxColumn.DataPropertyName = "unit_price";
-            dataGridViewCellStyle4.Format = "C2";
-            dataGridViewCellStyle4.NullValue = null;
-            this.unitpriceDataGridViewTextBoxColumn.DefaultCellStyle = dataGridViewCellStyle4;
-            this.unitpriceDataGridViewTextBoxColumn.FillWeight = 111.3851F;
-            this.unitpriceDataGridViewTextBoxColumn.HeaderText = "LIST PRICE";
-            this.unitpriceDataGridViewTextBoxColumn.Name = "unitpriceDataGridViewTextBoxColumn";
+            this.shortdescDataGridViewTextBoxColumn.DataPropertyName = "short_desc";
+            this.shortdescDataGridViewTextBoxColumn.FillWeight = 111.3851F;
+            this.shortdescDataGridViewTextBoxColumn.HeaderText = "ITEM DESCRIPTION";
+            this.shortdescDataGridViewTextBoxColumn.Name = "shortdescDataGridViewTextBoxColumn";
+            this.shortdescDataGridViewTextBoxColumn.ReadOnly = true;
             // 
             // delivery_preference
             // 
@@ -1380,37 +1362,135 @@ namespace smpc_sales_app.Pages.Sales
             this.delivery_preference.Resizable = System.Windows.Forms.DataGridViewTriState.True;
             this.delivery_preference.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
             // 
-            // shortdescDataGridViewTextBoxColumn
+            // unitpriceDataGridViewTextBoxColumn
             // 
-            this.shortdescDataGridViewTextBoxColumn.DataPropertyName = "short_desc";
-            this.shortdescDataGridViewTextBoxColumn.FillWeight = 111.3851F;
-            this.shortdescDataGridViewTextBoxColumn.HeaderText = "ITEM DESCRIPTION";
-            this.shortdescDataGridViewTextBoxColumn.Name = "shortdescDataGridViewTextBoxColumn";
-            this.shortdescDataGridViewTextBoxColumn.ReadOnly = true;
+            this.unitpriceDataGridViewTextBoxColumn.DataPropertyName = "unit_price";
+            dataGridViewCellStyle1.Format = "C2";
+            dataGridViewCellStyle1.NullValue = null;
+            this.unitpriceDataGridViewTextBoxColumn.DefaultCellStyle = dataGridViewCellStyle1;
+            this.unitpriceDataGridViewTextBoxColumn.FillWeight = 111.3851F;
+            this.unitpriceDataGridViewTextBoxColumn.HeaderText = "LIST PRICE";
+            this.unitpriceDataGridViewTextBoxColumn.Name = "unitpriceDataGridViewTextBoxColumn";
             // 
-            // itemcodeDataGridViewTextBoxColumn
+            // linetotal
             // 
-            this.itemcodeDataGridViewTextBoxColumn.DataPropertyName = "item_code";
-            this.itemcodeDataGridViewTextBoxColumn.FillWeight = 111.3851F;
-            this.itemcodeDataGridViewTextBoxColumn.HeaderText = "ITEM CODE";
-            this.itemcodeDataGridViewTextBoxColumn.Name = "itemcodeDataGridViewTextBoxColumn";
-            this.itemcodeDataGridViewTextBoxColumn.ReadOnly = true;
+            this.linetotal.DataPropertyName = "line_total";
+            dataGridViewCellStyle2.Format = "C2";
+            dataGridViewCellStyle2.NullValue = null;
+            this.linetotal.DefaultCellStyle = dataGridViewCellStyle2;
+            this.linetotal.FillWeight = 111.3851F;
+            this.linetotal.HeaderText = "TOTAL PRICE";
+            this.linetotal.Name = "linetotal";
             // 
-            // qtyDataGridViewTextBoxColumn
+            // status
             // 
-            this.qtyDataGridViewTextBoxColumn.DataPropertyName = "qty";
-            this.qtyDataGridViewTextBoxColumn.FillWeight = 111.3851F;
-            this.qtyDataGridViewTextBoxColumn.HeaderText = "QTY";
-            this.qtyDataGridViewTextBoxColumn.Name = "qtyDataGridViewTextBoxColumn";
-            this.qtyDataGridViewTextBoxColumn.ReadOnly = true;
+            this.status.FillWeight = 111.3851F;
+            this.status.HeaderText = "STATUS";
+            this.status.Name = "status";
             // 
-            // Column10
+            // quick_quote_id
             // 
-            this.Column10.FillWeight = 20.30457F;
-            this.Column10.HeaderText = "";
-            this.Column10.MinimumWidth = 3;
-            this.Column10.Name = "Column10";
-            this.Column10.ReadOnly = true;
+            this.quick_quote_id.DataPropertyName = "id";
+            this.quick_quote_id.HeaderText = "id";
+            this.quick_quote_id.Name = "quick_quote_id";
+            // 
+            // basedid
+            // 
+            this.basedid.DataPropertyName = "based_id";
+            this.basedid.HeaderText = "based_id";
+            this.basedid.Name = "basedid";
+            // 
+            // itemid
+            // 
+            this.itemid.DataPropertyName = "item_id";
+            this.itemid.HeaderText = "item_id";
+            this.itemid.Name = "itemid";
+            this.itemid.Visible = false;
+            // 
+            // itemnameidDataGridViewTextBoxColumn
+            // 
+            this.itemnameidDataGridViewTextBoxColumn.DataPropertyName = "item_name_id";
+            this.itemnameidDataGridViewTextBoxColumn.HeaderText = "item_name_id";
+            this.itemnameidDataGridViewTextBoxColumn.Name = "itemnameidDataGridViewTextBoxColumn";
+            this.itemnameidDataGridViewTextBoxColumn.Visible = false;
+            // 
+            // itemclassidDataGridViewTextBoxColumn
+            // 
+            this.itemclassidDataGridViewTextBoxColumn.DataPropertyName = "item_class_id";
+            this.itemclassidDataGridViewTextBoxColumn.HeaderText = "item_class_id";
+            this.itemclassidDataGridViewTextBoxColumn.Name = "itemclassidDataGridViewTextBoxColumn";
+            this.itemclassidDataGridViewTextBoxColumn.Visible = false;
+            // 
+            // unitidDataGridViewTextBoxColumn
+            // 
+            this.unitidDataGridViewTextBoxColumn.DataPropertyName = "unit_id";
+            this.unitidDataGridViewTextBoxColumn.HeaderText = "unit_id";
+            this.unitidDataGridViewTextBoxColumn.Name = "unitidDataGridViewTextBoxColumn";
+            this.unitidDataGridViewTextBoxColumn.Visible = false;
+            // 
+            // percentdiscountDataGridViewTextBoxColumn
+            // 
+            this.percentdiscountDataGridViewTextBoxColumn.DataPropertyName = "percent_discount";
+            this.percentdiscountDataGridViewTextBoxColumn.HeaderText = "percent_discount";
+            this.percentdiscountDataGridViewTextBoxColumn.Name = "percentdiscountDataGridViewTextBoxColumn";
+            this.percentdiscountDataGridViewTextBoxColumn.Visible = false;
+            // 
+            // netdiscountDataGridViewTextBoxColumn
+            // 
+            this.netdiscountDataGridViewTextBoxColumn.DataPropertyName = "net_discount";
+            this.netdiscountDataGridViewTextBoxColumn.HeaderText = "net_discount";
+            this.netdiscountDataGridViewTextBoxColumn.Name = "netdiscountDataGridViewTextBoxColumn";
+            this.netdiscountDataGridViewTextBoxColumn.Visible = false;
+            // 
+            // nettotalDataGridViewTextBoxColumn
+            // 
+            this.nettotalDataGridViewTextBoxColumn.DataPropertyName = "net_total";
+            this.nettotalDataGridViewTextBoxColumn.HeaderText = "net_total";
+            this.nettotalDataGridViewTextBoxColumn.Name = "nettotalDataGridViewTextBoxColumn";
+            this.nettotalDataGridViewTextBoxColumn.Visible = false;
+            // 
+            // dgv_project
+            // 
+            this.dgv_project.AllowUserToAddRows = false;
+            this.dgv_project.AllowUserToDeleteRows = false;
+            this.dgv_project.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
+            this.dgv_project.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dgv_project.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.dataGridViewTextBoxColumn1,
+            this.dataGridViewComboBoxColumn1,
+            this.dataGridViewTextBoxColumn7});
+            this.dgv_project.Location = new System.Drawing.Point(0, 298);
+            this.dgv_project.Name = "dgv_project";
+            this.dgv_project.Size = new System.Drawing.Size(1028, 392);
+            this.dgv_project.TabIndex = 11;
+            // 
+            // dataGridViewTextBoxColumn1
+            // 
+            this.dataGridViewTextBoxColumn1.FillWeight = 20.30457F;
+            this.dataGridViewTextBoxColumn1.HeaderText = "";
+            this.dataGridViewTextBoxColumn1.MinimumWidth = 3;
+            this.dataGridViewTextBoxColumn1.Name = "dataGridViewTextBoxColumn1";
+            this.dataGridViewTextBoxColumn1.ReadOnly = true;
+            // 
+            // dataGridViewComboBoxColumn1
+            // 
+            this.dataGridViewComboBoxColumn1.DataPropertyName = "delivery_preference";
+            this.dataGridViewComboBoxColumn1.FillWeight = 111.3851F;
+            this.dataGridViewComboBoxColumn1.HeaderText = "DELIVERY PREFERENCE";
+            this.dataGridViewComboBoxColumn1.Items.AddRange(new object[] {
+            "(ASSEMBLED)",
+            "(SEMI-ASSEMBLED)",
+            "(INCLUDED-IN)",
+            "(LOOSE)"});
+            this.dataGridViewComboBoxColumn1.Name = "dataGridViewComboBoxColumn1";
+            this.dataGridViewComboBoxColumn1.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+            this.dataGridViewComboBoxColumn1.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
+            // 
+            // dataGridViewTextBoxColumn7
+            // 
+            this.dataGridViewTextBoxColumn7.FillWeight = 111.3851F;
+            this.dataGridViewTextBoxColumn7.HeaderText = "STATUS";
+            this.dataGridViewTextBoxColumn7.Name = "dataGridViewTextBoxColumn7";
             // 
             // Orders
             // 
@@ -1451,6 +1531,9 @@ namespace smpc_sales_app.Pages.Sales
             this.pnl_footer.ResumeLayout(false);
             this.pnl_footer.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.bs_order_details)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dataTable1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.bs_project_item_sets)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dgv_project)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -1578,6 +1661,11 @@ namespace smpc_sales_app.Pages.Sales
         private System.Windows.Forms.BindingSource bs_order_details;
         private System.Windows.Forms.TextBox txt_quotation_id;
         private System.Windows.Forms.ToolStripButton btn_back;
+        private System.Data.DataTable dataTable1;
+        private System.Data.DataColumn dataColumn1;
+        private System.Data.DataColumn dataColumn3;
+        private System.Data.DataColumn dataColumn8;
+        private System.Windows.Forms.BindingSource bs_project_item_sets;
         private System.Windows.Forms.DataGridViewTextBoxColumn Column10;
         private System.Windows.Forms.DataGridViewTextBoxColumn qtyDataGridViewTextBoxColumn;
         private System.Windows.Forms.DataGridViewTextBoxColumn itemcodeDataGridViewTextBoxColumn;
@@ -1595,5 +1683,9 @@ namespace smpc_sales_app.Pages.Sales
         private System.Windows.Forms.DataGridViewTextBoxColumn percentdiscountDataGridViewTextBoxColumn;
         private System.Windows.Forms.DataGridViewTextBoxColumn netdiscountDataGridViewTextBoxColumn;
         private System.Windows.Forms.DataGridViewTextBoxColumn nettotalDataGridViewTextBoxColumn;
+        private System.Windows.Forms.DataGridView dgv_project;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn1;
+        private System.Windows.Forms.DataGridViewComboBoxColumn dataGridViewComboBoxColumn1;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn7;
     }
 }
