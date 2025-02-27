@@ -1,5 +1,4 @@
 ﻿using Microsoft.Reporting.WinForms;
-using smpc_sales_app.Pages.Sales;
 using smpc_sales_app.Services.Helpers;
 using smpc_sales_app.Services.Sales;
 using smpc_sales_system.Models;
@@ -16,17 +15,15 @@ using System.Windows.Forms;
 
 namespace smpc_sales_system.Pages.Sales
 {
-    public partial class QuotationPrintModal : Form
+    public partial class QuotationPrint : UserControl
     {
         private string documentNo;
-        private Quotation _quotation;
-        public QuotationPrintModal(Quotation quotation, string documentNo = null)
+        public QuotationPrint(string documentNo = null)
         {
             InitializeComponent();
             fetchBpiData();
             fetchItemData();
             this.documentNo = documentNo;
-            _quotation = quotation;
         }
 
         private void label1_Click(object sender, EventArgs e)
@@ -129,13 +126,13 @@ namespace smpc_sales_system.Pages.Sales
             }
         }
 
-        private async void QuotationPrintModal_Load(object sender, EventArgs e)
+        private async void QuotationPrint_Load(object sender, EventArgs e)
         {
             await fetchQuotationDetailsByDocumentNo(documentNo);
 
             if (transactionList != null && transactionList.Rows.Count > 0)
             {
-                // Filter the transactionList based on document_no (use the passed documentNo)  
+                // Filter the transactionList based on document_no (use the passed documentNo)
                 DataRow[] filteredRows = transactionList.Select($"document_no = '{documentNo}'");
 
                 if (filteredRows.Length > 0)
@@ -149,7 +146,7 @@ namespace smpc_sales_system.Pages.Sales
                     string addressName = "Address not found";
                     addressName = bpiaddrows[0]["location"].ToString();
 
-                    string branchName = "Branch not found";
+                    string branchName = "Branch not found"; 
                     if (bpiRows.Length > 0)
                     {
                         branchName = bpiRows[0]["branch_name"].ToString();
@@ -189,7 +186,7 @@ namespace smpc_sales_system.Pages.Sales
                     reportViewer1.LocalReport.DataSources.Clear();
                     reportViewer1.LocalReport.DataSources.Add(headerReportDataSource);
                     reportViewer1.LocalReport.DataSources.Add(childReportDataSource);
-                    reportViewer1.LocalReport.SetParameters(new ReportParameter[] { branchNameParameter, addressNameParameter, itemDescriptionParameter });
+                    //reportViewer1.LocalReport.SetParameters(new ReportParameter[] { branchNameParameter, addressNameParameter, itemDescriptionParameter });
                     reportViewer1.RefreshReport();
                 }
                 else
@@ -199,19 +196,9 @@ namespace smpc_sales_system.Pages.Sales
             }
         }
 
-        private void btn_prev_Click(object sender, EventArgs e)
-        {
-            this.Close();
-        }
 
-        private void btn_print_Click(object sender, EventArgs e)
-        {
-            this.Close();
-            _quotation.ShowOrdersControl(documentNo);
-        }
+
+
 
     }
 }
-       
-    
-

@@ -941,8 +941,18 @@ namespace smpc_sales_app.Pages.Sales
         private void btn_print_Click(object sender, EventArgs e)
         {
             string documentNo = txt_document_no.Text.Trim();
-            QPrintTemplate ordersPage = new QPrintTemplate(documentNo);
+            QuotationPrintModal ordersPage = new QuotationPrintModal(this, documentNo);
+            int screenHeight = Screen.PrimaryScreen.Bounds.Height;
+            ordersPage.Height = (int)(screenHeight);
+            // Set the parent form to be non-interactive while the modal is active
+            ordersPage.StartPosition = FormStartPosition.CenterParent; // Optional: centers the modal
+            ordersPage.ShowDialog();
+        }
+        public void ShowOrdersControl(string documentNo)
+        {
+            Orders ordersPage = new Orders(documentNo);
             this.Parent.Controls.Add(ordersPage);
+
             this.Hide();
         }
     }

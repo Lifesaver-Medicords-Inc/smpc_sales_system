@@ -2,6 +2,13 @@
 <Report xmlns="http://schemas.microsoft.com/sqlserver/reporting/2016/01/reportdefinition" xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner">
   <AutoRefresh>0</AutoRefresh>
   <DataSources>
+    <DataSource Name="smpc_sales_systemServicesSalesModels">
+      <ConnectionProperties>
+        <DataProvider>System.Data.DataSet</DataProvider>
+        <ConnectString>/* Local Connection */</ConnectString>
+      </ConnectionProperties>
+      <rd:DataSourceID>ab877368-cdc8-4ce7-9d1e-f4262a2bd630</rd:DataSourceID>
+    </DataSource>
     <DataSource Name="smpc_sales_systemServicesSalesModels1">
       <ConnectionProperties>
         <DataProvider>System.Data.DataSet</DataProvider>
@@ -11,6 +18,144 @@
     </DataSource>
   </DataSources>
   <DataSets>
+    <DataSet Name="DataSet1">
+      <Query>
+        <DataSourceName>smpc_sales_systemServicesSalesModels</DataSourceName>
+        <CommandText>/* Local Query */</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="address_to">
+          <DataField>address_to</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="application_id">
+          <DataField>application_id</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="bill_to_id">
+          <DataField>bill_to_id</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="cash_discount">
+          <DataField>cash_discount</DataField>
+          <rd:TypeName>System.Double</rd:TypeName>
+        </Field>
+        <Field Name="contact_1">
+          <DataField>contact_1</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="contact_2">
+          <DataField>contact_2</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="created_by">
+          <DataField>created_by</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="customer_id">
+          <DataField>customer_id</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="date">
+          <DataField>date</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="discounted_amount">
+          <DataField>discounted_amount</DataField>
+          <rd:TypeName>System.Double</rd:TypeName>
+        </Field>
+        <Field Name="document_no">
+          <DataField>document_no</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="gross_sales">
+          <DataField>gross_sales</DataField>
+          <rd:TypeName>System.Single</rd:TypeName>
+        </Field>
+        <Field Name="id">
+          <DataField>id</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="is_vat">
+          <DataField>is_vat</DataField>
+          <rd:TypeName>System.Boolean</rd:TypeName>
+        </Field>
+        <Field Name="net_amount_due">
+          <DataField>net_amount_due</DataField>
+          <rd:TypeName>System.Double</rd:TypeName>
+        </Field>
+        <Field Name="net_sales">
+          <DataField>net_sales</DataField>
+          <rd:TypeName>System.Double</rd:TypeName>
+        </Field>
+        <Field Name="payment_terms_id">
+          <DataField>payment_terms_id</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="percent_discount">
+          <DataField>percent_discount</DataField>
+          <rd:TypeName>System.Double</rd:TypeName>
+        </Field>
+        <Field Name="purpose">
+          <DataField>purpose</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="ship_to_id">
+          <DataField>ship_to_id</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="ship_type_id">
+          <DataField>ship_type_id</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="sub_total">
+          <DataField>sub_total</DataField>
+          <rd:TypeName>System.Double</rd:TypeName>
+        </Field>
+        <Field Name="sub_total_before_discount">
+          <DataField>sub_total_before_discount</DataField>
+          <rd:TypeName>System.Double</rd:TypeName>
+        </Field>
+        <Field Name="thru">
+          <DataField>thru</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="total_amount_due">
+          <DataField>total_amount_due</DataField>
+          <rd:TypeName>System.Single</rd:TypeName>
+        </Field>
+        <Field Name="valid_until">
+          <DataField>valid_until</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="validity_days">
+          <DataField>validity_days</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="vat_amount">
+          <DataField>vat_amount</DataField>
+          <rd:TypeName>System.Single</rd:TypeName>
+        </Field>
+        <Field Name="vat_percent">
+          <DataField>vat_percent</DataField>
+          <rd:TypeName>System.Double</rd:TypeName>
+        </Field>
+        <Field Name="version_no">
+          <DataField>version_no</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="warranty">
+          <DataField>warranty</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+      </Fields>
+      <rd:DataSetInfo>
+        <rd:DataSetName>smpc_sales_system.Services.Sales.Models</rd:DataSetName>
+        <rd:TableName>SalesQuotationList</rd:TableName>
+        <rd:ObjectDataSourceSelectMethod>SalesQuotation</rd:ObjectDataSourceSelectMethod>
+        <rd:ObjectDataSourceType>smpc_sales_system.Services.Sales.Models.SalesQuotationList, smpc_sales_system, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null</rd:ObjectDataSourceType>
+      </rd:DataSetInfo>
+    </DataSet>
     <DataSet Name="DataSet2">
       <Query>
         <DataSourceName>smpc_sales_systemServicesSalesModels1</DataSourceName>
@@ -89,7 +234,7 @@
                       <Paragraph>
                         <TextRuns>
                           <TextRun>
-                            <Value>=Parameters!date.Value</Value>
+                            <Value>=First(Fields!date.Value, "DataSet1")</Value>
                             <Style>
                               <FontSize>8pt</FontSize>
                             </Style>
@@ -119,7 +264,7 @@
                       <Paragraph>
                         <TextRuns>
                           <TextRun>
-                            <Value>=Parameters!docno.Value</Value>
+                            <Value>=First(Fields!document_no.Value, "DataSet1")</Value>
                             <Style>
                               <FontSize>8pt</FontSize>
                             </Style>
@@ -214,7 +359,7 @@
                       <Paragraph>
                         <TextRuns>
                           <TextRun>
-                            <Value>=Parameters!company.Value</Value>
+                            <Value>=Parameters!BranchName.Value</Value>
                             <Style>
                               <FontSize>8pt</FontSize>
                             </Style>
@@ -245,7 +390,7 @@
                       <Paragraph>
                         <TextRuns>
                           <TextRun>
-                            <Value>=Parameters!address.Value</Value>
+                            <Value>=Parameters!AddressName.Value</Value>
                             <Style>
                               <FontSize>8pt</FontSize>
                             </Style>
@@ -276,7 +421,7 @@
                       <Paragraph>
                         <TextRuns>
                           <TextRun>
-                            <Value>=Parameters!receiver.Value</Value>
+                            <Value>[RECEIVER]</Value>
                             <Style>
                               <FontSize>8pt</FontSize>
                             </Style>
@@ -307,7 +452,7 @@
                       <Paragraph>
                         <TextRuns>
                           <TextRun>
-                            <Value>=Parameters!exec.Value</Value>
+                            <Value>[SALES EXEC]</Value>
                             <Style>
                               <FontSize>8pt</FontSize>
                             </Style>
@@ -952,18 +1097,7 @@
                                     <Paragraph>
                                       <TextRuns>
                                         <TextRun>
-                                          <Value>=Parameters!desc.Value(RowNumber("Tablix1") - 1)</Value>
-                                          <Style />
-                                        </TextRun>
-                                      </TextRuns>
-                                      <Style>
-                                        <TextAlign>Left</TextAlign>
-                                      </Style>
-                                    </Paragraph>
-                                    <Paragraph>
-                                      <TextRuns>
-                                        <TextRun>
-                                          <Value />
+                                          <Value>=Parameters!ItemDescriptions.Value(RowNumber("Tablix1") - 1)</Value>
                                           <Style />
                                         </TextRun>
                                       </TextRuns>
@@ -1015,7 +1149,7 @@
                                     <Paragraph>
                                       <TextRuns>
                                         <TextRun>
-                                          <Value>=Parameters!qtys.Value(RowNumber("Tablix1") - 1)</Value>
+                                          <Value>=Fields!qty.Value</Value>
                                           <Style />
                                         </TextRun>
                                       </TextRuns>
@@ -1067,7 +1201,7 @@
                                     <Paragraph>
                                       <TextRuns>
                                         <TextRun>
-                                          <Value>=Parameters!unitprice.Value(RowNumber("Tablix1") - 1)</Value>
+                                          <Value>=Fields!net_total.Value</Value>
                                           <Style>
                                             <Format>'₱'#,0.00;('₱'#,0.00)</Format>
                                           </Style>
@@ -1102,9 +1236,9 @@
                                     <Paragraph>
                                       <TextRuns>
                                         <TextRun>
-                                          <Value>=Parameters!percentdiscount.Value(RowNumber("Tablix1") - 1) &amp; "%"</Value>
+                                          <Value>=Fields!percent_discount.Value</Value>
                                           <Style>
-                                            <Format>0%</Format>
+                                            <Format>#,0%</Format>
                                           </Style>
                                         </TextRun>
                                       </TextRuns>
@@ -1136,7 +1270,7 @@
                                     <Paragraph>
                                       <TextRuns>
                                         <TextRun>
-                                          <Value>="₱" &amp; FormatNumber(Parameters!amount.Value(RowNumber("Tablix1")-1), 2)</Value>
+                                          <Value>=Fields!line_total.Value</Value>
                                           <Style>
                                             <Format>'₱'#,0.00;('₱'#,0.00)</Format>
                                           </Style>
@@ -1248,7 +1382,7 @@
                                     <Paragraph>
                                       <TextRuns>
                                         <TextRun>
-                                          <Value />
+                                          <Value>=Sum(Fields!qty.Value)</Value>
                                           <Style />
                                         </TextRun>
                                       </TextRuns>
@@ -1284,7 +1418,7 @@
                                     <Paragraph>
                                       <TextRuns>
                                         <TextRun>
-                                          <Value />
+                                          <Value>=Sum(Fields!net_total.Value)</Value>
                                           <Style>
                                             <Format>'₱'#,0.00;('₱'#,0.00)</Format>
                                           </Style>
@@ -1362,7 +1496,7 @@
                                     <Paragraph>
                                       <TextRuns>
                                         <TextRun>
-                                          <Value />
+                                          <Value>=Sum(Fields!line_total.Value)</Value>
                                           <Style>
                                             <Format>'₱'#,0.00;('₱'#,0.00)</Format>
                                           </Style>
@@ -1569,7 +1703,7 @@
                       <Paragraph>
                         <TextRuns>
                           <TextRun>
-                            <Value>=Parameters!subtotal.Value</Value>
+                            <Value>=First(Fields!net_amount_due.Value, "DataSet1")</Value>
                             <Style>
                               <FontSize>8pt</FontSize>
                               <FontWeight>Bold</FontWeight>
@@ -1605,7 +1739,7 @@
                       <Paragraph>
                         <TextRuns>
                           <TextRun>
-                            <Value>=Parameters!adddiscount.Value</Value>
+                            <Value>0</Value>
                             <Style>
                               <FontSize>8pt</FontSize>
                               <FontWeight>Bold</FontWeight>
@@ -1641,7 +1775,7 @@
                       <Paragraph>
                         <TextRuns>
                           <TextRun>
-                            <Value>=Parameters!cashdiscount.Value</Value>
+                            <Value>=First(Fields!cash_discount.Value, "DataSet1")</Value>
                             <Style>
                               <FontSize>8pt</FontSize>
                               <FontWeight>Bold</FontWeight>
@@ -1677,7 +1811,7 @@
                       <Paragraph>
                         <TextRuns>
                           <TextRun>
-                            <Value>=Parameters!grandtotal.Value</Value>
+                            <Value>=First(Fields!net_amount_due.Value, "DataSet1") - (First(Fields!cash_discount.Value, "DataSet1") + 0)</Value>
                             <Style>
                               <FontSize>8pt</FontSize>
                               <FontWeight>Bold</FontWeight>
@@ -2355,7 +2489,43 @@
                           <Paragraph>
                             <TextRuns>
                               <TextRun>
-                                <Value>=Parameters!inclusion.Value</Value>
+                                <Value>1. Delivery at </Value>
+                                <Style>
+                                  <FontStyle>Normal</FontStyle>
+                                  <FontWeight>Normal</FontWeight>
+                                  <TextDecoration>None</TextDecoration>
+                                  <Color>#000000</Color>
+                                </Style>
+                              </TextRun>
+                              <TextRun>
+                                <Value>(place)</Value>
+                                <Style>
+                                  <FontStyle>Normal</FontStyle>
+                                  <FontWeight>Normal</FontWeight>
+                                  <TextDecoration>None</TextDecoration>
+                                  <Color>#0000ff</Color>
+                                </Style>
+                              </TextRun>
+                              <TextRun>
+                                <Value>, unloading at </Value>
+                                <Style>
+                                  <FontStyle>Normal</FontStyle>
+                                  <FontWeight>Normal</FontWeight>
+                                  <TextDecoration>None</TextDecoration>
+                                  <Color>#000000</Color>
+                                </Style>
+                              </TextRun>
+                              <TextRun>
+                                <Value>(specific area)</Value>
+                                <Style>
+                                  <FontStyle>Normal</FontStyle>
+                                  <FontWeight>Normal</FontWeight>
+                                  <TextDecoration>None</TextDecoration>
+                                  <Color>#0000ff</Color>
+                                </Style>
+                              </TextRun>
+                              <TextRun>
+                                <Value> of the building/ site/ warehouse</Value>
                                 <Style>
                                   <FontStyle>Normal</FontStyle>
                                   <FontWeight>Normal</FontWeight>
@@ -2366,10 +2536,211 @@
                             </TextRuns>
                             <Style />
                           </Paragraph>
+                          <Paragraph>
+                            <TextRuns>
+                              <TextRun>
+                                <Value>2. Testing and Commissioning at </Value>
+                                <Style>
+                                  <FontStyle>Normal</FontStyle>
+                                  <FontWeight>Normal</FontWeight>
+                                  <TextDecoration>None</TextDecoration>
+                                  <Color>#000000</Color>
+                                </Style>
+                              </TextRun>
+                              <TextRun>
+                                <Value>(place)</Value>
+                                <Style>
+                                  <FontStyle>Normal</FontStyle>
+                                  <FontWeight>Normal</FontWeight>
+                                  <TextDecoration>None</TextDecoration>
+                                  <Color>#0000ff</Color>
+                                </Style>
+                              </TextRun>
+                            </TextRuns>
+                            <Style />
+                          </Paragraph>
+                          <Paragraph>
+                            <TextRuns>
+                              <TextRun>
+                                <Value>- Validate compliance to Pre-Start-Up and Safety Checklist</Value>
+                                <Style>
+                                  <FontStyle>Normal</FontStyle>
+                                  <FontWeight>Normal</FontWeight>
+                                  <TextDecoration>None</TextDecoration>
+                                  <Color>#000000</Color>
+                                </Style>
+                              </TextRun>
+                            </TextRuns>
+                            <Style />
+                          </Paragraph>
+                          <Paragraph>
+                            <TextRuns>
+                              <TextRun>
+                                <Value>- Configuration of Motor Voltage</Value>
+                                <Style>
+                                  <FontStyle>Normal</FontStyle>
+                                  <FontWeight>Normal</FontWeight>
+                                  <TextDecoration>None</TextDecoration>
+                                  <Color>#000000</Color>
+                                </Style>
+                              </TextRun>
+                            </TextRuns>
+                            <Style />
+                          </Paragraph>
+                          <Paragraph>
+                            <TextRuns>
+                              <TextRun>
+                                <Value>- Termination of Load Side Wires (Motor to Controller)</Value>
+                                <Style>
+                                  <FontStyle>Normal</FontStyle>
+                                  <FontWeight>Normal</FontWeight>
+                                  <TextDecoration>None</TextDecoration>
+                                  <Color>#000000</Color>
+                                </Style>
+                              </TextRun>
+                            </TextRuns>
+                            <Style />
+                          </Paragraph>
+                          <Paragraph>
+                            <TextRuns>
+                              <TextRun>
+                                <Value>- Placement of Sensors</Value>
+                                <Style>
+                                  <FontStyle>Normal</FontStyle>
+                                  <FontWeight>Normal</FontWeight>
+                                  <TextDecoration>None</TextDecoration>
+                                  <Color>#000000</Color>
+                                </Style>
+                              </TextRun>
+                            </TextRuns>
+                            <Style />
+                          </Paragraph>
+                          <Paragraph>
+                            <TextRuns>
+                              <TextRun>
+                                <Value>- Prime the pump if necessary</Value>
+                                <Style>
+                                  <FontStyle>Normal</FontStyle>
+                                  <FontWeight>Normal</FontWeight>
+                                  <TextDecoration>None</TextDecoration>
+                                  <Color>#000000</Color>
+                                </Style>
+                              </TextRun>
+                            </TextRuns>
+                            <Style />
+                          </Paragraph>
+                          <Paragraph>
+                            <TextRuns>
+                              <TextRun>
+                                <Value>- Initial and Final Testing</Value>
+                                <Style>
+                                  <FontStyle>Normal</FontStyle>
+                                  <FontWeight>Normal</FontWeight>
+                                  <TextDecoration>None</TextDecoration>
+                                  <Color>#000000</Color>
+                                </Style>
+                              </TextRun>
+                            </TextRuns>
+                            <Style />
+                          </Paragraph>
+                          <Paragraph>
+                            <TextRuns>
+                              <TextRun>
+                                <Value>- Training and Orientatoin</Value>
+                                <Style>
+                                  <FontStyle>Normal</FontStyle>
+                                  <FontWeight>Normal</FontWeight>
+                                  <TextDecoration>None</TextDecoration>
+                                  <Color>#000000</Color>
+                                </Style>
+                              </TextRun>
+                            </TextRuns>
+                            <Style />
+                          </Paragraph>
+                          <Paragraph>
+                            <TextRuns>
+                              <TextRun>
+                                <Value>3. For Testing and Commissioning, there is an allowance of (1 VISIT TO </Value>
+                                <Style>
+                                  <FontStyle>Normal</FontStyle>
+                                  <FontWeight>Normal</FontWeight>
+                                  <TextDecoration>None</TextDecoration>
+                                  <Color>#000000</Color>
+                                </Style>
+                              </TextRun>
+                              <TextRun>
+                                <Value>(place)</Value>
+                                <Style>
+                                  <FontStyle>Normal</FontStyle>
+                                  <FontWeight>Normal</FontWeight>
+                                  <TextDecoration>None</TextDecoration>
+                                  <Color>#0000ff</Color>
+                                </Style>
+                              </TextRun>
+                              <TextRun>
+                                <Value> - 2 DAYS VISIT TO SITE) to be conducted </Value>
+                                <Style>
+                                  <FontStyle>Normal</FontStyle>
+                                  <FontWeight>Normal</FontWeight>
+                                  <TextDecoration>None</TextDecoration>
+                                  <Color>#000000</Color>
+                                </Style>
+                              </TextRun>
+                              <TextRun>
+                                <Value>during company regular working hours only</Value>
+                                <Style>
+                                  <FontStyle>Normal</FontStyle>
+                                  <FontWeight>Normal</FontWeight>
+                                  <TextDecoration>Underline</TextDecoration>
+                                  <Color>#000000</Color>
+                                </Style>
+                              </TextRun>
+                              <TextRun>
+                                <Value>. If you want </Value>
+                                <Style>
+                                  <FontStyle>Normal</FontStyle>
+                                  <FontWeight>Normal</FontWeight>
+                                  <TextDecoration>None</TextDecoration>
+                                  <Color>#000000</Color>
+                                </Style>
+                              </TextRun>
+                              <TextRun>
+                                <Value>more than the allowable and beyond working hours</Value>
+                                <Style>
+                                  <FontStyle>Normal</FontStyle>
+                                  <FontWeight>Bold</FontWeight>
+                                  <TextDecoration>None</TextDecoration>
+                                  <Color>#000000</Color>
+                                </Style>
+                              </TextRun>
+                              <TextRun>
+                                <Value>, </Value>
+                                <Style>
+                                  <FontStyle>Normal</FontStyle>
+                                  <FontWeight>Normal</FontWeight>
+                                  <TextDecoration>None</TextDecoration>
+                                  <Color>#000000</Color>
+                                </Style>
+                              </TextRun>
+                              <TextRun>
+                                <Value>additional chargers will be applied.</Value>
+                                <Style>
+                                  <FontStyle>Normal</FontStyle>
+                                  <FontWeight>Bold</FontWeight>
+                                  <TextDecoration>None</TextDecoration>
+                                  <Color>#000000</Color>
+                                </Style>
+                              </TextRun>
+                            </TextRuns>
+                            <LeftIndent>0cm</LeftIndent>
+                            <RightIndent>0cm</RightIndent>
+                            <Style>
+                              <TextAlign>Left</TextAlign>
+                            </Style>
+                          </Paragraph>
                         </Paragraphs>
                         <rd:DefaultName>Textbox46</rd:DefaultName>
-                        <Left>0.00001cm</Left>
-                        <Height>0.35277in</Height>
+                        <Height>2.0611in</Height>
                         <Width>6.76007in</Width>
                         <Style>
                           <Border>
@@ -2385,7 +2756,7 @@
                     <KeepTogether>true</KeepTogether>
                     <Top>1.96903in</Top>
                     <Left>0.44292cm</Left>
-                    <Height>0.35277in</Height>
+                    <Height>2.0611in</Height>
                     <Width>6.94571in</Width>
                     <ZIndex>14</ZIndex>
                     <Style>
@@ -2561,64 +2932,8 @@
     </ReportSection>
   </ReportSections>
   <ReportParameters>
-    <ReportParameter Name="desc">
+    <ReportParameter Name="BranchName">
       <DataType>String</DataType>
-      <Prompt>ReportParameter1</Prompt>
-      <MultiValue>true</MultiValue>
-    </ReportParameter>
-    <ReportParameter Name="qtys">
-      <DataType>String</DataType>
-      <Prompt>ReportParameter1</Prompt>
-      <MultiValue>true</MultiValue>
-    </ReportParameter>
-    <ReportParameter Name="unitprice">
-      <DataType>String</DataType>
-      <Prompt>ReportParameter1</Prompt>
-      <MultiValue>true</MultiValue>
-    </ReportParameter>
-    <ReportParameter Name="percentdiscount">
-      <DataType>String</DataType>
-      <Prompt>ReportParameter1</Prompt>
-      <MultiValue>true</MultiValue>
-    </ReportParameter>
-    <ReportParameter Name="amount">
-      <DataType>String</DataType>
-      <Prompt>ReportParameter1</Prompt>
-      <MultiValue>true</MultiValue>
-    </ReportParameter>
-    <ReportParameter Name="docno">
-      <DataType>String</DataType>
-      <Nullable>true</Nullable>
-      <Prompt>ReportParameter1</Prompt>
-    </ReportParameter>
-    <ReportParameter Name="date">
-      <DataType>String</DataType>
-      <Nullable>true</Nullable>
-      <Prompt>ReportParameter1</Prompt>
-    </ReportParameter>
-    <ReportParameter Name="company">
-      <DataType>String</DataType>
-      <Nullable>true</Nullable>
-      <Prompt>ReportParameter1</Prompt>
-    </ReportParameter>
-    <ReportParameter Name="address">
-      <DataType>String</DataType>
-      <Nullable>true</Nullable>
-      <Prompt>ReportParameter1</Prompt>
-    </ReportParameter>
-    <ReportParameter Name="receiver">
-      <DataType>String</DataType>
-      <Nullable>true</Nullable>
-      <DefaultValue>
-        <Values>
-          <Value>Not found</Value>
-        </Values>
-      </DefaultValue>
-      <Prompt>ReportParameter1</Prompt>
-    </ReportParameter>
-    <ReportParameter Name="exec">
-      <DataType>String</DataType>
-      <Nullable>true</Nullable>
       <DefaultValue>
         <Values>
           <Value>Not Found</Value>
@@ -2626,136 +2941,45 @@
       </DefaultValue>
       <Prompt>ReportParameter1</Prompt>
     </ReportParameter>
-    <ReportParameter Name="subtotal">
+    <ReportParameter Name="AddressName">
       <DataType>String</DataType>
-      <Nullable>true</Nullable>
+      <DefaultValue>
+        <Values>
+          <Value>Not Found</Value>
+        </Values>
+      </DefaultValue>
       <Prompt>ReportParameter1</Prompt>
     </ReportParameter>
-    <ReportParameter Name="adddiscount">
+    <ReportParameter Name="ItemDescriptions">
       <DataType>String</DataType>
-      <Nullable>true</Nullable>
+      <DefaultValue>
+        <Values>
+          <Value>N/A</Value>
+        </Values>
+      </DefaultValue>
       <Prompt>ReportParameter1</Prompt>
-    </ReportParameter>
-    <ReportParameter Name="cashdiscount">
-      <DataType>String</DataType>
-      <Nullable>true</Nullable>
-      <Prompt>ReportParameter1</Prompt>
-    </ReportParameter>
-    <ReportParameter Name="grandtotal">
-      <DataType>String</DataType>
-      <Nullable>true</Nullable>
-      <Prompt>ReportParameter1</Prompt>
-    </ReportParameter>
-    <ReportParameter Name="inclusion">
-      <DataType>String</DataType>
-      <Nullable>true</Nullable>
-      <Prompt>ReportParameter1</Prompt>
-    </ReportParameter>
-    <ReportParameter Name="exclusion">
-      <DataType>String</DataType>
-      <Nullable>true</Nullable>
-      <Prompt>ReportParameter1</Prompt>
-    </ReportParameter>
-    <ReportParameter Name="terms">
-      <DataType>String</DataType>
-      <Nullable>true</Nullable>
-      <Prompt>ReportParameter1</Prompt>
+      <MultiValue>true</MultiValue>
     </ReportParameter>
   </ReportParameters>
   <ReportParametersLayout>
     <GridLayoutDefinition>
       <NumberOfColumns>4</NumberOfColumns>
-      <NumberOfRows>5</NumberOfRows>
+      <NumberOfRows>2</NumberOfRows>
       <CellDefinitions>
         <CellDefinition>
           <ColumnIndex>0</ColumnIndex>
           <RowIndex>0</RowIndex>
-          <ParameterName>desc</ParameterName>
+          <ParameterName>BranchName</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>1</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>AddressName</ParameterName>
         </CellDefinition>
         <CellDefinition>
           <ColumnIndex>2</ColumnIndex>
           <RowIndex>0</RowIndex>
-          <ParameterName>qtys</ParameterName>
-        </CellDefinition>
-        <CellDefinition>
-          <ColumnIndex>3</ColumnIndex>
-          <RowIndex>0</RowIndex>
-          <ParameterName>unitprice</ParameterName>
-        </CellDefinition>
-        <CellDefinition>
-          <ColumnIndex>0</ColumnIndex>
-          <RowIndex>1</RowIndex>
-          <ParameterName>percentdiscount</ParameterName>
-        </CellDefinition>
-        <CellDefinition>
-          <ColumnIndex>1</ColumnIndex>
-          <RowIndex>1</RowIndex>
-          <ParameterName>amount</ParameterName>
-        </CellDefinition>
-        <CellDefinition>
-          <ColumnIndex>2</ColumnIndex>
-          <RowIndex>1</RowIndex>
-          <ParameterName>docno</ParameterName>
-        </CellDefinition>
-        <CellDefinition>
-          <ColumnIndex>3</ColumnIndex>
-          <RowIndex>1</RowIndex>
-          <ParameterName>date</ParameterName>
-        </CellDefinition>
-        <CellDefinition>
-          <ColumnIndex>0</ColumnIndex>
-          <RowIndex>2</RowIndex>
-          <ParameterName>company</ParameterName>
-        </CellDefinition>
-        <CellDefinition>
-          <ColumnIndex>1</ColumnIndex>
-          <RowIndex>2</RowIndex>
-          <ParameterName>address</ParameterName>
-        </CellDefinition>
-        <CellDefinition>
-          <ColumnIndex>2</ColumnIndex>
-          <RowIndex>2</RowIndex>
-          <ParameterName>receiver</ParameterName>
-        </CellDefinition>
-        <CellDefinition>
-          <ColumnIndex>3</ColumnIndex>
-          <RowIndex>2</RowIndex>
-          <ParameterName>exec</ParameterName>
-        </CellDefinition>
-        <CellDefinition>
-          <ColumnIndex>0</ColumnIndex>
-          <RowIndex>3</RowIndex>
-          <ParameterName>subtotal</ParameterName>
-        </CellDefinition>
-        <CellDefinition>
-          <ColumnIndex>1</ColumnIndex>
-          <RowIndex>3</RowIndex>
-          <ParameterName>adddiscount</ParameterName>
-        </CellDefinition>
-        <CellDefinition>
-          <ColumnIndex>2</ColumnIndex>
-          <RowIndex>3</RowIndex>
-          <ParameterName>cashdiscount</ParameterName>
-        </CellDefinition>
-        <CellDefinition>
-          <ColumnIndex>3</ColumnIndex>
-          <RowIndex>3</RowIndex>
-          <ParameterName>grandtotal</ParameterName>
-        </CellDefinition>
-        <CellDefinition>
-          <ColumnIndex>0</ColumnIndex>
-          <RowIndex>4</RowIndex>
-          <ParameterName>inclusion</ParameterName>
-        </CellDefinition>
-        <CellDefinition>
-          <ColumnIndex>1</ColumnIndex>
-          <RowIndex>4</RowIndex>
-          <ParameterName>exclusion</ParameterName>
-        </CellDefinition>
-        <CellDefinition>
-          <ColumnIndex>2</ColumnIndex>
-          <RowIndex>4</RowIndex>
-          <ParameterName>terms</ParameterName>
+          <ParameterName>ItemDescriptions</ParameterName>
         </CellDefinition>
       </CellDefinitions>
     </GridLayoutDefinition>
