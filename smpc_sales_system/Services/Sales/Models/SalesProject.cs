@@ -35,7 +35,7 @@ namespace smpc_sales_system.Models
 
     public class SalesProjectItemSet
     {
-        public int id { get; set; }
+        public int itemset_id { get; set; }
         public int based_id { get; set; }
         public string tab_number { get; set; }
     }
@@ -76,8 +76,9 @@ namespace smpc_sales_system.Models
 
     public class SalesProjectItems
     {
-        public int id { get; set; }
+        public int items_id { get; set; }
         public int based_id { get; set; }
+        public int bom_id { get; set; }
         public string components { get; set; }
         public string model { get; set; }
         public string item_inv_type { get; set; }

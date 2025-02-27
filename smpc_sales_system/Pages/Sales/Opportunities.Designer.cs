@@ -40,6 +40,7 @@ namespace smpc_sales_system.Pages.Sales
             this.panel3 = new System.Windows.Forms.Panel();
             this.dgv_sales_opportunities = new System.Windows.Forms.DataGridView();
             this.tag = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Column1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.document_no = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.branch_name = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.project_name = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -136,6 +137,7 @@ namespace smpc_sales_system.Pages.Sales
             this.dgv_sales_opportunities.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dgv_sales_opportunities.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.tag,
+            this.Column1,
             this.document_no,
             this.branch_name,
             this.project_name,
@@ -171,10 +173,17 @@ namespace smpc_sales_system.Pages.Sales
             this.tag.HeaderText = "TAG";
             this.tag.Name = "tag";
             // 
+            // Column1
+            // 
+            this.Column1.DataPropertyName = "document_no";
+            this.Column1.HeaderText = "Initial Quote";
+            this.Column1.Name = "Column1";
+            this.Column1.ReadOnly = true;
+            // 
             // document_no
             // 
             this.document_no.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.document_no.DataPropertyName = "document_no";
+            this.document_no.DataPropertyName = "version_no";
             dataGridViewCellStyle1.BackColor = System.Drawing.Color.White;
             dataGridViewCellStyle1.ForeColor = System.Drawing.Color.Teal;
             this.document_no.DefaultCellStyle = dataGridViewCellStyle1;
@@ -304,6 +313,7 @@ namespace smpc_sales_system.Pages.Sales
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.TextBox txt_search;
         private System.Windows.Forms.DataGridViewTextBoxColumn tag;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Column1;
         private System.Windows.Forms.DataGridViewTextBoxColumn document_no;
         private System.Windows.Forms.DataGridViewTextBoxColumn branch_name;
         private System.Windows.Forms.DataGridViewTextBoxColumn project_name;

@@ -152,6 +152,7 @@ namespace smpc_sales_app.Pages.Sales
                             MessageBox.Show("PROJECT TO");
                         }
                     }
+                    IsProject(false);
                     string customerID = quotation[0]["customer_id"].ToString();
                     newRow["vat_amount"] = quotation[0]["vat_amount"].ToString();
                     newRow["gross_sales"] = quotation[0]["gross_sales"].ToString();
@@ -328,6 +329,7 @@ namespace smpc_sales_app.Pages.Sales
                             MessageBox.Show("PROJECT TO");
                         }
                     }
+                    IsProject(false);
                     MessageBox.Show("QUOTE TO");
                     string customerID = quotation[0]["customer_id"].ToString();
                     newRow["vat_amount"] = quotation[0]["vat_amount"].ToString();
@@ -537,11 +539,13 @@ namespace smpc_sales_app.Pages.Sales
                     DataRow firstRow = filteredRows[0];
                     if (firstRow["project_name"] != DBNull.Value && firstRow["project_name"].ToString() == "1")
                     {
+                        IsProject(true);
                         MessageBox.Show("PROJECT TO");
                         bindProject(documentNo, true);
                     }
                     else
                     {
+                        IsProject(false);
                         MessageBox.Show("QUOTE TO");
                         cmb_payment_terms.SelectedValue = filteredRows[0]["payment_terms_id"].ToString();
                         cmb_payment_terms.SelectedItem = filteredRows[0]["payment_terms_id"].ToString();
@@ -702,7 +706,7 @@ namespace smpc_sales_app.Pages.Sales
                 var ids = new List<int>();
                 foreach (DataRowView rowView in dataview)
                 {
-                    int id = Convert.ToInt32(rowView["id"]);
+                    int id = Convert.ToInt32(rowView["itemset_id"]);
                     ids.Add(id);
                 }
 
@@ -1164,6 +1168,19 @@ namespace smpc_sales_app.Pages.Sales
 
             this.Parent.Controls.Add(quotationPage);
             this.Dispose();
+        }
+        private void IsProject(bool isProject)
+        {
+            if (isProject)
+            {
+                dgv_order_sales.Visible = false;
+                dgv_project.Visible = true;
+            }
+            else
+            {
+                dgv_order_sales.Visible = true;
+                dgv_project.Visible = false;
+            }
         }
     }
 }

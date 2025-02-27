@@ -87,11 +87,17 @@
     <Compile Include="Models\ItemParent.cs" />
     <Compile Include="Models\PaymentTermsModel.cs" />
     <Compile Include="Models\QuotationModel.cs" />
-    <Compile Include="Pages\Sales\QPrintTemplate.cs">
+    <Compile Include="Pages\Sales\PurchaseRequisition.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="Pages\Sales\QPrintTemplate.Designer.cs">
-      <DependentUpon>QPrintTemplate.cs</DependentUpon>
+    <Compile Include="Pages\Sales\PurchaseRequisition.Designer.cs">
+      <DependentUpon>PurchaseRequisition.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\Sales\QuotationPrint.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Pages\Sales\QuotationPrint.Designer.cs">
+      <DependentUpon>QuotationPrint.cs</DependentUpon>
     </Compile>
     <Compile Include="Pages\Sales\QuotationPrintModal.cs">
       <SubType>Form</SubType>
@@ -228,11 +234,14 @@
     <EmbeddedResource Include="Pages\Sales\Orders.resx">
       <DependentUpon>Orders.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Pages\Sales\QPrintTemplate.resx">
-      <DependentUpon>QPrintTemplate.cs</DependentUpon>
+    <EmbeddedResource Include="Pages\Sales\PurchaseRequisition.resx">
+      <DependentUpon>PurchaseRequisition.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Pages\Sales\Quotation.resx">
       <DependentUpon>Quotation.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Pages\Sales\QuotationPrint.resx">
+      <DependentUpon>QuotationPrint.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Pages\Sales\QuotationPrintModal.resx">
       <DependentUpon>QuotationPrintModal.cs</DependentUpon>
