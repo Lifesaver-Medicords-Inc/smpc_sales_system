@@ -47,38 +47,29 @@ namespace smpc_sales_system.Pages.Sales
         {
             if (isBind)
             {
-                //DataView dataview = new DataView(this.transactionList);
-
                 dgv_sales_opportunities.DataSource = transactionList;
 
-                //foreach (DataRow row in this.transactionList.Rows)
-                //{
-                //    if (row["document_no"] != DBNull.Value)
-                //    {
-                //        string documentNo = row["document_no"].ToString();
-
-                //        if (!documentNo.StartsWith("Q#"))
-                //        {
-                //            row["document_no"] = "Q#" + documentNo;
-                //        }
-                //    }
-                //}
-
-                //dgv_sales_opportunities.DataSource = transactionList;
-
-                //// Hide other columns if they exist
-                //foreach (DataGridViewColumn column in dgv_sales_opportunities.Columns)
-                //{
-                //    if (column.Name != "document_no" && column.Name != "customer_name" && column.Name != "date" &&
-                //        column.Name != "tag" && column.Name != "project_name" && column.Name != "client_req" &&
-                //        column.Name != "value" && column.Name != "last_update" && column.Name != "stage" &&
-                //        column.Name != "status" && column.Name != "special_deal")
-                //    {
-                //        column.Visible = false;
-                //    }
-                //}
+                AddCombinedColumn();
             }
         }
+        private void AddCombinedColumn()
+        {
+            if (!transactionList.Columns.Contains("combined_column"))
+            {
+                transactionList.Columns.Add("combined_column", typeof(string));
+
+                // Iterate through each row and populate the new column with combined document_no and version_no
+                foreach (DataRow row in transactionList.Rows)
+                {
+                    string documentNo = row["document_no"].ToString();
+                    string versionNo = row["version_no"].ToString();
+
+                    // Combine the document_no and version_no as needed (e.g., "document_no-version_no")
+                    row["combined_column"] = $"{documentNo}-{versionNo}";
+                }
+            }
+        }
+
 
         private event HandleShowForm showQuotation;
         private void dgv_sales_opportunities_CellDoubleClick(object sender, DataGridViewCellEventArgs e)

@@ -41,7 +41,7 @@ namespace smpc_sales_system.Pages.Sales
             this.dgv_sales_opportunities = new System.Windows.Forms.DataGridView();
             this.tag = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Column1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.document_no = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.final_ref_no = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.branch_name = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.project_name = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.date = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -52,6 +52,8 @@ namespace smpc_sales_system.Pages.Sales
             this.status = new System.Windows.Forms.DataGridViewComboBoxColumn();
             this.special_deal = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Opportunity_id = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.version_no = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.combined_value = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.panel1.SuspendLayout();
             this.panel2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgv_sales_opportunities)).BeginInit();
@@ -138,7 +140,7 @@ namespace smpc_sales_system.Pages.Sales
             this.dgv_sales_opportunities.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.tag,
             this.Column1,
-            this.document_no,
+            this.final_ref_no,
             this.branch_name,
             this.project_name,
             this.date,
@@ -148,7 +150,9 @@ namespace smpc_sales_system.Pages.Sales
             this.stage,
             this.status,
             this.special_deal,
-            this.Opportunity_id});
+            this.Opportunity_id,
+            this.version_no,
+            this.combined_value});
             dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
             dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Window;
             dataGridViewCellStyle2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -175,21 +179,22 @@ namespace smpc_sales_system.Pages.Sales
             // 
             // Column1
             // 
-            this.Column1.DataPropertyName = "document_no";
-            this.Column1.HeaderText = "Initial Quote";
+            this.Column1.DataPropertyName = "combined_column";
+            this.Column1.HeaderText = "PROSPECT REF.";
             this.Column1.Name = "Column1";
             this.Column1.ReadOnly = true;
+            this.Column1.Width = 125;
             // 
-            // document_no
+            // final_ref_no
             // 
-            this.document_no.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.document_no.DataPropertyName = "version_no";
+            this.final_ref_no.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.final_ref_no.DataPropertyName = "final_ref_no";
             dataGridViewCellStyle1.BackColor = System.Drawing.Color.White;
             dataGridViewCellStyle1.ForeColor = System.Drawing.Color.Teal;
-            this.document_no.DefaultCellStyle = dataGridViewCellStyle1;
-            this.document_no.HeaderText = "QUOTE REF.";
-            this.document_no.Name = "document_no";
-            this.document_no.ReadOnly = true;
+            this.final_ref_no.DefaultCellStyle = dataGridViewCellStyle1;
+            this.final_ref_no.HeaderText = "QUOTE REF.";
+            this.final_ref_no.Name = "final_ref_no";
+            this.final_ref_no.ReadOnly = true;
             // 
             // branch_name
             // 
@@ -285,6 +290,20 @@ namespace smpc_sales_system.Pages.Sales
             this.Opportunity_id.Name = "Opportunity_id";
             this.Opportunity_id.Visible = false;
             // 
+            // version_no
+            // 
+            this.version_no.DataPropertyName = "version_no";
+            this.version_no.HeaderText = "ver_no";
+            this.version_no.Name = "version_no";
+            this.version_no.Visible = false;
+            // 
+            // combined_value
+            // 
+            this.combined_value.DataPropertyName = "document_no";
+            this.combined_value.HeaderText = "doc_no";
+            this.combined_value.Name = "combined_value";
+            this.combined_value.Visible = false;
+            // 
             // Opportunities
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -314,7 +333,7 @@ namespace smpc_sales_system.Pages.Sales
         private System.Windows.Forms.TextBox txt_search;
         private System.Windows.Forms.DataGridViewTextBoxColumn tag;
         private System.Windows.Forms.DataGridViewTextBoxColumn Column1;
-        private System.Windows.Forms.DataGridViewTextBoxColumn document_no;
+        private System.Windows.Forms.DataGridViewTextBoxColumn final_ref_no;
         private System.Windows.Forms.DataGridViewTextBoxColumn branch_name;
         private System.Windows.Forms.DataGridViewTextBoxColumn project_name;
         private System.Windows.Forms.DataGridViewTextBoxColumn date;
@@ -325,5 +344,7 @@ namespace smpc_sales_system.Pages.Sales
         private System.Windows.Forms.DataGridViewComboBoxColumn status;
         private System.Windows.Forms.DataGridViewTextBoxColumn special_deal;
         private System.Windows.Forms.DataGridViewTextBoxColumn Opportunity_id;
+        private System.Windows.Forms.DataGridViewTextBoxColumn version_no;
+        private System.Windows.Forms.DataGridViewTextBoxColumn combined_value;
     }
 }

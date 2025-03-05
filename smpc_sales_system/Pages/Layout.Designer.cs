@@ -35,11 +35,12 @@ namespace smpc_sales_app.Pages
             System.Windows.Forms.TreeNode treeNode4 = new System.Windows.Forms.TreeNode("Sales Return");
             System.Windows.Forms.TreeNode treeNode5 = new System.Windows.Forms.TreeNode("Business Partners");
             System.Windows.Forms.TreeNode treeNode6 = new System.Windows.Forms.TreeNode("Opportunities");
-            System.Windows.Forms.TreeNode treeNode7 = new System.Windows.Forms.TreeNode("Ship Type Setup");
-            System.Windows.Forms.TreeNode treeNode8 = new System.Windows.Forms.TreeNode("Application Setup");
-            System.Windows.Forms.TreeNode treeNode9 = new System.Windows.Forms.TreeNode("Setup", new System.Windows.Forms.TreeNode[] {
-            treeNode7,
-            treeNode8});
+            System.Windows.Forms.TreeNode treeNode7 = new System.Windows.Forms.TreeNode("Purchase Requisition");
+            System.Windows.Forms.TreeNode treeNode8 = new System.Windows.Forms.TreeNode("Ship Type Setup");
+            System.Windows.Forms.TreeNode treeNode9 = new System.Windows.Forms.TreeNode("Application Setup");
+            System.Windows.Forms.TreeNode treeNode10 = new System.Windows.Forms.TreeNode("Setup", new System.Windows.Forms.TreeNode[] {
+            treeNode8,
+            treeNode9});
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Layout));
             this.tabContainer = new System.Windows.Forms.TabControl();
             this.panel3 = new System.Windows.Forms.Panel();
@@ -103,12 +104,14 @@ namespace smpc_sales_app.Pages
             treeNode5.Text = "Business Partners";
             treeNode6.Name = "Opportunities";
             treeNode6.Text = "Opportunities";
-            treeNode7.Name = "Ship Type Setup";
-            treeNode7.Text = "Ship Type Setup";
-            treeNode8.Name = "Application Setup";
-            treeNode8.Text = "Application Setup";
-            treeNode9.Name = "parent";
-            treeNode9.Text = "Setup";
+            treeNode7.Name = "Purchase Requisition";
+            treeNode7.Text = "Purchase Requisition";
+            treeNode8.Name = "Ship Type Setup";
+            treeNode8.Text = "Ship Type Setup";
+            treeNode9.Name = "Application Setup";
+            treeNode9.Text = "Application Setup";
+            treeNode10.Name = "parent";
+            treeNode10.Text = "Setup";
             this.Sidebar.Nodes.AddRange(new System.Windows.Forms.TreeNode[] {
             treeNode1,
             treeNode2,
@@ -116,7 +119,8 @@ namespace smpc_sales_app.Pages
             treeNode4,
             treeNode5,
             treeNode6,
-            treeNode9});
+            treeNode7,
+            treeNode10});
             this.Sidebar.Size = new System.Drawing.Size(200, 428);
             this.Sidebar.TabIndex = 0;
             this.Sidebar.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.Sidebar_AfterSelect);
