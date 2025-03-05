@@ -39,7 +39,10 @@ namespace smpc_sales_app.Services
 
             // application setup transaction
             { "Application Setup", new Applications() },
-            { "Ship Type Setup", new ShipTypeSetup() }
+            { "Ship Type Setup", new ShipTypeSetup() },
+
+            //purchasing 
+            { "Purchase Requisition", new PurchaseRequisition() }
 
 
         };

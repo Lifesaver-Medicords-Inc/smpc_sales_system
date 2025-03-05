@@ -537,14 +537,14 @@ namespace smpc_sales_app.Pages.Sales
                         HeaderList.Rows.Add(newRow);
                     }
                     DataRow firstRow = filteredRows[0];
-                    if (firstRow["project_name"] != DBNull.Value && firstRow["project_name"].ToString() == "1")
-                    {
-                        IsProject(true);
-                        MessageBox.Show("PROJECT TO");
-                        bindProject(documentNo, true);
-                    }
-                    else
-                    {
+                    //if (firstRow["project_name"] != DBNull.Value && firstRow["project_name"].ToString() == "1")
+                    //{
+                    //    IsProject(true);
+                    //    MessageBox.Show("PROJECT TO");
+                    //    bindProject(documentNo, true);
+                    //}
+                    //else
+                    //{
                         IsProject(false);
                         MessageBox.Show("QUOTE TO");
                         cmb_payment_terms.SelectedValue = filteredRows[0]["payment_terms_id"].ToString();
@@ -606,7 +606,7 @@ namespace smpc_sales_app.Pages.Sales
 
                         dgv_order_sales.DataSource = dataview;
                     }
-                }
+                //}
 
                 
             }
@@ -831,7 +831,6 @@ namespace smpc_sales_app.Pages.Sales
                     txt_status.Text = "-";
                 }
                 
-
                 if (missingFields.Count > 0)
                 {
                     string missingFieldsMessage = "Please fill in the following fields: " + string.Join(", ", missingFields);
@@ -934,8 +933,13 @@ namespace smpc_sales_app.Pages.Sales
                     if (!isExistingDoc) // If it's an insert
                     {
                         data.Add("quotation_quick_id", int.Parse(item["quick_quote_id"].ToString()));
-                    }
+                    }  
 
+                    data.Add("qty", int.Parse(item["qtydgv"].ToString()));
+                    data.Add("item_code", (item["itemcodedgv"].ToString()));
+                    data.Add("item_description", (item["shortdescdgv"].ToString()));
+                    data.Add("list_price", float.Parse(item["unitpricedgv"].ToString()));
+                    data.Add("total_price", float.Parse(item["linetotaldgv"].ToString()));
                     data.Add("item_id", int.Parse(item["itemid"].ToString()));
                     data.Add("delivery_preference", item["delivery_preference"].ToString());
                     data.Add("status", item["status"].ToString());
@@ -1127,15 +1131,15 @@ namespace smpc_sales_app.Pages.Sales
         }
         private void CalculateTotalPrice()
         {
-            if (!dgv_order_sales.Columns.Contains("linetotal"))
+            if (!dgv_order_sales.Columns.Contains("linetotaldgv"))
             {
                 MessageBox.Show("The 'line_total' column is missing in the DataGridView.");
                 return;
             }
 
             decimal total = dgv_order_sales.Rows.Cast<DataGridViewRow>()
-                                .Where(row => row.Cells["linetotal"].Value != null && decimal.TryParse(row.Cells["linetotal"].Value.ToString(), out _))
-                                .Sum(row => Convert.ToDecimal(row.Cells["linetotal"].Value));
+                                .Where(row => row.Cells["linetotaldgv"].Value != null && decimal.TryParse(row.Cells["linetotaldgv"].Value.ToString(), out _))
+                                .Sum(row => Convert.ToDecimal(row.Cells["linetotaldgv"].Value));
 
             txt_total.Text = total.ToString("#,0.00");
         }
