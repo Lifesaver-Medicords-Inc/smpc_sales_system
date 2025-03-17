@@ -79,6 +79,7 @@ namespace smpc_sales_system.Models
         public int items_id { get; set; }
         public int based_id { get; set; }
         public int bom_id { get; set; }
+        public int item_id { get; set; }
         public string components { get; set; }
         public string model { get; set; }
         public string item_inv_type { get; set; }
@@ -97,7 +98,6 @@ namespace smpc_sales_system.Models
         public List<SalesProjectHistory> sales_project_history { get; set; }
         public List<SalesProjectItemSet> sales_project_item_set { get; set; }
         public List<SalesProjectContent> sales_project_content { get; set; }
-
         public List<SalesProjectAdvancedConditions> sales_project_content_advanced_condition { get; set; }
         public List<SalesProjectItems> sales_project_items { get; set; }
 

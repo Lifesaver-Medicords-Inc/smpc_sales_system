@@ -29,18 +29,21 @@ namespace smpc_sales_system.Pages.Sales
         /// </summary>
         private void InitializeComponent()
         {
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle7 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle5 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle6 = new System.Windows.Forms.DataGridViewCellStyle();
             this.panel1 = new System.Windows.Forms.Panel();
-            this.btn_find = new System.Windows.Forms.Button();
             this.label2 = new System.Windows.Forms.Label();
             this.txt_search = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
             this.panel2 = new System.Windows.Forms.Panel();
-            this.panel3 = new System.Windows.Forms.Panel();
             this.dgv_sales_opportunities = new System.Windows.Forms.DataGridView();
             this.tag = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Column1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.prospectref = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.final_ref_no = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.branch_name = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.project_name = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -53,7 +56,7 @@ namespace smpc_sales_system.Pages.Sales
             this.special_deal = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Opportunity_id = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.version_no = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.combined_value = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.document_no = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.panel1.SuspendLayout();
             this.panel2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgv_sales_opportunities)).BeginInit();
@@ -61,7 +64,6 @@ namespace smpc_sales_system.Pages.Sales
             // 
             // panel1
             // 
-            this.panel1.Controls.Add(this.btn_find);
             this.panel1.Controls.Add(this.label2);
             this.panel1.Controls.Add(this.txt_search);
             this.panel1.Controls.Add(this.label1);
@@ -71,27 +73,10 @@ namespace smpc_sales_system.Pages.Sales
             this.panel1.Size = new System.Drawing.Size(1143, 64);
             this.panel1.TabIndex = 0;
             // 
-            // btn_find
-            // 
-            this.btn_find.BackColor = System.Drawing.Color.DimGray;
-            this.btn_find.FlatAppearance.BorderColor = System.Drawing.Color.White;
-            this.btn_find.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
-            this.btn_find.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(255)))), ((int)(((byte)(128)))));
-            this.btn_find.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btn_find.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btn_find.ForeColor = System.Drawing.Color.White;
-            this.btn_find.Location = new System.Drawing.Point(1070, 23);
-            this.btn_find.Name = "btn_find";
-            this.btn_find.Size = new System.Drawing.Size(73, 22);
-            this.btn_find.TabIndex = 106;
-            this.btn_find.Text = "Find";
-            this.btn_find.UseVisualStyleBackColor = false;
-            this.btn_find.Click += new System.EventHandler(this.btn_find_Click);
-            // 
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(820, 27);
+            this.label2.Location = new System.Drawing.Point(880, 27);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(41, 13);
             this.label2.TabIndex = 3;
@@ -99,10 +84,11 @@ namespace smpc_sales_system.Pages.Sales
             // 
             // txt_search
             // 
-            this.txt_search.Location = new System.Drawing.Point(861, 24);
+            this.txt_search.Location = new System.Drawing.Point(921, 24);
             this.txt_search.Name = "txt_search";
             this.txt_search.Size = new System.Drawing.Size(209, 20);
             this.txt_search.TabIndex = 2;
+            this.txt_search.TextChanged += new System.EventHandler(this.txt_search_TextChanged);
             // 
             // label1
             // 
@@ -116,21 +102,12 @@ namespace smpc_sales_system.Pages.Sales
             // 
             // panel2
             // 
-            this.panel2.Controls.Add(this.panel3);
             this.panel2.Controls.Add(this.dgv_sales_opportunities);
             this.panel2.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panel2.Location = new System.Drawing.Point(0, 64);
             this.panel2.Name = "panel2";
-            this.panel2.Size = new System.Drawing.Size(1143, 535);
+            this.panel2.Size = new System.Drawing.Size(1143, 722);
             this.panel2.TabIndex = 1;
-            // 
-            // panel3
-            // 
-            this.panel3.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.panel3.Location = new System.Drawing.Point(0, 489);
-            this.panel3.Name = "panel3";
-            this.panel3.Size = new System.Drawing.Size(1143, 46);
-            this.panel3.TabIndex = 1;
             // 
             // dgv_sales_opportunities
             // 
@@ -139,7 +116,7 @@ namespace smpc_sales_system.Pages.Sales
             this.dgv_sales_opportunities.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dgv_sales_opportunities.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.tag,
-            this.Column1,
+            this.prospectref,
             this.final_ref_no,
             this.branch_name,
             this.project_name,
@@ -152,19 +129,19 @@ namespace smpc_sales_system.Pages.Sales
             this.special_deal,
             this.Opportunity_id,
             this.version_no,
-            this.combined_value});
-            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.ControlText;
-            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.dgv_sales_opportunities.DefaultCellStyle = dataGridViewCellStyle2;
+            this.document_no});
+            dataGridViewCellStyle7.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle7.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle7.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle7.ForeColor = System.Drawing.SystemColors.ControlText;
+            dataGridViewCellStyle7.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle7.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle7.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.dgv_sales_opportunities.DefaultCellStyle = dataGridViewCellStyle7;
             this.dgv_sales_opportunities.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dgv_sales_opportunities.Location = new System.Drawing.Point(0, 0);
             this.dgv_sales_opportunities.Name = "dgv_sales_opportunities";
-            this.dgv_sales_opportunities.Size = new System.Drawing.Size(1143, 535);
+            this.dgv_sales_opportunities.Size = new System.Drawing.Size(1143, 722);
             this.dgv_sales_opportunities.TabIndex = 0;
             this.dgv_sales_opportunities.CellBeginEdit += new System.Windows.Forms.DataGridViewCellCancelEventHandler(this.dgv_sales_opportunities_CellBeginEdit);
             this.dgv_sales_opportunities.CellDoubleClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgv_sales_opportunities_CellDoubleClick);
@@ -177,21 +154,24 @@ namespace smpc_sales_system.Pages.Sales
             this.tag.HeaderText = "TAG";
             this.tag.Name = "tag";
             // 
-            // Column1
+            // prospectref
             // 
-            this.Column1.DataPropertyName = "combined_column";
-            this.Column1.HeaderText = "PROSPECT REF.";
-            this.Column1.Name = "Column1";
-            this.Column1.ReadOnly = true;
-            this.Column1.Width = 125;
+            this.prospectref.DataPropertyName = "combined_column";
+            dataGridViewCellStyle1.BackColor = System.Drawing.Color.Gainsboro;
+            dataGridViewCellStyle1.ForeColor = System.Drawing.Color.Teal;
+            this.prospectref.DefaultCellStyle = dataGridViewCellStyle1;
+            this.prospectref.HeaderText = "PROSPECT REF.";
+            this.prospectref.Name = "prospectref";
+            this.prospectref.ReadOnly = true;
+            this.prospectref.Width = 125;
             // 
             // final_ref_no
             // 
             this.final_ref_no.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
             this.final_ref_no.DataPropertyName = "final_ref_no";
-            dataGridViewCellStyle1.BackColor = System.Drawing.Color.White;
-            dataGridViewCellStyle1.ForeColor = System.Drawing.Color.Teal;
-            this.final_ref_no.DefaultCellStyle = dataGridViewCellStyle1;
+            dataGridViewCellStyle2.BackColor = System.Drawing.Color.Gainsboro;
+            dataGridViewCellStyle2.ForeColor = System.Drawing.Color.Teal;
+            this.final_ref_no.DefaultCellStyle = dataGridViewCellStyle2;
             this.final_ref_no.HeaderText = "QUOTE REF.";
             this.final_ref_no.Name = "final_ref_no";
             this.final_ref_no.ReadOnly = true;
@@ -200,6 +180,8 @@ namespace smpc_sales_system.Pages.Sales
             // 
             this.branch_name.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
             this.branch_name.DataPropertyName = "branch_name";
+            dataGridViewCellStyle3.BackColor = System.Drawing.Color.Gainsboro;
+            this.branch_name.DefaultCellStyle = dataGridViewCellStyle3;
             this.branch_name.HeaderText = "COMPANY NAME";
             this.branch_name.Name = "branch_name";
             this.branch_name.ReadOnly = true;
@@ -208,6 +190,8 @@ namespace smpc_sales_system.Pages.Sales
             // 
             this.project_name.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
             this.project_name.DataPropertyName = "project_name";
+            dataGridViewCellStyle4.BackColor = System.Drawing.Color.Gainsboro;
+            this.project_name.DefaultCellStyle = dataGridViewCellStyle4;
             this.project_name.HeaderText = "PROJECT NAME";
             this.project_name.Name = "project_name";
             this.project_name.ReadOnly = true;
@@ -216,6 +200,8 @@ namespace smpc_sales_system.Pages.Sales
             // 
             this.date.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
             this.date.DataPropertyName = "date";
+            dataGridViewCellStyle5.BackColor = System.Drawing.Color.Gainsboro;
+            this.date.DefaultCellStyle = dataGridViewCellStyle5;
             this.date.HeaderText = "INQUIRY DATE";
             this.date.Name = "date";
             this.date.ReadOnly = true;
@@ -230,7 +216,11 @@ namespace smpc_sales_system.Pages.Sales
             // value
             // 
             this.value.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.value.DataPropertyName = "value";
+            this.value.DataPropertyName = "total_amount_due";
+            dataGridViewCellStyle6.BackColor = System.Drawing.Color.Gainsboro;
+            dataGridViewCellStyle6.Format = "C2";
+            dataGridViewCellStyle6.NullValue = null;
+            this.value.DefaultCellStyle = dataGridViewCellStyle6;
             this.value.HeaderText = "VALUE";
             this.value.Name = "value";
             this.value.ReadOnly = true;
@@ -297,12 +287,12 @@ namespace smpc_sales_system.Pages.Sales
             this.version_no.Name = "version_no";
             this.version_no.Visible = false;
             // 
-            // combined_value
+            // document_no
             // 
-            this.combined_value.DataPropertyName = "document_no";
-            this.combined_value.HeaderText = "doc_no";
-            this.combined_value.Name = "combined_value";
-            this.combined_value.Visible = false;
+            this.document_no.DataPropertyName = "document_no";
+            this.document_no.HeaderText = "doc_no";
+            this.document_no.Name = "document_no";
+            this.document_no.Visible = false;
             // 
             // Opportunities
             // 
@@ -311,7 +301,7 @@ namespace smpc_sales_system.Pages.Sales
             this.Controls.Add(this.panel2);
             this.Controls.Add(this.panel1);
             this.Name = "Opportunities";
-            this.Size = new System.Drawing.Size(1143, 599);
+            this.Size = new System.Drawing.Size(1143, 786);
             this.Load += new System.EventHandler(this.Opportunities_Load);
             this.panel1.ResumeLayout(false);
             this.panel1.PerformLayout();
@@ -327,12 +317,10 @@ namespace smpc_sales_system.Pages.Sales
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Panel panel2;
         private System.Windows.Forms.DataGridView dgv_sales_opportunities;
-        private System.Windows.Forms.Panel panel3;
-        private System.Windows.Forms.Button btn_find;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.TextBox txt_search;
         private System.Windows.Forms.DataGridViewTextBoxColumn tag;
-        private System.Windows.Forms.DataGridViewTextBoxColumn Column1;
+        private System.Windows.Forms.DataGridViewTextBoxColumn prospectref;
         private System.Windows.Forms.DataGridViewTextBoxColumn final_ref_no;
         private System.Windows.Forms.DataGridViewTextBoxColumn branch_name;
         private System.Windows.Forms.DataGridViewTextBoxColumn project_name;
@@ -345,6 +333,6 @@ namespace smpc_sales_system.Pages.Sales
         private System.Windows.Forms.DataGridViewTextBoxColumn special_deal;
         private System.Windows.Forms.DataGridViewTextBoxColumn Opportunity_id;
         private System.Windows.Forms.DataGridViewTextBoxColumn version_no;
-        private System.Windows.Forms.DataGridViewTextBoxColumn combined_value;
+        private System.Windows.Forms.DataGridViewTextBoxColumn document_no;
     }
 }

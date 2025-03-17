@@ -62,7 +62,7 @@ namespace smpc_sales_app.Pages
             fetchData();
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        private void txt_search_TextChanged(object sender, EventArgs e)
         {
             string searchval = txt_search.Text.ToString();
             var data = Helpers.FilterDataTable(dt, searchval, "status", "doc_no", "pr_id");

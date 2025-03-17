@@ -24,7 +24,7 @@ namespace smpc_sales_system.Services.Sales.Models
         public string project_name { get; set; }
         public string date { get; set; }
         public string client_req { get; set; }
-        public string value { get; set; }
+        public float total_amount_due { get; set; }
         public string last_update { get; set; }
         public string stage { get; set; }
         public string status { get; set; }
