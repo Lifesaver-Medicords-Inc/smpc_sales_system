@@ -27,5 +27,9 @@ namespace smpc_sales_system.Services.Sales.Models
 		public string sales_executive { get; set; }
 		public string contact_no { get; set; }
 		public string remarks { get; set; }
-    }
+		public string project_name { get; set; }
+		public float gross_sales { get; set; }
+		public float vat_amount { get; set; }
+		public float total_amount_due { get; set; }
+	}
 }

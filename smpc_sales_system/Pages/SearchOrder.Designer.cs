@@ -36,7 +36,6 @@ namespace smpc_sales_system.Pages
             this.d_quotation = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.d_status = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.panel1 = new System.Windows.Forms.Panel();
-            this.button1 = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
             this.txt_search = new System.Windows.Forms.TextBox();
             this.lbl_setup_title = new System.Windows.Forms.Label();
@@ -103,7 +102,6 @@ namespace smpc_sales_system.Pages
             // 
             // panel1
             // 
-            this.panel1.Controls.Add(this.button1);
             this.panel1.Controls.Add(this.label1);
             this.panel1.Controls.Add(this.txt_search);
             this.panel1.Controls.Add(this.lbl_setup_title);
@@ -113,22 +111,10 @@ namespace smpc_sales_system.Pages
             this.panel1.Size = new System.Drawing.Size(478, 47);
             this.panel1.TabIndex = 3;
             // 
-            // button1
-            // 
-            this.button1.BackgroundImage = global::smpc_sales_system.Properties.Resources.search;
-            this.button1.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
-            this.button1.Image = global::smpc_sales_system.Properties.Resources.search;
-            this.button1.Location = new System.Drawing.Point(360, 10);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(26, 25);
-            this.button1.TabIndex = 3;
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.button1_Click);
-            // 
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(194, 16);
+            this.label1.Location = new System.Drawing.Point(306, 16);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(44, 13);
             this.label1.TabIndex = 2;
@@ -136,10 +122,11 @@ namespace smpc_sales_system.Pages
             // 
             // txt_search
             // 
-            this.txt_search.Location = new System.Drawing.Point(239, 12);
+            this.txt_search.Location = new System.Drawing.Point(351, 12);
             this.txt_search.Name = "txt_search";
             this.txt_search.Size = new System.Drawing.Size(115, 20);
             this.txt_search.TabIndex = 1;
+            this.txt_search.TextChanged += new System.EventHandler(this.txt_search_TextChanged);
             // 
             // lbl_setup_title
             // 
@@ -206,7 +193,6 @@ namespace smpc_sales_system.Pages
 
         private System.Windows.Forms.DataGridView dgv_application_setup;
         private System.Windows.Forms.Panel panel1;
-        private System.Windows.Forms.Button button1;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.TextBox txt_search;
         private System.Windows.Forms.Label lbl_setup_title;

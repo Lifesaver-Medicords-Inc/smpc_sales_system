@@ -31,12 +31,12 @@ namespace smpc_sales_system.Pages.Sales
         }
         public DataTable transactionList { get; set; } = new DataTable();
         public DataTable opportunities { get; set; } = new DataTable();
-        private async void fetchQuotationDetails()
+        private async Task fetchQuotationDetails()
         {
             transactionList = await OpportunityService.GetAsDatatable();
 
             //childList = JsonHelper.ToDataTable(data.SalesQuotationQuick);
-
+            AddCombinedColumn();
             if (transactionList != null)
             {
                 bindQuotation(true);
@@ -48,8 +48,6 @@ namespace smpc_sales_system.Pages.Sales
             if (isBind)
             {
                 dgv_sales_opportunities.DataSource = transactionList;
-
-                AddCombinedColumn();
             }
         }
         private void AddCombinedColumn()
@@ -65,7 +63,7 @@ namespace smpc_sales_system.Pages.Sales
                     string versionNo = row["version_no"].ToString();
 
                     // Combine the document_no and version_no as needed (e.g., "document_no-version_no")
-                    row["combined_column"] = $"{documentNo}-{versionNo}";
+                    row["combined_column"] = $"Q#{documentNo}-{versionNo}";
                 }
             }
         }
@@ -74,16 +72,17 @@ namespace smpc_sales_system.Pages.Sales
         private event HandleShowForm showQuotation;
         private void dgv_sales_opportunities_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
-            if (dgv_sales_opportunities.Columns[e.ColumnIndex].Name == "document_no") 
+            if (dgv_sales_opportunities.Columns[e.ColumnIndex].Name == "prospectref") 
             {
                 if (e.RowIndex >= 0)
                 {
                     string documentNo = dgv_sales_opportunities.Rows[e.RowIndex].Cells["document_no"].Value.ToString();
+                    string versionNo = dgv_sales_opportunities.Rows[e.RowIndex].Cells["version_no"].Value.ToString();
                     if (documentNo.StartsWith("Q#"))
                     {
                         documentNo = documentNo.Substring(2);
                     }
-                    Quotation quotationPage = new Quotation(documentNo);
+                    Quotation quotationPage = new Quotation(documentNo, versionNo);
 
                     this.Parent.Controls.Add(quotationPage);
 
@@ -94,7 +93,8 @@ namespace smpc_sales_system.Pages.Sales
         }
         private async void Opportunities_Load(object sender, EventArgs e)
         {
-            fetchQuotationDetails();
+            await fetchQuotationDetails();
+            
         }
 
         ApiResponseModel response;
@@ -128,7 +128,7 @@ namespace smpc_sales_system.Pages.Sales
                 Dictionary<string, object> data = new Dictionary<string, object>();
 
                 // Define the columns to be processed
-                string[] requiredColumns = { "tag", "document_no", "client_req", "stage", "status", "special_deal", "last_update" };
+                string[] requiredColumns = { "tag", "document_no", "client_req", "stage", "status", "special_deal", "last_update", "version_no" };
 
                 // Populate the data dictionary with the required columns' values
                 foreach (var column in requiredColumns)
@@ -137,14 +137,17 @@ namespace smpc_sales_system.Pages.Sales
                     data[column] = string.IsNullOrWhiteSpace(columnValue) ? null : columnValue;
                 }
 
-                // Extract document_no from the edited row
+                // Extract document_no and version_no from the edited row
                 var documentNo = data.ContainsKey("document_no") ? data["document_no"] : null;
+                var versionNo = data.ContainsKey("version_no") ? data["version_no"] : null;
 
-                if (documentNo != null)
+                if (documentNo != null && versionNo != null)
                 {
-                    // Check for the row with the corresponding document_no
+                    // Check if a row with the same document_no and version_no exists in the opportunity list
                     var matchingRow = opportunity.FirstOrDefault(d =>
-                    d.ContainsKey("document_no") && d["document_no"]?.ToString().Trim() == documentNo.ToString().Trim());
+                        d.ContainsKey("document_no") && d.ContainsKey("version_no") &&
+                        d["document_no"]?.ToString().Trim() == documentNo.ToString().Trim() &&
+                        d["version_no"]?.ToString().Trim() == versionNo.ToString().Trim());
 
                     if (matchingRow != null)
                     {
@@ -177,22 +180,20 @@ namespace smpc_sales_system.Pages.Sales
                             }
                         }
                     }
+                    else
+                    {
+                        MessageBox.Show("Document No. and version_no cannot be null.");
+                    }
                 }
                 else
                 {
-                    MessageBox.Show("Document No. cannot be null.");
+                    MessageBox.Show("Document No. and Version No. cannot be null.");
                 }
             }
             catch (Exception ex)
             {
                 MessageBox.Show("Error: " + ex.Message);
             }
-        }
-        private void btn_find_Click(object sender, EventArgs e)
-        {
-            string searchval = txt_search.Text.ToString();
-            var data = Helpers.FilterDataTable(transactionList, searchval, "tag", "document_no", "stage", "status", "special_deal", "branch_name", "project_name", "last_update");
-            dgv_sales_opportunities.DataSource = data;
         }
         private DateTimePicker dateTimePicker;
 
@@ -241,12 +242,15 @@ namespace smpc_sales_system.Pages.Sales
                     // Save the selected date in the DataGridView cell, removing the time part
                     dgv_sales_opportunities.Rows[e.RowIndex].Cells[e.ColumnIndex].Value = dateTimePicker.Value.Date;
 
-                    // Remove the DateTimePicker control after selection
-                    dgv_sales_opportunities.Controls.Remove(dateTimePicker);
                 };
             }
         }
 
-
+        private void txt_search_TextChanged(object sender, EventArgs e)
+        {
+            string searchval = txt_search.Text.ToString();
+            var data = Helpers.FilterDataTable(transactionList, searchval, "tag", "document_no", "stage", "status", "special_deal", "branch_name", "project_name", "last_update");
+            dgv_sales_opportunities.DataSource = data;
+        }
     }
 }

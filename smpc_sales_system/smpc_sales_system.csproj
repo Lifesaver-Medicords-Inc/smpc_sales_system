@@ -34,19 +34,19 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.ReportViewer.Common, Version=15.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.ReportingServices.ReportViewerControl.Winforms.150.1620.0\lib\net40\Microsoft.ReportViewer.Common.dll</HintPath>
+      <HintPath>..\packages\Microsoft.ReportingServices.ReportViewerControl.Winforms.150.1652.0\lib\net40\Microsoft.ReportViewer.Common.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.ReportViewer.DataVisualization, Version=15.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.ReportingServices.ReportViewerControl.Winforms.150.1620.0\lib\net40\Microsoft.ReportViewer.DataVisualization.dll</HintPath>
+      <HintPath>..\packages\Microsoft.ReportingServices.ReportViewerControl.Winforms.150.1652.0\lib\net40\Microsoft.ReportViewer.DataVisualization.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.ReportViewer.Design, Version=15.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.ReportingServices.ReportViewerControl.Winforms.150.1620.0\lib\net40\Microsoft.ReportViewer.Design.dll</HintPath>
+      <HintPath>..\packages\Microsoft.ReportingServices.ReportViewerControl.Winforms.150.1652.0\lib\net40\Microsoft.ReportViewer.Design.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.ReportViewer.ProcessingObjectModel, Version=15.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.ReportingServices.ReportViewerControl.Winforms.150.1620.0\lib\net40\Microsoft.ReportViewer.ProcessingObjectModel.dll</HintPath>
+      <HintPath>..\packages\Microsoft.ReportingServices.ReportViewerControl.Winforms.150.1652.0\lib\net40\Microsoft.ReportViewer.ProcessingObjectModel.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.ReportViewer.WinForms, Version=15.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.ReportingServices.ReportViewerControl.Winforms.150.1620.0\lib\net40\Microsoft.ReportViewer.WinForms.dll</HintPath>
+      <HintPath>..\packages\Microsoft.ReportingServices.ReportViewerControl.Winforms.150.1652.0\lib\net40\Microsoft.ReportViewer.WinForms.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.SqlServer.Types, Version=14.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.SqlServer.Types.14.0.314.76\lib\net40\Microsoft.SqlServer.Types.dll</HintPath>
@@ -99,17 +99,11 @@
     <Compile Include="Pages\Sales\PurchaseRequisition.Designer.cs">
       <DependentUpon>PurchaseRequisition.cs</DependentUpon>
     </Compile>
-    <Compile Include="Pages\Sales\QuotationPrint.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="Pages\Sales\QuotationPrint.Designer.cs">
-      <DependentUpon>QuotationPrint.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Pages\Sales\QuotationPrintModal.cs">
+    <Compile Include="Pages\Sales\SalesPrintModal.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Pages\Sales\QuotationPrintModal.Designer.cs">
-      <DependentUpon>QuotationPrintModal.cs</DependentUpon>
+    <Compile Include="Pages\Sales\SalesPrintModal.Designer.cs">
+      <DependentUpon>SalesPrintModal.cs</DependentUpon>
     </Compile>
     <Compile Include="Pages\SearchOrder.cs">
       <SubType>Form</SubType>
@@ -192,13 +186,17 @@
     <Compile Include="Services\Helpers\RequestToApi.cs" />
     <Compile Include="Services\RoutesServices.cs" />
     <Compile Include="Services\Sales\ApplicationService.cs" />
+    <Compile Include="Services\Sales\BomServices.cs" />
     <Compile Include="Services\Sales\BpiService.cs" />
+    <Compile Include="Services\Sales\ItemListBomServices.cs" />
     <Compile Include="Services\Sales\ItemService.cs" />
     <Compile Include="Services\Sales\Models\AdditionalSpecsModel.cs" />
     <Compile Include="Services\Sales\Models\ApplicationModel.cs" />
+    <Compile Include="Services\Sales\Models\BomClass.cs" />
     <Compile Include="Services\Sales\Models\BpiCustomer.cs" />
     <Compile Include="Services\Sales\Models\Combined.cs" />
     <Compile Include="Services\Sales\Models\GetBpiList.cs" />
+    <Compile Include="Services\Sales\Models\ItemBomList.cs" />
     <Compile Include="Services\Sales\Models\OpportunityModel.cs" />
     <Compile Include="Services\Sales\Models\ItemModel.cs" />
     <Compile Include="Services\Sales\Models\ItemSpecsModel.cs" />
@@ -255,12 +253,10 @@
     <EmbeddedResource Include="Pages\Sales\Quotation.resx">
       <DependentUpon>Quotation.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Pages\Sales\QuotationPrint.resx">
-      <DependentUpon>QuotationPrint.cs</DependentUpon>
+    <EmbeddedResource Include="Pages\Sales\SalesPrintModal.resx">
+      <DependentUpon>SalesPrintModal.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Pages\Sales\QuotationPrintModal.resx">
-      <DependentUpon>QuotationPrintModal.cs</DependentUpon>
-    </EmbeddedResource>
+    <EmbeddedResource Include="Pages\Sales\OrderReport.rdlc" />
     <EmbeddedResource Include="Pages\Sales\QuotationReport.rdlc" />
     <EmbeddedResource Include="Pages\Sales\SetupSelectionModal.resx">
       <DependentUpon>SetupSelectionModal.cs</DependentUpon>
@@ -289,9 +285,9 @@
     </Compile>
     <EmbeddedResource Include="Reports\Quotation\Quotation.rdlc" />
     <EmbeddedResource Include="Reports\Report1.rdlc" />
+    <None Include="Data\TempFiles\folder1\Dauigoy_WRP_#8.pdf" />
     <None Include="packages.config" />
-    <None Include="Properties\DataSources\smpc_sales_system.Services.Sales.Models.SalesQuotationList.datasource" />
-    <None Include="Properties\DataSources\smpc_sales_system.Services.Sales.Models.SalesQuotationPrintModel.datasource" />
+    <None Include="Properties\DataSources\smpc_sales_system.Services.Sales.Models.OrderList.datasource" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -306,6 +302,7 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Data\TempFiles\folder2\" />
     <Folder Include="Pages\Setup\" />
   </ItemGroup>
   <ItemGroup>
@@ -315,6 +312,8 @@
     <None Include="Resources\check.png" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Data\TempFiles\folder1\folder1.1\Pushing.PNG" />
+    <None Include="Resources\FileIcon.png" />
     <Content Include="SqlServerTypes\readme.htm" />
     <Content Include="SqlServerTypes\x64\msvcr120.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

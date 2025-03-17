@@ -24,8 +24,9 @@ namespace smpc_sales_app.Pages.Sales
 
         private int SelectedRow = 0;
         private string documentNo;
+        private string version_no;
 
-        public Quotation(string documentNo = null)
+        public Quotation(string documentNo = null, string version_no = null)
         {
             InitializeComponent();
 
@@ -33,6 +34,7 @@ namespace smpc_sales_app.Pages.Sales
             // CALL THE DEFAULT VALUES OF DATAGRIDVIEW
             //this.QuickQuotesDgvDefaultValues();
             this.documentNo = documentNo;
+            this.version_no = version_no;
         }
 
         private void panel3_Paint(object sender, PaintEventArgs e)
@@ -147,7 +149,7 @@ namespace smpc_sales_app.Pages.Sales
             }
         }
 
-        private async void fetchQuotationDetailsByDocumentNo(string documentNo)
+        private async void fetchQuotationDetailsByDocumentNo(string documentNo, string version_no)
         {
             // Get all the quotations from the service
             SalesQuotationList data = await QuotationService.GetQuotations();
@@ -160,7 +162,7 @@ namespace smpc_sales_app.Pages.Sales
             }
             // Filter the SalesQuotation and SalesQuotationQuick based on the converted documentNo
             var filteredSalesQuotation = data.SalesQuotation
-                .Where(q => q.document_no == documentNo)  // Assuming document_no is int
+                .Where(q => q.document_no == documentNo && q.version_no == version_no)  // Assuming document_no is int
                 .ToList();
 
             var quotationId = filteredSalesQuotation.FirstOrDefault()?.id;
@@ -486,7 +488,7 @@ namespace smpc_sales_app.Pages.Sales
 
                 this.tabControl.ItemSize = new Size(0, 0);
 
-                fetchQuotationDetailsByDocumentNo(documentNo);
+                fetchQuotationDetailsByDocumentNo(documentNo, version_no);
                 bs_unit.DataSource = CacheData.UoM;
             }
             else
@@ -941,19 +943,12 @@ namespace smpc_sales_app.Pages.Sales
         private void btn_print_Click(object sender, EventArgs e)
         {
             string documentNo = txt_document_no.Text.Trim();
-            QuotationPrintModal ordersPage = new QuotationPrintModal(this, documentNo);
+            SalesPrintModal printPage = new SalesPrintModal(true, documentNo);
             int screenHeight = Screen.PrimaryScreen.Bounds.Height;
-            ordersPage.Height = (int)(screenHeight);
+            printPage.Height = (int)(screenHeight);
             // Set the parent form to be non-interactive while the modal is active
-            ordersPage.StartPosition = FormStartPosition.CenterParent; // Optional: centers the modal
-            ordersPage.ShowDialog();
-        }
-        public void ShowOrdersControl(string documentNo)
-        {
-            Orders ordersPage = new Orders(documentNo);
-            this.Parent.Controls.Add(ordersPage);
-
-            this.Hide();
+            printPage.StartPosition = FormStartPosition.CenterParent; // Optional: centers the modal
+            printPage.ShowDialog();
         }
     }
 }

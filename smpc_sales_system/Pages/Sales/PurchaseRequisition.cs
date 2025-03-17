@@ -119,7 +119,6 @@ fetchItemData()
             fetchItemThings();
             fetchUOM();
             fetchPR();
-            dtp_date_required.MinDate = DateTime.Today;
         }
 
         private void btn_prev_Click(object sender, EventArgs e)
@@ -324,6 +323,8 @@ fetchItemData()
                     }
                     data.Add("item_id", int.Parse(item["itemiddgv"].ToString()));
                     data.Add("qty", int.Parse(item["qtydgv"].ToString()));
+                    data.Add("item_code", (item["item_code"].ToString()));
+                    data.Add("item_description", (item["description"].ToString()));
                     data.Add("status", (item["status"].ToString()));
 
                     // Add the child data to the list

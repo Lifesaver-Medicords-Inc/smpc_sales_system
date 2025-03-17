@@ -10,7 +10,7 @@ namespace smpc_sales_system.Services.Sales.Models
     {
         public int id { get; set; }
         public int customer_id { get; set; }
-        public int project_name { get; set; }
+        public string project_name { get; set; }
         public int application_id { get; set; }
         public int payment_terms_id { get; set; }
         public int ship_type_id { get; set; }

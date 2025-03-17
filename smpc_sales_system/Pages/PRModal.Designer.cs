@@ -30,6 +30,8 @@ namespace smpc_sales_app.Pages
         private void InitializeComponent()
         {
             this.pnl_title = new System.Windows.Forms.Panel();
+            this.label2 = new System.Windows.Forms.Label();
+            this.txt_search = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
             this.pnl_dgv = new System.Windows.Forms.Panel();
             this.dgv_prlist = new System.Windows.Forms.DataGridView();
@@ -39,9 +41,6 @@ namespace smpc_sales_app.Pages
             this.doc_no = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.status = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.ds_item_list = new System.Data.DataSet();
-            this.button1 = new System.Windows.Forms.Button();
-            this.label2 = new System.Windows.Forms.Label();
-            this.txt_search = new System.Windows.Forms.TextBox();
             this.pnl_title.SuspendLayout();
             this.pnl_dgv.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgv_prlist)).BeginInit();
@@ -50,7 +49,6 @@ namespace smpc_sales_app.Pages
             // 
             // pnl_title
             // 
-            this.pnl_title.Controls.Add(this.button1);
             this.pnl_title.Controls.Add(this.label2);
             this.pnl_title.Controls.Add(this.txt_search);
             this.pnl_title.Controls.Add(this.label1);
@@ -59,6 +57,23 @@ namespace smpc_sales_app.Pages
             this.pnl_title.Name = "pnl_title";
             this.pnl_title.Size = new System.Drawing.Size(537, 62);
             this.pnl_title.TabIndex = 0;
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(365, 24);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(44, 13);
+            this.label2.TabIndex = 5;
+            this.label2.Text = "Search:";
+            // 
+            // txt_search
+            // 
+            this.txt_search.Location = new System.Drawing.Point(410, 20);
+            this.txt_search.Name = "txt_search";
+            this.txt_search.Size = new System.Drawing.Size(115, 20);
+            this.txt_search.TabIndex = 4;
+            this.txt_search.TextChanged += new System.EventHandler(this.txt_search_TextChanged);
             // 
             // label1
             // 
@@ -140,34 +155,6 @@ namespace smpc_sales_app.Pages
             // 
             this.ds_item_list.DataSetName = "ds_item_list";
             // 
-            // button1
-            // 
-            this.button1.BackgroundImage = global::smpc_sales_system.Properties.Resources.search;
-            this.button1.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
-            this.button1.Image = global::smpc_sales_system.Properties.Resources.search;
-            this.button1.Location = new System.Drawing.Point(496, 18);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(26, 25);
-            this.button1.TabIndex = 6;
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.button1_Click);
-            // 
-            // label2
-            // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(330, 24);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(44, 13);
-            this.label2.TabIndex = 5;
-            this.label2.Text = "Search:";
-            // 
-            // txt_search
-            // 
-            this.txt_search.Location = new System.Drawing.Point(375, 20);
-            this.txt_search.Name = "txt_search";
-            this.txt_search.Size = new System.Drawing.Size(115, 20);
-            this.txt_search.TabIndex = 4;
-            // 
             // PRModal
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -199,7 +186,6 @@ namespace smpc_sales_app.Pages
         private System.Windows.Forms.DataGridViewTextBoxColumn pr_id;
         private System.Windows.Forms.DataGridViewTextBoxColumn doc_no;
         private System.Windows.Forms.DataGridViewTextBoxColumn status;
-        private System.Windows.Forms.Button button1;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.TextBox txt_search;
     }

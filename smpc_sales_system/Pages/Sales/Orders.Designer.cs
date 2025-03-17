@@ -30,9 +30,15 @@ namespace smpc_sales_app.Pages.Sales
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle17 = new System.Windows.Forms.DataGridViewCellStyle();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Orders));
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle21 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle18 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle19 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle20 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle22 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle23 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle24 = new System.Windows.Forms.DataGridViewCellStyle();
             this.quick_quotes = new System.Windows.Forms.BindingSource(this.components);
             this.dataSet1 = new System.Data.DataSet();
             this.tbl_quick_quotes = new System.Data.DataTable();
@@ -65,6 +71,12 @@ namespace smpc_sales_app.Pages.Sales
             this.dataColumn5 = new System.Data.DataColumn();
             this.dataColumn6 = new System.Data.DataColumn();
             this.dataColumn7 = new System.Data.DataColumn();
+            this.dataColumn22 = new System.Data.DataColumn();
+            this.dataColumn23 = new System.Data.DataColumn();
+            this.dataColumn24 = new System.Data.DataColumn();
+            this.dataColumn25 = new System.Data.DataColumn();
+            this.dataColumn26 = new System.Data.DataColumn();
+            this.dataColumn27 = new System.Data.DataColumn();
             this.dataTable1 = new System.Data.DataTable();
             this.dataColumn1 = new System.Data.DataColumn();
             this.dataColumn3 = new System.Data.DataColumn();
@@ -82,6 +94,7 @@ namespace smpc_sales_app.Pages.Sales
             this.dataColumn18 = new System.Data.DataColumn();
             this.dataColumn19 = new System.Data.DataColumn();
             this.dataColumn20 = new System.Data.DataColumn();
+            this.dataColumn21 = new System.Data.DataColumn();
             this.bs_ship_type = new System.Windows.Forms.BindingSource(this.components);
             this.bs_payment_terms = new System.Windows.Forms.BindingSource(this.components);
             this.Column7 = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -91,37 +104,12 @@ namespace smpc_sales_app.Pages.Sales
             this.Column8 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Column6 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Column1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.panel5 = new System.Windows.Forms.Panel();
-            this.panel10 = new System.Windows.Forms.Panel();
-            this.panel12 = new System.Windows.Forms.Panel();
-            this.button3 = new System.Windows.Forms.Button();
-            this.btn_save = new System.Windows.Forms.Button();
-            this.panel11 = new System.Windows.Forms.Panel();
-            this.label22 = new System.Windows.Forms.Label();
-            this.panel7 = new System.Windows.Forms.Panel();
-            this.panel9 = new System.Windows.Forms.Panel();
-            this.treeview_sales = new System.Windows.Forms.TreeView();
-            this.panel8 = new System.Windows.Forms.Panel();
-            this.label24 = new System.Windows.Forms.Label();
             this.panel4 = new System.Windows.Forms.Panel();
             this.dgv_project = new System.Windows.Forms.DataGridView();
-            this.dataGridViewTextBoxColumn1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Column2 = new System.Windows.Forms.DataGridViewComboBoxColumn();
-            this.itemsidDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.basedidDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.componentsDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.modelDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.iteminvtypeDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.qtyDataGridViewTextBoxColumn1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.multiplierDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.discountpriceDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.listpriceperunitDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.componenttotalDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.notesDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.bomidDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.bs_project_items = new System.Windows.Forms.BindingSource(this.components);
-            this.dgv_order_sales = new System.Windows.Forms.DataGridView();
             this.pnl_header = new System.Windows.Forms.Panel();
+            this.label26 = new System.Windows.Forms.Label();
+            this.txt_project_name = new System.Windows.Forms.TextBox();
             this.txt_quotation_id = new System.Windows.Forms.TextBox();
             this.txt_ref_po = new System.Windows.Forms.TextBox();
             this.label25 = new System.Windows.Forms.Label();
@@ -171,6 +159,8 @@ namespace smpc_sales_app.Pages.Sales
             this.Save = new System.Windows.Forms.ToolStripButton();
             this.panel6 = new System.Windows.Forms.Panel();
             this.label1 = new System.Windows.Forms.Label();
+            this.dgv_order_sales = new System.Windows.Forms.DataGridView();
+            this.bs_order_details = new System.Windows.Forms.BindingSource(this.components);
             this.panel1 = new System.Windows.Forms.Panel();
             this.pnl_footer = new System.Windows.Forms.Panel();
             this.label23 = new System.Windows.Forms.Label();
@@ -187,15 +177,50 @@ namespace smpc_sales_app.Pages.Sales
             this.label15 = new System.Windows.Forms.Label();
             this.txt_remarks = new System.Windows.Forms.TextBox();
             this.label14 = new System.Windows.Forms.Label();
-            this.bs_order_details = new System.Windows.Forms.BindingSource(this.components);
+            this.panel2 = new System.Windows.Forms.Panel();
+            this.panel9 = new System.Windows.Forms.Panel();
+            this.btn_save = new System.Windows.Forms.Button();
+            this.panel8 = new System.Windows.Forms.Panel();
+            this.panel11 = new System.Windows.Forms.Panel();
+            this.treeView1 = new System.Windows.Forms.TreeView();
+            this.panel10 = new System.Windows.Forms.Panel();
+            this.listView1 = new System.Windows.Forms.ListView();
+            this.panel7 = new System.Windows.Forms.Panel();
+            this.label24 = new System.Windows.Forms.Label();
+            this.panel5 = new System.Windows.Forms.Panel();
+            this.panel3 = new System.Windows.Forms.Panel();
+            this.label22 = new System.Windows.Forms.Label();
             this.bs_project_item_sets = new System.Windows.Forms.BindingSource(this.components);
+            this.pnl_header_2 = new System.Windows.Forms.Panel();
+            this.pnl_footer_2 = new System.Windows.Forms.Panel();
+            this.number = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridViewTextBoxColumn1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.qtyproject = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.itemcode = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.short_descproject = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.delivery_preferenceproject = new System.Windows.Forms.DataGridViewComboBoxColumn();
+            this.listpriceproject = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.componenttotalproject = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.statusproject = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.itemsidDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.basedidproject = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.componentsDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.modelDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.iteminvtypeDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.multiplierDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.discountpriceDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.notesDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.bomiddgv = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.itemiddgv = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.number1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Column10 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.qtydgv = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.itemcodedgv = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.shortdescdgv = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.shortdesc = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.delivery_preference = new System.Windows.Forms.DataGridViewComboBoxColumn();
-            this.unitpricedgv = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.linetotaldgv = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.unitprice = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.linetotal = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.status = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.quick_quote_id = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.basedid = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.itemid = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -205,7 +230,6 @@ namespace smpc_sales_app.Pages.Sales
             this.percentdiscountDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.netdiscountDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.nettotalDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.status = new System.Windows.Forms.DataGridViewTextBoxColumn();
             ((System.ComponentModel.ISupportInitialize)(this.quick_quotes)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dataSet1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.tbl_quick_quotes)).BeginInit();
@@ -216,24 +240,26 @@ namespace smpc_sales_app.Pages.Sales
             ((System.ComponentModel.ISupportInitialize)(this.dataTable2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.bs_ship_type)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.bs_payment_terms)).BeginInit();
-            this.panel5.SuspendLayout();
-            this.panel10.SuspendLayout();
-            this.panel12.SuspendLayout();
-            this.panel11.SuspendLayout();
-            this.panel7.SuspendLayout();
-            this.panel9.SuspendLayout();
-            this.panel8.SuspendLayout();
             this.panel4.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgv_project)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.bs_project_items)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.dgv_order_sales)).BeginInit();
             this.pnl_header.SuspendLayout();
             this.toolStrip1.SuspendLayout();
             this.panel6.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dgv_order_sales)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.bs_order_details)).BeginInit();
             this.panel1.SuspendLayout();
             this.pnl_footer.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.bs_order_details)).BeginInit();
+            this.panel2.SuspendLayout();
+            this.panel9.SuspendLayout();
+            this.panel8.SuspendLayout();
+            this.panel11.SuspendLayout();
+            this.panel10.SuspendLayout();
+            this.panel7.SuspendLayout();
+            this.panel3.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.bs_project_item_sets)).BeginInit();
+            this.pnl_header_2.SuspendLayout();
+            this.pnl_footer_2.SuspendLayout();
             this.SuspendLayout();
             // 
             // quick_quotes
@@ -371,7 +397,13 @@ namespace smpc_sales_app.Pages.Sales
             this.dataColumn4,
             this.dataColumn5,
             this.dataColumn6,
-            this.dataColumn7});
+            this.dataColumn7,
+            this.dataColumn22,
+            this.dataColumn23,
+            this.dataColumn24,
+            this.dataColumn25,
+            this.dataColumn26,
+            this.dataColumn27});
             this.tbl_order_details.TableName = "tbl_order_details";
             // 
             // order_details_id
@@ -402,6 +434,30 @@ namespace smpc_sales_app.Pages.Sales
             // dataColumn7
             // 
             this.dataColumn7.ColumnName = "has_stocks";
+            // 
+            // dataColumn22
+            // 
+            this.dataColumn22.ColumnName = "qty";
+            // 
+            // dataColumn23
+            // 
+            this.dataColumn23.ColumnName = "numbering";
+            // 
+            // dataColumn24
+            // 
+            this.dataColumn24.ColumnName = "item_code";
+            // 
+            // dataColumn25
+            // 
+            this.dataColumn25.ColumnName = "item_description";
+            // 
+            // dataColumn26
+            // 
+            this.dataColumn26.ColumnName = "list_price";
+            // 
+            // dataColumn27
+            // 
+            this.dataColumn27.ColumnName = "total_price";
             // 
             // dataTable1
             // 
@@ -437,7 +493,8 @@ namespace smpc_sales_app.Pages.Sales
             this.dataColumn17,
             this.dataColumn18,
             this.dataColumn19,
-            this.dataColumn20});
+            this.dataColumn20,
+            this.dataColumn21});
             this.dataTable2.TableName = "tbl_project_items";
             // 
             // dataColumn9
@@ -487,6 +544,10 @@ namespace smpc_sales_app.Pages.Sales
             // dataColumn20
             // 
             this.dataColumn20.ColumnName = "bom_id";
+            // 
+            // dataColumn21
+            // 
+            this.dataColumn21.ColumnName = "item_id";
             // 
             // bs_ship_type
             // 
@@ -540,136 +601,17 @@ namespace smpc_sales_app.Pages.Sales
             this.Column1.Name = "Column1";
             this.Column1.Width = 20;
             // 
-            // panel5
-            // 
-            this.panel5.Controls.Add(this.panel10);
-            this.panel5.Controls.Add(this.panel11);
-            this.panel5.Controls.Add(this.panel7);
-            this.panel5.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.panel5.Location = new System.Drawing.Point(0, 635);
-            this.panel5.Name = "panel5";
-            this.panel5.Size = new System.Drawing.Size(1028, 565);
-            this.panel5.TabIndex = 1;
-            // 
-            // panel10
-            // 
-            this.panel10.Controls.Add(this.panel12);
-            this.panel10.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.panel10.Location = new System.Drawing.Point(0, 325);
-            this.panel10.Name = "panel10";
-            this.panel10.Size = new System.Drawing.Size(1028, 240);
-            this.panel10.TabIndex = 3;
-            // 
-            // panel12
-            // 
-            this.panel12.Controls.Add(this.button3);
-            this.panel12.Controls.Add(this.btn_save);
-            this.panel12.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.panel12.Location = new System.Drawing.Point(0, 201);
-            this.panel12.Name = "panel12";
-            this.panel12.Size = new System.Drawing.Size(1028, 39);
-            this.panel12.TabIndex = 0;
-            // 
-            // button3
-            // 
-            this.button3.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.button3.ImeMode = System.Windows.Forms.ImeMode.NoControl;
-            this.button3.Location = new System.Drawing.Point(870, 8);
-            this.button3.Name = "button3";
-            this.button3.Size = new System.Drawing.Size(75, 23);
-            this.button3.TabIndex = 1;
-            this.button3.Text = "PRINT";
-            this.button3.UseVisualStyleBackColor = true;
-            // 
-            // btn_save
-            // 
-            this.btn_save.BackColor = System.Drawing.Color.MediumSeaGreen;
-            this.btn_save.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btn_save.ImeMode = System.Windows.Forms.ImeMode.NoControl;
-            this.btn_save.Location = new System.Drawing.Point(941, 8);
-            this.btn_save.Name = "btn_save";
-            this.btn_save.Size = new System.Drawing.Size(75, 23);
-            this.btn_save.TabIndex = 0;
-            this.btn_save.Text = "SAVE";
-            this.btn_save.UseVisualStyleBackColor = false;
-            this.btn_save.Click += new System.EventHandler(this.btn_save_Click);
-            // 
-            // panel11
-            // 
-            this.panel11.Controls.Add(this.label22);
-            this.panel11.Dock = System.Windows.Forms.DockStyle.Top;
-            this.panel11.Location = new System.Drawing.Point(0, 266);
-            this.panel11.Name = "panel11";
-            this.panel11.Size = new System.Drawing.Size(1028, 59);
-            this.panel11.TabIndex = 2;
-            // 
-            // label22
-            // 
-            this.label22.AutoSize = true;
-            this.label22.ImeMode = System.Windows.Forms.ImeMode.NoControl;
-            this.label22.Location = new System.Drawing.Point(34, 23);
-            this.label22.Name = "label22";
-            this.label22.Size = new System.Drawing.Size(76, 13);
-            this.label22.TabIndex = 1;
-            this.label22.Text = "AFTERSALES";
-            // 
-            // panel7
-            // 
-            this.panel7.Controls.Add(this.panel9);
-            this.panel7.Controls.Add(this.panel8);
-            this.panel7.Dock = System.Windows.Forms.DockStyle.Top;
-            this.panel7.Location = new System.Drawing.Point(0, 0);
-            this.panel7.Name = "panel7";
-            this.panel7.Size = new System.Drawing.Size(1028, 266);
-            this.panel7.TabIndex = 1;
-            // 
-            // panel9
-            // 
-            this.panel9.Controls.Add(this.treeview_sales);
-            this.panel9.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.panel9.Location = new System.Drawing.Point(0, 41);
-            this.panel9.Name = "panel9";
-            this.panel9.Size = new System.Drawing.Size(1028, 225);
-            this.panel9.TabIndex = 1;
-            // 
-            // treeview_sales
-            // 
-            this.treeview_sales.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.treeview_sales.Location = new System.Drawing.Point(0, 0);
-            this.treeview_sales.Name = "treeview_sales";
-            this.treeview_sales.Size = new System.Drawing.Size(1028, 225);
-            this.treeview_sales.TabIndex = 0;
-            this.treeview_sales.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.treeview_sales_NodeMouseClick);
-            // 
-            // panel8
-            // 
-            this.panel8.Controls.Add(this.label24);
-            this.panel8.Dock = System.Windows.Forms.DockStyle.Top;
-            this.panel8.Location = new System.Drawing.Point(0, 0);
-            this.panel8.Name = "panel8";
-            this.panel8.Size = new System.Drawing.Size(1028, 41);
-            this.panel8.TabIndex = 0;
-            // 
-            // label24
-            // 
-            this.label24.AutoSize = true;
-            this.label24.ImeMode = System.Windows.Forms.ImeMode.NoControl;
-            this.label24.Location = new System.Drawing.Point(34, 14);
-            this.label24.Name = "label24";
-            this.label24.Size = new System.Drawing.Size(41, 13);
-            this.label24.TabIndex = 0;
-            this.label24.Text = "SALES";
-            // 
             // panel4
             // 
-            this.panel4.Controls.Add(this.dgv_project);
             this.panel4.Controls.Add(this.dgv_order_sales);
+            this.panel4.Controls.Add(this.dgv_project);
             this.panel4.Controls.Add(this.pnl_header);
             this.panel4.Controls.Add(this.toolStrip1);
             this.panel4.Controls.Add(this.panel6);
+            this.panel4.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panel4.Location = new System.Drawing.Point(0, 0);
             this.panel4.Name = "panel4";
-            this.panel4.Size = new System.Drawing.Size(1028, 635);
+            this.panel4.Size = new System.Drawing.Size(1028, 1200);
             this.panel4.TabIndex = 12;
             // 
             // dgv_project
@@ -678,206 +620,97 @@ namespace smpc_sales_app.Pages.Sales
             this.dgv_project.AllowUserToDeleteRows = false;
             this.dgv_project.AutoGenerateColumns = false;
             this.dgv_project.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
+            dataGridViewCellStyle17.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle17.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle17.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle17.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle17.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle17.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle17.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dgv_project.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle17;
             this.dgv_project.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dgv_project.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.number,
             this.dataGridViewTextBoxColumn1,
-            this.Column2,
+            this.qtyproject,
+            this.itemcode,
+            this.short_descproject,
+            this.delivery_preferenceproject,
+            this.listpriceproject,
+            this.componenttotalproject,
+            this.statusproject,
             this.itemsidDataGridViewTextBoxColumn,
-            this.basedidDataGridViewTextBoxColumn,
+            this.basedidproject,
             this.componentsDataGridViewTextBoxColumn,
             this.modelDataGridViewTextBoxColumn,
             this.iteminvtypeDataGridViewTextBoxColumn,
-            this.qtyDataGridViewTextBoxColumn1,
             this.multiplierDataGridViewTextBoxColumn,
             this.discountpriceDataGridViewTextBoxColumn,
-            this.listpriceperunitDataGridViewTextBoxColumn,
-            this.componenttotalDataGridViewTextBoxColumn,
             this.notesDataGridViewTextBoxColumn,
-            this.bomidDataGridViewTextBoxColumn});
+            this.bomiddgv,
+            this.itemiddgv});
             this.dgv_project.DataSource = this.bs_project_items;
-            this.dgv_project.Location = new System.Drawing.Point(0, 279);
+            this.dgv_project.Dock = System.Windows.Forms.DockStyle.Top;
+            this.dgv_project.Location = new System.Drawing.Point(0, 240);
             this.dgv_project.Name = "dgv_project";
             this.dgv_project.Size = new System.Drawing.Size(1028, 267);
             this.dgv_project.TabIndex = 11;
             this.dgv_project.Visible = false;
-            // 
-            // dataGridViewTextBoxColumn1
-            // 
-            this.dataGridViewTextBoxColumn1.FillWeight = 20.30457F;
-            this.dataGridViewTextBoxColumn1.HeaderText = "";
-            this.dataGridViewTextBoxColumn1.MinimumWidth = 3;
-            this.dataGridViewTextBoxColumn1.Name = "dataGridViewTextBoxColumn1";
-            this.dataGridViewTextBoxColumn1.ReadOnly = true;
-            // 
-            // Column2
-            // 
-            this.Column2.HeaderText = "DELIVERY PREFERENCE";
-            this.Column2.Items.AddRange(new object[] {
-            "(ASSEMBLED)",
-            "(SEMI-ASSEMBLED)",
-            "(INCLUDED-IN)",
-            "(LOOSE)"});
-            this.Column2.Name = "Column2";
-            this.Column2.Resizable = System.Windows.Forms.DataGridViewTriState.True;
-            this.Column2.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
-            // 
-            // itemsidDataGridViewTextBoxColumn
-            // 
-            this.itemsidDataGridViewTextBoxColumn.DataPropertyName = "items_id";
-            this.itemsidDataGridViewTextBoxColumn.HeaderText = "items_id";
-            this.itemsidDataGridViewTextBoxColumn.Name = "itemsidDataGridViewTextBoxColumn";
-            // 
-            // basedidDataGridViewTextBoxColumn
-            // 
-            this.basedidDataGridViewTextBoxColumn.DataPropertyName = "based_id";
-            this.basedidDataGridViewTextBoxColumn.HeaderText = "based_id";
-            this.basedidDataGridViewTextBoxColumn.Name = "basedidDataGridViewTextBoxColumn";
-            // 
-            // componentsDataGridViewTextBoxColumn
-            // 
-            this.componentsDataGridViewTextBoxColumn.DataPropertyName = "components";
-            this.componentsDataGridViewTextBoxColumn.HeaderText = "components";
-            this.componentsDataGridViewTextBoxColumn.Name = "componentsDataGridViewTextBoxColumn";
-            // 
-            // modelDataGridViewTextBoxColumn
-            // 
-            this.modelDataGridViewTextBoxColumn.DataPropertyName = "model";
-            this.modelDataGridViewTextBoxColumn.HeaderText = "model";
-            this.modelDataGridViewTextBoxColumn.Name = "modelDataGridViewTextBoxColumn";
-            // 
-            // iteminvtypeDataGridViewTextBoxColumn
-            // 
-            this.iteminvtypeDataGridViewTextBoxColumn.DataPropertyName = "item_inv_type";
-            this.iteminvtypeDataGridViewTextBoxColumn.HeaderText = "item_inv_type";
-            this.iteminvtypeDataGridViewTextBoxColumn.Name = "iteminvtypeDataGridViewTextBoxColumn";
-            // 
-            // qtyDataGridViewTextBoxColumn1
-            // 
-            this.qtyDataGridViewTextBoxColumn1.DataPropertyName = "qty";
-            this.qtyDataGridViewTextBoxColumn1.HeaderText = "qty";
-            this.qtyDataGridViewTextBoxColumn1.Name = "qtyDataGridViewTextBoxColumn1";
-            // 
-            // multiplierDataGridViewTextBoxColumn
-            // 
-            this.multiplierDataGridViewTextBoxColumn.DataPropertyName = "multiplier";
-            this.multiplierDataGridViewTextBoxColumn.HeaderText = "multiplier";
-            this.multiplierDataGridViewTextBoxColumn.Name = "multiplierDataGridViewTextBoxColumn";
-            // 
-            // discountpriceDataGridViewTextBoxColumn
-            // 
-            this.discountpriceDataGridViewTextBoxColumn.DataPropertyName = "discount_price";
-            this.discountpriceDataGridViewTextBoxColumn.HeaderText = "discount_price";
-            this.discountpriceDataGridViewTextBoxColumn.Name = "discountpriceDataGridViewTextBoxColumn";
-            // 
-            // listpriceperunitDataGridViewTextBoxColumn
-            // 
-            this.listpriceperunitDataGridViewTextBoxColumn.DataPropertyName = "list_price_per_unit";
-            this.listpriceperunitDataGridViewTextBoxColumn.HeaderText = "list_price_per_unit";
-            this.listpriceperunitDataGridViewTextBoxColumn.Name = "listpriceperunitDataGridViewTextBoxColumn";
-            // 
-            // componenttotalDataGridViewTextBoxColumn
-            // 
-            this.componenttotalDataGridViewTextBoxColumn.DataPropertyName = "component_total";
-            this.componenttotalDataGridViewTextBoxColumn.HeaderText = "component_total";
-            this.componenttotalDataGridViewTextBoxColumn.Name = "componenttotalDataGridViewTextBoxColumn";
-            // 
-            // notesDataGridViewTextBoxColumn
-            // 
-            this.notesDataGridViewTextBoxColumn.DataPropertyName = "notes";
-            this.notesDataGridViewTextBoxColumn.HeaderText = "notes";
-            this.notesDataGridViewTextBoxColumn.Name = "notesDataGridViewTextBoxColumn";
-            // 
-            // bomidDataGridViewTextBoxColumn
-            // 
-            this.bomidDataGridViewTextBoxColumn.DataPropertyName = "bom_id";
-            this.bomidDataGridViewTextBoxColumn.HeaderText = "bom_id";
-            this.bomidDataGridViewTextBoxColumn.Name = "bomidDataGridViewTextBoxColumn";
             // 
             // bs_project_items
             // 
             this.bs_project_items.DataMember = "tbl_project_items";
             this.bs_project_items.DataSource = this.dataSet1;
             // 
-            // dgv_order_sales
-            // 
-            this.dgv_order_sales.AllowUserToAddRows = false;
-            this.dgv_order_sales.AllowUserToDeleteRows = false;
-            this.dgv_order_sales.AutoGenerateColumns = false;
-            this.dgv_order_sales.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
-            this.dgv_order_sales.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dgv_order_sales.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.Column10,
-            this.qtydgv,
-            this.itemcodedgv,
-            this.shortdescdgv,
-            this.delivery_preference,
-            this.unitpricedgv,
-            this.linetotaldgv,
-            this.quick_quote_id,
-            this.basedid,
-            this.itemid,
-            this.itemnameidDataGridViewTextBoxColumn,
-            this.itemclassidDataGridViewTextBoxColumn,
-            this.unitidDataGridViewTextBoxColumn,
-            this.percentdiscountDataGridViewTextBoxColumn,
-            this.netdiscountDataGridViewTextBoxColumn,
-            this.nettotalDataGridViewTextBoxColumn,
-            this.status});
-            this.dgv_order_sales.DataSource = this.quick_quotes;
-            this.dgv_order_sales.Location = new System.Drawing.Point(0, 243);
-            this.dgv_order_sales.Name = "dgv_order_sales";
-            this.dgv_order_sales.Size = new System.Drawing.Size(1028, 266);
-            this.dgv_order_sales.TabIndex = 7;
-            // 
             // pnl_header
             // 
-            this.pnl_header.Controls.Add(this.txt_quotation_id);
-            this.pnl_header.Controls.Add(this.txt_ref_po);
-            this.pnl_header.Controls.Add(this.label25);
-            this.pnl_header.Controls.Add(this.txt_id);
-            this.pnl_header.Controls.Add(this.txt_ship_to_id);
-            this.pnl_header.Controls.Add(this.txt_bill_to_id);
-            this.pnl_header.Controls.Add(this.txt_customer_id);
-            this.pnl_header.Controls.Add(this.txt_sales_executive);
-            this.pnl_header.Controls.Add(this.label7);
+            this.pnl_header.Controls.Add(this.label26);
+            this.pnl_header.Controls.Add(this.txt_project_name);
             this.pnl_header.Controls.Add(this.txt_contact_no);
             this.pnl_header.Controls.Add(this.txt_receiver);
             this.pnl_header.Controls.Add(this.label5);
             this.pnl_header.Controls.Add(this.label6);
-            this.pnl_header.Controls.Add(this.cmb_ship_type);
-            this.pnl_header.Controls.Add(this.label16);
-            this.pnl_header.Controls.Add(this.cmb_payment_terms);
-            this.pnl_header.Controls.Add(this.label12);
-            this.pnl_header.Controls.Add(this.dtp_delivery_date);
-            this.pnl_header.Controls.Add(this.label4);
-            this.pnl_header.Controls.Add(this.dtp_date);
             this.pnl_header.Controls.Add(this.txt_bill_to);
             this.pnl_header.Controls.Add(this.txt_ship_to);
             this.pnl_header.Controls.Add(this.label17);
             this.pnl_header.Controls.Add(this.label18);
-            this.pnl_header.Controls.Add(this.txt_status);
-            this.pnl_header.Controls.Add(this.label13);
-            this.pnl_header.Controls.Add(this.txt_document_no);
-            this.pnl_header.Controls.Add(this.txt_doc);
-            this.pnl_header.Controls.Add(this.label10);
-            this.pnl_header.Controls.Add(this.label11);
             this.pnl_header.Controls.Add(this.txt_tin);
             this.pnl_header.Controls.Add(this.label8);
-            this.pnl_header.Controls.Add(this.label9);
             this.pnl_header.Controls.Add(this.txt_customer_code);
             this.pnl_header.Controls.Add(this.txt_branch_name);
             this.pnl_header.Controls.Add(this.label3);
             this.pnl_header.Controls.Add(this.label2);
+            this.pnl_header.Controls.Add(this.pnl_header_2);
             this.pnl_header.Dock = System.Windows.Forms.DockStyle.Top;
             this.pnl_header.Location = new System.Drawing.Point(0, 72);
             this.pnl_header.Name = "pnl_header";
-            this.pnl_header.Size = new System.Drawing.Size(1028, 171);
+            this.pnl_header.Size = new System.Drawing.Size(1028, 168);
             this.pnl_header.TabIndex = 10;
+            // 
+            // label26
+            // 
+            this.label26.AutoSize = true;
+            this.label26.ImeMode = System.Windows.Forms.ImeMode.NoControl;
+            this.label26.Location = new System.Drawing.Point(0, 57);
+            this.label26.Name = "label26";
+            this.label26.Size = new System.Drawing.Size(90, 13);
+            this.label26.TabIndex = 266;
+            this.label26.Text = "PROJECT NAME";
+            this.label26.Visible = false;
+            // 
+            // txt_project_name
+            // 
+            this.txt_project_name.Location = new System.Drawing.Point(96, 54);
+            this.txt_project_name.Name = "txt_project_name";
+            this.txt_project_name.ReadOnly = true;
+            this.txt_project_name.Size = new System.Drawing.Size(350, 20);
+            this.txt_project_name.TabIndex = 265;
+            this.txt_project_name.Visible = false;
             // 
             // txt_quotation_id
             // 
             this.txt_quotation_id.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
-            this.txt_quotation_id.Location = new System.Drawing.Point(908, 97);
+            this.txt_quotation_id.Location = new System.Drawing.Point(478, 97);
             this.txt_quotation_id.Name = "txt_quotation_id";
             this.txt_quotation_id.Size = new System.Drawing.Size(37, 20);
             this.txt_quotation_id.TabIndex = 264;
@@ -885,7 +718,7 @@ namespace smpc_sales_app.Pages.Sales
             // 
             // txt_ref_po
             // 
-            this.txt_ref_po.Location = new System.Drawing.Point(854, 29);
+            this.txt_ref_po.Location = new System.Drawing.Point(424, 29);
             this.txt_ref_po.Name = "txt_ref_po";
             this.txt_ref_po.Size = new System.Drawing.Size(89, 20);
             this.txt_ref_po.TabIndex = 263;
@@ -895,7 +728,7 @@ namespace smpc_sales_app.Pages.Sales
             // 
             this.label25.AutoSize = true;
             this.label25.ImeMode = System.Windows.Forms.ImeMode.NoControl;
-            this.label25.Location = new System.Drawing.Point(758, 32);
+            this.label25.Location = new System.Drawing.Point(328, 32);
             this.label25.Name = "label25";
             this.label25.Size = new System.Drawing.Size(90, 13);
             this.label25.TabIndex = 262;
@@ -904,7 +737,7 @@ namespace smpc_sales_app.Pages.Sales
             // txt_id
             // 
             this.txt_id.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
-            this.txt_id.Location = new System.Drawing.Point(860, 100);
+            this.txt_id.Location = new System.Drawing.Point(430, 100);
             this.txt_id.Name = "txt_id";
             this.txt_id.Size = new System.Drawing.Size(37, 20);
             this.txt_id.TabIndex = 261;
@@ -913,7 +746,7 @@ namespace smpc_sales_app.Pages.Sales
             // txt_ship_to_id
             // 
             this.txt_ship_to_id.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
-            this.txt_ship_to_id.Location = new System.Drawing.Point(903, 74);
+            this.txt_ship_to_id.Location = new System.Drawing.Point(473, 74);
             this.txt_ship_to_id.Name = "txt_ship_to_id";
             this.txt_ship_to_id.Size = new System.Drawing.Size(37, 20);
             this.txt_ship_to_id.TabIndex = 260;
@@ -922,7 +755,7 @@ namespace smpc_sales_app.Pages.Sales
             // txt_bill_to_id
             // 
             this.txt_bill_to_id.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
-            this.txt_bill_to_id.Location = new System.Drawing.Point(860, 74);
+            this.txt_bill_to_id.Location = new System.Drawing.Point(430, 74);
             this.txt_bill_to_id.Name = "txt_bill_to_id";
             this.txt_bill_to_id.Size = new System.Drawing.Size(37, 20);
             this.txt_bill_to_id.TabIndex = 259;
@@ -931,7 +764,7 @@ namespace smpc_sales_app.Pages.Sales
             // txt_customer_id
             // 
             this.txt_customer_id.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
-            this.txt_customer_id.Location = new System.Drawing.Point(811, 75);
+            this.txt_customer_id.Location = new System.Drawing.Point(381, 75);
             this.txt_customer_id.Name = "txt_customer_id";
             this.txt_customer_id.Size = new System.Drawing.Size(37, 20);
             this.txt_customer_id.TabIndex = 111;
@@ -939,7 +772,7 @@ namespace smpc_sales_app.Pages.Sales
             // 
             // txt_sales_executive
             // 
-            this.txt_sales_executive.Location = new System.Drawing.Point(793, 138);
+            this.txt_sales_executive.Location = new System.Drawing.Point(363, 138);
             this.txt_sales_executive.Name = "txt_sales_executive";
             this.txt_sales_executive.Size = new System.Drawing.Size(150, 20);
             this.txt_sales_executive.TabIndex = 258;
@@ -948,7 +781,7 @@ namespace smpc_sales_app.Pages.Sales
             // 
             this.label7.AutoSize = true;
             this.label7.ImeMode = System.Windows.Forms.ImeMode.NoControl;
-            this.label7.Location = new System.Drawing.Point(683, 141);
+            this.label7.Location = new System.Drawing.Point(253, 141);
             this.label7.Name = "label7";
             this.label7.Size = new System.Drawing.Size(104, 13);
             this.label7.TabIndex = 257;
@@ -956,14 +789,14 @@ namespace smpc_sales_app.Pages.Sales
             // 
             // txt_contact_no
             // 
-            this.txt_contact_no.Location = new System.Drawing.Point(87, 138);
+            this.txt_contact_no.Location = new System.Drawing.Point(96, 139);
             this.txt_contact_no.Name = "txt_contact_no";
             this.txt_contact_no.Size = new System.Drawing.Size(350, 20);
             this.txt_contact_no.TabIndex = 256;
             // 
             // txt_receiver
             // 
-            this.txt_receiver.Location = new System.Drawing.Point(87, 117);
+            this.txt_receiver.Location = new System.Drawing.Point(96, 118);
             this.txt_receiver.Name = "txt_receiver";
             this.txt_receiver.Size = new System.Drawing.Size(350, 20);
             this.txt_receiver.TabIndex = 255;
@@ -972,7 +805,7 @@ namespace smpc_sales_app.Pages.Sales
             // 
             this.label5.AutoSize = true;
             this.label5.ImeMode = System.Windows.Forms.ImeMode.NoControl;
-            this.label5.Location = new System.Drawing.Point(1, 141);
+            this.label5.Location = new System.Drawing.Point(10, 141);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(80, 13);
             this.label5.TabIndex = 254;
@@ -982,7 +815,7 @@ namespace smpc_sales_app.Pages.Sales
             // 
             this.label6.AutoSize = true;
             this.label6.ImeMode = System.Windows.Forms.ImeMode.NoControl;
-            this.label6.Location = new System.Drawing.Point(20, 120);
+            this.label6.Location = new System.Drawing.Point(29, 121);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(61, 13);
             this.label6.TabIndex = 253;
@@ -995,7 +828,7 @@ namespace smpc_sales_app.Pages.Sales
             this.cmb_ship_type.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmb_ship_type.Enabled = false;
             this.cmb_ship_type.FormattingEnabled = true;
-            this.cmb_ship_type.Location = new System.Drawing.Point(576, 97);
+            this.cmb_ship_type.Location = new System.Drawing.Point(146, 97);
             this.cmb_ship_type.Name = "cmb_ship_type";
             this.cmb_ship_type.Size = new System.Drawing.Size(147, 21);
             this.cmb_ship_type.TabIndex = 252;
@@ -1006,7 +839,7 @@ namespace smpc_sales_app.Pages.Sales
             // 
             this.label16.AutoSize = true;
             this.label16.ImeMode = System.Windows.Forms.ImeMode.NoControl;
-            this.label16.Location = new System.Drawing.Point(507, 100);
+            this.label16.Location = new System.Drawing.Point(77, 100);
             this.label16.Name = "label16";
             this.label16.Size = new System.Drawing.Size(63, 13);
             this.label16.TabIndex = 251;
@@ -1019,7 +852,7 @@ namespace smpc_sales_app.Pages.Sales
             this.cmb_payment_terms.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmb_payment_terms.Enabled = false;
             this.cmb_payment_terms.FormattingEnabled = true;
-            this.cmb_payment_terms.Location = new System.Drawing.Point(576, 75);
+            this.cmb_payment_terms.Location = new System.Drawing.Point(146, 75);
             this.cmb_payment_terms.Name = "cmb_payment_terms";
             this.cmb_payment_terms.Size = new System.Drawing.Size(147, 21);
             this.cmb_payment_terms.TabIndex = 249;
@@ -1030,7 +863,7 @@ namespace smpc_sales_app.Pages.Sales
             // 
             this.label12.AutoSize = true;
             this.label12.ImeMode = System.Windows.Forms.ImeMode.NoControl;
-            this.label12.Location = new System.Drawing.Point(470, 78);
+            this.label12.Location = new System.Drawing.Point(40, 78);
             this.label12.Name = "label12";
             this.label12.Size = new System.Drawing.Size(100, 13);
             this.label12.TabIndex = 248;
@@ -1039,7 +872,7 @@ namespace smpc_sales_app.Pages.Sales
             // dtp_delivery_date
             // 
             this.dtp_delivery_date.Format = System.Windows.Forms.DateTimePickerFormat.Short;
-            this.dtp_delivery_date.Location = new System.Drawing.Point(576, 54);
+            this.dtp_delivery_date.Location = new System.Drawing.Point(146, 54);
             this.dtp_delivery_date.Name = "dtp_delivery_date";
             this.dtp_delivery_date.Size = new System.Drawing.Size(103, 20);
             this.dtp_delivery_date.TabIndex = 247;
@@ -1048,7 +881,7 @@ namespace smpc_sales_app.Pages.Sales
             // 
             this.label4.AutoSize = true;
             this.label4.ImeMode = System.Windows.Forms.ImeMode.NoControl;
-            this.label4.Location = new System.Drawing.Point(478, 57);
+            this.label4.Location = new System.Drawing.Point(48, 57);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(92, 13);
             this.label4.TabIndex = 246;
@@ -1057,14 +890,14 @@ namespace smpc_sales_app.Pages.Sales
             // dtp_date
             // 
             this.dtp_date.Format = System.Windows.Forms.DateTimePickerFormat.Short;
-            this.dtp_date.Location = new System.Drawing.Point(576, 33);
+            this.dtp_date.Location = new System.Drawing.Point(146, 33);
             this.dtp_date.Name = "dtp_date";
             this.dtp_date.Size = new System.Drawing.Size(103, 20);
             this.dtp_date.TabIndex = 245;
             // 
             // txt_bill_to
             // 
-            this.txt_bill_to.Location = new System.Drawing.Point(87, 75);
+            this.txt_bill_to.Location = new System.Drawing.Point(96, 97);
             this.txt_bill_to.Name = "txt_bill_to";
             this.txt_bill_to.ReadOnly = true;
             this.txt_bill_to.Size = new System.Drawing.Size(350, 20);
@@ -1072,7 +905,7 @@ namespace smpc_sales_app.Pages.Sales
             // 
             // txt_ship_to
             // 
-            this.txt_ship_to.Location = new System.Drawing.Point(87, 54);
+            this.txt_ship_to.Location = new System.Drawing.Point(96, 76);
             this.txt_ship_to.Name = "txt_ship_to";
             this.txt_ship_to.ReadOnly = true;
             this.txt_ship_to.Size = new System.Drawing.Size(350, 20);
@@ -1082,7 +915,7 @@ namespace smpc_sales_app.Pages.Sales
             // 
             this.label17.AutoSize = true;
             this.label17.ImeMode = System.Windows.Forms.ImeMode.NoControl;
-            this.label17.Location = new System.Drawing.Point(34, 78);
+            this.label17.Location = new System.Drawing.Point(43, 100);
             this.label17.Name = "label17";
             this.label17.Size = new System.Drawing.Size(47, 13);
             this.label17.TabIndex = 242;
@@ -1092,7 +925,7 @@ namespace smpc_sales_app.Pages.Sales
             // 
             this.label18.AutoSize = true;
             this.label18.ImeMode = System.Windows.Forms.ImeMode.NoControl;
-            this.label18.Location = new System.Drawing.Point(3, 57);
+            this.label18.Location = new System.Drawing.Point(12, 79);
             this.label18.Name = "label18";
             this.label18.Size = new System.Drawing.Size(78, 13);
             this.label18.TabIndex = 241;
@@ -1100,7 +933,7 @@ namespace smpc_sales_app.Pages.Sales
             // 
             // txt_status
             // 
-            this.txt_status.Location = new System.Drawing.Point(854, 48);
+            this.txt_status.Location = new System.Drawing.Point(424, 48);
             this.txt_status.Name = "txt_status";
             this.txt_status.ReadOnly = true;
             this.txt_status.Size = new System.Drawing.Size(89, 20);
@@ -1112,7 +945,7 @@ namespace smpc_sales_app.Pages.Sales
             // 
             this.label13.AutoSize = true;
             this.label13.ImeMode = System.Windows.Forms.ImeMode.NoControl;
-            this.label13.Location = new System.Drawing.Point(798, 51);
+            this.label13.Location = new System.Drawing.Point(368, 51);
             this.label13.Name = "label13";
             this.label13.Size = new System.Drawing.Size(50, 13);
             this.label13.TabIndex = 239;
@@ -1121,7 +954,7 @@ namespace smpc_sales_app.Pages.Sales
             // txt_document_no
             // 
             this.txt_document_no.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold);
-            this.txt_document_no.Location = new System.Drawing.Point(854, 12);
+            this.txt_document_no.Location = new System.Drawing.Point(424, 12);
             this.txt_document_no.Name = "txt_document_no";
             this.txt_document_no.ReadOnly = true;
             this.txt_document_no.Size = new System.Drawing.Size(89, 20);
@@ -1132,7 +965,7 @@ namespace smpc_sales_app.Pages.Sales
             // txt_doc
             // 
             this.txt_doc.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold);
-            this.txt_doc.Location = new System.Drawing.Point(576, 12);
+            this.txt_doc.Location = new System.Drawing.Point(146, 12);
             this.txt_doc.Name = "txt_doc";
             this.txt_doc.ReadOnly = true;
             this.txt_doc.Size = new System.Drawing.Size(103, 20);
@@ -1144,7 +977,7 @@ namespace smpc_sales_app.Pages.Sales
             // 
             this.label10.AutoSize = true;
             this.label10.ImeMode = System.Windows.Forms.ImeMode.NoControl;
-            this.label10.Location = new System.Drawing.Point(738, 15);
+            this.label10.Location = new System.Drawing.Point(308, 15);
             this.label10.Name = "label10";
             this.label10.Size = new System.Drawing.Size(110, 13);
             this.label10.TabIndex = 236;
@@ -1154,7 +987,7 @@ namespace smpc_sales_app.Pages.Sales
             // 
             this.label11.AutoSize = true;
             this.label11.ImeMode = System.Windows.Forms.ImeMode.NoControl;
-            this.label11.Location = new System.Drawing.Point(518, 15);
+            this.label11.Location = new System.Drawing.Point(88, 15);
             this.label11.Name = "label11";
             this.label11.Size = new System.Drawing.Size(52, 13);
             this.label11.TabIndex = 235;
@@ -1162,7 +995,7 @@ namespace smpc_sales_app.Pages.Sales
             // 
             // txt_tin
             // 
-            this.txt_tin.Location = new System.Drawing.Point(334, 12);
+            this.txt_tin.Location = new System.Drawing.Point(343, 12);
             this.txt_tin.Name = "txt_tin";
             this.txt_tin.ReadOnly = true;
             this.txt_tin.Size = new System.Drawing.Size(103, 20);
@@ -1173,7 +1006,7 @@ namespace smpc_sales_app.Pages.Sales
             // 
             this.label8.AutoSize = true;
             this.label8.ImeMode = System.Windows.Forms.ImeMode.NoControl;
-            this.label8.Location = new System.Drawing.Point(303, 15);
+            this.label8.Location = new System.Drawing.Point(312, 15);
             this.label8.Name = "label8";
             this.label8.Size = new System.Drawing.Size(25, 13);
             this.label8.TabIndex = 233;
@@ -1183,7 +1016,7 @@ namespace smpc_sales_app.Pages.Sales
             // 
             this.label9.AutoSize = true;
             this.label9.ImeMode = System.Windows.Forms.ImeMode.NoControl;
-            this.label9.Location = new System.Drawing.Point(534, 36);
+            this.label9.Location = new System.Drawing.Point(104, 36);
             this.label9.Name = "label9";
             this.label9.Size = new System.Drawing.Size(36, 13);
             this.label9.TabIndex = 232;
@@ -1191,7 +1024,7 @@ namespace smpc_sales_app.Pages.Sales
             // 
             // txt_customer_code
             // 
-            this.txt_customer_code.Location = new System.Drawing.Point(87, 33);
+            this.txt_customer_code.Location = new System.Drawing.Point(96, 33);
             this.txt_customer_code.Name = "txt_customer_code";
             this.txt_customer_code.ReadOnly = true;
             this.txt_customer_code.Size = new System.Drawing.Size(200, 20);
@@ -1200,7 +1033,7 @@ namespace smpc_sales_app.Pages.Sales
             // 
             // txt_branch_name
             // 
-            this.txt_branch_name.Location = new System.Drawing.Point(87, 12);
+            this.txt_branch_name.Location = new System.Drawing.Point(96, 12);
             this.txt_branch_name.Name = "txt_branch_name";
             this.txt_branch_name.ReadOnly = true;
             this.txt_branch_name.Size = new System.Drawing.Size(200, 20);
@@ -1211,7 +1044,7 @@ namespace smpc_sales_app.Pages.Sales
             // 
             this.label3.AutoSize = true;
             this.label3.ImeMode = System.Windows.Forms.ImeMode.NoControl;
-            this.label3.Location = new System.Drawing.Point(44, 36);
+            this.label3.Location = new System.Drawing.Point(53, 36);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(37, 13);
             this.label3.TabIndex = 229;
@@ -1221,7 +1054,7 @@ namespace smpc_sales_app.Pages.Sales
             // 
             this.label2.AutoSize = true;
             this.label2.ImeMode = System.Windows.Forms.ImeMode.NoControl;
-            this.label2.Location = new System.Drawing.Point(13, 15);
+            this.label2.Location = new System.Drawing.Point(22, 15);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(68, 13);
             this.label2.TabIndex = 228;
@@ -1310,6 +1143,7 @@ namespace smpc_sales_app.Pages.Sales
             this.btn_print.Name = "btn_print";
             this.btn_print.Size = new System.Drawing.Size(52, 22);
             this.btn_print.Text = "Print";
+            this.btn_print.Click += new System.EventHandler(this.btn_print_Click);
             // 
             // toolStripButton6
             // 
@@ -1351,43 +1185,79 @@ namespace smpc_sales_app.Pages.Sales
             this.label1.TabIndex = 1;
             this.label1.Text = "Sales Orders";
             // 
+            // dgv_order_sales
+            // 
+            this.dgv_order_sales.AllowUserToAddRows = false;
+            this.dgv_order_sales.AllowUserToDeleteRows = false;
+            this.dgv_order_sales.AutoGenerateColumns = false;
+            this.dgv_order_sales.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
+            dataGridViewCellStyle21.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle21.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle21.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle21.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle21.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle21.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle21.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dgv_order_sales.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle21;
+            this.dgv_order_sales.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dgv_order_sales.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.number1,
+            this.Column10,
+            this.qtydgv,
+            this.itemcodedgv,
+            this.shortdesc,
+            this.delivery_preference,
+            this.unitprice,
+            this.linetotal,
+            this.status,
+            this.quick_quote_id,
+            this.basedid,
+            this.itemid,
+            this.itemnameidDataGridViewTextBoxColumn,
+            this.itemclassidDataGridViewTextBoxColumn,
+            this.unitidDataGridViewTextBoxColumn,
+            this.percentdiscountDataGridViewTextBoxColumn,
+            this.netdiscountDataGridViewTextBoxColumn,
+            this.nettotalDataGridViewTextBoxColumn});
+            this.dgv_order_sales.DataSource = this.quick_quotes;
+            this.dgv_order_sales.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.dgv_order_sales.Location = new System.Drawing.Point(0, 507);
+            this.dgv_order_sales.Name = "dgv_order_sales";
+            this.dgv_order_sales.Size = new System.Drawing.Size(1028, 693);
+            this.dgv_order_sales.TabIndex = 12;
+            // 
+            // bs_order_details
+            // 
+            this.bs_order_details.DataMember = "tbl_order_details";
+            this.bs_order_details.DataSource = this.dataSet1;
+            // 
             // panel1
             // 
             this.panel1.Controls.Add(this.pnl_footer);
+            this.panel1.Controls.Add(this.panel2);
             this.panel1.Controls.Add(this.panel4);
-            this.panel1.Dock = System.Windows.Forms.DockStyle.Top;
+            this.panel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panel1.Location = new System.Drawing.Point(0, 0);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(1028, 635);
+            this.panel1.Size = new System.Drawing.Size(1028, 1200);
             this.panel1.TabIndex = 0;
             // 
             // pnl_footer
             // 
-            this.pnl_footer.Controls.Add(this.label23);
-            this.pnl_footer.Controls.Add(this.txt_total);
-            this.pnl_footer.Controls.Add(this.btn_cancel);
-            this.pnl_footer.Controls.Add(this.btn_check);
-            this.pnl_footer.Controls.Add(this.txt_approved_by);
-            this.pnl_footer.Controls.Add(this.label21);
-            this.pnl_footer.Controls.Add(this.txt_total_amount_due);
-            this.pnl_footer.Controls.Add(this.label20);
-            this.pnl_footer.Controls.Add(this.txt_gross_sales);
-            this.pnl_footer.Controls.Add(this.label19);
-            this.pnl_footer.Controls.Add(this.txt_vat_amount);
-            this.pnl_footer.Controls.Add(this.label15);
             this.pnl_footer.Controls.Add(this.txt_remarks);
             this.pnl_footer.Controls.Add(this.label14);
+            this.pnl_footer.Controls.Add(this.pnl_footer_2);
             this.pnl_footer.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.pnl_footer.Location = new System.Drawing.Point(0, 509);
+            this.pnl_footer.Location = new System.Drawing.Point(0, 492);
             this.pnl_footer.Name = "pnl_footer";
-            this.pnl_footer.Size = new System.Drawing.Size(1028, 126);
+            this.pnl_footer.Size = new System.Drawing.Size(1028, 180);
             this.pnl_footer.TabIndex = 11;
             // 
             // label23
             // 
             this.label23.AutoSize = true;
             this.label23.ImeMode = System.Windows.Forms.ImeMode.NoControl;
-            this.label23.Location = new System.Drawing.Point(703, 3);
+            this.label23.Location = new System.Drawing.Point(336, 3);
             this.label23.Name = "label23";
             this.label23.Size = new System.Drawing.Size(42, 13);
             this.label23.TabIndex = 174;
@@ -1395,7 +1265,7 @@ namespace smpc_sales_app.Pages.Sales
             // 
             // txt_total
             // 
-            this.txt_total.Location = new System.Drawing.Point(751, 0);
+            this.txt_total.Location = new System.Drawing.Point(384, 0);
             this.txt_total.Name = "txt_total";
             this.txt_total.ReadOnly = true;
             this.txt_total.Size = new System.Drawing.Size(146, 20);
@@ -1413,7 +1283,7 @@ namespace smpc_sales_app.Pages.Sales
             this.btn_cancel.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold);
             this.btn_cancel.ForeColor = System.Drawing.Color.White;
             this.btn_cancel.ImeMode = System.Windows.Forms.ImeMode.NoControl;
-            this.btn_cancel.Location = new System.Drawing.Point(943, 100);
+            this.btn_cancel.Location = new System.Drawing.Point(552, 100);
             this.btn_cancel.Name = "btn_cancel";
             this.btn_cancel.Size = new System.Drawing.Size(73, 22);
             this.btn_cancel.TabIndex = 172;
@@ -1427,7 +1297,7 @@ namespace smpc_sales_app.Pages.Sales
             this.btn_check.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
             this.btn_check.Enabled = false;
             this.btn_check.ImeMode = System.Windows.Forms.ImeMode.NoControl;
-            this.btn_check.Location = new System.Drawing.Point(907, 99);
+            this.btn_check.Location = new System.Drawing.Point(516, 99);
             this.btn_check.Name = "btn_check";
             this.btn_check.Size = new System.Drawing.Size(30, 23);
             this.btn_check.TabIndex = 165;
@@ -1436,7 +1306,7 @@ namespace smpc_sales_app.Pages.Sales
             // 
             // txt_approved_by
             // 
-            this.txt_approved_by.Location = new System.Drawing.Point(751, 100);
+            this.txt_approved_by.Location = new System.Drawing.Point(360, 100);
             this.txt_approved_by.Name = "txt_approved_by";
             this.txt_approved_by.Size = new System.Drawing.Size(157, 20);
             this.txt_approved_by.TabIndex = 171;
@@ -1445,7 +1315,7 @@ namespace smpc_sales_app.Pages.Sales
             // 
             this.label21.AutoSize = true;
             this.label21.ImeMode = System.Windows.Forms.ImeMode.NoControl;
-            this.label21.Location = new System.Drawing.Point(644, 103);
+            this.label21.Location = new System.Drawing.Point(253, 103);
             this.label21.Name = "label21";
             this.label21.Size = new System.Drawing.Size(101, 13);
             this.label21.TabIndex = 170;
@@ -1453,7 +1323,7 @@ namespace smpc_sales_app.Pages.Sales
             // 
             // txt_total_amount_due
             // 
-            this.txt_total_amount_due.Location = new System.Drawing.Point(859, 54);
+            this.txt_total_amount_due.Location = new System.Drawing.Point(468, 54);
             this.txt_total_amount_due.Name = "txt_total_amount_due";
             this.txt_total_amount_due.ReadOnly = true;
             this.txt_total_amount_due.Size = new System.Drawing.Size(157, 20);
@@ -1464,7 +1334,7 @@ namespace smpc_sales_app.Pages.Sales
             // 
             this.label20.AutoSize = true;
             this.label20.ImeMode = System.Windows.Forms.ImeMode.NoControl;
-            this.label20.Location = new System.Drawing.Point(738, 57);
+            this.label20.Location = new System.Drawing.Point(347, 57);
             this.label20.Name = "label20";
             this.label20.Size = new System.Drawing.Size(118, 13);
             this.label20.TabIndex = 168;
@@ -1472,7 +1342,7 @@ namespace smpc_sales_app.Pages.Sales
             // 
             // txt_gross_sales
             // 
-            this.txt_gross_sales.Location = new System.Drawing.Point(473, 54);
+            this.txt_gross_sales.Location = new System.Drawing.Point(82, 54);
             this.txt_gross_sales.Name = "txt_gross_sales";
             this.txt_gross_sales.ReadOnly = true;
             this.txt_gross_sales.Size = new System.Drawing.Size(157, 20);
@@ -1483,7 +1353,7 @@ namespace smpc_sales_app.Pages.Sales
             // 
             this.label19.AutoSize = true;
             this.label19.ImeMode = System.Windows.Forms.ImeMode.NoControl;
-            this.label19.Location = new System.Drawing.Point(397, 57);
+            this.label19.Location = new System.Drawing.Point(6, 57);
             this.label19.Name = "label19";
             this.label19.Size = new System.Drawing.Size(70, 13);
             this.label19.TabIndex = 166;
@@ -1491,7 +1361,7 @@ namespace smpc_sales_app.Pages.Sales
             // 
             // txt_vat_amount
             // 
-            this.txt_vat_amount.Location = new System.Drawing.Point(473, 33);
+            this.txt_vat_amount.Location = new System.Drawing.Point(82, 33);
             this.txt_vat_amount.Name = "txt_vat_amount";
             this.txt_vat_amount.ReadOnly = true;
             this.txt_vat_amount.Size = new System.Drawing.Size(157, 20);
@@ -1502,7 +1372,7 @@ namespace smpc_sales_app.Pages.Sales
             // 
             this.label15.AutoSize = true;
             this.label15.ImeMode = System.Windows.Forms.ImeMode.NoControl;
-            this.label15.Location = new System.Drawing.Point(439, 36);
+            this.label15.Location = new System.Drawing.Point(48, 36);
             this.label15.Name = "label15";
             this.label15.Size = new System.Drawing.Size(28, 13);
             this.label15.TabIndex = 164;
@@ -1525,19 +1395,357 @@ namespace smpc_sales_app.Pages.Sales
             this.label14.TabIndex = 162;
             this.label14.Text = "REMARKS";
             // 
-            // bs_order_details
+            // panel2
             // 
-            this.bs_order_details.DataMember = "tbl_order_details";
-            this.bs_order_details.DataSource = this.dataSet1;
+            this.panel2.Controls.Add(this.panel9);
+            this.panel2.Controls.Add(this.panel8);
+            this.panel2.Controls.Add(this.panel7);
+            this.panel2.Controls.Add(this.panel5);
+            this.panel2.Controls.Add(this.panel3);
+            this.panel2.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.panel2.Location = new System.Drawing.Point(0, 672);
+            this.panel2.Name = "panel2";
+            this.panel2.Size = new System.Drawing.Size(1028, 528);
+            this.panel2.TabIndex = 13;
+            // 
+            // panel9
+            // 
+            this.panel9.Controls.Add(this.btn_save);
+            this.panel9.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.panel9.Location = new System.Drawing.Point(0, 468);
+            this.panel9.Name = "panel9";
+            this.panel9.Size = new System.Drawing.Size(1028, 60);
+            this.panel9.TabIndex = 4;
+            // 
+            // btn_save
+            // 
+            this.btn_save.BackColor = System.Drawing.Color.LightGreen;
+            this.btn_save.Enabled = false;
+            this.btn_save.FlatAppearance.BorderColor = System.Drawing.Color.White;
+            this.btn_save.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
+            this.btn_save.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(255)))), ((int)(((byte)(128)))));
+            this.btn_save.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btn_save.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold);
+            this.btn_save.ForeColor = System.Drawing.Color.Gray;
+            this.btn_save.ImeMode = System.Windows.Forms.ImeMode.NoControl;
+            this.btn_save.Location = new System.Drawing.Point(931, 19);
+            this.btn_save.Name = "btn_save";
+            this.btn_save.Size = new System.Drawing.Size(73, 22);
+            this.btn_save.TabIndex = 173;
+            this.btn_save.Text = "SAVE";
+            this.btn_save.UseVisualStyleBackColor = false;
+            this.btn_save.Click += new System.EventHandler(this.btn_save_Click_1);
+            // 
+            // panel8
+            // 
+            this.panel8.Controls.Add(this.panel11);
+            this.panel8.Controls.Add(this.panel10);
+            this.panel8.Dock = System.Windows.Forms.DockStyle.Top;
+            this.panel8.Location = new System.Drawing.Point(0, 285);
+            this.panel8.Name = "panel8";
+            this.panel8.Size = new System.Drawing.Size(1028, 185);
+            this.panel8.TabIndex = 3;
+            // 
+            // panel11
+            // 
+            this.panel11.Controls.Add(this.treeView1);
+            this.panel11.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.panel11.Location = new System.Drawing.Point(0, 0);
+            this.panel11.Name = "panel11";
+            this.panel11.Size = new System.Drawing.Size(521, 185);
+            this.panel11.TabIndex = 1;
+            // 
+            // treeView1
+            // 
+            this.treeView1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.treeView1.Location = new System.Drawing.Point(0, 0);
+            this.treeView1.Name = "treeView1";
+            this.treeView1.Size = new System.Drawing.Size(521, 185);
+            this.treeView1.TabIndex = 0;
+            this.treeView1.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.treeView1_AfterSelect);
+            // 
+            // panel10
+            // 
+            this.panel10.Controls.Add(this.listView1);
+            this.panel10.Dock = System.Windows.Forms.DockStyle.Right;
+            this.panel10.Location = new System.Drawing.Point(521, 0);
+            this.panel10.Name = "panel10";
+            this.panel10.Size = new System.Drawing.Size(507, 185);
+            this.panel10.TabIndex = 0;
+            // 
+            // listView1
+            // 
+            this.listView1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.listView1.HideSelection = false;
+            this.listView1.Location = new System.Drawing.Point(0, 0);
+            this.listView1.Name = "listView1";
+            this.listView1.Size = new System.Drawing.Size(507, 185);
+            this.listView1.TabIndex = 0;
+            this.listView1.UseCompatibleStateImageBehavior = false;
+            this.listView1.DoubleClick += new System.EventHandler(this.listView1_DoubleClick_1);
+            // 
+            // panel7
+            // 
+            this.panel7.Controls.Add(this.label24);
+            this.panel7.Dock = System.Windows.Forms.DockStyle.Top;
+            this.panel7.Location = new System.Drawing.Point(0, 233);
+            this.panel7.Name = "panel7";
+            this.panel7.Size = new System.Drawing.Size(1028, 52);
+            this.panel7.TabIndex = 2;
+            // 
+            // label24
+            // 
+            this.label24.AutoSize = true;
+            this.label24.ImeMode = System.Windows.Forms.ImeMode.NoControl;
+            this.label24.Location = new System.Drawing.Point(22, 19);
+            this.label24.Name = "label24";
+            this.label24.Size = new System.Drawing.Size(66, 13);
+            this.label24.TabIndex = 176;
+            this.label24.Text = "REMARKS2";
+            // 
+            // panel5
+            // 
+            this.panel5.Dock = System.Windows.Forms.DockStyle.Top;
+            this.panel5.Location = new System.Drawing.Point(0, 46);
+            this.panel5.Name = "panel5";
+            this.panel5.Size = new System.Drawing.Size(1028, 187);
+            this.panel5.TabIndex = 1;
+            // 
+            // panel3
+            // 
+            this.panel3.Controls.Add(this.label22);
+            this.panel3.Dock = System.Windows.Forms.DockStyle.Top;
+            this.panel3.Location = new System.Drawing.Point(0, 0);
+            this.panel3.Name = "panel3";
+            this.panel3.Size = new System.Drawing.Size(1028, 46);
+            this.panel3.TabIndex = 0;
+            // 
+            // label22
+            // 
+            this.label22.AutoSize = true;
+            this.label22.ImeMode = System.Windows.Forms.ImeMode.NoControl;
+            this.label22.Location = new System.Drawing.Point(22, 14);
+            this.label22.Name = "label22";
+            this.label22.Size = new System.Drawing.Size(60, 13);
+            this.label22.TabIndex = 175;
+            this.label22.Text = "REMARKS";
             // 
             // bs_project_item_sets
             // 
             this.bs_project_item_sets.DataMember = "tbl_project_item_sets";
             this.bs_project_item_sets.DataSource = this.dataSet1;
             // 
+            // pnl_header_2
+            // 
+            this.pnl_header_2.Controls.Add(this.dtp_date);
+            this.pnl_header_2.Controls.Add(this.label9);
+            this.pnl_header_2.Controls.Add(this.txt_quotation_id);
+            this.pnl_header_2.Controls.Add(this.label11);
+            this.pnl_header_2.Controls.Add(this.txt_ref_po);
+            this.pnl_header_2.Controls.Add(this.label10);
+            this.pnl_header_2.Controls.Add(this.label25);
+            this.pnl_header_2.Controls.Add(this.txt_doc);
+            this.pnl_header_2.Controls.Add(this.txt_id);
+            this.pnl_header_2.Controls.Add(this.txt_document_no);
+            this.pnl_header_2.Controls.Add(this.txt_ship_to_id);
+            this.pnl_header_2.Controls.Add(this.label13);
+            this.pnl_header_2.Controls.Add(this.txt_bill_to_id);
+            this.pnl_header_2.Controls.Add(this.txt_status);
+            this.pnl_header_2.Controls.Add(this.txt_customer_id);
+            this.pnl_header_2.Controls.Add(this.label4);
+            this.pnl_header_2.Controls.Add(this.txt_sales_executive);
+            this.pnl_header_2.Controls.Add(this.dtp_delivery_date);
+            this.pnl_header_2.Controls.Add(this.label7);
+            this.pnl_header_2.Controls.Add(this.label12);
+            this.pnl_header_2.Controls.Add(this.cmb_payment_terms);
+            this.pnl_header_2.Controls.Add(this.label16);
+            this.pnl_header_2.Controls.Add(this.cmb_ship_type);
+            this.pnl_header_2.Dock = System.Windows.Forms.DockStyle.Right;
+            this.pnl_header_2.Location = new System.Drawing.Point(463, 0);
+            this.pnl_header_2.Name = "pnl_header_2";
+            this.pnl_header_2.Size = new System.Drawing.Size(565, 168);
+            this.pnl_header_2.TabIndex = 267;
+            // 
+            // pnl_footer_2
+            // 
+            this.pnl_footer_2.Controls.Add(this.label23);
+            this.pnl_footer_2.Controls.Add(this.txt_total_amount_due);
+            this.pnl_footer_2.Controls.Add(this.txt_total);
+            this.pnl_footer_2.Controls.Add(this.label15);
+            this.pnl_footer_2.Controls.Add(this.btn_cancel);
+            this.pnl_footer_2.Controls.Add(this.txt_vat_amount);
+            this.pnl_footer_2.Controls.Add(this.btn_check);
+            this.pnl_footer_2.Controls.Add(this.label19);
+            this.pnl_footer_2.Controls.Add(this.txt_approved_by);
+            this.pnl_footer_2.Controls.Add(this.txt_gross_sales);
+            this.pnl_footer_2.Controls.Add(this.label21);
+            this.pnl_footer_2.Controls.Add(this.label20);
+            this.pnl_footer_2.Dock = System.Windows.Forms.DockStyle.Right;
+            this.pnl_footer_2.Location = new System.Drawing.Point(368, 0);
+            this.pnl_footer_2.Name = "pnl_footer_2";
+            this.pnl_footer_2.Size = new System.Drawing.Size(660, 180);
+            this.pnl_footer_2.TabIndex = 175;
+            // 
+            // number
+            // 
+            this.number.DataPropertyName = "number";
+            dataGridViewCellStyle18.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            this.number.DefaultCellStyle = dataGridViewCellStyle18;
+            this.number.FillWeight = 26.5718F;
+            this.number.HeaderText = "#";
+            this.number.Name = "number";
+            // 
+            // dataGridViewTextBoxColumn1
+            // 
+            this.dataGridViewTextBoxColumn1.FillWeight = 20.3308F;
+            this.dataGridViewTextBoxColumn1.HeaderText = "";
+            this.dataGridViewTextBoxColumn1.MinimumWidth = 3;
+            this.dataGridViewTextBoxColumn1.Name = "dataGridViewTextBoxColumn1";
+            this.dataGridViewTextBoxColumn1.ReadOnly = true;
+            // 
+            // qtyproject
+            // 
+            this.qtyproject.DataPropertyName = "qty";
+            this.qtyproject.FillWeight = 53.38F;
+            this.qtyproject.HeaderText = "QTY";
+            this.qtyproject.Name = "qtyproject";
+            // 
+            // itemcode
+            // 
+            this.itemcode.DataPropertyName = "item_code";
+            this.itemcode.FillWeight = 100.1291F;
+            this.itemcode.HeaderText = "ITEM CODE";
+            this.itemcode.Name = "itemcode";
+            // 
+            // short_descproject
+            // 
+            this.short_descproject.DataPropertyName = "short_desc";
+            this.short_descproject.FillWeight = 204.3974F;
+            this.short_descproject.HeaderText = "ITEM DESCRIPTION";
+            this.short_descproject.Name = "short_descproject";
+            // 
+            // delivery_preferenceproject
+            // 
+            this.delivery_preferenceproject.FillWeight = 100.1291F;
+            this.delivery_preferenceproject.HeaderText = "DELIVERY PREFERENCE";
+            this.delivery_preferenceproject.Items.AddRange(new object[] {
+            "(ASSEMBLED)",
+            "(SEMI-ASSEMBLED)",
+            "(INCLUDED-IN)",
+            "(LOOSE)"});
+            this.delivery_preferenceproject.Name = "delivery_preferenceproject";
+            this.delivery_preferenceproject.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+            this.delivery_preferenceproject.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
+            // 
+            // listpriceproject
+            // 
+            this.listpriceproject.DataPropertyName = "list_price_per_unit";
+            dataGridViewCellStyle19.Format = "C2";
+            dataGridViewCellStyle19.NullValue = null;
+            this.listpriceproject.DefaultCellStyle = dataGridViewCellStyle19;
+            this.listpriceproject.FillWeight = 100.1291F;
+            this.listpriceproject.HeaderText = "LIST PRICE";
+            this.listpriceproject.Name = "listpriceproject";
+            // 
+            // componenttotalproject
+            // 
+            this.componenttotalproject.DataPropertyName = "component_total";
+            dataGridViewCellStyle20.Format = "C2";
+            this.componenttotalproject.DefaultCellStyle = dataGridViewCellStyle20;
+            this.componenttotalproject.FillWeight = 100.1291F;
+            this.componenttotalproject.HeaderText = "TOTAL PRICE";
+            this.componenttotalproject.Name = "componenttotalproject";
+            // 
+            // statusproject
+            // 
+            this.statusproject.FillWeight = 100.1291F;
+            this.statusproject.HeaderText = "STATUS";
+            this.statusproject.Name = "statusproject";
+            // 
+            // itemsidDataGridViewTextBoxColumn
+            // 
+            this.itemsidDataGridViewTextBoxColumn.DataPropertyName = "items_id";
+            this.itemsidDataGridViewTextBoxColumn.HeaderText = "items_id";
+            this.itemsidDataGridViewTextBoxColumn.Name = "itemsidDataGridViewTextBoxColumn";
+            this.itemsidDataGridViewTextBoxColumn.Visible = false;
+            // 
+            // basedidproject
+            // 
+            this.basedidproject.DataPropertyName = "based_id";
+            this.basedidproject.HeaderText = "based_id";
+            this.basedidproject.Name = "basedidproject";
+            this.basedidproject.Visible = false;
+            // 
+            // componentsDataGridViewTextBoxColumn
+            // 
+            this.componentsDataGridViewTextBoxColumn.DataPropertyName = "components";
+            this.componentsDataGridViewTextBoxColumn.HeaderText = "components";
+            this.componentsDataGridViewTextBoxColumn.Name = "componentsDataGridViewTextBoxColumn";
+            this.componentsDataGridViewTextBoxColumn.Visible = false;
+            // 
+            // modelDataGridViewTextBoxColumn
+            // 
+            this.modelDataGridViewTextBoxColumn.DataPropertyName = "model";
+            this.modelDataGridViewTextBoxColumn.HeaderText = "model";
+            this.modelDataGridViewTextBoxColumn.Name = "modelDataGridViewTextBoxColumn";
+            this.modelDataGridViewTextBoxColumn.Visible = false;
+            // 
+            // iteminvtypeDataGridViewTextBoxColumn
+            // 
+            this.iteminvtypeDataGridViewTextBoxColumn.DataPropertyName = "item_inv_type";
+            this.iteminvtypeDataGridViewTextBoxColumn.HeaderText = "item_inv_type";
+            this.iteminvtypeDataGridViewTextBoxColumn.Name = "iteminvtypeDataGridViewTextBoxColumn";
+            this.iteminvtypeDataGridViewTextBoxColumn.Visible = false;
+            // 
+            // multiplierDataGridViewTextBoxColumn
+            // 
+            this.multiplierDataGridViewTextBoxColumn.DataPropertyName = "multiplier";
+            this.multiplierDataGridViewTextBoxColumn.HeaderText = "multiplier";
+            this.multiplierDataGridViewTextBoxColumn.Name = "multiplierDataGridViewTextBoxColumn";
+            this.multiplierDataGridViewTextBoxColumn.Visible = false;
+            // 
+            // discountpriceDataGridViewTextBoxColumn
+            // 
+            this.discountpriceDataGridViewTextBoxColumn.DataPropertyName = "discount_price";
+            this.discountpriceDataGridViewTextBoxColumn.HeaderText = "discount_price";
+            this.discountpriceDataGridViewTextBoxColumn.Name = "discountpriceDataGridViewTextBoxColumn";
+            this.discountpriceDataGridViewTextBoxColumn.Visible = false;
+            // 
+            // notesDataGridViewTextBoxColumn
+            // 
+            this.notesDataGridViewTextBoxColumn.DataPropertyName = "notes";
+            this.notesDataGridViewTextBoxColumn.HeaderText = "notes";
+            this.notesDataGridViewTextBoxColumn.Name = "notesDataGridViewTextBoxColumn";
+            this.notesDataGridViewTextBoxColumn.Visible = false;
+            // 
+            // bomiddgv
+            // 
+            this.bomiddgv.DataPropertyName = "bom_id";
+            this.bomiddgv.FillWeight = 107.4893F;
+            this.bomiddgv.HeaderText = "bom_id";
+            this.bomiddgv.Name = "bomiddgv";
+            this.bomiddgv.Visible = false;
+            // 
+            // itemiddgv
+            // 
+            this.itemiddgv.DataPropertyName = "item_id";
+            this.itemiddgv.FillWeight = 107.4893F;
+            this.itemiddgv.HeaderText = "item_id";
+            this.itemiddgv.Name = "itemiddgv";
+            this.itemiddgv.Visible = false;
+            // 
+            // number1
+            // 
+            this.number1.DataPropertyName = "numbering";
+            dataGridViewCellStyle22.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            this.number1.DefaultCellStyle = dataGridViewCellStyle22;
+            this.number1.FillWeight = 30.55143F;
+            this.number1.HeaderText = "#";
+            this.number1.Name = "number1";
+            // 
             // Column10
             // 
-            this.Column10.FillWeight = 20.30457F;
+            this.Column10.FillWeight = 24.99686F;
             this.Column10.HeaderText = "";
             this.Column10.MinimumWidth = 3;
             this.Column10.Name = "Column10";
@@ -1546,7 +1754,7 @@ namespace smpc_sales_app.Pages.Sales
             // qtydgv
             // 
             this.qtydgv.DataPropertyName = "qty";
-            this.qtydgv.FillWeight = 111.3851F;
+            this.qtydgv.FillWeight = 65.25381F;
             this.qtydgv.HeaderText = "QTY";
             this.qtydgv.Name = "qtydgv";
             this.qtydgv.ReadOnly = true;
@@ -1554,23 +1762,22 @@ namespace smpc_sales_app.Pages.Sales
             // itemcodedgv
             // 
             this.itemcodedgv.DataPropertyName = "item_code";
-            this.itemcodedgv.FillWeight = 111.3851F;
+            this.itemcodedgv.FillWeight = 109.5354F;
             this.itemcodedgv.HeaderText = "ITEM CODE";
             this.itemcodedgv.Name = "itemcodedgv";
             this.itemcodedgv.ReadOnly = true;
             // 
-            // shortdescdgv
+            // shortdesc
             // 
-            this.shortdescdgv.DataPropertyName = "short_desc";
-            this.shortdescdgv.FillWeight = 111.3851F;
-            this.shortdescdgv.HeaderText = "ITEM DESCRIPTION";
-            this.shortdescdgv.Name = "shortdescdgv";
-            this.shortdescdgv.ReadOnly = true;
+            this.shortdesc.DataPropertyName = "item_description";
+            this.shortdesc.FillWeight = 219.7576F;
+            this.shortdesc.HeaderText = "ITEM DESCRIPTION";
+            this.shortdesc.Name = "shortdesc";
             // 
             // delivery_preference
             // 
             this.delivery_preference.DataPropertyName = "delivery_preference";
-            this.delivery_preference.FillWeight = 111.3851F;
+            this.delivery_preference.FillWeight = 109.5354F;
             this.delivery_preference.HeaderText = "DELIVERY PREFERENCE";
             this.delivery_preference.Items.AddRange(new object[] {
             "(ASSEMBLED)",
@@ -1581,25 +1788,29 @@ namespace smpc_sales_app.Pages.Sales
             this.delivery_preference.Resizable = System.Windows.Forms.DataGridViewTriState.True;
             this.delivery_preference.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
             // 
-            // unitpricedgv
+            // unitprice
             // 
-            this.unitpricedgv.DataPropertyName = "unit_price";
-            dataGridViewCellStyle3.Format = "C2";
-            dataGridViewCellStyle3.NullValue = null;
-            this.unitpricedgv.DefaultCellStyle = dataGridViewCellStyle3;
-            this.unitpricedgv.FillWeight = 111.3851F;
-            this.unitpricedgv.HeaderText = "LIST PRICE";
-            this.unitpricedgv.Name = "unitpricedgv";
+            this.unitprice.DataPropertyName = "list_price";
+            dataGridViewCellStyle23.Format = "c2";
+            this.unitprice.DefaultCellStyle = dataGridViewCellStyle23;
+            this.unitprice.FillWeight = 98.33942F;
+            this.unitprice.HeaderText = "LIST PRICE";
+            this.unitprice.Name = "unitprice";
             // 
-            // linetotaldgv
+            // linetotal
             // 
-            this.linetotaldgv.DataPropertyName = "line_total";
-            dataGridViewCellStyle4.Format = "C2";
-            dataGridViewCellStyle4.NullValue = null;
-            this.linetotaldgv.DefaultCellStyle = dataGridViewCellStyle4;
-            this.linetotaldgv.FillWeight = 111.3851F;
-            this.linetotaldgv.HeaderText = "TOTAL PRICE";
-            this.linetotaldgv.Name = "linetotaldgv";
+            this.linetotal.DataPropertyName = "total_price";
+            dataGridViewCellStyle24.Format = "c2";
+            this.linetotal.DefaultCellStyle = dataGridViewCellStyle24;
+            this.linetotal.FillWeight = 98.33942F;
+            this.linetotal.HeaderText = "TOTAL PRICE";
+            this.linetotal.Name = "linetotal";
+            // 
+            // status
+            // 
+            this.status.FillWeight = 109.5354F;
+            this.status.HeaderText = "STATUS";
+            this.status.Name = "status";
             // 
             // quick_quote_id
             // 
@@ -1664,17 +1875,10 @@ namespace smpc_sales_app.Pages.Sales
             this.nettotalDataGridViewTextBoxColumn.Name = "nettotalDataGridViewTextBoxColumn";
             this.nettotalDataGridViewTextBoxColumn.Visible = false;
             // 
-            // status
-            // 
-            this.status.FillWeight = 111.3851F;
-            this.status.HeaderText = "STATUS";
-            this.status.Name = "status";
-            // 
             // Orders
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.Controls.Add(this.panel5);
             this.Controls.Add(this.panel1);
             this.Name = "Orders";
             this.Size = new System.Drawing.Size(1028, 1200);
@@ -1689,31 +1893,35 @@ namespace smpc_sales_app.Pages.Sales
             ((System.ComponentModel.ISupportInitialize)(this.dataTable2)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.bs_ship_type)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.bs_payment_terms)).EndInit();
-            this.panel5.ResumeLayout(false);
-            this.panel10.ResumeLayout(false);
-            this.panel12.ResumeLayout(false);
-            this.panel11.ResumeLayout(false);
-            this.panel11.PerformLayout();
-            this.panel7.ResumeLayout(false);
-            this.panel9.ResumeLayout(false);
-            this.panel8.ResumeLayout(false);
-            this.panel8.PerformLayout();
             this.panel4.ResumeLayout(false);
             this.panel4.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgv_project)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.bs_project_items)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.dgv_order_sales)).EndInit();
             this.pnl_header.ResumeLayout(false);
             this.pnl_header.PerformLayout();
             this.toolStrip1.ResumeLayout(false);
             this.toolStrip1.PerformLayout();
             this.panel6.ResumeLayout(false);
             this.panel6.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dgv_order_sales)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.bs_order_details)).EndInit();
             this.panel1.ResumeLayout(false);
             this.pnl_footer.ResumeLayout(false);
             this.pnl_footer.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.bs_order_details)).EndInit();
+            this.panel2.ResumeLayout(false);
+            this.panel9.ResumeLayout(false);
+            this.panel8.ResumeLayout(false);
+            this.panel11.ResumeLayout(false);
+            this.panel10.ResumeLayout(false);
+            this.panel7.ResumeLayout(false);
+            this.panel7.PerformLayout();
+            this.panel3.ResumeLayout(false);
+            this.panel3.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.bs_project_item_sets)).EndInit();
+            this.pnl_header_2.ResumeLayout(false);
+            this.pnl_header_2.PerformLayout();
+            this.pnl_footer_2.ResumeLayout(false);
+            this.pnl_footer_2.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -1726,18 +1934,6 @@ namespace smpc_sales_app.Pages.Sales
         private System.Windows.Forms.DataGridViewTextBoxColumn Column8;
         private System.Windows.Forms.DataGridViewTextBoxColumn Column6;
         private System.Windows.Forms.DataGridViewTextBoxColumn Column1;
-        private System.Windows.Forms.Panel panel5;
-        private System.Windows.Forms.Panel panel10;
-        private System.Windows.Forms.Panel panel11;
-        private System.Windows.Forms.Panel panel7;
-        private System.Windows.Forms.Panel panel9;
-        private System.Windows.Forms.TreeView treeview_sales;
-        private System.Windows.Forms.Panel panel8;
-        private System.Windows.Forms.Label label24;
-        private System.Windows.Forms.Panel panel12;
-        private System.Windows.Forms.Button button3;
-        private System.Windows.Forms.Button btn_save;
-        private System.Windows.Forms.Label label22;
         private System.Windows.Forms.BindingSource quick_quotes;
         private System.Data.DataSet dataSet1;
         private System.Data.DataTable tbl_quick_quotes;
@@ -1765,7 +1961,6 @@ namespace smpc_sales_app.Pages.Sales
         private System.Data.DataColumn name;
         private System.Windows.Forms.BindingSource bs_payment_terms;
         private System.Windows.Forms.Panel panel4;
-        private System.Windows.Forms.DataGridView dgv_order_sales;
         private System.Windows.Forms.Panel pnl_header;
         private System.Windows.Forms.TextBox txt_ref_po;
         private System.Windows.Forms.Label label25;
@@ -1815,21 +2010,6 @@ namespace smpc_sales_app.Pages.Sales
         private System.Windows.Forms.Panel panel6;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Panel panel1;
-        private System.Windows.Forms.Panel pnl_footer;
-        private System.Windows.Forms.Label label23;
-        private System.Windows.Forms.TextBox txt_total;
-        private System.Windows.Forms.Button btn_cancel;
-        private System.Windows.Forms.Button btn_check;
-        private System.Windows.Forms.TextBox txt_approved_by;
-        private System.Windows.Forms.Label label21;
-        private System.Windows.Forms.TextBox txt_total_amount_due;
-        private System.Windows.Forms.Label label20;
-        private System.Windows.Forms.TextBox txt_gross_sales;
-        private System.Windows.Forms.Label label19;
-        private System.Windows.Forms.TextBox txt_vat_amount;
-        private System.Windows.Forms.Label label15;
-        private System.Windows.Forms.TextBox txt_remarks;
-        private System.Windows.Forms.Label label14;
         private System.Data.DataTable tbl_order_details;
         private System.Data.DataColumn order_details_id;
         private System.Data.DataColumn dataColumn2;
@@ -1860,28 +2040,59 @@ namespace smpc_sales_app.Pages.Sales
         private System.Data.DataColumn dataColumn18;
         private System.Data.DataColumn dataColumn19;
         private System.Windows.Forms.BindingSource bs_project_items;
-        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn1;
-        private System.Windows.Forms.DataGridViewComboBoxColumn Column2;
         private System.Data.DataColumn dataColumn20;
-        private System.Windows.Forms.DataGridViewTextBoxColumn itemsidDataGridViewTextBoxColumn;
-        private System.Windows.Forms.DataGridViewTextBoxColumn basedidDataGridViewTextBoxColumn;
-        private System.Windows.Forms.DataGridViewTextBoxColumn componentsDataGridViewTextBoxColumn;
-        private System.Windows.Forms.DataGridViewTextBoxColumn modelDataGridViewTextBoxColumn;
-        private System.Windows.Forms.DataGridViewTextBoxColumn iteminvtypeDataGridViewTextBoxColumn;
-        private System.Windows.Forms.DataGridViewTextBoxColumn qtyDataGridViewTextBoxColumn1;
-        private System.Windows.Forms.DataGridViewTextBoxColumn multiplierDataGridViewTextBoxColumn;
-        private System.Windows.Forms.DataGridViewTextBoxColumn discountpriceDataGridViewTextBoxColumn;
-        private System.Windows.Forms.DataGridViewTextBoxColumn listpriceperunitDataGridViewTextBoxColumn;
-        private System.Windows.Forms.DataGridViewTextBoxColumn componenttotalDataGridViewTextBoxColumn;
-        private System.Windows.Forms.DataGridViewTextBoxColumn notesDataGridViewTextBoxColumn;
-        private System.Windows.Forms.DataGridViewTextBoxColumn bomidDataGridViewTextBoxColumn;
+        private System.Windows.Forms.TextBox txt_project_name;
+        private System.Data.DataColumn dataColumn21;
+        private System.Windows.Forms.Label label26;
+        private System.Windows.Forms.DataGridViewTextBoxColumn shortdescdgv;
+        private System.Windows.Forms.DataGridViewTextBoxColumn unitpricedgv;
+        private System.Windows.Forms.DataGridViewTextBoxColumn linetotaldgv;
+        private System.Data.DataColumn dataColumn22;
+        private System.Data.DataColumn dataColumn23;
+        private System.Data.DataColumn dataColumn24;
+        private System.Data.DataColumn dataColumn25;
+        private System.Data.DataColumn dataColumn26;
+        private System.Data.DataColumn dataColumn27;
+        private System.Windows.Forms.DataGridView dgv_order_sales;
+        private System.Windows.Forms.Panel pnl_footer;
+        private System.Windows.Forms.Label label23;
+        private System.Windows.Forms.TextBox txt_total;
+        private System.Windows.Forms.Button btn_cancel;
+        private System.Windows.Forms.Button btn_check;
+        private System.Windows.Forms.TextBox txt_approved_by;
+        private System.Windows.Forms.Label label21;
+        private System.Windows.Forms.TextBox txt_total_amount_due;
+        private System.Windows.Forms.Label label20;
+        private System.Windows.Forms.TextBox txt_gross_sales;
+        private System.Windows.Forms.Label label19;
+        private System.Windows.Forms.TextBox txt_vat_amount;
+        private System.Windows.Forms.Label label15;
+        private System.Windows.Forms.TextBox txt_remarks;
+        private System.Windows.Forms.Label label14;
+        private System.Windows.Forms.Panel panel2;
+        private System.Windows.Forms.Panel panel8;
+        private System.Windows.Forms.Panel panel7;
+        private System.Windows.Forms.Label label24;
+        private System.Windows.Forms.Panel panel5;
+        private System.Windows.Forms.Panel panel3;
+        private System.Windows.Forms.Label label22;
+        private System.Windows.Forms.Panel panel9;
+        private System.Windows.Forms.Button btn_save;
+        private System.Windows.Forms.Panel panel11;
+        private System.Windows.Forms.TreeView treeView1;
+        private System.Windows.Forms.Panel panel10;
+        private System.Windows.Forms.ListView listView1;
+        private System.Windows.Forms.Panel pnl_header_2;
+        private System.Windows.Forms.Panel pnl_footer_2;
+        private System.Windows.Forms.DataGridViewTextBoxColumn number1;
         private System.Windows.Forms.DataGridViewTextBoxColumn Column10;
         private System.Windows.Forms.DataGridViewTextBoxColumn qtydgv;
         private System.Windows.Forms.DataGridViewTextBoxColumn itemcodedgv;
-        private System.Windows.Forms.DataGridViewTextBoxColumn shortdescdgv;
+        private System.Windows.Forms.DataGridViewTextBoxColumn shortdesc;
         private System.Windows.Forms.DataGridViewComboBoxColumn delivery_preference;
-        private System.Windows.Forms.DataGridViewTextBoxColumn unitpricedgv;
-        private System.Windows.Forms.DataGridViewTextBoxColumn linetotaldgv;
+        private System.Windows.Forms.DataGridViewTextBoxColumn unitprice;
+        private System.Windows.Forms.DataGridViewTextBoxColumn linetotal;
+        private System.Windows.Forms.DataGridViewTextBoxColumn status;
         private System.Windows.Forms.DataGridViewTextBoxColumn quick_quote_id;
         private System.Windows.Forms.DataGridViewTextBoxColumn basedid;
         private System.Windows.Forms.DataGridViewTextBoxColumn itemid;
@@ -1891,6 +2102,24 @@ namespace smpc_sales_app.Pages.Sales
         private System.Windows.Forms.DataGridViewTextBoxColumn percentdiscountDataGridViewTextBoxColumn;
         private System.Windows.Forms.DataGridViewTextBoxColumn netdiscountDataGridViewTextBoxColumn;
         private System.Windows.Forms.DataGridViewTextBoxColumn nettotalDataGridViewTextBoxColumn;
-        private System.Windows.Forms.DataGridViewTextBoxColumn status;
+        private System.Windows.Forms.DataGridViewTextBoxColumn number;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn1;
+        private System.Windows.Forms.DataGridViewTextBoxColumn qtyproject;
+        private System.Windows.Forms.DataGridViewTextBoxColumn itemcode;
+        private System.Windows.Forms.DataGridViewTextBoxColumn short_descproject;
+        private System.Windows.Forms.DataGridViewComboBoxColumn delivery_preferenceproject;
+        private System.Windows.Forms.DataGridViewTextBoxColumn listpriceproject;
+        private System.Windows.Forms.DataGridViewTextBoxColumn componenttotalproject;
+        private System.Windows.Forms.DataGridViewTextBoxColumn statusproject;
+        private System.Windows.Forms.DataGridViewTextBoxColumn itemsidDataGridViewTextBoxColumn;
+        private System.Windows.Forms.DataGridViewTextBoxColumn basedidproject;
+        private System.Windows.Forms.DataGridViewTextBoxColumn componentsDataGridViewTextBoxColumn;
+        private System.Windows.Forms.DataGridViewTextBoxColumn modelDataGridViewTextBoxColumn;
+        private System.Windows.Forms.DataGridViewTextBoxColumn iteminvtypeDataGridViewTextBoxColumn;
+        private System.Windows.Forms.DataGridViewTextBoxColumn multiplierDataGridViewTextBoxColumn;
+        private System.Windows.Forms.DataGridViewTextBoxColumn discountpriceDataGridViewTextBoxColumn;
+        private System.Windows.Forms.DataGridViewTextBoxColumn notesDataGridViewTextBoxColumn;
+        private System.Windows.Forms.DataGridViewTextBoxColumn bomiddgv;
+        private System.Windows.Forms.DataGridViewTextBoxColumn itemiddgv;
     }
 }

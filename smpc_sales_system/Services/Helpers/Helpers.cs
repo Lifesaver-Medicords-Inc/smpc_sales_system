@@ -298,8 +298,8 @@ namespace smpc_app.Services.Helpers
                                 }
                                 else
                                 {
-                                    Console.WriteLine("TextBox Name: " + textBox.Name);
-                                    Console.WriteLine("customer_name: " + dt.Rows[selectedIndex][column_name]);
+                                    //Console.WriteLine("TextBox Name: " + textBox.Name);
+                                    //Console.WriteLine("customer_name: " + dt.Rows[selectedIndex][column_name]);
                                     textBox.Text = (string)dt.Rows[selectedIndex][column_name].ToString();
                                 }
                             }

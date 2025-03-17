@@ -96,8 +96,7 @@ namespace smpc_sales_system.Pages
                 this.Close();
             }
         }
-
-        private void button1_Click(object sender, EventArgs e)
+        private void txt_search_TextChanged(object sender, EventArgs e)
         {
             string searchval = txt_search.Text.ToString();
             var data = Helpers.FilterDataTable(Dt, searchval, "document_no", "status", "doc", "quotation_id");
