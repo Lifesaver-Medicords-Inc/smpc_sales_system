@@ -240,6 +240,7 @@
             this.net_discount = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.net_total = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.line_total = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.txt_project_name = new System.Windows.Forms.TextBox();
             this.panel1.SuspendLayout();
             this.panel3.SuspendLayout();
             this.tabControl.SuspendLayout();
@@ -1539,6 +1540,7 @@
             // 
             // pnl_header
             // 
+            this.pnl_header.Controls.Add(this.txt_project_name);
             this.pnl_header.Controls.Add(this.txt_customer_id);
             this.pnl_header.Controls.Add(this.label59);
             this.pnl_header.Controls.Add(this.btn_add_customer);
@@ -2187,6 +2189,14 @@
             this.line_total.Name = "line_total";
             this.line_total.ReadOnly = true;
             // 
+            // txt_project_name
+            // 
+            this.txt_project_name.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
+            this.txt_project_name.Location = new System.Drawing.Point(87, 97);
+            this.txt_project_name.Name = "txt_project_name";
+            this.txt_project_name.Size = new System.Drawing.Size(200, 20);
+            this.txt_project_name.TabIndex = 111;
+            // 
             // Quotation
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -2433,5 +2443,6 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn itemclassidDataGridViewTextBoxColumn;
         private System.Windows.Forms.TextBox txt_customer_id;
         private System.Windows.Forms.Button btn_SO;
+        private System.Windows.Forms.TextBox txt_project_name;
     }
 }

@@ -78,6 +78,7 @@ namespace smpc_sales_system.Models
     {
         public int items_id { get; set; }
         public int based_id { get; set; }
+        public int template_id { get; set; }
         public int bom_id { get; set; }
         public int item_id { get; set; }
         public string components { get; set; }

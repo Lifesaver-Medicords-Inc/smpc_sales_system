@@ -1,0 +1,195 @@
+private void bindProject2(string documentNo, bool isBind = false)
+        {
+            if (isBind)
+            {
+                Panel[] pnlList = { pnl_header, pnl_header_2, pnl_footer, pnl_footer_2 };
+
+                DataTable HeaderList = this.OrderList.Clone();
+                HeaderList.Columns.Add("branch_name", typeof(string));
+                HeaderList.Columns.Add("customer_code", typeof(string));
+                HeaderList.Columns.Add("bill_to", typeof(string));
+                HeaderList.Columns.Add("ship_to", typeof(string));
+                HeaderList.Columns.Add("tin", typeof(string));
+
+                // Filter the transactionList based on document_no
+                DataRow[] filteredRows = this.OrderList.Select($"document_no = '{documentNo}'");
+
+                DataRow parentRow = filteredRows[0];
+                DataRow newRow = HeaderList.NewRow();
+
+                foreach (DataColumn col in this.OrderList.Columns)
+                {
+                    newRow[col.ColumnName] = parentRow[col.ColumnName];
+                }
+
+                int quotationID = Convert.ToInt32(parentRow["quotation_id"]);
+                DataRow[] quotation = transactionList.Select($"id = '{quotationID}'");
+                int ID = (int)quotation[0]["customer_id"];
+                string ShipID = parentRow["ship_to_id"].ToString();
+                string BillID = parentRow["bill_to_id"].ToString();
+                DataRow[] bpiGenRows = bpi_general.Select($"general_based_id = '{ID}'");
+                DataRow[] billRows = bpi_address.Select($"address_id = '{BillID}'");
+                DataRow[] shipRows = bpi_address.Select($"address_id = '{ShipID}'");
+
+                if (bpiGenRows.Length > 0)
+                {
+                    newRow["branch_name"] = bpiGenRows[0]["branch_name"].ToString();
+                    newRow["customer_code"] = bpiGenRows[0]["customer_code"].ToString();
+                    string BasedID = bpiGenRows[0]["general_based_id"].ToString();
+                    DataRow[] bpiRows = bpi_dt.Select($"id = '{BasedID}'");
+
+                    if (bpiRows.Length > 0)
+                    {
+                        newRow["tin"] = bpiRows[0]["tin"].ToString();
+                    }
+                    else
+                    {
+                        newRow["tin"] = "No TIN";
+                    }
+
+                    if (billRows.Length > 0)
+                    {
+                        newRow["bill_to"] = billRows[0]["location"].ToString();
+                        newRow["ship_to"] = shipRows[0]["location"].ToString();
+                    }
+                    else
+                    {
+                        newRow["bill_to"] = "No Location";
+                    }
+                }
+                else
+                {
+                    newRow["branch_name"] = "Unknown Customer";
+                    newRow["customer_code"] = "N/A";
+                }
+
+                HeaderList.Rows.Add(newRow);
+
+                cmb_payment_terms.SelectedValue = filteredRows[0]["payment_terms_id"].ToString();
+                cmb_payment_terms.SelectedItem = filteredRows[0]["payment_terms_id"].ToString();
+
+                cmb_ship_type.SelectedValue = filteredRows[0]["ship_type_id"].ToString();
+                cmb_ship_type.SelectedItem = filteredRows[0]["ship_type_id"].ToString();
+
+
+                Helpers.BindControls(pnlList, HeaderList, 0);
+
+                UpdateTextBoxes(pnlList);
+
+                DataView dataview = new DataView(ItemSets);
+                dataview.RowFilter = "based_id = '" + Convert.ToInt32(filteredRows[0]["quotation_id"]) + "'";
+
+                var ids = new List<int>();
+                foreach (DataRowView rowView in dataview)
+                {
+                    int id = Convert.ToInt32(rowView["itemset_id"]);
+                    ids.Add(id);
+                }
+                double bomCounter = 1;
+                DataView dataview2 = new DataView(ProjectItemList);
+                if (ids.Count > 0)
+                {
+                    // Now, filter dataview2 based on the extracted IDs
+                    string idFilter = string.Join("','", ids); // Join IDs with commas for SQL-like filtering
+                    dataview2.RowFilter = $"based_id IN ('{idFilter}')"; // Use IN to filter by multiple IDs
+                    DataTable transformedTable = dataview2.ToTable();
+
+                    DataTable withItemListTwo = this.ProjectItemList.Clone();
+                    withItemListTwo.Columns.Add("short_desc", typeof(string));
+                    withItemListTwo.Columns.Add("item_code", typeof(string));
+                    withItemListTwo.Columns.Add("number", typeof(string));
+
+                    // GET ITEM DETAILS BASED ON ITEM ID IF THERE'S ITEM ID
+                    foreach (DataRow row in transformedTable.Rows)
+                    {
+                        // Check if item_id > 0 and bom_id == 0
+                        int itemId = Convert.ToInt32(row["item_id"]);
+                        int bomId = Convert.ToInt32(row["bom_id"]);
+                        newRow = withItemListTwo.NewRow();
+
+                        foreach (DataColumn col in transformedTable.Columns)
+                        {
+                            newRow[col.ColumnName] = row[col.ColumnName];
+                        }
+                        // If item_id is greater than 0 and bom_id is 0, perform the regular process
+                        if (itemId > 0 && bomId == 0)
+                        {
+                            DataRow[] itemRows = ItemList.Select($"id = {itemId}");
+
+                            if (itemRows.Length > 0)
+                            {
+                                string itemCode = itemRows[0]["item_code"].ToString();
+                                string shortDesc = itemRows[0]["short_desc"].ToString();
+
+                                newRow["number"] = bomCounter;
+                                newRow["short_desc"] = shortDesc;
+                                newRow["item_code"] = itemCode;
+                            }
+                            else
+                            {
+                                newRow["number"] = bomCounter;
+                                newRow["short_desc"] = "Unknown";
+                                newRow["item_code"] = "Unknown";
+                            }
+                            bomCounter += 1.0;
+                            withItemListTwo.Rows.Add(newRow);
+                        }
+                        else if (bomId > 0 && itemId == 0)
+                        {
+
+                            DataRow[] bomRows = bom.Select($"id = {bomId}");
+                            if (bomRows.Length > 0)
+                            {
+                                string itemCode = bomRows[0]["item_code"].ToString();
+                                newRow["number"] = bomCounter;
+                                newRow["item_code"] = itemCode;
+                            }
+                            else
+                            {
+                                newRow["number"] = bomCounter;
+                                newRow["item_code"] = "Unknown";
+                            }
+                            withItemListTwo.Rows.Add(newRow);
+
+                            DataRow[] bomdetailRows = bomdetail.Select($"item_bom_id = {bomId}");
+
+                            if (bomdetailRows.Length > 0)
+                            {
+                                int bomDetailIndex = 1;
+                                foreach (DataRow bomDetail in bomdetailRows)
+                                {
+
+                                    // Create a new row to add to the DataGridView
+                                    DataRow newBomDetailRow = withItemListTwo.NewRow();
+
+                                    foreach (DataColumn col in transformedTable.Columns)
+                                    {
+                                        newBomDetailRow[col.ColumnName] = newRow[col.ColumnName];
+                                    }
+
+                                    // For example, add BOM details like "bom_description"
+                                    string itemcode = bomDetail["item_code"].ToString();
+                                    string bomqty = bomDetail["bom_qty"].ToString();
+                                    newBomDetailRow["number"] = $"{bomCounter}.{bomDetailIndex}";
+                                    newBomDetailRow["item_code"] = itemcode;
+                                    newBomDetailRow["qty"] = bomqty;
+
+                                    bomDetailIndex += 1;
+                                    // Add the new row to the DataGridView
+                                    withItemListTwo.Rows.Add(newBomDetailRow);
+                                }
+                            }
+                            bomCounter += 1.0;
+                        }
+                    }
+                    dgv_project.DataSource = withItemListTwo;
+
+                }
+                else
+                {
+                    // If no IDs were found, you can handle this case accordingly
+                    MessageBox.Show("No matching IDs found.");
+                }
+                CheckStatus();
+            }
+        }
