@@ -208,17 +208,18 @@
                           <TextRun>
                             <Value>=First(Fields!date.Value, "DataSet1")</Value>
                             <Style>
-                              <FontSize>8pt</FontSize>
+                              <FontFamily>Calibri</FontFamily>
+                              <FontSize>9pt</FontSize>
                             </Style>
                           </TextRun>
                         </TextRuns>
                         <Style />
                       </Paragraph>
                     </Paragraphs>
-                    <Top>2.40534cm</Top>
-                    <Left>15.84765cm</Left>
+                    <Top>2.4759cm</Top>
+                    <Left>16.12971cm</Left>
                     <Height>0.48094cm</Height>
-                    <Width>1.79444cm</Width>
+                    <Width>2.54174cm</Width>
                     <Style>
                       <Border>
                         <Style>None</Style>
@@ -238,17 +239,18 @@
                           <TextRun>
                             <Value>="SO#" &amp; First(Fields!doc.Value, "DataSet1")</Value>
                             <Style>
-                              <FontSize>8pt</FontSize>
+                              <FontFamily>Calibri</FontFamily>
+                              <FontSize>9pt</FontSize>
                             </Style>
                           </TextRun>
                         </TextRuns>
                         <Style />
                       </Paragraph>
                     </Paragraphs>
-                    <Top>1.88912cm</Top>
-                    <Left>15.84765cm</Left>
+                    <Top>1.9244cm</Top>
+                    <Left>16.12971cm</Left>
                     <Height>0.51622cm</Height>
-                    <Width>1.79444cm</Width>
+                    <Width>2.54174cm</Width>
                     <ZIndex>1</ZIndex>
                     <Style>
                       <Border>
@@ -269,7 +271,8 @@
                           <TextRun>
                             <Value>DATE :</Value>
                             <Style>
-                              <FontSize>8pt</FontSize>
+                              <FontFamily>Calibri</FontFamily>
+                              <FontSize>9pt</FontSize>
                             </Style>
                           </TextRun>
                         </TextRuns>
@@ -277,10 +280,10 @@
                       </Paragraph>
                     </Paragraphs>
                     <rd:DefaultName>Textbox7</rd:DefaultName>
-                    <Top>2.40534cm</Top>
-                    <Left>14.44cm</Left>
+                    <Top>2.44062cm</Top>
+                    <Left>12.72534cm</Left>
                     <Height>0.51622cm</Height>
-                    <Width>1.11436cm</Width>
+                    <Width>1.47081cm</Width>
                     <ZIndex>2</ZIndex>
                     <Style>
                       <Border>
@@ -301,7 +304,8 @@
                           <TextRun>
                             <Value>ORDER NO.:</Value>
                             <Style>
-                              <FontSize>8pt</FontSize>
+                              <FontFamily>Calibri</FontFamily>
+                              <FontSize>9pt</FontSize>
                             </Style>
                           </TextRun>
                         </TextRuns>
@@ -309,10 +313,10 @@
                       </Paragraph>
                     </Paragraphs>
                     <rd:DefaultName>Textbox7</rd:DefaultName>
-                    <Top>1.88912cm</Top>
-                    <Left>13.73787cm</Left>
+                    <Top>1.88913cm</Top>
+                    <Left>12.72534cm</Left>
                     <Height>0.51622cm</Height>
-                    <Width>1.81649cm</Width>
+                    <Width>2.16675cm</Width>
                     <ZIndex>3</ZIndex>
                     <Style>
                       <Border>
@@ -333,16 +337,17 @@
                           <TextRun>
                             <Value>=Parameters!BranchName.Value</Value>
                             <Style>
-                              <FontSize>8pt</FontSize>
+                              <FontFamily>Calibri</FontFamily>
+                              <FontSize>9pt</FontSize>
                             </Style>
                           </TextRun>
                         </TextRuns>
                         <Style />
                       </Paragraph>
                     </Paragraphs>
-                    <Top>1.88912cm</Top>
-                    <Left>3.73358cm</Left>
-                    <Height>0.44566cm</Height>
+                    <Top>1.9244cm</Top>
+                    <Left>3.04688cm</Left>
+                    <Height>0.48094cm</Height>
                     <Width>4.771cm</Width>
                     <ZIndex>4</ZIndex>
                     <Style>
@@ -364,16 +369,17 @@
                           <TextRun>
                             <Value>=Parameters!CodeName.Value</Value>
                             <Style>
-                              <FontSize>8pt</FontSize>
+                              <FontFamily>Calibri</FontFamily>
+                              <FontSize>9pt</FontSize>
                             </Style>
                           </TextRun>
                         </TextRuns>
                         <Style />
                       </Paragraph>
                     </Paragraphs>
-                    <Top>2.33478cm</Top>
-                    <Left>3.73358cm</Left>
-                    <Height>0.44566cm</Height>
+                    <Top>2.4759cm</Top>
+                    <Left>3.04688cm</Left>
+                    <Height>0.58678cm</Height>
                     <Width>4.771cm</Width>
                     <ZIndex>5</ZIndex>
                     <Style>
@@ -395,16 +401,17 @@
                           <TextRun>
                             <Value>=Parameters!ShipName.Value</Value>
                             <Style>
-                              <FontSize>8pt</FontSize>
+                              <FontFamily>Calibri</FontFamily>
+                              <FontSize>9pt</FontSize>
                             </Style>
                           </TextRun>
                         </TextRuns>
                         <Style />
                       </Paragraph>
                     </Paragraphs>
-                    <Top>2.78044cm</Top>
-                    <Left>3.73358cm</Left>
-                    <Height>0.52503cm</Height>
+                    <Top>3.65867cm</Top>
+                    <Left>3.04688cm</Left>
+                    <Height>0.56031cm</Height>
                     <Width>4.771cm</Width>
                     <ZIndex>6</ZIndex>
                     <Style>
@@ -426,15 +433,16 @@
                           <TextRun>
                             <Value>=Parameters!BillName.Value</Value>
                             <Style>
-                              <FontSize>8pt</FontSize>
+                              <FontFamily>Calibri</FontFamily>
+                              <FontSize>9pt</FontSize>
                             </Style>
                           </TextRun>
                         </TextRuns>
                         <Style />
                       </Paragraph>
                     </Paragraphs>
-                    <Top>3.30547cm</Top>
-                    <Left>3.73358cm</Left>
+                    <Top>4.22425cm</Top>
+                    <Left>3.04688cm</Left>
                     <Height>0.48977cm</Height>
                     <Width>4.771cm</Width>
                     <ZIndex>7</ZIndex>
@@ -455,9 +463,10 @@
                       <Paragraph>
                         <TextRuns>
                           <TextRun>
-                            <Value>COSTUMER:</Value>
+                            <Value>CUSTOMER :</Value>
                             <Style>
-                              <FontSize>8pt</FontSize>
+                              <FontFamily>Calibri</FontFamily>
+                              <FontSize>9pt</FontSize>
                             </Style>
                           </TextRun>
                         </TextRuns>
@@ -465,9 +474,9 @@
                       </Paragraph>
                     </Paragraphs>
                     <rd:DefaultName>Textbox7</rd:DefaultName>
-                    <Top>1.88912cm</Top>
-                    <Height>0.44566cm</Height>
-                    <Width>2.03698cm</Width>
+                    <Top>1.9244cm</Top>
+                    <Height>0.51622cm</Height>
+                    <Width>2.56614cm</Width>
                     <ZIndex>8</ZIndex>
                     <Style>
                       <Border>
@@ -486,9 +495,10 @@
                       <Paragraph>
                         <TextRuns>
                           <TextRun>
-                            <Value>CODE:</Value>
+                            <Value>CODE :</Value>
                             <Style>
-                              <FontSize>8pt</FontSize>
+                              <FontFamily>Calibri</FontFamily>
+                              <FontSize>9pt</FontSize>
                             </Style>
                           </TextRun>
                         </TextRuns>
@@ -496,8 +506,8 @@
                       </Paragraph>
                     </Paragraphs>
                     <rd:DefaultName>Textbox7</rd:DefaultName>
-                    <Top>2.33478cm</Top>
-                    <Height>0.44566cm</Height>
+                    <Top>2.4759cm</Top>
+                    <Height>0.58678cm</Height>
                     <Width>2.03698cm</Width>
                     <ZIndex>9</ZIndex>
                     <Style>
@@ -517,9 +527,10 @@
                       <Paragraph>
                         <TextRuns>
                           <TextRun>
-                            <Value>DELIVERY TO:</Value>
+                            <Value>DELIVERY TO :</Value>
                             <Style>
-                              <FontSize>8pt</FontSize>
+                              <FontFamily>Calibri</FontFamily>
+                              <FontSize>9pt</FontSize>
                             </Style>
                           </TextRun>
                         </TextRuns>
@@ -527,8 +538,8 @@
                       </Paragraph>
                     </Paragraphs>
                     <rd:DefaultName>Textbox7</rd:DefaultName>
-                    <Top>2.78044cm</Top>
-                    <Height>0.48976cm</Height>
+                    <Top>3.65867cm</Top>
+                    <Height>0.56031cm</Height>
                     <Width>2.56614cm</Width>
                     <ZIndex>10</ZIndex>
                     <Style>
@@ -548,9 +559,10 @@
                       <Paragraph>
                         <TextRuns>
                           <TextRun>
-                            <Value>BILL TO:</Value>
+                            <Value>BILL TO :</Value>
                             <Style>
-                              <FontSize>8pt</FontSize>
+                              <FontFamily>Calibri</FontFamily>
+                              <FontSize>9pt</FontSize>
                             </Style>
                           </TextRun>
                         </TextRuns>
@@ -558,9 +570,9 @@
                       </Paragraph>
                     </Paragraphs>
                     <rd:DefaultName>Textbox7</rd:DefaultName>
-                    <Top>3.30548cm</Top>
+                    <Top>4.22426cm</Top>
                     <Height>0.48976cm</Height>
-                    <Width>1.34604cm</Width>
+                    <Width>1.68939cm</Width>
                     <ZIndex>11</ZIndex>
                     <Style>
                       <Border>
@@ -580,6 +592,7 @@
                           <TextRun>
                             <Value>SALES ORDER</Value>
                             <Style>
+                              <FontFamily>Calibri</FontFamily>
                               <FontSize>18pt</FontSize>
                               <FontWeight>Bold</FontWeight>
                             </Style>
@@ -589,8 +602,8 @@
                       </Paragraph>
                     </Paragraphs>
                     <rd:DefaultName>Textbox2</rd:DefaultName>
-                    <Top>0.10583cm</Top>
-                    <Left>7.18975cm</Left>
+                    <Top>0.14112cm</Top>
+                    <Left>7.83892cm</Left>
                     <Height>1.28792cm</Height>
                     <Width>6.54812cm</Width>
                     <ZIndex>12</ZIndex>
@@ -613,16 +626,17 @@
                           <TextRun>
                             <Value>=First(Fields!receiver.Value, "DataSet1")</Value>
                             <Style>
-                              <FontSize>8pt</FontSize>
+                              <FontFamily>Calibri</FontFamily>
+                              <FontSize>9pt</FontSize>
                             </Style>
                           </TextRun>
                         </TextRuns>
                         <Style />
                       </Paragraph>
                     </Paragraphs>
-                    <Top>3.83052cm</Top>
-                    <Left>3.73358cm</Left>
-                    <Height>0.45448cm</Height>
+                    <Top>4.74929cm</Top>
+                    <Left>3.04688cm</Left>
+                    <Height>0.48448cm</Height>
                     <Width>4.771cm</Width>
                     <ZIndex>13</ZIndex>
                     <Style>
@@ -642,9 +656,10 @@
                       <Paragraph>
                         <TextRuns>
                           <TextRun>
-                            <Value>RECEIVER:</Value>
+                            <Value>RECEIVER :</Value>
                             <Style>
-                              <FontSize>8pt</FontSize>
+                              <FontFamily>Calibri</FontFamily>
+                              <FontSize>9pt</FontSize>
                             </Style>
                           </TextRun>
                         </TextRuns>
@@ -652,7 +667,7 @@
                       </Paragraph>
                     </Paragraphs>
                     <rd:DefaultName>Textbox7</rd:DefaultName>
-                    <Top>3.79524cm</Top>
+                    <Top>4.74401cm</Top>
                     <Height>0.48976cm</Height>
                     <Width>2.03698cm</Width>
                     <ZIndex>14</ZIndex>
@@ -675,15 +690,16 @@
                           <TextRun>
                             <Value>=First(Fields!contact_no.Value, "DataSet1")</Value>
                             <Style>
-                              <FontSize>8pt</FontSize>
+                              <FontFamily>Calibri</FontFamily>
+                              <FontSize>9pt</FontSize>
                             </Style>
                           </TextRun>
                         </TextRuns>
                         <Style />
                       </Paragraph>
                     </Paragraphs>
-                    <Top>4.285cm</Top>
-                    <Left>3.73358cm</Left>
+                    <Top>5.26904cm</Top>
+                    <Left>3.04688cm</Left>
                     <Height>0.48977cm</Height>
                     <Width>4.771cm</Width>
                     <ZIndex>15</ZIndex>
@@ -704,9 +720,10 @@
                       <Paragraph>
                         <TextRuns>
                           <TextRun>
-                            <Value>CONTACT NO.:</Value>
+                            <Value>CONTACT NO. :</Value>
                             <Style>
-                              <FontSize>8pt</FontSize>
+                              <FontFamily>Calibri</FontFamily>
+                              <FontSize>9pt</FontSize>
                             </Style>
                           </TextRun>
                         </TextRuns>
@@ -714,8 +731,8 @@
                       </Paragraph>
                     </Paragraphs>
                     <rd:DefaultName>Textbox7</rd:DefaultName>
-                    <Top>4.28501cm</Top>
-                    <Height>0.48976cm</Height>
+                    <Top>5.26905cm</Top>
+                    <Height>0.52505cm</Height>
                     <Width>2.56614cm</Width>
                     <ZIndex>16</ZIndex>
                     <Style>
@@ -737,7 +754,8 @@
                           <TextRun>
                             <Value>DELIVERY DATE :</Value>
                             <Style>
-                              <FontSize>8pt</FontSize>
+                              <FontFamily>Calibri</FontFamily>
+                              <FontSize>9pt</FontSize>
                             </Style>
                           </TextRun>
                         </TextRuns>
@@ -745,10 +763,10 @@
                       </Paragraph>
                     </Paragraphs>
                     <rd:DefaultName>Textbox7</rd:DefaultName>
-                    <Top>2.92156cm</Top>
-                    <Left>13.03771cm</Left>
-                    <Height>0.44566cm</Height>
-                    <Width>2.51665cm</Width>
+                    <Top>2.99212cm</Top>
+                    <Left>12.72534cm</Left>
+                    <Height>0.63127cm</Height>
+                    <Width>2.82734cm</Width>
                     <ZIndex>17</ZIndex>
                     <Style>
                       <Border>
@@ -769,17 +787,18 @@
                           <TextRun>
                             <Value>=First(Fields!delivery_date.Value, "DataSet1")</Value>
                             <Style>
-                              <FontSize>8pt</FontSize>
+                              <FontFamily>Calibri</FontFamily>
+                              <FontSize>9pt</FontSize>
                             </Style>
                           </TextRun>
                         </TextRuns>
                         <Style />
                       </Paragraph>
                     </Paragraphs>
-                    <Top>2.88628cm</Top>
-                    <Left>15.84765cm</Left>
-                    <Height>0.48094cm</Height>
-                    <Width>1.79444cm</Width>
+                    <Top>2.99156cm</Top>
+                    <Left>16.12971cm</Left>
+                    <Height>0.63183cm</Height>
+                    <Width>2.54174cm</Width>
                     <ZIndex>18</ZIndex>
                     <Style>
                       <Border>
@@ -800,7 +819,8 @@
                           <TextRun>
                             <Value>REF DOC.:</Value>
                             <Style>
-                              <FontSize>8pt</FontSize>
+                              <FontFamily>Calibri</FontFamily>
+                              <FontSize>9pt</FontSize>
                             </Style>
                           </TextRun>
                         </TextRuns>
@@ -808,10 +828,10 @@
                       </Paragraph>
                     </Paragraphs>
                     <rd:DefaultName>Textbox7</rd:DefaultName>
-                    <Top>3.34958cm</Top>
-                    <Left>14.00327cm</Left>
-                    <Height>0.44566cm</Height>
-                    <Width>1.55109cm</Width>
+                    <Top>3.61985cm</Top>
+                    <Left>12.72534cm</Left>
+                    <Height>0.49858cm</Height>
+                    <Width>1.8617cm</Width>
                     <ZIndex>19</ZIndex>
                     <Style>
                       <Border>
@@ -832,17 +852,18 @@
                           <TextRun>
                             <Value>="Q#" &amp; First(Fields!document_no.Value, "DataSet1")</Value>
                             <Style>
-                              <FontSize>8pt</FontSize>
+                              <FontFamily>Calibri</FontFamily>
+                              <FontSize>9pt</FontSize>
                             </Style>
                           </TextRun>
                         </TextRuns>
                         <Style />
                       </Paragraph>
                     </Paragraphs>
-                    <Top>3.36722cm</Top>
-                    <Left>15.84765cm</Left>
+                    <Top>3.61985cm</Top>
+                    <Left>16.12971cm</Left>
                     <Height>0.48094cm</Height>
-                    <Width>1.79444cm</Width>
+                    <Width>2.54174cm</Width>
                     <ZIndex>20</ZIndex>
                     <Style>
                       <Border>
@@ -863,7 +884,8 @@
                           <TextRun>
                             <Value>REF PO.:</Value>
                             <Style>
-                              <FontSize>8pt</FontSize>
+                              <FontFamily>Calibri</FontFamily>
+                              <FontSize>9pt</FontSize>
                             </Style>
                           </TextRun>
                         </TextRuns>
@@ -871,10 +893,10 @@
                       </Paragraph>
                     </Paragraphs>
                     <rd:DefaultName>Textbox7</rd:DefaultName>
-                    <Top>3.83934cm</Top>
-                    <Left>14.17542cm</Left>
-                    <Height>0.44566cm</Height>
-                    <Width>1.37894cm</Width>
+                    <Top>4.15371cm</Top>
+                    <Left>12.72534cm</Left>
+                    <Height>0.49914cm</Height>
+                    <Width>1.6617cm</Width>
                     <ZIndex>21</ZIndex>
                     <Style>
                       <Border>
@@ -895,7 +917,8 @@
                           <TextRun>
                             <Value>="PO#" &amp; First(Fields!ref_po.Value, "DataSet1")</Value>
                             <Style>
-                              <FontSize>8pt</FontSize>
+                              <FontFamily>Calibri</FontFamily>
+                              <FontSize>9pt</FontSize>
                             </Style>
                           </TextRun>
                         </TextRuns>
@@ -904,10 +927,10 @@
                         </Style>
                       </Paragraph>
                     </Paragraphs>
-                    <Top>3.83052cm</Top>
-                    <Left>15.84765cm</Left>
+                    <Top>4.1719cm</Top>
+                    <Left>16.12971cm</Left>
                     <Height>0.48094cm</Height>
-                    <Width>1.79444cm</Width>
+                    <Width>2.54174cm</Width>
                     <ZIndex>22</ZIndex>
                     <Style>
                       <Border>
@@ -928,17 +951,18 @@
                           <TextRun>
                             <Value>=First(Fields!sales_executive.Value, "DataSet1")</Value>
                             <Style>
-                              <FontSize>8pt</FontSize>
+                              <FontFamily>Calibri</FontFamily>
+                              <FontSize>9pt</FontSize>
                             </Style>
                           </TextRun>
                         </TextRuns>
                         <Style />
                       </Paragraph>
                     </Paragraphs>
-                    <Top>4.31146cm</Top>
-                    <Left>15.84765cm</Left>
-                    <Height>0.85178cm</Height>
-                    <Width>1.79444cm</Width>
+                    <Top>4.65284cm</Top>
+                    <Left>16.12971cm</Left>
+                    <Height>0.59505cm</Height>
+                    <Width>2.54174cm</Width>
                     <ZIndex>23</ZIndex>
                     <Style>
                       <Border>
@@ -957,9 +981,10 @@
                       <Paragraph>
                         <TextRuns>
                           <TextRun>
-                            <Value>SALES EXECUTIVE:</Value>
+                            <Value>SALES EXECUTIVE :</Value>
                             <Style>
-                              <FontSize>8pt</FontSize>
+                              <FontFamily>Calibri</FontFamily>
+                              <FontSize>9pt</FontSize>
                             </Style>
                           </TextRun>
                         </TextRuns>
@@ -967,11 +992,78 @@
                       </Paragraph>
                     </Paragraphs>
                     <rd:DefaultName>Textbox7</rd:DefaultName>
-                    <Top>4.285cm</Top>
-                    <Left>12.72702cm</Left>
-                    <Height>0.44566cm</Height>
-                    <Width>2.82734cm</Width>
+                    <Top>4.65284cm</Top>
+                    <Left>12.72534cm</Left>
+                    <Height>0.51038cm</Height>
+                    <Width>3.40437cm</Width>
                     <ZIndex>24</ZIndex>
+                    <Style>
+                      <Border>
+                        <Style>None</Style>
+                      </Border>
+                      <PaddingLeft>2pt</PaddingLeft>
+                      <PaddingRight>2pt</PaddingRight>
+                      <PaddingTop>2pt</PaddingTop>
+                      <PaddingBottom>2pt</PaddingBottom>
+                    </Style>
+                  </Textbox>
+                  <Textbox Name="lbl_exec4">
+                    <CanGrow>true</CanGrow>
+                    <KeepTogether>true</KeepTogether>
+                    <Paragraphs>
+                      <Paragraph>
+                        <TextRuns>
+                          <TextRun>
+                            <Value>=First(Fields!project_name.Value, "DataSet1")</Value>
+                            <Style>
+                              <FontFamily>Calibri</FontFamily>
+                              <FontSize>9pt</FontSize>
+                            </Style>
+                          </TextRun>
+                        </TextRuns>
+                        <Style />
+                      </Paragraph>
+                    </Paragraphs>
+                    <Top>3.06268cm</Top>
+                    <Left>3.04688cm</Left>
+                    <Height>0.56071cm</Height>
+                    <Width>4.771cm</Width>
+                    <ZIndex>25</ZIndex>
+                    <Style>
+                      <Border>
+                        <Style>None</Style>
+                      </Border>
+                      <PaddingLeft>2pt</PaddingLeft>
+                      <PaddingRight>2pt</PaddingRight>
+                      <PaddingTop>2pt</PaddingTop>
+                      <PaddingBottom>2pt</PaddingBottom>
+                    </Style>
+                  </Textbox>
+                  <Textbox Name="Textbox30">
+                    <CanGrow>true</CanGrow>
+                    <KeepTogether>true</KeepTogether>
+                    <Paragraphs>
+                      <Paragraph>
+                        <TextRuns>
+                          <TextRun>
+                            <Value EvaluationMode="Constant">PROJECT NAME :</Value>
+                            <Style>
+                              <FontFamily>Calibri</FontFamily>
+                              <FontSize>9pt</FontSize>
+                            </Style>
+                          </TextRun>
+                        </TextRuns>
+                        <Style />
+                      </Paragraph>
+                    </Paragraphs>
+                    <rd:DefaultName>Textbox7</rd:DefaultName>
+                    <Top>3.09796cm</Top>
+                    <Height>0.52544cm</Height>
+                    <Width>2.92969cm</Width>
+                    <ZIndex>26</ZIndex>
+                    <Visibility>
+                      <Hidden>=IIf(IsNothing(First(Fields!project_name.Value, "DataSet1")) OR First(Fields!project_name.Value, "DataSet1") = "", True, False)</Hidden>
+                    </Visibility>
                     <Style>
                       <Border>
                         <Style>None</Style>
@@ -984,9 +1076,9 @@
                   </Textbox>
                 </ReportItems>
                 <KeepTogether>true</KeepTogether>
-                <Left>0.35167in</Left>
-                <Height>2.03277in</Height>
-                <Width>7.17744in</Width>
+                <Left>0.38096in</Left>
+                <Height>2.32281in</Height>
+                <Width>7.36808in</Width>
                 <Style>
                   <Border>
                     <Style>None</Style>
@@ -1008,7 +1100,7 @@
                           <Width>2.92012cm</Width>
                         </TablixColumn>
                         <TablixColumn>
-                          <Width>6.0263cm</Width>
+                          <Width>6.84251cm</Width>
                         </TablixColumn>
                         <TablixColumn>
                           <Width>2.98992cm</Width>
@@ -1022,7 +1114,7 @@
                       </TablixColumns>
                       <TablixRows>
                         <TablixRow>
-                          <Height>0.97042cm</Height>
+                          <Height>0.57354cm</Height>
                           <TablixCells>
                             <TablixCell>
                               <CellContents>
@@ -1035,6 +1127,7 @@
                                         <TextRun>
                                           <Value>#</Value>
                                           <Style>
+                                            <FontFamily>Calibri</FontFamily>
                                             <FontWeight>Bold</FontWeight>
                                           </Style>
                                         </TextRun>
@@ -1047,30 +1140,15 @@
                                   <rd:DefaultName>Textbox1</rd:DefaultName>
                                   <Style>
                                     <Border>
-                                      <Style>Solid</Style>
-                                      <Width>0.25pt</Width>
+                                      <Style>None</Style>
                                     </Border>
-                                    <TopBorder>
-                                      <Color>Black</Color>
-                                      <Style>Solid</Style>
-                                      <Width>0.25pt</Width>
-                                    </TopBorder>
                                     <BottomBorder>
                                       <Color>Black</Color>
                                       <Style>Solid</Style>
-                                      <Width>0.25pt</Width>
+                                      <Width>1pt</Width>
                                     </BottomBorder>
-                                    <LeftBorder>
-                                      <Color>Black</Color>
-                                      <Style>Solid</Style>
-                                      <Width>0.25pt</Width>
-                                    </LeftBorder>
-                                    <RightBorder>
-                                      <Color>Black</Color>
-                                      <Style>Solid</Style>
-                                      <Width>0.25pt</Width>
-                                    </RightBorder>
-                                    <BackgroundColor>Gainsboro</BackgroundColor>
+                                    <BackgroundColor>WhiteSmoke</BackgroundColor>
+                                    <VerticalAlign>Bottom</VerticalAlign>
                                     <PaddingLeft>2pt</PaddingLeft>
                                     <PaddingRight>2pt</PaddingRight>
                                     <PaddingTop>2pt</PaddingTop>
@@ -1090,6 +1168,8 @@
                                         <TextRun>
                                           <Value>QTY</Value>
                                           <Style>
+                                            <FontFamily>Calibri</FontFamily>
+                                            <FontSize>8pt</FontSize>
                                             <FontWeight>Bold</FontWeight>
                                           </Style>
                                         </TextRun>
@@ -1102,30 +1182,15 @@
                                   <rd:DefaultName>Textbox3</rd:DefaultName>
                                   <Style>
                                     <Border>
-                                      <Style>Solid</Style>
-                                      <Width>0.25pt</Width>
+                                      <Style>None</Style>
                                     </Border>
-                                    <TopBorder>
-                                      <Color>Black</Color>
-                                      <Style>Solid</Style>
-                                      <Width>0.25pt</Width>
-                                    </TopBorder>
                                     <BottomBorder>
                                       <Color>Black</Color>
                                       <Style>Solid</Style>
-                                      <Width>0.25pt</Width>
+                                      <Width>1pt</Width>
                                     </BottomBorder>
-                                    <LeftBorder>
-                                      <Color>Black</Color>
-                                      <Style>Solid</Style>
-                                      <Width>0.25pt</Width>
-                                    </LeftBorder>
-                                    <RightBorder>
-                                      <Color>Black</Color>
-                                      <Style>Solid</Style>
-                                      <Width>0.25pt</Width>
-                                    </RightBorder>
-                                    <BackgroundColor>Gainsboro</BackgroundColor>
+                                    <BackgroundColor>WhiteSmoke</BackgroundColor>
+                                    <VerticalAlign>Bottom</VerticalAlign>
                                     <PaddingLeft>2pt</PaddingLeft>
                                     <PaddingRight>2pt</PaddingRight>
                                     <PaddingTop>2pt</PaddingTop>
@@ -1145,6 +1210,8 @@
                                         <TextRun>
                                           <Value>ITEM CODE</Value>
                                           <Style>
+                                            <FontFamily>Calibri</FontFamily>
+                                            <FontSize>8pt</FontSize>
                                             <FontWeight>Bold</FontWeight>
                                           </Style>
                                         </TextRun>
@@ -1157,30 +1224,15 @@
                                   <rd:DefaultName>Textbox5</rd:DefaultName>
                                   <Style>
                                     <Border>
-                                      <Style>Solid</Style>
-                                      <Width>0.25pt</Width>
+                                      <Style>None</Style>
                                     </Border>
-                                    <TopBorder>
-                                      <Color>Black</Color>
-                                      <Style>Solid</Style>
-                                      <Width>0.25pt</Width>
-                                    </TopBorder>
                                     <BottomBorder>
                                       <Color>Black</Color>
                                       <Style>Solid</Style>
-                                      <Width>0.25pt</Width>
+                                      <Width>1pt</Width>
                                     </BottomBorder>
-                                    <LeftBorder>
-                                      <Color>Black</Color>
-                                      <Style>Solid</Style>
-                                      <Width>0.25pt</Width>
-                                    </LeftBorder>
-                                    <RightBorder>
-                                      <Color>Black</Color>
-                                      <Style>Solid</Style>
-                                      <Width>0.25pt</Width>
-                                    </RightBorder>
-                                    <BackgroundColor>Gainsboro</BackgroundColor>
+                                    <BackgroundColor>WhiteSmoke</BackgroundColor>
+                                    <VerticalAlign>Bottom</VerticalAlign>
                                     <PaddingLeft>2pt</PaddingLeft>
                                     <PaddingRight>2pt</PaddingRight>
                                     <PaddingTop>2pt</PaddingTop>
@@ -1200,6 +1252,8 @@
                                         <TextRun>
                                           <Value>ITEM DESCRIPTION</Value>
                                           <Style>
+                                            <FontFamily>Calibri</FontFamily>
+                                            <FontSize>8pt</FontSize>
                                             <FontWeight>Bold</FontWeight>
                                           </Style>
                                         </TextRun>
@@ -1212,30 +1266,13 @@
                                   <rd:DefaultName>Textbox13</rd:DefaultName>
                                   <Style>
                                     <Border>
-                                      <Style>Solid</Style>
-                                      <Width>0.25pt</Width>
+                                      <Style>None</Style>
                                     </Border>
-                                    <TopBorder>
-                                      <Color>Black</Color>
-                                      <Style>Solid</Style>
-                                      <Width>0.25pt</Width>
-                                    </TopBorder>
                                     <BottomBorder>
-                                      <Color>Black</Color>
                                       <Style>Solid</Style>
-                                      <Width>0.25pt</Width>
                                     </BottomBorder>
-                                    <LeftBorder>
-                                      <Color>Black</Color>
-                                      <Style>Solid</Style>
-                                      <Width>0.25pt</Width>
-                                    </LeftBorder>
-                                    <RightBorder>
-                                      <Color>Black</Color>
-                                      <Style>Solid</Style>
-                                      <Width>0.25pt</Width>
-                                    </RightBorder>
-                                    <BackgroundColor>Gainsboro</BackgroundColor>
+                                    <BackgroundColor>WhiteSmoke</BackgroundColor>
+                                    <VerticalAlign>Bottom</VerticalAlign>
                                     <PaddingLeft>2pt</PaddingLeft>
                                     <PaddingRight>2pt</PaddingRight>
                                     <PaddingTop>2pt</PaddingTop>
@@ -1255,6 +1292,8 @@
                                         <TextRun>
                                           <Value>DELIVERY PREFERENCE</Value>
                                           <Style>
+                                            <FontFamily>Calibri</FontFamily>
+                                            <FontSize>8pt</FontSize>
                                             <FontWeight>Bold</FontWeight>
                                           </Style>
                                         </TextRun>
@@ -1267,30 +1306,15 @@
                                   <rd:DefaultName>Textbox15</rd:DefaultName>
                                   <Style>
                                     <Border>
-                                      <Style>Solid</Style>
-                                      <Width>0.25pt</Width>
+                                      <Style>None</Style>
                                     </Border>
-                                    <TopBorder>
-                                      <Color>Black</Color>
-                                      <Style>Solid</Style>
-                                      <Width>0.25pt</Width>
-                                    </TopBorder>
                                     <BottomBorder>
                                       <Color>Black</Color>
                                       <Style>Solid</Style>
-                                      <Width>0.25pt</Width>
+                                      <Width>1pt</Width>
                                     </BottomBorder>
-                                    <LeftBorder>
-                                      <Color>Black</Color>
-                                      <Style>Solid</Style>
-                                      <Width>0.25pt</Width>
-                                    </LeftBorder>
-                                    <RightBorder>
-                                      <Color>Black</Color>
-                                      <Style>Solid</Style>
-                                      <Width>0.25pt</Width>
-                                    </RightBorder>
-                                    <BackgroundColor>Gainsboro</BackgroundColor>
+                                    <BackgroundColor>WhiteSmoke</BackgroundColor>
+                                    <VerticalAlign>Bottom</VerticalAlign>
                                     <PaddingLeft>2pt</PaddingLeft>
                                     <PaddingRight>2pt</PaddingRight>
                                     <PaddingTop>2pt</PaddingTop>
@@ -1309,6 +1333,8 @@
                                         <TextRun>
                                           <Value>LIST PRICE</Value>
                                           <Style>
+                                            <FontFamily>Calibri</FontFamily>
+                                            <FontSize>8pt</FontSize>
                                             <FontWeight>Bold</FontWeight>
                                           </Style>
                                         </TextRun>
@@ -1321,30 +1347,15 @@
                                   <rd:DefaultName>Textbox17</rd:DefaultName>
                                   <Style>
                                     <Border>
-                                      <Style>Solid</Style>
-                                      <Width>0.25pt</Width>
+                                      <Style>None</Style>
                                     </Border>
-                                    <TopBorder>
-                                      <Color>Black</Color>
-                                      <Style>Solid</Style>
-                                      <Width>0.25pt</Width>
-                                    </TopBorder>
                                     <BottomBorder>
                                       <Color>Black</Color>
                                       <Style>Solid</Style>
-                                      <Width>0.25pt</Width>
+                                      <Width>1pt</Width>
                                     </BottomBorder>
-                                    <LeftBorder>
-                                      <Color>Black</Color>
-                                      <Style>Solid</Style>
-                                      <Width>0.25pt</Width>
-                                    </LeftBorder>
-                                    <RightBorder>
-                                      <Color>Black</Color>
-                                      <Style>Solid</Style>
-                                      <Width>0.25pt</Width>
-                                    </RightBorder>
-                                    <BackgroundColor>Gainsboro</BackgroundColor>
+                                    <BackgroundColor>WhiteSmoke</BackgroundColor>
+                                    <VerticalAlign>Bottom</VerticalAlign>
                                     <PaddingLeft>2pt</PaddingLeft>
                                     <PaddingRight>2pt</PaddingRight>
                                     <PaddingTop>2pt</PaddingTop>
@@ -1364,6 +1375,8 @@
                                         <TextRun>
                                           <Value>TOTAL PRICE</Value>
                                           <Style>
+                                            <FontFamily>Calibri</FontFamily>
+                                            <FontSize>8pt</FontSize>
                                             <FontWeight>Bold</FontWeight>
                                           </Style>
                                         </TextRun>
@@ -1376,30 +1389,15 @@
                                   <rd:DefaultName>Textbox20</rd:DefaultName>
                                   <Style>
                                     <Border>
-                                      <Style>Solid</Style>
-                                      <Width>0.25pt</Width>
+                                      <Style>None</Style>
                                     </Border>
-                                    <TopBorder>
-                                      <Color>Black</Color>
-                                      <Style>Solid</Style>
-                                      <Width>0.25pt</Width>
-                                    </TopBorder>
                                     <BottomBorder>
                                       <Color>Black</Color>
                                       <Style>Solid</Style>
-                                      <Width>0.25pt</Width>
+                                      <Width>1pt</Width>
                                     </BottomBorder>
-                                    <LeftBorder>
-                                      <Color>Black</Color>
-                                      <Style>Solid</Style>
-                                      <Width>0.25pt</Width>
-                                    </LeftBorder>
-                                    <RightBorder>
-                                      <Color>Black</Color>
-                                      <Style>Solid</Style>
-                                      <Width>0.25pt</Width>
-                                    </RightBorder>
                                     <BackgroundColor>Gainsboro</BackgroundColor>
+                                    <VerticalAlign>Bottom</VerticalAlign>
                                     <PaddingLeft>2pt</PaddingLeft>
                                     <PaddingRight>2pt</PaddingRight>
                                     <PaddingTop>2pt</PaddingTop>
@@ -1423,7 +1421,10 @@
                                       <TextRuns>
                                         <TextRun>
                                           <Value>=Fields!numbering.Value</Value>
-                                          <Style />
+                                          <Style>
+                                            <FontFamily>Calibri</FontFamily>
+                                            <FontSize>8pt</FontSize>
+                                          </Style>
                                         </TextRun>
                                       </TextRuns>
                                       <Style>
@@ -1433,29 +1434,9 @@
                                   </Paragraphs>
                                   <Style>
                                     <Border>
-                                      <Style>Solid</Style>
-                                      <Width>0.25pt</Width>
+                                      <Style>None</Style>
                                     </Border>
-                                    <TopBorder>
-                                      <Color>Black</Color>
-                                      <Style>Solid</Style>
-                                      <Width>0.25pt</Width>
-                                    </TopBorder>
-                                    <BottomBorder>
-                                      <Color>Black</Color>
-                                      <Style>Solid</Style>
-                                      <Width>0.25pt</Width>
-                                    </BottomBorder>
-                                    <LeftBorder>
-                                      <Color>Black</Color>
-                                      <Style>Solid</Style>
-                                      <Width>0.25pt</Width>
-                                    </LeftBorder>
-                                    <RightBorder>
-                                      <Color>Black</Color>
-                                      <Style>Solid</Style>
-                                      <Width>0.25pt</Width>
-                                    </RightBorder>
+                                    <VerticalAlign>Middle</VerticalAlign>
                                     <PaddingLeft>2pt</PaddingLeft>
                                     <PaddingRight>2pt</PaddingRight>
                                     <PaddingTop>2pt</PaddingTop>
@@ -1474,7 +1455,10 @@
                                       <TextRuns>
                                         <TextRun>
                                           <Value>=Fields!qty.Value</Value>
-                                          <Style />
+                                          <Style>
+                                            <FontFamily>Calibri</FontFamily>
+                                            <FontSize>8pt</FontSize>
+                                          </Style>
                                         </TextRun>
                                       </TextRuns>
                                       <Style>
@@ -1485,29 +1469,9 @@
                                   <rd:DefaultName>qty1</rd:DefaultName>
                                   <Style>
                                     <Border>
-                                      <Style>Solid</Style>
-                                      <Width>0.25pt</Width>
+                                      <Style>None</Style>
                                     </Border>
-                                    <TopBorder>
-                                      <Color>Black</Color>
-                                      <Style>Solid</Style>
-                                      <Width>0.25pt</Width>
-                                    </TopBorder>
-                                    <BottomBorder>
-                                      <Color>Black</Color>
-                                      <Style>Solid</Style>
-                                      <Width>0.25pt</Width>
-                                    </BottomBorder>
-                                    <LeftBorder>
-                                      <Color>Black</Color>
-                                      <Style>Solid</Style>
-                                      <Width>0.25pt</Width>
-                                    </LeftBorder>
-                                    <RightBorder>
-                                      <Color>Black</Color>
-                                      <Style>Solid</Style>
-                                      <Width>0.25pt</Width>
-                                    </RightBorder>
+                                    <VerticalAlign>Middle</VerticalAlign>
                                     <PaddingLeft>2pt</PaddingLeft>
                                     <PaddingRight>2pt</PaddingRight>
                                     <PaddingTop>2pt</PaddingTop>
@@ -1526,7 +1490,10 @@
                                       <TextRuns>
                                         <TextRun>
                                           <Value>=Fields!item_code.Value</Value>
-                                          <Style />
+                                          <Style>
+                                            <FontFamily>Calibri</FontFamily>
+                                            <FontSize>8pt</FontSize>
+                                          </Style>
                                         </TextRun>
                                       </TextRuns>
                                       <Style>
@@ -1537,29 +1504,9 @@
                                   <rd:DefaultName>item_code</rd:DefaultName>
                                   <Style>
                                     <Border>
-                                      <Style>Solid</Style>
-                                      <Width>0.25pt</Width>
+                                      <Style>None</Style>
                                     </Border>
-                                    <TopBorder>
-                                      <Color>Black</Color>
-                                      <Style>Solid</Style>
-                                      <Width>0.25pt</Width>
-                                    </TopBorder>
-                                    <BottomBorder>
-                                      <Color>Black</Color>
-                                      <Style>Solid</Style>
-                                      <Width>0.25pt</Width>
-                                    </BottomBorder>
-                                    <LeftBorder>
-                                      <Color>Black</Color>
-                                      <Style>Solid</Style>
-                                      <Width>0.25pt</Width>
-                                    </LeftBorder>
-                                    <RightBorder>
-                                      <Color>Black</Color>
-                                      <Style>Solid</Style>
-                                      <Width>0.25pt</Width>
-                                    </RightBorder>
+                                    <VerticalAlign>Middle</VerticalAlign>
                                     <PaddingLeft>2pt</PaddingLeft>
                                     <PaddingRight>2pt</PaddingRight>
                                     <PaddingTop>2pt</PaddingTop>
@@ -1579,21 +1526,23 @@
                                         <TextRun>
                                           <Value>=Fields!item_description.Value</Value>
                                           <Style>
+                                            <FontFamily>Calibri</FontFamily>
+                                            <FontSize>8pt</FontSize>
                                             <Format>'₱'#,0.00;('₱'#,0.00)</Format>
                                           </Style>
                                         </TextRun>
                                       </TextRuns>
                                       <Style>
-                                        <TextAlign>Center</TextAlign>
+                                        <TextAlign>Left</TextAlign>
                                       </Style>
                                     </Paragraph>
                                   </Paragraphs>
                                   <rd:DefaultName>item_description</rd:DefaultName>
                                   <Style>
                                     <Border>
-                                      <Style>Solid</Style>
-                                      <Width>0.25pt</Width>
+                                      <Style>None</Style>
                                     </Border>
+                                    <VerticalAlign>Middle</VerticalAlign>
                                     <PaddingLeft>2pt</PaddingLeft>
                                     <PaddingRight>2pt</PaddingRight>
                                     <PaddingTop>2pt</PaddingTop>
@@ -1614,7 +1563,8 @@
                                         <TextRun>
                                           <Value>=Fields!delivery_preference.Value</Value>
                                           <Style>
-                                            <Format>#,0%</Format>
+                                            <FontFamily>Calibri</FontFamily>
+                                            <FontSize>8pt</FontSize>
                                           </Style>
                                         </TextRun>
                                       </TextRuns>
@@ -1626,9 +1576,9 @@
                                   <rd:DefaultName>delivery_preference</rd:DefaultName>
                                   <Style>
                                     <Border>
-                                      <Style>Solid</Style>
-                                      <Width>0.25pt</Width>
+                                      <Style>None</Style>
                                     </Border>
+                                    <VerticalAlign>Middle</VerticalAlign>
                                     <PaddingLeft>2pt</PaddingLeft>
                                     <PaddingRight>2pt</PaddingRight>
                                     <PaddingTop>2pt</PaddingTop>
@@ -1648,21 +1598,23 @@
                                         <TextRun>
                                           <Value>=Fields!list_price.Value</Value>
                                           <Style>
+                                            <FontFamily>Calibri</FontFamily>
+                                            <FontSize>8pt</FontSize>
                                             <Format>'₱'#,0.00;('₱'#,0.00)</Format>
                                           </Style>
                                         </TextRun>
                                       </TextRuns>
                                       <Style>
-                                        <TextAlign>Center</TextAlign>
+                                        <TextAlign>Left</TextAlign>
                                       </Style>
                                     </Paragraph>
                                   </Paragraphs>
                                   <rd:DefaultName>list_price</rd:DefaultName>
                                   <Style>
                                     <Border>
-                                      <Style>Solid</Style>
-                                      <Width>0.25pt</Width>
+                                      <Style>None</Style>
                                     </Border>
+                                    <VerticalAlign>Middle</VerticalAlign>
                                     <PaddingLeft>2pt</PaddingLeft>
                                     <PaddingRight>2pt</PaddingRight>
                                     <PaddingTop>2pt</PaddingTop>
@@ -1683,22 +1635,24 @@
                                         <TextRun>
                                           <Value>=Fields!total_price.Value</Value>
                                           <Style>
+                                            <FontFamily>Calibri</FontFamily>
+                                            <FontSize>8pt</FontSize>
                                             <Format>'₱'#,0.00;('₱'#,0.00)</Format>
                                             <rd:FormatSymbolCulture>en-PH</rd:FormatSymbolCulture>
                                           </Style>
                                         </TextRun>
                                       </TextRuns>
                                       <Style>
-                                        <TextAlign>Center</TextAlign>
+                                        <TextAlign>Left</TextAlign>
                                       </Style>
                                     </Paragraph>
                                   </Paragraphs>
                                   <rd:DefaultName>total_price</rd:DefaultName>
                                   <Style>
                                     <Border>
-                                      <Style>Solid</Style>
-                                      <Width>0.25pt</Width>
+                                      <Style>None</Style>
                                     </Border>
+                                    <VerticalAlign>Middle</VerticalAlign>
                                     <PaddingLeft>2pt</PaddingLeft>
                                     <PaddingRight>2pt</PaddingRight>
                                     <PaddingTop>2pt</PaddingTop>
@@ -1722,7 +1676,9 @@
                                       <TextRuns>
                                         <TextRun>
                                           <Value />
-                                          <Style />
+                                          <Style>
+                                            <FontFamily>Calibri</FontFamily>
+                                          </Style>
                                         </TextRun>
                                       </TextRuns>
                                       <Style>
@@ -1758,7 +1714,11 @@
                                       <TextRuns>
                                         <TextRun>
                                           <Value>=Sum(Fields!qty.Value)</Value>
-                                          <Style />
+                                          <Style>
+                                            <FontFamily>Calibri</FontFamily>
+                                            <FontSize>8pt</FontSize>
+                                            <FontWeight>Bold</FontWeight>
+                                          </Style>
                                         </TextRun>
                                       </TextRuns>
                                       <Style>
@@ -1794,7 +1754,9 @@
                                       <TextRuns>
                                         <TextRun>
                                           <Value />
-                                          <Style />
+                                          <Style>
+                                            <FontFamily>Calibri</FontFamily>
+                                          </Style>
                                         </TextRun>
                                       </TextRuns>
                                       <Style>
@@ -1831,6 +1793,7 @@
                                         <TextRun>
                                           <Value />
                                           <Style>
+                                            <FontFamily>Calibri</FontFamily>
                                             <Format>'₱'#,0.00;('₱'#,0.00)</Format>
                                           </Style>
                                         </TextRun>
@@ -1870,6 +1833,7 @@
                                         <TextRun>
                                           <Value />
                                           <Style>
+                                            <FontFamily>Calibri</FontFamily>
                                             <Format>'₱'#,0.00;('₱'#,0.00)</Format>
                                           </Style>
                                         </TextRun>
@@ -1909,12 +1873,15 @@
                                         <TextRun>
                                           <Value>=Sum(Fields!list_price.Value)</Value>
                                           <Style>
+                                            <FontFamily>Calibri</FontFamily>
+                                            <FontSize>8pt</FontSize>
+                                            <FontWeight>Bold</FontWeight>
                                             <Format>'₱'#,0.00;('₱'#,0.00)</Format>
                                           </Style>
                                         </TextRun>
                                       </TextRuns>
                                       <Style>
-                                        <TextAlign>Center</TextAlign>
+                                        <TextAlign>Left</TextAlign>
                                       </Style>
                                     </Paragraph>
                                   </Paragraphs>
@@ -1948,13 +1915,16 @@
                                         <TextRun>
                                           <Value>=Sum(Fields!total_price.Value)</Value>
                                           <Style>
+                                            <FontFamily>Calibri</FontFamily>
+                                            <FontSize>8pt</FontSize>
+                                            <FontWeight>Bold</FontWeight>
                                             <Format>'₱'#,0.00;('₱'#,0.00)</Format>
                                             <rd:FormatSymbolCulture>en-PH</rd:FormatSymbolCulture>
                                           </Style>
                                         </TextRun>
                                       </TextRuns>
                                       <Style>
-                                        <TextAlign>Center</TextAlign>
+                                        <TextAlign>Left</TextAlign>
                                       </Style>
                                     </Paragraph>
                                   </Paragraphs>
@@ -2005,10 +1975,10 @@
                       </TablixMembers>
                     </TablixRowHierarchy>
                     <DataSetName>DataSet2</DataSetName>
-                    <Top>0.38777cm</Top>
+                    <Top>0.89048cm</Top>
                     <Left>0.37042cm</Left>
-                    <Height>2.20542cm</Height>
-                    <Width>18.8187cm</Width>
+                    <Height>1.80854cm</Height>
+                    <Width>19.63492cm</Width>
                     <Style>
                       <Border>
                         <Style>None</Style>
@@ -2024,7 +1994,8 @@
                           <TextRun>
                             <Value>GROSS SALE:</Value>
                             <Style>
-                              <FontSize>8pt</FontSize>
+                              <FontFamily>Calibri</FontFamily>
+                              <FontSize>9pt</FontSize>
                               <FontWeight>Bold</FontWeight>
                             </Style>
                           </TextRun>
@@ -2033,8 +2004,8 @@
                       </Paragraph>
                     </Paragraphs>
                     <rd:DefaultName>Textbox7</rd:DefaultName>
-                    <Top>2.89827cm</Top>
-                    <Left>13.39049cm</Left>
+                    <Top>3.3792cm</Top>
+                    <Left>13.39814cm</Left>
                     <Height>0.44566cm</Height>
                     <Width>2.85206cm</Width>
                     <ZIndex>1</ZIndex>
@@ -2057,7 +2028,8 @@
                           <TextRun>
                             <Value>VAT AMOUNT:</Value>
                             <Style>
-                              <FontSize>8pt</FontSize>
+                              <FontFamily>Calibri</FontFamily>
+                              <FontSize>9pt</FontSize>
                               <FontWeight>Bold</FontWeight>
                             </Style>
                           </TextRun>
@@ -2066,8 +2038,8 @@
                       </Paragraph>
                     </Paragraphs>
                     <rd:DefaultName>Textbox7</rd:DefaultName>
-                    <Top>3.34393cm</Top>
-                    <Left>13.39049cm</Left>
+                    <Top>3.86014cm</Top>
+                    <Left>13.39814cm</Left>
                     <Height>0.48976cm</Height>
                     <Width>2.85206cm</Width>
                     <ZIndex>2</ZIndex>
@@ -2090,7 +2062,8 @@
                           <TextRun>
                             <Value>TOTAL AMOUNT DUE:</Value>
                             <Style>
-                              <FontSize>8pt</FontSize>
+                              <FontFamily>Calibri</FontFamily>
+                              <FontSize>9pt</FontSize>
                               <FontWeight>Bold</FontWeight>
                             </Style>
                           </TextRun>
@@ -2099,10 +2072,10 @@
                       </Paragraph>
                     </Paragraphs>
                     <rd:DefaultName>Textbox7</rd:DefaultName>
-                    <Top>3.86896cm</Top>
-                    <Left>13.39049cm</Left>
+                    <Top>4.34989cm</Top>
+                    <Left>13.40579cm</Left>
                     <Height>0.48976cm</Height>
-                    <Width>3.19602cm</Width>
+                    <Width>3.71503cm</Width>
                     <ZIndex>3</ZIndex>
                     <Style>
                       <Border>
@@ -2123,7 +2096,8 @@
                           <TextRun>
                             <Value>=First(Fields!gross_sales.Value, "DataSet1")</Value>
                             <Style>
-                              <FontSize>8pt</FontSize>
+                              <FontFamily>Calibri</FontFamily>
+                              <FontSize>9pt</FontSize>
                               <FontWeight>Bold</FontWeight>
                               <Format>'₱'#,0.00;('₱'#,0.00)</Format>
                             </Style>
@@ -2134,10 +2108,10 @@
                         </Style>
                       </Paragraph>
                     </Paragraphs>
-                    <Top>2.89828cm</Top>
-                    <Left>17.10552cm</Left>
-                    <Height>0.51622cm</Height>
-                    <Width>2.07595cm</Width>
+                    <Top>3.37921cm</Top>
+                    <Left>17.11317cm</Left>
+                    <Height>0.44565cm</Height>
+                    <Width>2.89982cm</Width>
                     <ZIndex>4</ZIndex>
                     <Style>
                       <Border>
@@ -2159,7 +2133,8 @@
                           <TextRun>
                             <Value>=First(Fields!vat_amount.Value, "DataSet1")</Value>
                             <Style>
-                              <FontSize>8pt</FontSize>
+                              <FontFamily>Calibri</FontFamily>
+                              <FontSize>9pt</FontSize>
                               <FontWeight>Bold</FontWeight>
                               <Format>'₱'#,0.00;('₱'#,0.00)</Format>
                             </Style>
@@ -2170,10 +2145,10 @@
                         </Style>
                       </Paragraph>
                     </Paragraphs>
-                    <Top>3.34393cm</Top>
-                    <Left>17.10552cm</Left>
+                    <Top>3.86014cm</Top>
+                    <Left>17.11317cm</Left>
                     <Height>0.48977cm</Height>
-                    <Width>2.56102cm</Width>
+                    <Width>2.89982cm</Width>
                     <ZIndex>5</ZIndex>
                     <Style>
                       <Border>
@@ -2195,7 +2170,8 @@
                           <TextRun>
                             <Value>=First(Fields!total_amount_due.Value, "DataSet1")</Value>
                             <Style>
-                              <FontSize>8pt</FontSize>
+                              <FontFamily>Calibri</FontFamily>
+                              <FontSize>9pt</FontSize>
                               <FontWeight>Bold</FontWeight>
                               <Format>'₱'#,0.00;('₱'#,0.00)</Format>
                             </Style>
@@ -2206,10 +2182,10 @@
                         </Style>
                       </Paragraph>
                     </Paragraphs>
-                    <Top>3.86896cm</Top>
-                    <Left>17.10552cm</Left>
+                    <Top>4.34989cm</Top>
+                    <Left>17.12082cm</Left>
                     <Height>0.48976cm</Height>
-                    <Width>2.56102cm</Width>
+                    <Width>2.89217cm</Width>
                     <ZIndex>6</ZIndex>
                     <Style>
                       <Border>
@@ -2231,7 +2207,8 @@
                           <TextRun>
                             <Value>REMARKS:</Value>
                             <Style>
-                              <FontSize>8pt</FontSize>
+                              <FontFamily>Calibri</FontFamily>
+                              <FontSize>9pt</FontSize>
                             </Style>
                           </TextRun>
                         </TextRuns>
@@ -2239,10 +2216,10 @@
                       </Paragraph>
                     </Paragraphs>
                     <rd:DefaultName>Textbox7</rd:DefaultName>
-                    <Top>2.89828cm</Top>
-                    <Left>0.97739cm</Left>
+                    <Top>3.37921cm</Top>
+                    <Left>0.90091cm</Left>
                     <Height>0.51622cm</Height>
-                    <Width>1.81649cm</Width>
+                    <Width>1.89297cm</Width>
                     <ZIndex>7</ZIndex>
                     <Style>
                       <Border>
@@ -2263,14 +2240,15 @@
                           <TextRun>
                             <Value>=First(Fields!remarks.Value, "DataSet1")</Value>
                             <Style>
-                              <FontSize>8pt</FontSize>
+                              <FontFamily>Calibri</FontFamily>
+                              <FontSize>9pt</FontSize>
                             </Style>
                           </TextRun>
                         </TextRuns>
                         <Style />
                       </Paragraph>
                     </Paragraphs>
-                    <Top>2.89828cm</Top>
+                    <Top>3.37921cm</Top>
                     <Left>2.79388cm</Left>
                     <Height>1.46044cm</Height>
                     <Width>8.8985cm</Width>
@@ -2287,9 +2265,10 @@
                   </Textbox>
                 </ReportItems>
                 <KeepTogether>true</KeepTogether>
-                <Top>5.33962cm</Top>
-                <Height>29.99433cm</Height>
-                <Width>19.66654cm</Width>
+                <Top>5.89993cm</Top>
+                <Left>0.06672cm</Left>
+                <Height>4.96475cm</Height>
+                <Width>20.01299cm</Width>
                 <ZIndex>1</ZIndex>
                 <Style>
                   <Border>
@@ -2299,10 +2278,9 @@
               </Rectangle>
             </ReportItems>
             <KeepTogether>true</KeepTogether>
-            <Top>0.02778in</Top>
-            <Left>0.22709in</Left>
-            <Height>14.07473in</Height>
-            <Width>7.75736in</Width>
+            <Top>0.01389in</Top>
+            <Height>4.27743in</Height>
+            <Width>7.9054in</Width>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -2310,10 +2288,10 @@
             </Style>
           </Rectangle>
         </ReportItems>
-        <Height>14.3282in</Height>
+        <Height>4.42412in</Height>
         <Style />
       </Body>
-      <Width>7.99076in</Width>
+      <Width>7.9054in</Width>
       <Page>
         <PageHeader>
           <Height>1.09576in</Height>
@@ -2342,7 +2320,7 @@
           </Style>
         </PageHeader>
         <PageFooter>
-          <Height>1.00817cm</Height>
+          <Height>0.81415cm</Height>
           <PrintOnFirstPage>true</PrintOnFirstPage>
           <PrintOnLastPage>true</PrintOnLastPage>
           <ReportItems>
@@ -2353,26 +2331,10 @@
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value>Manila Main Office, 644 Raja Matanda St. Tondo Manila, 1013, Philippines | Quezon Office, 717 P&amp;S Building, Aurora Boulevard, Quezon City, 1112 Metro Manila, Philippines |</Value>
+                      <Value>Manila Main Office, 644 Raja Matanda St. Tondo Manila, 1013, Philippines | Quezon Office, 717 P&amp;S Building, Aurora Boulevard, Quezon City, 1112 Metro Manila, Philippines | Tel. No. (02)8-245-0277/79; (02)8-24577015/16 | Fax No.: 8-245-0287</Value>
                       <Style>
                         <FontStyle>Normal</FontStyle>
-                        <FontSize>7pt</FontSize>
-                        <FontWeight>Normal</FontWeight>
-                        <TextDecoration>None</TextDecoration>
-                        <Color>#000000</Color>
-                      </Style>
-                    </TextRun>
-                  </TextRuns>
-                  <Style>
-                    <TextAlign>Center</TextAlign>
-                  </Style>
-                </Paragraph>
-                <Paragraph>
-                  <TextRuns>
-                    <TextRun>
-                      <Value>Tel. No. (02)8-245-0277/79; (02)8-24577015/16 | Fax No.: 8-245-0287</Value>
-                      <Style>
-                        <FontStyle>Normal</FontStyle>
+                        <FontFamily>Calibri</FontFamily>
                         <FontSize>7pt</FontSize>
                         <FontWeight>Normal</FontWeight>
                         <TextDecoration>None</TextDecoration>
@@ -2387,8 +2349,9 @@
               </Paragraphs>
               <rd:DefaultName>Textbox7</rd:DefaultName>
               <Top>0.07056cm</Top>
-              <Height>0.93761cm</Height>
-              <Width>20.24333cm</Width>
+              <Left>0.66146cm</Left>
+              <Height>0.74359cm</Height>
+              <Width>18.19723cm</Width>
               <Style>
                 <Border>
                   <Style>None</Style>

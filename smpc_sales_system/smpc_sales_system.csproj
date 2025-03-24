@@ -58,6 +58,7 @@
     <Reference Include="System.CodeDom, Version=9.0.0.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.CodeDom.9.0.1\lib\net462\System.CodeDom.dll</HintPath>
     </Reference>
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Management" />
     <Reference Include="System.Xml.Linq" />
@@ -247,6 +248,7 @@
     <EmbeddedResource Include="Pages\Sales\Orders.resx">
       <DependentUpon>Orders.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Pages\Sales\ProjectReport.rdlc" />
     <EmbeddedResource Include="Pages\Sales\PurchaseRequisition.resx">
       <DependentUpon>PurchaseRequisition.cs</DependentUpon>
     </EmbeddedResource>
@@ -285,9 +287,18 @@
     </Compile>
     <EmbeddedResource Include="Reports\Quotation\Quotation.rdlc" />
     <EmbeddedResource Include="Reports\Report1.rdlc" />
+    <None Include="Data\Sales\OrderReport.pdf" />
+    <None Include="Data\Sales\OrderReport2.pdf" />
+    <None Include="Data\Sales\QuotationReport.docx" />
+    <None Include="Data\Sales\QuotationReport.pdf" />
+    <None Include="Data\Sales\QuotationReport.xlsx" />
+    <None Include="Data\Sales\QuotationReport2.pdf" />
     <None Include="Data\TempFiles\folder1\Dauigoy_WRP_#8.pdf" />
     <None Include="packages.config" />
+    <None Include="Properties\DataSources\smpc_sales_system.Models.SalesProjectContent.datasource" />
+    <None Include="Properties\DataSources\smpc_sales_system.Models.SalesProjectItems.datasource" />
     <None Include="Properties\DataSources\smpc_sales_system.Services.Sales.Models.OrderList.datasource" />
+    <None Include="Properties\DataSources\smpc_sales_system.Services.Sales.Models.SalesQuotationList.datasource" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -314,6 +325,7 @@
   <ItemGroup>
     <Content Include="Data\TempFiles\folder1\folder1.1\Pushing.PNG" />
     <None Include="Resources\FileIcon.png" />
+    <None Include="Resources\FolderIcon.png" />
     <Content Include="SqlServerTypes\readme.htm" />
     <Content Include="SqlServerTypes\x64\msvcr120.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
