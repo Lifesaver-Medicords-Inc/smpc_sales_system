@@ -280,7 +280,6 @@ namespace smpc_sales_system.Pages.Sales
                             }
                         }
 
-
                         DataRow[] componentitemRows = ProjectItemList.Select();
 
                         List<string> itemDescriptions = new List<string>();
@@ -325,7 +324,7 @@ namespace smpc_sales_system.Pages.Sales
 
                                     foreach (DataRow itemRow in itemrows)
                                     {
-                                        string shortDesc = itemRow["item_designation"].ToString();
+                                        string shortDesc = itemRow["item_set_description"].ToString();
                                         // Concatenate the item_model and short_desc in the desired format
                                         string detail = $"{shortDesc}";
                                         details.Add(detail);
@@ -334,7 +333,7 @@ namespace smpc_sales_system.Pages.Sales
 
                             foreach (DataRow componentdetailRow in componentitemRows)
                             {
-                                int itemid = (int)componentdetailRow["based_id"];
+                                int itemid = (int)componentdetailRow["based_id"];   
                                 int templateId = (int)componentdetailRow["template_id"];
                                 DataRow[] itemrows = ItemSetContent.Select($"based_id = {itemid}");
 

@@ -234,7 +234,7 @@
                       <Paragraph>
                         <TextRuns>
                           <TextRun>
-                            <Value>=First(Fields!date.Value, "DataSet1")</Value>
+                            <Value>=Format(CDate(First(Fields!date.Value, "DataSet1")), "yyyy-MM-dd")</Value>
                             <Style>
                               <FontFamily>Calibri</FontFamily>
                               <FontSize>9pt</FontSize>
@@ -469,7 +469,7 @@
                         <Style />
                       </Paragraph>
                     </Paragraphs>
-                    <Top>2.75627cm</Top>
+                    <Top>2.75626cm</Top>
                     <Left>3.78533cm</Left>
                     <Height>0.48977cm</Height>
                     <Width>4.771cm</Width>
@@ -601,7 +601,7 @@
                       </Paragraph>
                     </Paragraphs>
                     <rd:DefaultName>Textbox7</rd:DefaultName>
-                    <Top>2.75628cm</Top>
+                    <Top>2.75627cm</Top>
                     <Left>0.05175cm</Left>
                     <Height>0.48976cm</Height>
                     <Width>1.34604cm</Width>
@@ -701,9 +701,9 @@
                       </Paragraph>
                     </Paragraphs>
                     <rd:DefaultName>Textbox2</rd:DefaultName>
-                    <Left>7.28325cm</Left>
+                    <Left>7.70024cm</Left>
                     <Height>0.97042cm</Height>
-                    <Width>6.54812cm</Width>
+                    <Width>3.6005cm</Width>
                     <ZIndex>14</ZIndex>
                     <Style>
                       <Border>
@@ -2358,7 +2358,7 @@ LIABILITY: Sunshine Multi Plus Corporation's liability under, for the breach of,
                 <KeepTogether>true</KeepTogether>
                 <Top>11.81082cm</Top>
                 <Left>0.37187cm</Left>
-                <Height>24.07802cm</Height>
+                <Height>24.07803cm</Height>
                 <Width>19.06092cm</Width>
                 <ZIndex>2</ZIndex>
                 <Style>
@@ -2456,8 +2456,8 @@ LIABILITY: Sunshine Multi Plus Corporation's liability under, for the breach of,
                 </Paragraph>
               </Paragraphs>
               <rd:DefaultName>Textbox7</rd:DefaultName>
-              <Top>0.03528cm</Top>
-              <Left>0.27444cm</Left>
+              <Top>0.01764cm</Top>
+              <Left>0.13722cm</Left>
               <Height>0.93761cm</Height>
               <Width>20.24333cm</Width>
               <Style>

@@ -33,10 +33,8 @@ namespace smpc_sales_system.Pages.Sales
         public DataTable ItemList { get; set; } = new DataTable();
         public DataTable ItemName { get; set; } = new DataTable();
         public DataTable UOM { get; set; } = new DataTable();
-
-        private async 
-        Task
-fetchItemData()
+        //FETCHERS METHODS
+        private async Task fetchItemData()
         {
             var itemData = await ItemService.GetItem();
             ItemList = JsonHelper.ToDataTable(itemData.items);
@@ -46,20 +44,29 @@ fetchItemData()
             PurchaseRequisitionList data = await PurchaseRequisitionService.GetPRs();
             PRList = JsonHelper.ToDataTable(data.purchase_requisition);
             PROrderList = JsonHelper.ToDataTable(data.purchasing_purchase_requisition_orders);
-
             if (data != null)
             {
                 bindPR(true);
                 CheckStatus();
             }
         }
-
+        private async void fetchItemThings()
+        {
+            ItemNameModel[] itemNameModels = await ItemNameServices.GetName();
+            JArray itemNameJsonArray = JArray.FromObject(itemNameModels);
+            ItemName = JsonHelper.ToDataTable(itemNameJsonArray);
+        }
+        private async void fetchUOM()
+        {
+            var UOM_data = await UnitOfMeasurementServices.GetAsDatatable();
+            UOM = UOM_data;
+        }
+        //BIND METHOD AND ON LOAD OF PAGE
         private void bindPR(bool isBind = false)
         {
             if (isBind)
             {
                 Panel[] pnlList = { pnl_header, pnl_header_2, pnl_body, pnl_footer, pnl_footer_2 };
-
                 Helpers.BindControls(pnlList, PRList, SelectedRow);
 
                 if (pnl_header_2.Controls["txt_doc_no"] is TextBox txtDocNo)
@@ -69,19 +76,15 @@ fetchItemData()
                         txtDocNo.Text = "PRQ#" + txtDocNo.Text;
                     }
                 }
-
                 dtp_date_request.Value = Convert.ToDateTime(PRList.Rows[SelectedRow]["date_request"]);
                 dtp_date_required.Value = Convert.ToDateTime(PRList.Rows[SelectedRow]["date_required"]);
 
-                // Create filtered view
-                //DataView dataview = new DataView(withItemListTwo);
                 DataTable withItemListTwo = this.PROrderList.Clone();
                 withItemListTwo.Columns.Add("uom", typeof(string));
                 withItemListTwo.Columns.Add("item_name", typeof(string));
                 withItemListTwo.Columns.Add("short_desc", typeof(string));
                 withItemListTwo.Columns.Add("item_code", typeof(string));
 
-                // Iterate through childList (not ItemList)
                 foreach (DataRow childRow in this.PROrderList.Rows)
                 {
                     DataRow newRow = withItemListTwo.NewRow();
@@ -90,7 +93,6 @@ fetchItemData()
                         newRow[col.ColumnName] = childRow[col.ColumnName];
                     }
 
-                    // Look up item name from ItemList
                     string itemId = childRow["item_id"].ToString();
                     DataRow[] itemRows = ItemList.Select($"id = '{itemId}'");
                     int iduom = (int)itemRows[0]["unit_of_measure_id"];
@@ -105,14 +107,12 @@ fetchItemData()
 
                     withItemListTwo.Rows.Add(newRow);
                 }
-
                 DataView dataview = new DataView(withItemListTwo);
                 dataview.RowFilter = "based_id = '" + this.PRList.Rows[this.SelectedRow]["pr_id"].ToString() + "'";
 
                 dgv_pr_order.DataSource = dataview.ToTable();
             }
         }
-
         private async void PurchaseRequisition_Load(object sender, EventArgs e)
         {
             await fetchItemData();
@@ -120,7 +120,7 @@ fetchItemData()
             fetchUOM();
             fetchPR();
         }
-
+        //CLICK METHODS (BUTTONS)
         private void btn_prev_Click(object sender, EventArgs e)
         {
             if (SelectedRow >= 1)
@@ -135,7 +135,6 @@ fetchItemData()
                 CheckStatus();
             }
         }
-
         private void btn_next_Click(object sender, EventArgs e)
         {
             int rowCount = PRList.Rows.Count;
@@ -151,68 +150,47 @@ fetchItemData()
                 CheckStatus();
             }
         }
-
-        private void dgv_pr_order_CellClick(object sender, DataGridViewCellEventArgs e)
+        private async void btn_check_Click(object sender, EventArgs e)
         {
-            if (e.ColumnIndex == 0)
+            try
             {
-                //DataGridViewRow clickedRow = dgv_quick_quote_details.Rows[e.RowIndex];
+                string docIdValue = ((TextBox)pnl_header_2.Controls["txt_doc_no"]).Text;
 
-                ItemModal itemModal = new ItemModal(ItemList);
-                DialogResult r = itemModal.ShowDialog();
+                docIdValue = docIdValue.StartsWith("PRQ#") ? docIdValue.Substring(4) : docIdValue;
 
-                if (r == DialogResult.OK)
+                if (!string.IsNullOrEmpty(docIdValue))
                 {
-                    int selectedIndex = itemModal.GetResult(); // Get the index from the modal
+                    var selectedPR = PRList.Select($"doc_no = '{docIdValue}'").FirstOrDefault();
 
-                    if (selectedIndex >= 0 && selectedIndex < ItemList.Rows.Count) // Ensure the index is valid
+                    if (selectedPR != null)
                     {
-                        DataRow selectedItem = ItemList.Rows[selectedIndex];
-
-                        int ID = (int)selectedItem["item_name_id"];
-                        DataRow[] name = ItemName.Select($"id = '{ID}'");
-                        string itemname = name[0]["name"].ToString();
-
-                        int UOMID = (int)selectedItem["unit_of_measure_id"];
-                        DataRow[] UOMname = UOM.Select($"id = '{UOMID}'");
-                        string unitname = UOMname[0]["name"].ToString();
-
-                        this.dgv_pr_order.Rows[e.RowIndex].Cells[8].Value = selectedItem["id"].ToString();
-                        this.dgv_pr_order.Rows[e.RowIndex].Cells[0].Value = selectedItem["item_code"].ToString();
-                        this.dgv_pr_order.Rows[e.RowIndex].Cells[1].Value = itemname;
-                        this.dgv_pr_order.Rows[e.RowIndex].Cells[2].Value = selectedItem["short_desc"].ToString();
-                        this.dgv_pr_order.Rows[e.RowIndex].Cells[4].Value = unitname;
+                        selectedPR["status"] = "APPROVED";
+                        var parentDataHeader = new Dictionary<string, dynamic>
+                        {
+                            { "doc_no", selectedPR["doc_no"] },
+                            { "status", "APPROVED" }
+                        };
+                        await PurchaseRequisitionService.Update(parentDataHeader);
+                        MessageBox.Show("Purchase Requisition status updated to APPROVED.");
+                        fetchPR();
+                        CheckStatus();
                     }
                     else
                     {
-                        MessageBox.Show("Invalid selection", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        MessageBox.Show("No order found with the selected ID.");
                     }
                 }
+                else
+                {
+                    MessageBox.Show("Please select a valid order to update.");
+                }
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error: {ex.Message}\n\nStack Trace: {ex.StackTrace}");
             }
         }
-        private async void fetchItemThings()
-        {
-            // Fetch the array of ItemNameModel objects
-            ItemNameModel[] itemNameModels = await ItemNameServices.GetName();
-
-            // Convert the array to a JArray first
-            JArray itemNameJsonArray = JArray.FromObject(itemNameModels);
-
-            ItemName = JsonHelper.ToDataTable(itemNameJsonArray);
-        }
-        private async void fetchUOM()
-        {
-
-            var UOM_data = await UnitOfMeasurementServices.GetAsDatatable();
-
-            UOM = UOM_data;
-        }
-
-        private void dgv_pr_order_CellEndEdit(object sender, DataGridViewCellEventArgs e)
-        {
-
-        }
-
         private async void btn_new_Click(object sender, EventArgs e)
         {
             Helpers.ResetControls(pnl_header);
@@ -230,28 +208,31 @@ fetchItemData()
             btn_edit.Enabled = false;
             txt_contact_no.ReadOnly = false;
             dgv_pr_order.Enabled = true;
-            // Clear all rows from the DataGridView
-            dgv_pr_order.DataSource = null;  // Remove the DataSource (optional if you want to clear the binding)
-
-            // Alternatively, clear the rows directly (if you want to retain the structure but remove rows)
-            dgv_pr_order.Rows.Clear();  // This clears the rows without resetting the DataSource
-
-            // Optionally reset the BindingSource to an empty DataTable
+            dgv_pr_order.DataSource = null; 
+            dgv_pr_order.Rows.Clear(); 
             bs_purchase_requisition.DataSource = PROrderList.Clone();
-
             bindPR(false);
         }
-
         private async void btn_save_Click(object sender, EventArgs e)
         {
             try
             {
+                List<string> missingFields = new List<string>();
+
+                if (string.IsNullOrWhiteSpace(txt_request_by.Text)) missingFields.Add("Request By");
+                if (string.IsNullOrWhiteSpace(txt_contact_no.Text)) missingFields.Add("Contact Number");
+                if (string.IsNullOrWhiteSpace(txt_department.Text)) missingFields.Add("Department");
+                if (missingFields.Count > 0)
+                {
+                    MessageBox.Show("Please fill in the following fields: " + string.Join(", ", missingFields), "Missing Information", MessageBoxButtons.OK);
+                    return;
+                }
+
                 if (dgv_pr_order.Rows.Count == 1)
                 {
                     MessageBox.Show("Please input an item in the Order to make a Purchase Requisition.", "Input Required", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
-
                 for (int i = 0; i < dgv_pr_order.Rows.Count - 1; i++)
                 {
                     DataGridViewRow row = dgv_pr_order.Rows[i];
@@ -274,18 +255,13 @@ fetchItemData()
                     docNo = docNo.Substring(4); // Remove the "PRQ#" part
                     txt_doc_no.Text = docNo;
                 }
-
-                // Get all the parent data values from the controls
                 var parentDataHeader = Helpers.GetControlsValues(pnl_header);
                 var parentDataHeader2 = Helpers.GetControlsValues(pnl_header_2);
                 var parentDataBody = Helpers.GetControlsValues(pnl_body);
                 var parentDataFooter = Helpers.GetControlsValues(pnl_footer);
                 var parentDataFooter2 = Helpers.GetControlsValues(pnl_footer_2);
 
-                // Merge all parent data
                 var parentData = MergeDictionaries(parentDataHeader, parentDataHeader2, parentDataBody, parentDataFooter, parentDataFooter2);
-
-                // Convert the DataGridView into a DataTable to process the child data
                 var dataSource = Helpers.ConvertDataGridViewToDataTable(dgv_pr_order);
 
                 List<Dictionary<string, dynamic>> PROrderList = new List<Dictionary<string, dynamic>>();
@@ -327,7 +303,6 @@ fetchItemData()
                     data.Add("item_description", (item["description"].ToString()));
                     data.Add("status", (item["status"].ToString()));
 
-                    // Add the child data to the list
                     PROrderList.Add(data);
                 }
 
@@ -369,27 +344,6 @@ fetchItemData()
                 MessageBox.Show("Error: " + ex.Message + "\n\n" + "Stack Trace: " + ex.StackTrace);
             }
         }
-
-
-        private Dictionary<string, dynamic> MergeDictionaries(params Dictionary<string, dynamic>[] dictionaries)
-        {
-            var mergedDict = new Dictionary<string, dynamic>();
-
-            foreach (var dict in dictionaries)
-            {
-                foreach (var kvp in dict)
-                {
-                    mergedDict[kvp.Key] = kvp.Value;
-                }
-            }
-
-            return mergedDict;
-        }
-        private void PRQIncrementer()
-        {
-            txt_doc_no.Text = "PRQ#" + (PRList.Rows.Count + 1).ToString("D4");
-        }
-
         private void btn_edit_Click(object sender, EventArgs e)
         {
             Panel[] pnls = { pnl_header, pnl_footer, pnl_body, pnl_footer_2 };
@@ -399,32 +353,57 @@ fetchItemData()
             txt_contact_no.ReadOnly = false;
             dgv_pr_order.Enabled = true;
         }
-
         private void btn_search_Click(object sender, EventArgs e)
         {
-            string Title = "PR List";
             PRModal setup = new PRModal(PRList);
             DialogResult r = setup.ShowDialog();
-
             if (r == DialogResult.OK)
             {
                 int result = setup.GetResult();
-
                 if (result != -1)
                 {
                     SelectedRow = result;
                     bindPR(true);
-                    //bindOrder(true);
-                    //CalculateTotalPrice();
                 }
             }
         }
+        //METHODS TO BE USED IN PURCHASE REQUISITION
+        private Dictionary<string, dynamic> MergeDictionaries(params Dictionary<string, dynamic>[] dictionaries)
+        {
+            var mergedDict = new Dictionary<string, dynamic>();
+            foreach (var dict in dictionaries)
+            {
+                foreach (var kvp in dict)
+                {
+                    mergedDict[kvp.Key] = kvp.Value;
+                }
+            }
+            return mergedDict;
+        }
+        private void PRQIncrementer()
+        {
+            txt_doc_no.Text = "PRQ#" + (PRList.Rows.Count + 1).ToString("D4");
+        }
+        private void CheckStatus()
+        {
+            bool isStatusApproved = txt_status.Text == "APPROVED";
+            bool isStatusWaiting = txt_status.Text == "WAITING";
 
+            btn_edit.Enabled = !isStatusApproved;
+            dgv_pr_order.Enabled = false;
+            txt_contact_no.ReadOnly = isStatusApproved || isStatusWaiting;
+
+            if (isStatusApproved)
+            {
+                Panel[] pnls = { pnl_header, pnl_header_2, pnl_footer, pnl_body, pnl_footer_2 };
+                Helpers.ReadOnlyControls(pnls);
+            }
+        }
+        //DGV ACTIONS
         private async void dgv_pr_order_UserDeletingRow(object sender, DataGridViewRowCancelEventArgs e)
         {
             if (e.Row != null)
             {
-                // Get the value of the 'pr_order_id' column (replace with the actual column name)
                 var prOrderId = e.Row.Cells["pr_order_id"].Value;
                 
                 if (prOrderId == DBNull.Value || Convert.ToInt32(prOrderId) == 0)
@@ -455,63 +434,40 @@ fetchItemData()
                 }
             }
         }
-
-        private async void btn_check_Click(object sender, EventArgs e)
+        private void dgv_pr_order_CellClick(object sender, DataGridViewCellEventArgs e)
         {
-            try
+            if (e.ColumnIndex == 0)
             {
-                string docIdValue = ((TextBox)pnl_header_2.Controls["txt_doc_no"]).Text;
+                ItemModal itemModal = new ItemModal(ItemList);
+                DialogResult r = itemModal.ShowDialog();
 
-                docIdValue = docIdValue.StartsWith("PRQ#") ? docIdValue.Substring(4) : docIdValue;
-
-                if (!string.IsNullOrEmpty(docIdValue))
+                if (r == DialogResult.OK)
                 {
-                    var selectedPR = PRList.Select($"doc_no = '{docIdValue}'").FirstOrDefault();
+                    int selectedIndex = itemModal.GetResult(); // Get the index from the modal
 
-                    if (selectedPR != null)
+                    if (selectedIndex >= 0 && selectedIndex < ItemList.Rows.Count) // Ensure the index is valid
                     {
-                        selectedPR["status"] = "APPROVED";
-                        var parentDataHeader = new Dictionary<string, dynamic>
-                        {
-                            { "doc_no", selectedPR["doc_no"] },
-                            { "status", "APPROVED" }
-                        };
+                        DataRow selectedItem = ItemList.Rows[selectedIndex];
 
-                        await PurchaseRequisitionService.Update(parentDataHeader);
-                        MessageBox.Show("Purchase Requisition status updated to APPROVED.");
-                        fetchPR();
-                        CheckStatus();
+                        int ID = (int)selectedItem["item_name_id"];
+                        DataRow[] name = ItemName.Select($"id = '{ID}'");
+                        string itemname = name[0]["name"].ToString();
+
+                        int UOMID = (int)selectedItem["unit_of_measure_id"];
+                        DataRow[] UOMname = UOM.Select($"id = '{UOMID}'");
+                        string unitname = UOMname[0]["name"].ToString();
+
+                        this.dgv_pr_order.Rows[e.RowIndex].Cells[8].Value = selectedItem["id"].ToString();
+                        this.dgv_pr_order.Rows[e.RowIndex].Cells[0].Value = selectedItem["item_code"].ToString();
+                        this.dgv_pr_order.Rows[e.RowIndex].Cells[1].Value = itemname;
+                        this.dgv_pr_order.Rows[e.RowIndex].Cells[2].Value = selectedItem["short_desc"].ToString();
+                        this.dgv_pr_order.Rows[e.RowIndex].Cells[4].Value = unitname;
                     }
                     else
                     {
-                        MessageBox.Show("No order found with the selected ID.");
+                        MessageBox.Show("Invalid selection", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
                 }
-                else
-                {
-                    MessageBox.Show("Please select a valid order to update.");
-                }
-                
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error: {ex.Message}\n\nStack Trace: {ex.StackTrace}");
-            }
-        }
-
-        private void CheckStatus()
-        {
-            bool isStatusApproved = txt_status.Text == "APPROVED";
-            bool isStatusWaiting = txt_status.Text == "WAITING";
-
-            btn_edit.Enabled = !isStatusApproved;
-            dgv_pr_order.Enabled = false;
-            txt_contact_no.ReadOnly = isStatusApproved || isStatusWaiting;
-
-            if (isStatusApproved)
-            {
-                Panel[] pnls = { pnl_header, pnl_header_2, pnl_footer, pnl_body, pnl_footer_2 };
-                Helpers.ReadOnlyControls(pnls);
             }
         }
     }

@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Drawing;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace smpc_sales_app.Pages.Sales
@@ -25,8 +26,9 @@ namespace smpc_sales_app.Pages.Sales
         private int SelectedRow = 0;
         private string documentNo;
         private string version_no;
+        private bool is_finalized;
 
-        public Quotation(string documentNo = null, string version_no = null)
+        public Quotation(string documentNo = null, string version_no = null, bool is_finalized = false)
         {
             InitializeComponent();
 
@@ -37,6 +39,7 @@ namespace smpc_sales_app.Pages.Sales
             //KRIS: NEED ITONG DALAWA KAPAG MAY VERSION_NO NA PERO GINAGAMIT KO NA RIN GANYAN
             this.documentNo = documentNo;
             this.version_no = version_no;
+            this.is_finalized = is_finalized;
         }
 
         private void panel3_Paint(object sender, PaintEventArgs e)
@@ -93,7 +96,7 @@ namespace smpc_sales_app.Pages.Sales
             ItemList = JsonHelper.ToDataTable(itemData.items);
         }
 
-        private async void fetchBpiData()
+        private async Task fetchBpiData()
         {
             Bpi_Class bpi_data = await QuotationService.GetBpiCustomers();
 
@@ -107,8 +110,6 @@ namespace smpc_sales_app.Pages.Sales
             customerList.Merge(bpi_address);
             customerList.Merge(bpi_contacts);
         }
-
-
 
         private async void fetchQuotationDetails()
         {
@@ -422,11 +423,16 @@ namespace smpc_sales_app.Pages.Sales
         {
 
             fetchItemData();
-            fetchBpiData();
-
+            await fetchBpiData();
             //KRIS: GINAGAMIT TO FOR PAG NAG BACK GALING SALES QUOTATION
             if (!string.IsNullOrEmpty(documentNo))
             {
+                back.Visible = true;
+                if (is_finalized){
+                    Panel[] panels = { pnl_header, pnl_footer };
+                    Helpers.ReadOnlyControls(panels);
+                    dgv_quick_quote_details.ReadOnly = true;
+                }
                 this.btn_quick_quote.BackColor = Color.FromArgb(255, 128, 128);
                 this.btn_project.BackColor = Color.White;
 
@@ -870,10 +876,7 @@ namespace smpc_sales_app.Pages.Sales
                 }
             }
         }
-
-
         //KRIS: BELOW IS MGA FUNCTION NA INADD KO SA QUOTATION
-
         private void btn_SO_Click(object sender, EventArgs e)
         {
             string documentNo = txt_document_no.Text.Trim();  // Assuming you have a document_no textbox in Quotation
@@ -956,6 +959,13 @@ namespace smpc_sales_app.Pages.Sales
             {
                 MessageBox.Show("No SalesQuotation found for the provided document number.");
             }
+        }
+        private void back_Click(object sender, EventArgs e)
+        {
+            Opportunities OpportunitiesPage = new Opportunities();
+            OpportunitiesPage.Width = this.Parent.Width;
+            this.Parent.Controls.Add(OpportunitiesPage);
+            this.Dispose();
         }
     }
 }
