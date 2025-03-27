@@ -18,7 +18,7 @@ namespace smpc_sales_system.Services.Sales.Models
         public int id { get; set; }
         public string tag { get; set; }
         public string version_no { get; set; }
-        public string final_ref_no { get; set; }
+        public bool is_finalized { get; set; }
         public string document_no { get; set; }
         public string branch_name { get; set; }
         public string project_name { get; set; }

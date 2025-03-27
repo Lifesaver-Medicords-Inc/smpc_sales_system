@@ -73,6 +73,15 @@ namespace smpc_sales_system.Pages.Sales
             this.pnl_middle = new System.Windows.Forms.Panel();
             this.pnl_body = new System.Windows.Forms.Panel();
             this.dgv_pr_order = new System.Windows.Forms.DataGridView();
+            this.item_code = new System.Windows.Forms.DataGridViewButtonColumn();
+            this.item_name = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.description = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.qtydgv = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.uom = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.status = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.pr_order_id = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.basediddgv = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.itemiddgv = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.bs_purchase_requisition = new System.Windows.Forms.BindingSource(this.components);
             this.dataSet1 = new System.Data.DataSet();
             this.dataTable1 = new System.Data.DataTable();
@@ -87,15 +96,6 @@ namespace smpc_sales_system.Pages.Sales
             this.panel2 = new System.Windows.Forms.Panel();
             this.label7 = new System.Windows.Forms.Label();
             this.label6 = new System.Windows.Forms.Label();
-            this.item_code = new System.Windows.Forms.DataGridViewButtonColumn();
-            this.item_name = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.description = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.qtydgv = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.uom = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.status = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.pr_order_id = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.basediddgv = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.itemiddgv = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.toolstrip_quotation.SuspendLayout();
             this.panel1.SuspendLayout();
             this.pnl_header.SuspendLayout();
@@ -494,8 +494,89 @@ namespace smpc_sales_system.Pages.Sales
             this.dgv_pr_order.Size = new System.Drawing.Size(828, 209);
             this.dgv_pr_order.TabIndex = 1;
             this.dgv_pr_order.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgv_pr_order_CellClick);
-            this.dgv_pr_order.CellEndEdit += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgv_pr_order_CellEndEdit);
             this.dgv_pr_order.UserDeletingRow += new System.Windows.Forms.DataGridViewRowCancelEventHandler(this.dgv_pr_order_UserDeletingRow);
+            // 
+            // item_code
+            // 
+            this.item_code.DataPropertyName = "item_code";
+            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle2.BackColor = System.Drawing.Color.White;
+            this.item_code.DefaultCellStyle = dataGridViewCellStyle2;
+            this.item_code.FillWeight = 119.1809F;
+            this.item_code.HeaderText = "ITEM CODE";
+            this.item_code.Name = "item_code";
+            this.item_code.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+            this.item_code.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
+            // 
+            // item_name
+            // 
+            this.item_name.DataPropertyName = "item_name";
+            dataGridViewCellStyle3.BackColor = System.Drawing.Color.LightGray;
+            this.item_name.DefaultCellStyle = dataGridViewCellStyle3;
+            this.item_name.FillWeight = 74.56519F;
+            this.item_name.HeaderText = "ITEM NAME";
+            this.item_name.Name = "item_name";
+            this.item_name.ReadOnly = true;
+            // 
+            // description
+            // 
+            this.description.DataPropertyName = "short_desc";
+            dataGridViewCellStyle4.BackColor = System.Drawing.Color.LightGray;
+            this.description.DefaultCellStyle = dataGridViewCellStyle4;
+            this.description.FillWeight = 157.81F;
+            this.description.HeaderText = "DESCRIPTION";
+            this.description.Name = "description";
+            this.description.ReadOnly = true;
+            // 
+            // qtydgv
+            // 
+            this.qtydgv.DataPropertyName = "qty";
+            dataGridViewCellStyle5.Alignment = System.Windows.Forms.DataGridViewContentAlignment.TopCenter;
+            this.qtydgv.DefaultCellStyle = dataGridViewCellStyle5;
+            this.qtydgv.FillWeight = 44.94878F;
+            this.qtydgv.HeaderText = "QTY";
+            this.qtydgv.Name = "qtydgv";
+            // 
+            // uom
+            // 
+            this.uom.DataPropertyName = "uom";
+            dataGridViewCellStyle6.Alignment = System.Windows.Forms.DataGridViewContentAlignment.TopCenter;
+            dataGridViewCellStyle6.BackColor = System.Drawing.Color.LightGray;
+            this.uom.DefaultCellStyle = dataGridViewCellStyle6;
+            this.uom.FillWeight = 45.68528F;
+            this.uom.HeaderText = "UOM";
+            this.uom.Name = "uom";
+            this.uom.ReadOnly = true;
+            // 
+            // status
+            // 
+            dataGridViewCellStyle7.BackColor = System.Drawing.Color.LightGray;
+            this.status.DefaultCellStyle = dataGridViewCellStyle7;
+            this.status.FillWeight = 157.81F;
+            this.status.HeaderText = "STATUS";
+            this.status.Name = "status";
+            this.status.ReadOnly = true;
+            // 
+            // pr_order_id
+            // 
+            this.pr_order_id.DataPropertyName = "pr_order_id";
+            this.pr_order_id.HeaderText = "pr_order_id";
+            this.pr_order_id.Name = "pr_order_id";
+            this.pr_order_id.Visible = false;
+            // 
+            // basediddgv
+            // 
+            this.basediddgv.DataPropertyName = "based_id";
+            this.basediddgv.HeaderText = "based_id";
+            this.basediddgv.Name = "basediddgv";
+            this.basediddgv.Visible = false;
+            // 
+            // itemiddgv
+            // 
+            this.itemiddgv.DataPropertyName = "item_id";
+            this.itemiddgv.HeaderText = "item_id";
+            this.itemiddgv.Name = "itemiddgv";
+            this.itemiddgv.Visible = false;
             // 
             // bs_purchase_requisition
             // 
@@ -594,88 +675,6 @@ namespace smpc_sales_system.Pages.Sales
             this.label6.Size = new System.Drawing.Size(73, 18);
             this.label6.TabIndex = 1;
             this.label6.Text = "ORDERS";
-            // 
-            // item_code
-            // 
-            this.item_code.DataPropertyName = "item_code";
-            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle2.BackColor = System.Drawing.Color.White;
-            this.item_code.DefaultCellStyle = dataGridViewCellStyle2;
-            this.item_code.FillWeight = 119.1809F;
-            this.item_code.HeaderText = "ITEM CODE";
-            this.item_code.Name = "item_code";
-            this.item_code.Resizable = System.Windows.Forms.DataGridViewTriState.True;
-            this.item_code.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
-            // 
-            // item_name
-            // 
-            this.item_name.DataPropertyName = "item_name";
-            dataGridViewCellStyle3.BackColor = System.Drawing.Color.LightGray;
-            this.item_name.DefaultCellStyle = dataGridViewCellStyle3;
-            this.item_name.FillWeight = 74.56519F;
-            this.item_name.HeaderText = "ITEM NAME";
-            this.item_name.Name = "item_name";
-            this.item_name.ReadOnly = true;
-            // 
-            // description
-            // 
-            this.description.DataPropertyName = "short_desc";
-            dataGridViewCellStyle4.BackColor = System.Drawing.Color.LightGray;
-            this.description.DefaultCellStyle = dataGridViewCellStyle4;
-            this.description.FillWeight = 157.81F;
-            this.description.HeaderText = "DESCRIPTION";
-            this.description.Name = "description";
-            this.description.ReadOnly = true;
-            // 
-            // qtydgv
-            // 
-            this.qtydgv.DataPropertyName = "qty";
-            dataGridViewCellStyle5.Alignment = System.Windows.Forms.DataGridViewContentAlignment.TopCenter;
-            this.qtydgv.DefaultCellStyle = dataGridViewCellStyle5;
-            this.qtydgv.FillWeight = 44.94878F;
-            this.qtydgv.HeaderText = "QTY";
-            this.qtydgv.Name = "qtydgv";
-            // 
-            // uom
-            // 
-            this.uom.DataPropertyName = "uom";
-            dataGridViewCellStyle6.Alignment = System.Windows.Forms.DataGridViewContentAlignment.TopCenter;
-            dataGridViewCellStyle6.BackColor = System.Drawing.Color.LightGray;
-            this.uom.DefaultCellStyle = dataGridViewCellStyle6;
-            this.uom.FillWeight = 45.68528F;
-            this.uom.HeaderText = "UOM";
-            this.uom.Name = "uom";
-            this.uom.ReadOnly = true;
-            // 
-            // status
-            // 
-            dataGridViewCellStyle7.BackColor = System.Drawing.Color.LightGray;
-            this.status.DefaultCellStyle = dataGridViewCellStyle7;
-            this.status.FillWeight = 157.81F;
-            this.status.HeaderText = "STATUS";
-            this.status.Name = "status";
-            this.status.ReadOnly = true;
-            // 
-            // pr_order_id
-            // 
-            this.pr_order_id.DataPropertyName = "pr_order_id";
-            this.pr_order_id.HeaderText = "pr_order_id";
-            this.pr_order_id.Name = "pr_order_id";
-            this.pr_order_id.Visible = false;
-            // 
-            // basediddgv
-            // 
-            this.basediddgv.DataPropertyName = "based_id";
-            this.basediddgv.HeaderText = "based_id";
-            this.basediddgv.Name = "basediddgv";
-            this.basediddgv.Visible = false;
-            // 
-            // itemiddgv
-            // 
-            this.itemiddgv.DataPropertyName = "item_id";
-            this.itemiddgv.HeaderText = "item_id";
-            this.itemiddgv.Name = "itemiddgv";
-            this.itemiddgv.Visible = false;
             // 
             // PurchaseRequisition
             // 

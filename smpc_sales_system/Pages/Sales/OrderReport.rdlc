@@ -216,9 +216,9 @@
                         <Style />
                       </Paragraph>
                     </Paragraphs>
-                    <Top>2.4759cm</Top>
-                    <Left>16.12971cm</Left>
-                    <Height>0.48094cm</Height>
+                    <Top>1.89141cm</Top>
+                    <Left>15.8994cm</Left>
+                    <Height>0.51622cm</Height>
                     <Width>2.54174cm</Width>
                     <Style>
                       <Border>
@@ -247,8 +247,8 @@
                         <Style />
                       </Paragraph>
                     </Paragraphs>
-                    <Top>1.9244cm</Top>
-                    <Left>16.12971cm</Left>
+                    <Top>1.37519cm</Top>
+                    <Left>15.8994cm</Left>
                     <Height>0.51622cm</Height>
                     <Width>2.54174cm</Width>
                     <ZIndex>1</ZIndex>
@@ -280,10 +280,10 @@
                       </Paragraph>
                     </Paragraphs>
                     <rd:DefaultName>Textbox7</rd:DefaultName>
-                    <Top>2.44062cm</Top>
-                    <Left>12.72534cm</Left>
+                    <Top>1.89141cm</Top>
+                    <Left>12.73129cm</Left>
                     <Height>0.51622cm</Height>
-                    <Width>1.47081cm</Width>
+                    <Width>2.87483cm</Width>
                     <ZIndex>2</ZIndex>
                     <Style>
                       <Border>
@@ -313,10 +313,10 @@
                       </Paragraph>
                     </Paragraphs>
                     <rd:DefaultName>Textbox7</rd:DefaultName>
-                    <Top>1.88913cm</Top>
-                    <Left>12.72534cm</Left>
+                    <Top>1.37519cm</Top>
+                    <Left>12.73129cm</Left>
                     <Height>0.51622cm</Height>
-                    <Width>2.16675cm</Width>
+                    <Width>2.87483cm</Width>
                     <ZIndex>3</ZIndex>
                     <Style>
                       <Border>
@@ -345,9 +345,9 @@
                         <Style />
                       </Paragraph>
                     </Paragraphs>
-                    <Top>1.9244cm</Top>
-                    <Left>3.04688cm</Left>
-                    <Height>0.48094cm</Height>
+                    <Top>1.37519cm</Top>
+                    <Left>3.78534cm</Left>
+                    <Height>0.44566cm</Height>
                     <Width>4.771cm</Width>
                     <ZIndex>4</ZIndex>
                     <Style>
@@ -377,9 +377,9 @@
                         <Style />
                       </Paragraph>
                     </Paragraphs>
-                    <Top>2.4759cm</Top>
-                    <Left>3.04688cm</Left>
-                    <Height>0.58678cm</Height>
+                    <Top>1.82085cm</Top>
+                    <Left>3.78534cm</Left>
+                    <Height>0.44566cm</Height>
                     <Width>4.771cm</Width>
                     <ZIndex>5</ZIndex>
                     <Style>
@@ -409,9 +409,9 @@
                         <Style />
                       </Paragraph>
                     </Paragraphs>
-                    <Top>3.65867cm</Top>
-                    <Left>3.04688cm</Left>
-                    <Height>0.56031cm</Height>
+                    <Top>2.71217cm</Top>
+                    <Left>3.78534cm</Left>
+                    <Height>0.44566cm</Height>
                     <Width>4.771cm</Width>
                     <ZIndex>6</ZIndex>
                     <Style>
@@ -441,9 +441,9 @@
                         <Style />
                       </Paragraph>
                     </Paragraphs>
-                    <Top>4.22425cm</Top>
-                    <Left>3.04688cm</Left>
-                    <Height>0.48977cm</Height>
+                    <Top>3.19311cm</Top>
+                    <Left>3.78534cm</Left>
+                    <Height>0.44566cm</Height>
                     <Width>4.771cm</Width>
                     <ZIndex>7</ZIndex>
                     <Style>
@@ -474,9 +474,10 @@
                       </Paragraph>
                     </Paragraphs>
                     <rd:DefaultName>Textbox7</rd:DefaultName>
-                    <Top>1.9244cm</Top>
-                    <Height>0.51622cm</Height>
-                    <Width>2.56614cm</Width>
+                    <Top>1.37519cm</Top>
+                    <Left>0.05176cm</Left>
+                    <Height>0.44566cm</Height>
+                    <Width>2.51439cm</Width>
                     <ZIndex>8</ZIndex>
                     <Style>
                       <Border>
@@ -506,9 +507,10 @@
                       </Paragraph>
                     </Paragraphs>
                     <rd:DefaultName>Textbox7</rd:DefaultName>
-                    <Top>2.4759cm</Top>
-                    <Height>0.58678cm</Height>
-                    <Width>2.03698cm</Width>
+                    <Top>1.82085cm</Top>
+                    <Left>0.05176cm</Left>
+                    <Height>0.44566cm</Height>
+                    <Width>2.51439cm</Width>
                     <ZIndex>9</ZIndex>
                     <Style>
                       <Border>
@@ -538,9 +540,10 @@
                       </Paragraph>
                     </Paragraphs>
                     <rd:DefaultName>Textbox7</rd:DefaultName>
-                    <Top>3.65867cm</Top>
-                    <Height>0.56031cm</Height>
-                    <Width>2.56614cm</Width>
+                    <Top>2.74745cm</Top>
+                    <Left>0.05176cm</Left>
+                    <Height>0.44566cm</Height>
+                    <Width>2.51438cm</Width>
                     <ZIndex>10</ZIndex>
                     <Style>
                       <Border>
@@ -570,43 +573,11 @@
                       </Paragraph>
                     </Paragraphs>
                     <rd:DefaultName>Textbox7</rd:DefaultName>
-                    <Top>4.22426cm</Top>
-                    <Height>0.48976cm</Height>
-                    <Width>1.68939cm</Width>
+                    <Top>3.19311cm</Top>
+                    <Left>0.05176cm</Left>
+                    <Height>0.44566cm</Height>
+                    <Width>2.51438cm</Width>
                     <ZIndex>11</ZIndex>
-                    <Style>
-                      <Border>
-                        <Style>None</Style>
-                      </Border>
-                      <PaddingLeft>2pt</PaddingLeft>
-                      <PaddingRight>2pt</PaddingRight>
-                      <PaddingTop>2pt</PaddingTop>
-                      <PaddingBottom>2pt</PaddingBottom>
-                    </Style>
-                  </Textbox>
-                  <Textbox Name="Textbox2">
-                    <KeepTogether>true</KeepTogether>
-                    <Paragraphs>
-                      <Paragraph>
-                        <TextRuns>
-                          <TextRun>
-                            <Value>SALES ORDER</Value>
-                            <Style>
-                              <FontFamily>Calibri</FontFamily>
-                              <FontSize>18pt</FontSize>
-                              <FontWeight>Bold</FontWeight>
-                            </Style>
-                          </TextRun>
-                        </TextRuns>
-                        <Style />
-                      </Paragraph>
-                    </Paragraphs>
-                    <rd:DefaultName>Textbox2</rd:DefaultName>
-                    <Top>0.14112cm</Top>
-                    <Left>7.83892cm</Left>
-                    <Height>1.28792cm</Height>
-                    <Width>6.54812cm</Width>
-                    <ZIndex>12</ZIndex>
                     <Style>
                       <Border>
                         <Style>None</Style>
@@ -634,11 +605,11 @@
                         <Style />
                       </Paragraph>
                     </Paragraphs>
-                    <Top>4.74929cm</Top>
-                    <Left>3.04688cm</Left>
-                    <Height>0.48448cm</Height>
+                    <Top>3.63877cm</Top>
+                    <Left>3.78534cm</Left>
+                    <Height>0.44566cm</Height>
                     <Width>4.771cm</Width>
-                    <ZIndex>13</ZIndex>
+                    <ZIndex>12</ZIndex>
                     <Style>
                       <Border>
                         <Style>None</Style>
@@ -667,10 +638,11 @@
                       </Paragraph>
                     </Paragraphs>
                     <rd:DefaultName>Textbox7</rd:DefaultName>
-                    <Top>4.74401cm</Top>
-                    <Height>0.48976cm</Height>
-                    <Width>2.03698cm</Width>
-                    <ZIndex>14</ZIndex>
+                    <Top>3.63877cm</Top>
+                    <Left>0.05176cm</Left>
+                    <Height>0.44566cm</Height>
+                    <Width>2.51439cm</Width>
+                    <ZIndex>13</ZIndex>
                     <Style>
                       <Border>
                         <Style>None</Style>
@@ -698,11 +670,11 @@
                         <Style />
                       </Paragraph>
                     </Paragraphs>
-                    <Top>5.26904cm</Top>
-                    <Left>3.04688cm</Left>
-                    <Height>0.48977cm</Height>
+                    <Top>4.08443cm</Top>
+                    <Left>3.78534cm</Left>
+                    <Height>0.44566cm</Height>
                     <Width>4.771cm</Width>
-                    <ZIndex>15</ZIndex>
+                    <ZIndex>14</ZIndex>
                     <Style>
                       <Border>
                         <Style>None</Style>
@@ -731,10 +703,11 @@
                       </Paragraph>
                     </Paragraphs>
                     <rd:DefaultName>Textbox7</rd:DefaultName>
-                    <Top>5.26905cm</Top>
-                    <Height>0.52505cm</Height>
-                    <Width>2.56614cm</Width>
-                    <ZIndex>16</ZIndex>
+                    <Top>4.08443cm</Top>
+                    <Left>0.05176cm</Left>
+                    <Height>0.44566cm</Height>
+                    <Width>2.51438cm</Width>
+                    <ZIndex>15</ZIndex>
                     <Style>
                       <Border>
                         <Style>None</Style>
@@ -763,11 +736,11 @@
                       </Paragraph>
                     </Paragraphs>
                     <rd:DefaultName>Textbox7</rd:DefaultName>
-                    <Top>2.99212cm</Top>
-                    <Left>12.72534cm</Left>
-                    <Height>0.63127cm</Height>
-                    <Width>2.82734cm</Width>
-                    <ZIndex>17</ZIndex>
+                    <Top>2.40763cm</Top>
+                    <Left>12.72535cm</Left>
+                    <Height>0.51622cm</Height>
+                    <Width>2.88077cm</Width>
+                    <ZIndex>16</ZIndex>
                     <Style>
                       <Border>
                         <Style>None</Style>
@@ -795,11 +768,11 @@
                         <Style />
                       </Paragraph>
                     </Paragraphs>
-                    <Top>2.99156cm</Top>
-                    <Left>16.12971cm</Left>
-                    <Height>0.63183cm</Height>
+                    <Top>2.40763cm</Top>
+                    <Left>15.8994cm</Left>
+                    <Height>0.51622cm</Height>
                     <Width>2.54174cm</Width>
-                    <ZIndex>18</ZIndex>
+                    <ZIndex>17</ZIndex>
                     <Style>
                       <Border>
                         <Style>None</Style>
@@ -828,11 +801,11 @@
                       </Paragraph>
                     </Paragraphs>
                     <rd:DefaultName>Textbox7</rd:DefaultName>
-                    <Top>3.61985cm</Top>
-                    <Left>12.72534cm</Left>
-                    <Height>0.49858cm</Height>
-                    <Width>1.8617cm</Width>
-                    <ZIndex>19</ZIndex>
+                    <Top>2.92385cm</Top>
+                    <Left>12.73129cm</Left>
+                    <Height>0.51622cm</Height>
+                    <Width>2.87483cm</Width>
+                    <ZIndex>18</ZIndex>
                     <Style>
                       <Border>
                         <Style>None</Style>
@@ -860,11 +833,11 @@
                         <Style />
                       </Paragraph>
                     </Paragraphs>
-                    <Top>3.61985cm</Top>
-                    <Left>16.12971cm</Left>
-                    <Height>0.48094cm</Height>
+                    <Top>2.92385cm</Top>
+                    <Left>15.8994cm</Left>
+                    <Height>0.51622cm</Height>
                     <Width>2.54174cm</Width>
-                    <ZIndex>20</ZIndex>
+                    <ZIndex>19</ZIndex>
                     <Style>
                       <Border>
                         <Style>None</Style>
@@ -893,11 +866,11 @@
                       </Paragraph>
                     </Paragraphs>
                     <rd:DefaultName>Textbox7</rd:DefaultName>
-                    <Top>4.15371cm</Top>
-                    <Left>12.72534cm</Left>
-                    <Height>0.49914cm</Height>
-                    <Width>1.6617cm</Width>
-                    <ZIndex>21</ZIndex>
+                    <Top>3.44007cm</Top>
+                    <Left>12.73129cm</Left>
+                    <Height>0.51622cm</Height>
+                    <Width>2.87483cm</Width>
+                    <ZIndex>20</ZIndex>
                     <Style>
                       <Border>
                         <Style>None</Style>
@@ -927,11 +900,11 @@
                         </Style>
                       </Paragraph>
                     </Paragraphs>
-                    <Top>4.1719cm</Top>
-                    <Left>16.12971cm</Left>
-                    <Height>0.48094cm</Height>
+                    <Top>3.44007cm</Top>
+                    <Left>15.8994cm</Left>
+                    <Height>0.51622cm</Height>
                     <Width>2.54174cm</Width>
-                    <ZIndex>22</ZIndex>
+                    <ZIndex>21</ZIndex>
                     <Style>
                       <Border>
                         <Style>None</Style>
@@ -959,11 +932,11 @@
                         <Style />
                       </Paragraph>
                     </Paragraphs>
-                    <Top>4.65284cm</Top>
-                    <Left>16.12971cm</Left>
-                    <Height>0.59505cm</Height>
+                    <Top>3.95629cm</Top>
+                    <Left>15.8994cm</Left>
+                    <Height>0.51622cm</Height>
                     <Width>2.54174cm</Width>
-                    <ZIndex>23</ZIndex>
+                    <ZIndex>22</ZIndex>
                     <Style>
                       <Border>
                         <Style>None</Style>
@@ -992,11 +965,11 @@
                       </Paragraph>
                     </Paragraphs>
                     <rd:DefaultName>Textbox7</rd:DefaultName>
-                    <Top>4.65284cm</Top>
-                    <Left>12.72534cm</Left>
-                    <Height>0.51038cm</Height>
-                    <Width>3.40437cm</Width>
-                    <ZIndex>24</ZIndex>
+                    <Top>3.95629cm</Top>
+                    <Left>12.73129cm</Left>
+                    <Height>0.51622cm</Height>
+                    <Width>2.87483cm</Width>
+                    <ZIndex>23</ZIndex>
                     <Style>
                       <Border>
                         <Style>None</Style>
@@ -1024,11 +997,11 @@
                         <Style />
                       </Paragraph>
                     </Paragraphs>
-                    <Top>3.06268cm</Top>
-                    <Left>3.04688cm</Left>
-                    <Height>0.56071cm</Height>
+                    <Top>2.26651cm</Top>
+                    <Left>3.78534cm</Left>
+                    <Height>0.44566cm</Height>
                     <Width>4.771cm</Width>
-                    <ZIndex>25</ZIndex>
+                    <ZIndex>24</ZIndex>
                     <Style>
                       <Border>
                         <Style>None</Style>
@@ -1057,10 +1030,11 @@
                       </Paragraph>
                     </Paragraphs>
                     <rd:DefaultName>Textbox7</rd:DefaultName>
-                    <Top>3.09796cm</Top>
-                    <Height>0.52544cm</Height>
-                    <Width>2.92969cm</Width>
-                    <ZIndex>26</ZIndex>
+                    <Top>2.26651cm</Top>
+                    <Left>0.05176cm</Left>
+                    <Height>0.44566cm</Height>
+                    <Width>2.51439cm</Width>
+                    <ZIndex>25</ZIndex>
                     <Visibility>
                       <Hidden>=IIf(IsNothing(First(Fields!project_name.Value, "DataSet1")) OR First(Fields!project_name.Value, "DataSet1") = "", True, False)</Hidden>
                     </Visibility>
@@ -1074,10 +1048,43 @@
                       <PaddingBottom>2pt</PaddingBottom>
                     </Style>
                   </Textbox>
+                  <Textbox Name="Textbox2">
+                    <KeepTogether>true</KeepTogether>
+                    <Paragraphs>
+                      <Paragraph>
+                        <TextRuns>
+                          <TextRun>
+                            <Value>SALES ORDER</Value>
+                            <Style>
+                              <FontFamily>Calibri</FontFamily>
+                              <FontSize>18pt</FontSize>
+                              <FontWeight>Bold</FontWeight>
+                            </Style>
+                          </TextRun>
+                        </TextRuns>
+                        <Style />
+                      </Paragraph>
+                    </Paragraphs>
+                    <rd:DefaultName>Textbox2</rd:DefaultName>
+                    <Top>0.07cm</Top>
+                    <Left>7.55803cm</Left>
+                    <Height>0.97042cm</Height>
+                    <Width>3.82291cm</Width>
+                    <ZIndex>26</ZIndex>
+                    <Style>
+                      <Border>
+                        <Style>None</Style>
+                      </Border>
+                      <PaddingLeft>2pt</PaddingLeft>
+                      <PaddingRight>2pt</PaddingRight>
+                      <PaddingTop>2pt</PaddingTop>
+                      <PaddingBottom>2pt</PaddingBottom>
+                    </Style>
+                  </Textbox>
                 </ReportItems>
                 <KeepTogether>true</KeepTogether>
                 <Left>0.38096in</Left>
-                <Height>2.32281in</Height>
+                <Height>1.97906in</Height>
                 <Width>7.36808in</Width>
                 <Style>
                   <Border>
@@ -1128,6 +1135,7 @@
                                           <Value>#</Value>
                                           <Style>
                                             <FontFamily>Calibri</FontFamily>
+                                            <FontSize>9pt</FontSize>
                                             <FontWeight>Bold</FontWeight>
                                           </Style>
                                         </TextRun>
@@ -1169,7 +1177,7 @@
                                           <Value>QTY</Value>
                                           <Style>
                                             <FontFamily>Calibri</FontFamily>
-                                            <FontSize>8pt</FontSize>
+                                            <FontSize>9pt</FontSize>
                                             <FontWeight>Bold</FontWeight>
                                           </Style>
                                         </TextRun>
@@ -1211,7 +1219,7 @@
                                           <Value>ITEM CODE</Value>
                                           <Style>
                                             <FontFamily>Calibri</FontFamily>
-                                            <FontSize>8pt</FontSize>
+                                            <FontSize>9pt</FontSize>
                                             <FontWeight>Bold</FontWeight>
                                           </Style>
                                         </TextRun>
@@ -1253,7 +1261,7 @@
                                           <Value>ITEM DESCRIPTION</Value>
                                           <Style>
                                             <FontFamily>Calibri</FontFamily>
-                                            <FontSize>8pt</FontSize>
+                                            <FontSize>9pt</FontSize>
                                             <FontWeight>Bold</FontWeight>
                                           </Style>
                                         </TextRun>
@@ -1293,7 +1301,7 @@
                                           <Value>DELIVERY PREFERENCE</Value>
                                           <Style>
                                             <FontFamily>Calibri</FontFamily>
-                                            <FontSize>8pt</FontSize>
+                                            <FontSize>9pt</FontSize>
                                             <FontWeight>Bold</FontWeight>
                                           </Style>
                                         </TextRun>
@@ -1334,7 +1342,7 @@
                                           <Value>LIST PRICE</Value>
                                           <Style>
                                             <FontFamily>Calibri</FontFamily>
-                                            <FontSize>8pt</FontSize>
+                                            <FontSize>9pt</FontSize>
                                             <FontWeight>Bold</FontWeight>
                                           </Style>
                                         </TextRun>
@@ -1376,7 +1384,7 @@
                                           <Value>TOTAL PRICE</Value>
                                           <Style>
                                             <FontFamily>Calibri</FontFamily>
-                                            <FontSize>8pt</FontSize>
+                                            <FontSize>9pt</FontSize>
                                             <FontWeight>Bold</FontWeight>
                                           </Style>
                                         </TextRun>
@@ -1423,7 +1431,7 @@
                                           <Value>=Fields!numbering.Value</Value>
                                           <Style>
                                             <FontFamily>Calibri</FontFamily>
-                                            <FontSize>8pt</FontSize>
+                                            <FontSize>9pt</FontSize>
                                           </Style>
                                         </TextRun>
                                       </TextRuns>
@@ -1457,7 +1465,7 @@
                                           <Value>=Fields!qty.Value</Value>
                                           <Style>
                                             <FontFamily>Calibri</FontFamily>
-                                            <FontSize>8pt</FontSize>
+                                            <FontSize>9pt</FontSize>
                                           </Style>
                                         </TextRun>
                                       </TextRuns>
@@ -1492,7 +1500,7 @@
                                           <Value>=Fields!item_code.Value</Value>
                                           <Style>
                                             <FontFamily>Calibri</FontFamily>
-                                            <FontSize>8pt</FontSize>
+                                            <FontSize>9pt</FontSize>
                                           </Style>
                                         </TextRun>
                                       </TextRuns>
@@ -1527,7 +1535,7 @@
                                           <Value>=Fields!item_description.Value</Value>
                                           <Style>
                                             <FontFamily>Calibri</FontFamily>
-                                            <FontSize>8pt</FontSize>
+                                            <FontSize>9pt</FontSize>
                                             <Format>'₱'#,0.00;('₱'#,0.00)</Format>
                                           </Style>
                                         </TextRun>
@@ -1564,7 +1572,7 @@
                                           <Value>=Fields!delivery_preference.Value</Value>
                                           <Style>
                                             <FontFamily>Calibri</FontFamily>
-                                            <FontSize>8pt</FontSize>
+                                            <FontSize>9pt</FontSize>
                                           </Style>
                                         </TextRun>
                                       </TextRuns>
@@ -1599,7 +1607,7 @@
                                           <Value>=Fields!list_price.Value</Value>
                                           <Style>
                                             <FontFamily>Calibri</FontFamily>
-                                            <FontSize>8pt</FontSize>
+                                            <FontSize>9pt</FontSize>
                                             <Format>'₱'#,0.00;('₱'#,0.00)</Format>
                                           </Style>
                                         </TextRun>
@@ -1636,7 +1644,7 @@
                                           <Value>=Fields!total_price.Value</Value>
                                           <Style>
                                             <FontFamily>Calibri</FontFamily>
-                                            <FontSize>8pt</FontSize>
+                                            <FontSize>9pt</FontSize>
                                             <Format>'₱'#,0.00;('₱'#,0.00)</Format>
                                             <rd:FormatSymbolCulture>en-PH</rd:FormatSymbolCulture>
                                           </Style>
@@ -1678,6 +1686,7 @@
                                           <Value />
                                           <Style>
                                             <FontFamily>Calibri</FontFamily>
+                                            <FontSize>9pt</FontSize>
                                           </Style>
                                         </TextRun>
                                       </TextRuns>
@@ -1716,7 +1725,7 @@
                                           <Value>=Sum(Fields!qty.Value)</Value>
                                           <Style>
                                             <FontFamily>Calibri</FontFamily>
-                                            <FontSize>8pt</FontSize>
+                                            <FontSize>9pt</FontSize>
                                             <FontWeight>Bold</FontWeight>
                                           </Style>
                                         </TextRun>
@@ -1756,6 +1765,7 @@
                                           <Value />
                                           <Style>
                                             <FontFamily>Calibri</FontFamily>
+                                            <FontSize>9pt</FontSize>
                                           </Style>
                                         </TextRun>
                                       </TextRuns>
@@ -1794,6 +1804,7 @@
                                           <Value />
                                           <Style>
                                             <FontFamily>Calibri</FontFamily>
+                                            <FontSize>9pt</FontSize>
                                             <Format>'₱'#,0.00;('₱'#,0.00)</Format>
                                           </Style>
                                         </TextRun>
@@ -1834,6 +1845,7 @@
                                           <Value />
                                           <Style>
                                             <FontFamily>Calibri</FontFamily>
+                                            <FontSize>9pt</FontSize>
                                             <Format>'₱'#,0.00;('₱'#,0.00)</Format>
                                           </Style>
                                         </TextRun>
@@ -1874,7 +1886,7 @@
                                           <Value>=Sum(Fields!list_price.Value)</Value>
                                           <Style>
                                             <FontFamily>Calibri</FontFamily>
-                                            <FontSize>8pt</FontSize>
+                                            <FontSize>9pt</FontSize>
                                             <FontWeight>Bold</FontWeight>
                                             <Format>'₱'#,0.00;('₱'#,0.00)</Format>
                                           </Style>
@@ -1916,7 +1928,7 @@
                                           <Value>=Sum(Fields!total_price.Value)</Value>
                                           <Style>
                                             <FontFamily>Calibri</FontFamily>
-                                            <FontSize>8pt</FontSize>
+                                            <FontSize>9pt</FontSize>
                                             <FontWeight>Bold</FontWeight>
                                             <Format>'₱'#,0.00;('₱'#,0.00)</Format>
                                             <rd:FormatSymbolCulture>en-PH</rd:FormatSymbolCulture>
@@ -2265,7 +2277,7 @@
                   </Textbox>
                 </ReportItems>
                 <KeepTogether>true</KeepTogether>
-                <Top>5.89993cm</Top>
+                <Top>5.15998cm</Top>
                 <Left>0.06672cm</Left>
                 <Height>4.96475cm</Height>
                 <Width>20.01299cm</Width>
@@ -2279,6 +2291,7 @@
             </ReportItems>
             <KeepTogether>true</KeepTogether>
             <Top>0.01389in</Top>
+            <Left>0.08181cm</Left>
             <Height>4.27743in</Height>
             <Width>7.9054in</Width>
             <Style>
@@ -2291,10 +2304,10 @@
         <Height>4.42412in</Height>
         <Style />
       </Body>
-      <Width>7.9054in</Width>
+      <Width>7.96981in</Width>
       <Page>
         <PageHeader>
-          <Height>1.09576in</Height>
+          <Height>2.7476cm</Height>
           <PrintOnFirstPage>true</PrintOnFirstPage>
           <PrintOnLastPage>true</PrintOnLastPage>
           <ReportItems>
@@ -2320,7 +2333,7 @@
           </Style>
         </PageHeader>
         <PageFooter>
-          <Height>0.81415cm</Height>
+          <Height>0.97289cm</Height>
           <PrintOnFirstPage>true</PrintOnFirstPage>
           <PrintOnLastPage>true</PrintOnLastPage>
           <ReportItems>
@@ -2331,10 +2344,26 @@
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value>Manila Main Office, 644 Raja Matanda St. Tondo Manila, 1013, Philippines | Quezon Office, 717 P&amp;S Building, Aurora Boulevard, Quezon City, 1112 Metro Manila, Philippines | Tel. No. (02)8-245-0277/79; (02)8-24577015/16 | Fax No.: 8-245-0287</Value>
+                      <Value>Manila Main Office, 644 Raja Matanda St. Tondo Manila, 1013, Philippines | Quezon Office, 717 P&amp;S Building, Aurora Boulevard, Quezon City, 1112 Metro Manila, Philippines |</Value>
                       <Style>
                         <FontStyle>Normal</FontStyle>
-                        <FontFamily>Calibri</FontFamily>
+                        <FontSize>7pt</FontSize>
+                        <FontWeight>Normal</FontWeight>
+                        <TextDecoration>None</TextDecoration>
+                        <Color>#000000</Color>
+                      </Style>
+                    </TextRun>
+                  </TextRuns>
+                  <Style>
+                    <TextAlign>Center</TextAlign>
+                  </Style>
+                </Paragraph>
+                <Paragraph>
+                  <TextRuns>
+                    <TextRun>
+                      <Value>Tel. No. (02)8-245-0277/79; (02)8-24577015/16 | Fax No.: 8-245-0287</Value>
+                      <Style>
+                        <FontStyle>Normal</FontStyle>
                         <FontSize>7pt</FontSize>
                         <FontWeight>Normal</FontWeight>
                         <TextDecoration>None</TextDecoration>
@@ -2348,10 +2377,9 @@
                 </Paragraph>
               </Paragraphs>
               <rd:DefaultName>Textbox7</rd:DefaultName>
-              <Top>0.07056cm</Top>
-              <Left>0.66146cm</Left>
-              <Height>0.74359cm</Height>
-              <Width>18.19723cm</Width>
+              <Top>0.01764cm</Top>
+              <Height>0.93761cm</Height>
+              <Width>20.24333cm</Width>
               <Style>
                 <Border>
                   <Style>None</Style>

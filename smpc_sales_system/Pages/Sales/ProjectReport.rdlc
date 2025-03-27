@@ -317,7 +317,7 @@
                       <Paragraph>
                         <TextRuns>
                           <TextRun>
-                            <Value>=First(Fields!date.Value, "DataSet1")</Value>
+                            <Value>=Format(CDate(First(Fields!date.Value, "DataSet1")), "yyyy-MM-dd")</Value>
                             <Style>
                               <FontFamily>Calibri</FontFamily>
                               <FontSize>9pt</FontSize>
@@ -361,7 +361,7 @@
                     <Top>1.37519cm</Top>
                     <Left>15.8994cm</Left>
                     <Height>0.51622cm</Height>
-                    <Width>1.17708cm</Width>
+                    <Width>1.79444cm</Width>
                     <ZIndex>1</ZIndex>
                     <Style>
                       <Border>
@@ -850,9 +850,9 @@
                     </Paragraphs>
                     <rd:DefaultName>Textbox2</rd:DefaultName>
                     <Top>0.03942cm</Top>
-                    <Left>6.59036cm</Left>
+                    <Left>6.73036cm</Left>
                     <Height>0.97042cm</Height>
-                    <Width>6.54812cm</Width>
+                    <Width>5.48979cm</Width>
                     <ZIndex>16</ZIndex>
                     <Style>
                       <Border>
@@ -1331,7 +1331,7 @@ Parameters!ItemDescriptions.Value(RowNumber("Tablix1") - 1))</Value>
                                     <Paragraph>
                                       <TextRuns>
                                         <TextRun>
-                                          <Value>=Fields!multiplier.Value</Value>
+                                          <Value>=Code.ConvertMultiplier(Fields!multiplier.Value)</Value>
                                           <Style>
                                             <FontFamily>Calibri</FontFamily>
                                             <FontSize>9pt</FontSize>
@@ -1339,7 +1339,7 @@ Parameters!ItemDescriptions.Value(RowNumber("Tablix1") - 1))</Value>
                                         </TextRun>
                                       </TextRuns>
                                       <Style>
-                                        <TextAlign>Center</TextAlign>
+                                        <TextAlign>Left</TextAlign>
                                       </Style>
                                     </Paragraph>
                                   </Paragraphs>
@@ -2484,7 +2484,7 @@ IMPLEMENTATION OF SERVICES: Sunshine Multi Plus Corporation will provide the Ser
                             <TextRuns>
                               <TextRun>
                                 <Value>
-LIABILITY: Sunshine Multi Plus Corporation's liability under, for the breach of, or arising out of this agreement and/or sale will be limited to repair or replacement of any defective products or a refund of the purchase price of the products as Sunshine Multi Plus Corporation's sole option as outlined above.</Value>
+LIABILITY: Sunshine Multi Plus Corporation's liability under, for the breach of, or arising out of this agreement and/or sale will be limited to repair or replacement of any defective products or a refund of the purchase price of the products as Sunshine Multi Plus Corporation's sole option as outlined above.      </Value>
                                 <Style>
                                   <FontStyle>Normal</FontStyle>
                                   <FontFamily>Calibri</FontFamily>
@@ -2626,8 +2626,8 @@ LIABILITY: Sunshine Multi Plus Corporation's liability under, for the breach of,
                 </Paragraph>
               </Paragraphs>
               <rd:DefaultName>Textbox7</rd:DefaultName>
-              <Top>0.03528cm</Top>
-              <Left>0.27444cm</Left>
+              <Top>0.01764cm</Top>
+              <Left>0.13722cm</Left>
               <Height>0.93761cm</Height>
               <Width>20.24333cm</Width>
               <Style>
@@ -2744,7 +2744,8 @@ LIABILITY: Sunshine Multi Plus Corporation's liability under, for the breach of,
       </CellDefinitions>
     </GridLayoutDefinition>
   </ReportParametersLayout>
-  <Code>Function SumProduct(ByVal qty() As Object, ByVal unitprices() As Object) As Decimal
+  <Code>
+Function SumProduct(ByVal qty() As Object, ByVal unitprices() As Object) As Decimal
     Dim total As Decimal = 0
     For i As Integer = 0 To qty.Length - 1
         ' Ensure that we safely cast to Decimal
@@ -2761,6 +2762,38 @@ Function IsValidNumeric(value As String) As Boolean
         Return Double.TryParse(value, result)
     Catch ex As Exception
         Return False
+    End Try
+End Function
+Function ConvertMultiplier(value As String) As String
+    Try
+        ' Check for empty value or if it does not contain "*" character
+        If String.IsNullOrWhiteSpace(value) OrElse Not value.Contains("*") Then
+            Return ""
+        End If
+        
+        ' Split the multiplier string by "*" character
+        Dim parts() As String = value.Split("*"c)
+        ' Create a result string (List is replaced with a string for RDLC compatibility)
+        Dim result As String = ""
+
+        ' Iterate over each part of the multiplier
+        For Each part As String In parts
+            ' Check if part is numeric and non-empty
+            If Not String.IsNullOrWhiteSpace(part) AndAlso IsNumeric(part) AndAlso CDec(part.Trim()) &lt;&gt; 0 Then
+                ' Subtract the result from 100 and append the result
+                If result &lt;&gt; "" Then
+                    result = result &amp; " / " &amp; (100 - CInt(CDec(part.Trim()) * 100)).ToString()
+                Else
+                    result = (100 - CInt(CDec(part.Trim()) * 100)).ToString()
+                End If
+            End If
+        Next
+        
+        ' Return the final result
+        Return result
+    Catch ex As Exception
+        ' If there’s an error, return an empty string
+        Return ""
     End Try
 End Function</Code>
   <EmbeddedImages>

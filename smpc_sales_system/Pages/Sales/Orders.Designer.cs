@@ -30,14 +30,14 @@ namespace smpc_sales_app.Pages.Sales
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle5 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle6 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle7 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle8 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle17 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle18 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle19 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle20 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle21 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle22 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle23 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle24 = new System.Windows.Forms.DataGridViewCellStyle();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Orders));
             this.quick_quotes = new System.Windows.Forms.BindingSource(this.components);
             this.dataSet1 = new System.Data.DataSet();
@@ -105,16 +105,13 @@ namespace smpc_sales_app.Pages.Sales
             this.Column6 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Column1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.panel4 = new System.Windows.Forms.Panel();
+            this.panel14 = new System.Windows.Forms.Panel();
             this.dgv_order_sales = new System.Windows.Forms.DataGridView();
             this.number1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Column10 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.qtydgv = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.itemcodedgv = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.shortdesc = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.delivery_preference = new System.Windows.Forms.DataGridViewComboBoxColumn();
-            this.unitprice = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.linetotal = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.status = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.quick_quote_id = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.basedid = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.itemid = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -124,6 +121,10 @@ namespace smpc_sales_app.Pages.Sales
             this.percentdiscountDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.netdiscountDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.nettotalDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.delivery_preference = new System.Windows.Forms.DataGridViewComboBoxColumn();
+            this.unitprice = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.linetotal = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.status = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.dgv_project = new System.Windows.Forms.DataGridView();
             this.number = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.dataGridViewTextBoxColumn1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -133,7 +134,6 @@ namespace smpc_sales_app.Pages.Sales
             this.delivery_preferenceproject = new System.Windows.Forms.DataGridViewComboBoxColumn();
             this.listpriceproject = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.componenttotalproject = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.statusproject = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.itemsidDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.basedidproject = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.componentsDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -144,6 +144,7 @@ namespace smpc_sales_app.Pages.Sales
             this.notesDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.bomiddgv = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.itemiddgv = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.statusproject = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.bs_project_items = new System.Windows.Forms.BindingSource(this.components);
             this.pnl_header = new System.Windows.Forms.Panel();
             this.label26 = new System.Windows.Forms.Label();
@@ -226,16 +227,22 @@ namespace smpc_sales_app.Pages.Sales
             this.panel10 = new System.Windows.Forms.Panel();
             this.AFTERSALES_LV = new System.Windows.Forms.ListView();
             this.panel7 = new System.Windows.Forms.Panel();
+            this.lbl_path2 = new System.Windows.Forms.Label();
             this.label24 = new System.Windows.Forms.Label();
             this.panel5 = new System.Windows.Forms.Panel();
             this.SALES_TV = new System.Windows.Forms.TreeView();
             this.panel13 = new System.Windows.Forms.Panel();
             this.SALES_LV = new System.Windows.Forms.ListView();
             this.panel3 = new System.Windows.Forms.Panel();
+            this.lbl_path1 = new System.Windows.Forms.Label();
             this.label22 = new System.Windows.Forms.Label();
             this.bs_project_item_sets = new System.Windows.Forms.BindingSource(this.components);
-            this.lbl_path2 = new System.Windows.Forms.Label();
-            this.lbl_path1 = new System.Windows.Forms.Label();
+            this.sales_preview = new System.Windows.Forms.Panel();
+            this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            this.label27 = new System.Windows.Forms.Label();
+            this.aftersales_preview = new System.Windows.Forms.Panel();
+            this.label28 = new System.Windows.Forms.Label();
+            this.pictureBox2 = new System.Windows.Forms.PictureBox();
             ((System.ComponentModel.ISupportInitialize)(this.quick_quotes)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dataSet1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.tbl_quick_quotes)).BeginInit();
@@ -247,6 +254,7 @@ namespace smpc_sales_app.Pages.Sales
             ((System.ComponentModel.ISupportInitialize)(this.bs_ship_type)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.bs_payment_terms)).BeginInit();
             this.panel4.SuspendLayout();
+            this.panel14.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgv_order_sales)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dgv_project)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.bs_project_items)).BeginInit();
@@ -269,6 +277,10 @@ namespace smpc_sales_app.Pages.Sales
             this.panel13.SuspendLayout();
             this.panel3.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.bs_project_item_sets)).BeginInit();
+            this.sales_preview.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
+            this.aftersales_preview.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
             this.SuspendLayout();
             // 
             // quick_quotes
@@ -612,8 +624,7 @@ namespace smpc_sales_app.Pages.Sales
             // 
             // panel4
             // 
-            this.panel4.Controls.Add(this.dgv_order_sales);
-            this.panel4.Controls.Add(this.dgv_project);
+            this.panel4.Controls.Add(this.panel14);
             this.panel4.Controls.Add(this.pnl_header);
             this.panel4.Controls.Add(this.toolStrip1);
             this.panel4.Controls.Add(this.panel6);
@@ -623,20 +634,30 @@ namespace smpc_sales_app.Pages.Sales
             this.panel4.Size = new System.Drawing.Size(1028, 1200);
             this.panel4.TabIndex = 12;
             // 
+            // panel14
+            // 
+            this.panel14.Controls.Add(this.dgv_order_sales);
+            this.panel14.Controls.Add(this.dgv_project);
+            this.panel14.Dock = System.Windows.Forms.DockStyle.Top;
+            this.panel14.Location = new System.Drawing.Point(0, 240);
+            this.panel14.Name = "panel14";
+            this.panel14.Size = new System.Drawing.Size(1028, 252);
+            this.panel14.TabIndex = 11;
+            // 
             // dgv_order_sales
             // 
             this.dgv_order_sales.AllowUserToAddRows = false;
             this.dgv_order_sales.AllowUserToDeleteRows = false;
             this.dgv_order_sales.AutoGenerateColumns = false;
             this.dgv_order_sales.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
-            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dgv_order_sales.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
+            dataGridViewCellStyle17.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle17.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle17.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle17.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle17.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle17.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle17.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dgv_order_sales.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle17;
             this.dgv_order_sales.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dgv_order_sales.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.number1,
@@ -644,10 +665,6 @@ namespace smpc_sales_app.Pages.Sales
             this.qtydgv,
             this.itemcodedgv,
             this.shortdesc,
-            this.delivery_preference,
-            this.unitprice,
-            this.linetotal,
-            this.status,
             this.quick_quote_id,
             this.basedid,
             this.itemid,
@@ -656,19 +673,23 @@ namespace smpc_sales_app.Pages.Sales
             this.unitidDataGridViewTextBoxColumn,
             this.percentdiscountDataGridViewTextBoxColumn,
             this.netdiscountDataGridViewTextBoxColumn,
-            this.nettotalDataGridViewTextBoxColumn});
+            this.nettotalDataGridViewTextBoxColumn,
+            this.delivery_preference,
+            this.unitprice,
+            this.linetotal,
+            this.status});
             this.dgv_order_sales.DataSource = this.quick_quotes;
             this.dgv_order_sales.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.dgv_order_sales.Location = new System.Drawing.Point(0, 492);
+            this.dgv_order_sales.Location = new System.Drawing.Point(0, 0);
             this.dgv_order_sales.Name = "dgv_order_sales";
-            this.dgv_order_sales.Size = new System.Drawing.Size(1028, 708);
+            this.dgv_order_sales.Size = new System.Drawing.Size(1028, 252);
             this.dgv_order_sales.TabIndex = 12;
             // 
             // number1
             // 
             this.number1.DataPropertyName = "numbering";
-            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            this.number1.DefaultCellStyle = dataGridViewCellStyle2;
+            dataGridViewCellStyle18.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            this.number1.DefaultCellStyle = dataGridViewCellStyle18;
             this.number1.FillWeight = 30.55143F;
             this.number1.HeaderText = "#";
             this.number1.Name = "number1";
@@ -703,44 +724,6 @@ namespace smpc_sales_app.Pages.Sales
             this.shortdesc.FillWeight = 219.7576F;
             this.shortdesc.HeaderText = "ITEM DESCRIPTION";
             this.shortdesc.Name = "shortdesc";
-            // 
-            // delivery_preference
-            // 
-            this.delivery_preference.DataPropertyName = "delivery_preference";
-            this.delivery_preference.FillWeight = 109.5354F;
-            this.delivery_preference.HeaderText = "DELIVERY PREFERENCE";
-            this.delivery_preference.Items.AddRange(new object[] {
-            "(ASSEMBLED)",
-            "(SEMI-ASSEMBLED)",
-            "(INCLUDED-IN)",
-            "(LOOSE)"});
-            this.delivery_preference.Name = "delivery_preference";
-            this.delivery_preference.Resizable = System.Windows.Forms.DataGridViewTriState.True;
-            this.delivery_preference.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
-            // 
-            // unitprice
-            // 
-            this.unitprice.DataPropertyName = "list_price";
-            dataGridViewCellStyle3.Format = "c2";
-            this.unitprice.DefaultCellStyle = dataGridViewCellStyle3;
-            this.unitprice.FillWeight = 98.33942F;
-            this.unitprice.HeaderText = "LIST PRICE";
-            this.unitprice.Name = "unitprice";
-            // 
-            // linetotal
-            // 
-            this.linetotal.DataPropertyName = "total_price";
-            dataGridViewCellStyle4.Format = "c2";
-            this.linetotal.DefaultCellStyle = dataGridViewCellStyle4;
-            this.linetotal.FillWeight = 98.33942F;
-            this.linetotal.HeaderText = "TOTAL PRICE";
-            this.linetotal.Name = "linetotal";
-            // 
-            // status
-            // 
-            this.status.FillWeight = 109.5354F;
-            this.status.HeaderText = "STATUS";
-            this.status.Name = "status";
             // 
             // quick_quote_id
             // 
@@ -805,20 +788,58 @@ namespace smpc_sales_app.Pages.Sales
             this.nettotalDataGridViewTextBoxColumn.Name = "nettotalDataGridViewTextBoxColumn";
             this.nettotalDataGridViewTextBoxColumn.Visible = false;
             // 
+            // delivery_preference
+            // 
+            this.delivery_preference.DataPropertyName = "delivery_preference";
+            this.delivery_preference.FillWeight = 109.5354F;
+            this.delivery_preference.HeaderText = "DELIVERY PREFERENCE";
+            this.delivery_preference.Items.AddRange(new object[] {
+            "(ASSEMBLED)",
+            "(SEMI-ASSEMBLED)",
+            "(INCLUDED-IN)",
+            "(LOOSE)"});
+            this.delivery_preference.Name = "delivery_preference";
+            this.delivery_preference.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+            this.delivery_preference.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
+            // 
+            // unitprice
+            // 
+            this.unitprice.DataPropertyName = "list_price";
+            dataGridViewCellStyle19.Format = "c2";
+            this.unitprice.DefaultCellStyle = dataGridViewCellStyle19;
+            this.unitprice.FillWeight = 98.33942F;
+            this.unitprice.HeaderText = "LIST PRICE";
+            this.unitprice.Name = "unitprice";
+            // 
+            // linetotal
+            // 
+            this.linetotal.DataPropertyName = "total_price";
+            dataGridViewCellStyle20.Format = "c2";
+            this.linetotal.DefaultCellStyle = dataGridViewCellStyle20;
+            this.linetotal.FillWeight = 98.33942F;
+            this.linetotal.HeaderText = "TOTAL PRICE";
+            this.linetotal.Name = "linetotal";
+            // 
+            // status
+            // 
+            this.status.FillWeight = 109.5354F;
+            this.status.HeaderText = "STATUS";
+            this.status.Name = "status";
+            // 
             // dgv_project
             // 
             this.dgv_project.AllowUserToAddRows = false;
             this.dgv_project.AllowUserToDeleteRows = false;
             this.dgv_project.AutoGenerateColumns = false;
             this.dgv_project.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
-            dataGridViewCellStyle5.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle5.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle5.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle5.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle5.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle5.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle5.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dgv_project.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle5;
+            dataGridViewCellStyle21.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle21.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle21.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle21.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle21.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle21.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle21.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dgv_project.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle21;
             this.dgv_project.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dgv_project.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.number,
@@ -829,7 +850,6 @@ namespace smpc_sales_app.Pages.Sales
             this.delivery_preferenceproject,
             this.listpriceproject,
             this.componenttotalproject,
-            this.statusproject,
             this.itemsidDataGridViewTextBoxColumn,
             this.basedidproject,
             this.componentsDataGridViewTextBoxColumn,
@@ -839,10 +859,11 @@ namespace smpc_sales_app.Pages.Sales
             this.discountpriceDataGridViewTextBoxColumn,
             this.notesDataGridViewTextBoxColumn,
             this.bomiddgv,
-            this.itemiddgv});
+            this.itemiddgv,
+            this.statusproject});
             this.dgv_project.DataSource = this.bs_project_items;
-            this.dgv_project.Dock = System.Windows.Forms.DockStyle.Top;
-            this.dgv_project.Location = new System.Drawing.Point(0, 240);
+            this.dgv_project.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.dgv_project.Location = new System.Drawing.Point(0, 0);
             this.dgv_project.Name = "dgv_project";
             this.dgv_project.Size = new System.Drawing.Size(1028, 252);
             this.dgv_project.TabIndex = 11;
@@ -851,8 +872,8 @@ namespace smpc_sales_app.Pages.Sales
             // number
             // 
             this.number.DataPropertyName = "number";
-            dataGridViewCellStyle6.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            this.number.DefaultCellStyle = dataGridViewCellStyle6;
+            dataGridViewCellStyle22.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            this.number.DefaultCellStyle = dataGridViewCellStyle22;
             this.number.FillWeight = 26.5718F;
             this.number.HeaderText = "#";
             this.number.Name = "number";
@@ -902,9 +923,9 @@ namespace smpc_sales_app.Pages.Sales
             // listpriceproject
             // 
             this.listpriceproject.DataPropertyName = "list_price_per_unit";
-            dataGridViewCellStyle7.Format = "C2";
-            dataGridViewCellStyle7.NullValue = null;
-            this.listpriceproject.DefaultCellStyle = dataGridViewCellStyle7;
+            dataGridViewCellStyle23.Format = "C2";
+            dataGridViewCellStyle23.NullValue = null;
+            this.listpriceproject.DefaultCellStyle = dataGridViewCellStyle23;
             this.listpriceproject.FillWeight = 100.1291F;
             this.listpriceproject.HeaderText = "LIST PRICE";
             this.listpriceproject.Name = "listpriceproject";
@@ -912,17 +933,11 @@ namespace smpc_sales_app.Pages.Sales
             // componenttotalproject
             // 
             this.componenttotalproject.DataPropertyName = "component_total";
-            dataGridViewCellStyle8.Format = "C2";
-            this.componenttotalproject.DefaultCellStyle = dataGridViewCellStyle8;
+            dataGridViewCellStyle24.Format = "C2";
+            this.componenttotalproject.DefaultCellStyle = dataGridViewCellStyle24;
             this.componenttotalproject.FillWeight = 100.1291F;
             this.componenttotalproject.HeaderText = "TOTAL PRICE";
             this.componenttotalproject.Name = "componenttotalproject";
-            // 
-            // statusproject
-            // 
-            this.statusproject.FillWeight = 100.1291F;
-            this.statusproject.HeaderText = "STATUS";
-            this.statusproject.Name = "statusproject";
             // 
             // itemsidDataGridViewTextBoxColumn
             // 
@@ -995,6 +1010,12 @@ namespace smpc_sales_app.Pages.Sales
             this.itemiddgv.HeaderText = "item_id";
             this.itemiddgv.Name = "itemiddgv";
             this.itemiddgv.Visible = false;
+            // 
+            // statusproject
+            // 
+            this.statusproject.FillWeight = 100.1291F;
+            this.statusproject.HeaderText = "STATUS";
+            this.statusproject.Name = "statusproject";
             // 
             // bs_project_items
             // 
@@ -1759,6 +1780,7 @@ namespace smpc_sales_app.Pages.Sales
             // 
             // panel9
             // 
+            this.panel9.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.panel9.Controls.Add(this.panel12);
             this.panel9.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.panel9.Location = new System.Drawing.Point(0, 468);
@@ -1770,9 +1792,9 @@ namespace smpc_sales_app.Pages.Sales
             // 
             this.panel12.Controls.Add(this.btn_save);
             this.panel12.Dock = System.Windows.Forms.DockStyle.Right;
-            this.panel12.Location = new System.Drawing.Point(828, 0);
+            this.panel12.Location = new System.Drawing.Point(826, 0);
             this.panel12.Name = "panel12";
-            this.panel12.Size = new System.Drawing.Size(200, 60);
+            this.panel12.Size = new System.Drawing.Size(200, 58);
             this.panel12.TabIndex = 174;
             // 
             // btn_save
@@ -1824,6 +1846,7 @@ namespace smpc_sales_app.Pages.Sales
             // 
             // panel10
             // 
+            this.panel10.Controls.Add(this.aftersales_preview);
             this.panel10.Controls.Add(this.AFTERSALES_LV);
             this.panel10.Dock = System.Windows.Forms.DockStyle.Right;
             this.panel10.Location = new System.Drawing.Point(377, 0);
@@ -1856,6 +1879,16 @@ namespace smpc_sales_app.Pages.Sales
             this.panel7.Size = new System.Drawing.Size(1028, 52);
             this.panel7.TabIndex = 2;
             // 
+            // lbl_path2
+            // 
+            this.lbl_path2.AutoSize = true;
+            this.lbl_path2.Location = new System.Drawing.Point(542, 32);
+            this.lbl_path2.Name = "lbl_path2";
+            this.lbl_path2.Size = new System.Drawing.Size(28, 13);
+            this.lbl_path2.TabIndex = 177;
+            this.lbl_path2.Text = "path";
+            this.lbl_path2.Visible = false;
+            // 
             // label24
             // 
             this.label24.AutoSize = true;
@@ -1887,6 +1920,7 @@ namespace smpc_sales_app.Pages.Sales
             // 
             // panel13
             // 
+            this.panel13.Controls.Add(this.sales_preview);
             this.panel13.Controls.Add(this.SALES_LV);
             this.panel13.Dock = System.Windows.Forms.DockStyle.Right;
             this.panel13.Location = new System.Drawing.Point(377, 0);
@@ -1920,6 +1954,16 @@ namespace smpc_sales_app.Pages.Sales
             this.panel3.Size = new System.Drawing.Size(1028, 46);
             this.panel3.TabIndex = 0;
             // 
+            // lbl_path1
+            // 
+            this.lbl_path1.AutoSize = true;
+            this.lbl_path1.Location = new System.Drawing.Point(539, 29);
+            this.lbl_path1.Name = "lbl_path1";
+            this.lbl_path1.Size = new System.Drawing.Size(28, 13);
+            this.lbl_path1.TabIndex = 178;
+            this.lbl_path1.Text = "path";
+            this.lbl_path1.Visible = false;
+            // 
             // label22
             // 
             this.label22.AutoSize = true;
@@ -1935,25 +1979,67 @@ namespace smpc_sales_app.Pages.Sales
             this.bs_project_item_sets.DataMember = "tbl_project_item_sets";
             this.bs_project_item_sets.DataSource = this.dataSet1;
             // 
-            // lbl_path2
+            // sales_preview
             // 
-            this.lbl_path2.AutoSize = true;
-            this.lbl_path2.Location = new System.Drawing.Point(542, 32);
-            this.lbl_path2.Name = "lbl_path2";
-            this.lbl_path2.Size = new System.Drawing.Size(28, 13);
-            this.lbl_path2.TabIndex = 177;
-            this.lbl_path2.Text = "path";
-            this.lbl_path2.Visible = false;
+            this.sales_preview.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.sales_preview.Controls.Add(this.label27);
+            this.sales_preview.Controls.Add(this.pictureBox1);
+            this.sales_preview.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.sales_preview.Location = new System.Drawing.Point(0, 0);
+            this.sales_preview.Name = "sales_preview";
+            this.sales_preview.Size = new System.Drawing.Size(651, 187);
+            this.sales_preview.TabIndex = 1;
             // 
-            // lbl_path1
+            // pictureBox1
             // 
-            this.lbl_path1.AutoSize = true;
-            this.lbl_path1.Location = new System.Drawing.Point(539, 29);
-            this.lbl_path1.Name = "lbl_path1";
-            this.lbl_path1.Size = new System.Drawing.Size(28, 13);
-            this.lbl_path1.TabIndex = 178;
-            this.lbl_path1.Text = "path";
-            this.lbl_path1.Visible = false;
+            this.pictureBox1.Image = global::smpc_sales_system.Properties.Resources.FolderIcon;
+            this.pictureBox1.Location = new System.Drawing.Point(260, 33);
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.Size = new System.Drawing.Size(139, 79);
+            this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            this.pictureBox1.TabIndex = 0;
+            this.pictureBox1.TabStop = false;
+            // 
+            // label27
+            // 
+            this.label27.AutoSize = true;
+            this.label27.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label27.Location = new System.Drawing.Point(243, 125);
+            this.label27.Name = "label27";
+            this.label27.Size = new System.Drawing.Size(179, 23);
+            this.label27.TabIndex = 1;
+            this.label27.Text = "Please select a folder";
+            // 
+            // aftersales_preview
+            // 
+            this.aftersales_preview.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.aftersales_preview.Controls.Add(this.label28);
+            this.aftersales_preview.Controls.Add(this.pictureBox2);
+            this.aftersales_preview.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.aftersales_preview.Location = new System.Drawing.Point(0, 0);
+            this.aftersales_preview.Name = "aftersales_preview";
+            this.aftersales_preview.Size = new System.Drawing.Size(651, 185);
+            this.aftersales_preview.TabIndex = 2;
+            // 
+            // label28
+            // 
+            this.label28.AutoSize = true;
+            this.label28.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label28.Location = new System.Drawing.Point(243, 125);
+            this.label28.Name = "label28";
+            this.label28.Size = new System.Drawing.Size(179, 23);
+            this.label28.TabIndex = 1;
+            this.label28.Text = "Please select a folder";
+            // 
+            // pictureBox2
+            // 
+            this.pictureBox2.Image = global::smpc_sales_system.Properties.Resources.FolderIcon;
+            this.pictureBox2.Location = new System.Drawing.Point(260, 33);
+            this.pictureBox2.Name = "pictureBox2";
+            this.pictureBox2.Size = new System.Drawing.Size(139, 79);
+            this.pictureBox2.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            this.pictureBox2.TabIndex = 0;
+            this.pictureBox2.TabStop = false;
             // 
             // Orders
             // 
@@ -1975,6 +2061,7 @@ namespace smpc_sales_app.Pages.Sales
             ((System.ComponentModel.ISupportInitialize)(this.bs_payment_terms)).EndInit();
             this.panel4.ResumeLayout(false);
             this.panel4.PerformLayout();
+            this.panel14.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.dgv_order_sales)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.dgv_project)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.bs_project_items)).EndInit();
@@ -2005,6 +2092,12 @@ namespace smpc_sales_app.Pages.Sales
             this.panel3.ResumeLayout(false);
             this.panel3.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.bs_project_item_sets)).EndInit();
+            this.sales_preview.ResumeLayout(false);
+            this.sales_preview.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
+            this.aftersales_preview.ResumeLayout(false);
+            this.aftersales_preview.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -2166,15 +2259,19 @@ namespace smpc_sales_app.Pages.Sales
         private System.Windows.Forms.ListView AFTERSALES_LV;
         private System.Windows.Forms.Panel pnl_header_2;
         private System.Windows.Forms.Panel pnl_footer_2;
+        private System.Windows.Forms.Panel panel12;
+        private System.Windows.Forms.TreeView SALES_TV;
+        private System.Windows.Forms.Panel panel13;
+        private System.Windows.Forms.ListView SALES_LV;
+        private System.Windows.Forms.Label lbl_path2;
+        private System.Windows.Forms.Label lbl_path1;
+        private System.Windows.Forms.DataGridView dgv_project;
+        private System.Windows.Forms.Panel panel14;
         private System.Windows.Forms.DataGridViewTextBoxColumn number1;
         private System.Windows.Forms.DataGridViewTextBoxColumn Column10;
         private System.Windows.Forms.DataGridViewTextBoxColumn qtydgv;
         private System.Windows.Forms.DataGridViewTextBoxColumn itemcodedgv;
         private System.Windows.Forms.DataGridViewTextBoxColumn shortdesc;
-        private System.Windows.Forms.DataGridViewComboBoxColumn delivery_preference;
-        private System.Windows.Forms.DataGridViewTextBoxColumn unitprice;
-        private System.Windows.Forms.DataGridViewTextBoxColumn linetotal;
-        private System.Windows.Forms.DataGridViewTextBoxColumn status;
         private System.Windows.Forms.DataGridViewTextBoxColumn quick_quote_id;
         private System.Windows.Forms.DataGridViewTextBoxColumn basedid;
         private System.Windows.Forms.DataGridViewTextBoxColumn itemid;
@@ -2184,6 +2281,10 @@ namespace smpc_sales_app.Pages.Sales
         private System.Windows.Forms.DataGridViewTextBoxColumn percentdiscountDataGridViewTextBoxColumn;
         private System.Windows.Forms.DataGridViewTextBoxColumn netdiscountDataGridViewTextBoxColumn;
         private System.Windows.Forms.DataGridViewTextBoxColumn nettotalDataGridViewTextBoxColumn;
+        private System.Windows.Forms.DataGridViewComboBoxColumn delivery_preference;
+        private System.Windows.Forms.DataGridViewTextBoxColumn unitprice;
+        private System.Windows.Forms.DataGridViewTextBoxColumn linetotal;
+        private System.Windows.Forms.DataGridViewTextBoxColumn status;
         private System.Windows.Forms.DataGridViewTextBoxColumn number;
         private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn1;
         private System.Windows.Forms.DataGridViewTextBoxColumn qtyproject;
@@ -2192,7 +2293,6 @@ namespace smpc_sales_app.Pages.Sales
         private System.Windows.Forms.DataGridViewComboBoxColumn delivery_preferenceproject;
         private System.Windows.Forms.DataGridViewTextBoxColumn listpriceproject;
         private System.Windows.Forms.DataGridViewTextBoxColumn componenttotalproject;
-        private System.Windows.Forms.DataGridViewTextBoxColumn statusproject;
         private System.Windows.Forms.DataGridViewTextBoxColumn itemsidDataGridViewTextBoxColumn;
         private System.Windows.Forms.DataGridViewTextBoxColumn basedidproject;
         private System.Windows.Forms.DataGridViewTextBoxColumn componentsDataGridViewTextBoxColumn;
@@ -2203,12 +2303,12 @@ namespace smpc_sales_app.Pages.Sales
         private System.Windows.Forms.DataGridViewTextBoxColumn notesDataGridViewTextBoxColumn;
         private System.Windows.Forms.DataGridViewTextBoxColumn bomiddgv;
         private System.Windows.Forms.DataGridViewTextBoxColumn itemiddgv;
-        private System.Windows.Forms.Panel panel12;
-        private System.Windows.Forms.TreeView SALES_TV;
-        private System.Windows.Forms.Panel panel13;
-        private System.Windows.Forms.ListView SALES_LV;
-        private System.Windows.Forms.Label lbl_path2;
-        private System.Windows.Forms.Label lbl_path1;
-        private System.Windows.Forms.DataGridView dgv_project;
+        private System.Windows.Forms.DataGridViewTextBoxColumn statusproject;
+        private System.Windows.Forms.Panel aftersales_preview;
+        private System.Windows.Forms.Label label28;
+        private System.Windows.Forms.PictureBox pictureBox2;
+        private System.Windows.Forms.Panel sales_preview;
+        private System.Windows.Forms.Label label27;
+        private System.Windows.Forms.PictureBox pictureBox1;
     }
 }
