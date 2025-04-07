@@ -960,6 +960,7 @@ namespace smpc_sales_app.Pages.Sales
                 MessageBox.Show("No SalesQuotation found for the provided document number.");
             }
         }
+        //KRIS: BACK BUTTON SA TOOLBAR NAKA INITIAL VISIBLE FALSE
         private void back_Click(object sender, EventArgs e)
         {
             Opportunities OpportunitiesPage = new Opportunities();

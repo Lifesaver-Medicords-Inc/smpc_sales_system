@@ -30,14 +30,14 @@ namespace smpc_sales_app.Pages.Sales
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle17 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle18 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle19 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle20 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle21 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle22 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle23 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle24 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle5 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle6 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle7 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle8 = new System.Windows.Forms.DataGridViewCellStyle();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Orders));
             this.quick_quotes = new System.Windows.Forms.BindingSource(this.components);
             this.dataSet1 = new System.Data.DataSet();
@@ -225,6 +225,9 @@ namespace smpc_sales_app.Pages.Sales
             this.panel11 = new System.Windows.Forms.Panel();
             this.AFTERSALES_TV = new System.Windows.Forms.TreeView();
             this.panel10 = new System.Windows.Forms.Panel();
+            this.aftersales_preview = new System.Windows.Forms.Panel();
+            this.label28 = new System.Windows.Forms.Label();
+            this.pictureBox2 = new System.Windows.Forms.PictureBox();
             this.AFTERSALES_LV = new System.Windows.Forms.ListView();
             this.panel7 = new System.Windows.Forms.Panel();
             this.lbl_path2 = new System.Windows.Forms.Label();
@@ -232,17 +235,14 @@ namespace smpc_sales_app.Pages.Sales
             this.panel5 = new System.Windows.Forms.Panel();
             this.SALES_TV = new System.Windows.Forms.TreeView();
             this.panel13 = new System.Windows.Forms.Panel();
+            this.sales_preview = new System.Windows.Forms.Panel();
+            this.label27 = new System.Windows.Forms.Label();
+            this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.SALES_LV = new System.Windows.Forms.ListView();
             this.panel3 = new System.Windows.Forms.Panel();
             this.lbl_path1 = new System.Windows.Forms.Label();
             this.label22 = new System.Windows.Forms.Label();
             this.bs_project_item_sets = new System.Windows.Forms.BindingSource(this.components);
-            this.sales_preview = new System.Windows.Forms.Panel();
-            this.pictureBox1 = new System.Windows.Forms.PictureBox();
-            this.label27 = new System.Windows.Forms.Label();
-            this.aftersales_preview = new System.Windows.Forms.Panel();
-            this.label28 = new System.Windows.Forms.Label();
-            this.pictureBox2 = new System.Windows.Forms.PictureBox();
             ((System.ComponentModel.ISupportInitialize)(this.quick_quotes)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dataSet1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.tbl_quick_quotes)).BeginInit();
@@ -272,15 +272,15 @@ namespace smpc_sales_app.Pages.Sales
             this.panel8.SuspendLayout();
             this.panel11.SuspendLayout();
             this.panel10.SuspendLayout();
+            this.aftersales_preview.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
             this.panel7.SuspendLayout();
             this.panel5.SuspendLayout();
             this.panel13.SuspendLayout();
-            this.panel3.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.bs_project_item_sets)).BeginInit();
             this.sales_preview.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
-            this.aftersales_preview.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
+            this.panel3.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.bs_project_item_sets)).BeginInit();
             this.SuspendLayout();
             // 
             // quick_quotes
@@ -650,14 +650,14 @@ namespace smpc_sales_app.Pages.Sales
             this.dgv_order_sales.AllowUserToDeleteRows = false;
             this.dgv_order_sales.AutoGenerateColumns = false;
             this.dgv_order_sales.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
-            dataGridViewCellStyle17.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle17.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle17.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle17.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle17.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle17.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle17.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dgv_order_sales.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle17;
+            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dgv_order_sales.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
             this.dgv_order_sales.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dgv_order_sales.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.number1,
@@ -688,8 +688,8 @@ namespace smpc_sales_app.Pages.Sales
             // number1
             // 
             this.number1.DataPropertyName = "numbering";
-            dataGridViewCellStyle18.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            this.number1.DefaultCellStyle = dataGridViewCellStyle18;
+            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            this.number1.DefaultCellStyle = dataGridViewCellStyle2;
             this.number1.FillWeight = 30.55143F;
             this.number1.HeaderText = "#";
             this.number1.Name = "number1";
@@ -805,8 +805,8 @@ namespace smpc_sales_app.Pages.Sales
             // unitprice
             // 
             this.unitprice.DataPropertyName = "list_price";
-            dataGridViewCellStyle19.Format = "c2";
-            this.unitprice.DefaultCellStyle = dataGridViewCellStyle19;
+            dataGridViewCellStyle3.Format = "c2";
+            this.unitprice.DefaultCellStyle = dataGridViewCellStyle3;
             this.unitprice.FillWeight = 98.33942F;
             this.unitprice.HeaderText = "LIST PRICE";
             this.unitprice.Name = "unitprice";
@@ -814,8 +814,8 @@ namespace smpc_sales_app.Pages.Sales
             // linetotal
             // 
             this.linetotal.DataPropertyName = "total_price";
-            dataGridViewCellStyle20.Format = "c2";
-            this.linetotal.DefaultCellStyle = dataGridViewCellStyle20;
+            dataGridViewCellStyle4.Format = "c2";
+            this.linetotal.DefaultCellStyle = dataGridViewCellStyle4;
             this.linetotal.FillWeight = 98.33942F;
             this.linetotal.HeaderText = "TOTAL PRICE";
             this.linetotal.Name = "linetotal";
@@ -832,14 +832,14 @@ namespace smpc_sales_app.Pages.Sales
             this.dgv_project.AllowUserToDeleteRows = false;
             this.dgv_project.AutoGenerateColumns = false;
             this.dgv_project.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
-            dataGridViewCellStyle21.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle21.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle21.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle21.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle21.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle21.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle21.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dgv_project.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle21;
+            dataGridViewCellStyle5.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle5.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle5.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle5.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle5.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle5.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle5.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dgv_project.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle5;
             this.dgv_project.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dgv_project.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.number,
@@ -872,8 +872,8 @@ namespace smpc_sales_app.Pages.Sales
             // number
             // 
             this.number.DataPropertyName = "number";
-            dataGridViewCellStyle22.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            this.number.DefaultCellStyle = dataGridViewCellStyle22;
+            dataGridViewCellStyle6.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            this.number.DefaultCellStyle = dataGridViewCellStyle6;
             this.number.FillWeight = 26.5718F;
             this.number.HeaderText = "#";
             this.number.Name = "number";
@@ -923,9 +923,9 @@ namespace smpc_sales_app.Pages.Sales
             // listpriceproject
             // 
             this.listpriceproject.DataPropertyName = "list_price_per_unit";
-            dataGridViewCellStyle23.Format = "C2";
-            dataGridViewCellStyle23.NullValue = null;
-            this.listpriceproject.DefaultCellStyle = dataGridViewCellStyle23;
+            dataGridViewCellStyle7.Format = "C2";
+            dataGridViewCellStyle7.NullValue = null;
+            this.listpriceproject.DefaultCellStyle = dataGridViewCellStyle7;
             this.listpriceproject.FillWeight = 100.1291F;
             this.listpriceproject.HeaderText = "LIST PRICE";
             this.listpriceproject.Name = "listpriceproject";
@@ -933,8 +933,8 @@ namespace smpc_sales_app.Pages.Sales
             // componenttotalproject
             // 
             this.componenttotalproject.DataPropertyName = "component_total";
-            dataGridViewCellStyle24.Format = "C2";
-            this.componenttotalproject.DefaultCellStyle = dataGridViewCellStyle24;
+            dataGridViewCellStyle8.Format = "C2";
+            this.componenttotalproject.DefaultCellStyle = dataGridViewCellStyle8;
             this.componenttotalproject.FillWeight = 100.1291F;
             this.componenttotalproject.HeaderText = "TOTAL PRICE";
             this.componenttotalproject.Name = "componenttotalproject";
@@ -1318,7 +1318,6 @@ namespace smpc_sales_app.Pages.Sales
             this.txt_document_no.ReadOnly = true;
             this.txt_document_no.Size = new System.Drawing.Size(89, 20);
             this.txt_document_no.TabIndex = 238;
-            this.txt_document_no.Text = "1";
             this.txt_document_no.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             // 
             // txt_ship_to_id
@@ -1854,6 +1853,37 @@ namespace smpc_sales_app.Pages.Sales
             this.panel10.Size = new System.Drawing.Size(651, 185);
             this.panel10.TabIndex = 0;
             // 
+            // aftersales_preview
+            // 
+            this.aftersales_preview.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.aftersales_preview.Controls.Add(this.label28);
+            this.aftersales_preview.Controls.Add(this.pictureBox2);
+            this.aftersales_preview.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.aftersales_preview.Location = new System.Drawing.Point(0, 0);
+            this.aftersales_preview.Name = "aftersales_preview";
+            this.aftersales_preview.Size = new System.Drawing.Size(651, 185);
+            this.aftersales_preview.TabIndex = 2;
+            // 
+            // label28
+            // 
+            this.label28.AutoSize = true;
+            this.label28.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label28.Location = new System.Drawing.Point(243, 125);
+            this.label28.Name = "label28";
+            this.label28.Size = new System.Drawing.Size(179, 23);
+            this.label28.TabIndex = 1;
+            this.label28.Text = "Please select a folder";
+            // 
+            // pictureBox2
+            // 
+            this.pictureBox2.Image = global::smpc_sales_system.Properties.Resources.FolderIcon;
+            this.pictureBox2.Location = new System.Drawing.Point(260, 33);
+            this.pictureBox2.Name = "pictureBox2";
+            this.pictureBox2.Size = new System.Drawing.Size(139, 79);
+            this.pictureBox2.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            this.pictureBox2.TabIndex = 0;
+            this.pictureBox2.TabStop = false;
+            // 
             // AFTERSALES_LV
             // 
             this.AFTERSALES_LV.AllowDrop = true;
@@ -1928,6 +1958,37 @@ namespace smpc_sales_app.Pages.Sales
             this.panel13.Size = new System.Drawing.Size(651, 187);
             this.panel13.TabIndex = 0;
             // 
+            // sales_preview
+            // 
+            this.sales_preview.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.sales_preview.Controls.Add(this.label27);
+            this.sales_preview.Controls.Add(this.pictureBox1);
+            this.sales_preview.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.sales_preview.Location = new System.Drawing.Point(0, 0);
+            this.sales_preview.Name = "sales_preview";
+            this.sales_preview.Size = new System.Drawing.Size(651, 187);
+            this.sales_preview.TabIndex = 1;
+            // 
+            // label27
+            // 
+            this.label27.AutoSize = true;
+            this.label27.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label27.Location = new System.Drawing.Point(243, 125);
+            this.label27.Name = "label27";
+            this.label27.Size = new System.Drawing.Size(179, 23);
+            this.label27.TabIndex = 1;
+            this.label27.Text = "Please select a folder";
+            // 
+            // pictureBox1
+            // 
+            this.pictureBox1.Image = global::smpc_sales_system.Properties.Resources.FolderIcon;
+            this.pictureBox1.Location = new System.Drawing.Point(260, 33);
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.Size = new System.Drawing.Size(139, 79);
+            this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            this.pictureBox1.TabIndex = 0;
+            this.pictureBox1.TabStop = false;
+            // 
             // SALES_LV
             // 
             this.SALES_LV.AllowDrop = true;
@@ -1979,68 +2040,6 @@ namespace smpc_sales_app.Pages.Sales
             this.bs_project_item_sets.DataMember = "tbl_project_item_sets";
             this.bs_project_item_sets.DataSource = this.dataSet1;
             // 
-            // sales_preview
-            // 
-            this.sales_preview.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.sales_preview.Controls.Add(this.label27);
-            this.sales_preview.Controls.Add(this.pictureBox1);
-            this.sales_preview.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.sales_preview.Location = new System.Drawing.Point(0, 0);
-            this.sales_preview.Name = "sales_preview";
-            this.sales_preview.Size = new System.Drawing.Size(651, 187);
-            this.sales_preview.TabIndex = 1;
-            // 
-            // pictureBox1
-            // 
-            this.pictureBox1.Image = global::smpc_sales_system.Properties.Resources.FolderIcon;
-            this.pictureBox1.Location = new System.Drawing.Point(260, 33);
-            this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(139, 79);
-            this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
-            this.pictureBox1.TabIndex = 0;
-            this.pictureBox1.TabStop = false;
-            // 
-            // label27
-            // 
-            this.label27.AutoSize = true;
-            this.label27.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label27.Location = new System.Drawing.Point(243, 125);
-            this.label27.Name = "label27";
-            this.label27.Size = new System.Drawing.Size(179, 23);
-            this.label27.TabIndex = 1;
-            this.label27.Text = "Please select a folder";
-            // 
-            // aftersales_preview
-            // 
-            this.aftersales_preview.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.aftersales_preview.Controls.Add(this.label28);
-            this.aftersales_preview.Controls.Add(this.pictureBox2);
-            this.aftersales_preview.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.aftersales_preview.Location = new System.Drawing.Point(0, 0);
-            this.aftersales_preview.Name = "aftersales_preview";
-            this.aftersales_preview.Size = new System.Drawing.Size(651, 185);
-            this.aftersales_preview.TabIndex = 2;
-            // 
-            // label28
-            // 
-            this.label28.AutoSize = true;
-            this.label28.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label28.Location = new System.Drawing.Point(243, 125);
-            this.label28.Name = "label28";
-            this.label28.Size = new System.Drawing.Size(179, 23);
-            this.label28.TabIndex = 1;
-            this.label28.Text = "Please select a folder";
-            // 
-            // pictureBox2
-            // 
-            this.pictureBox2.Image = global::smpc_sales_system.Properties.Resources.FolderIcon;
-            this.pictureBox2.Location = new System.Drawing.Point(260, 33);
-            this.pictureBox2.Name = "pictureBox2";
-            this.pictureBox2.Size = new System.Drawing.Size(139, 79);
-            this.pictureBox2.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
-            this.pictureBox2.TabIndex = 0;
-            this.pictureBox2.TabStop = false;
-            // 
             // Orders
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -2085,19 +2084,19 @@ namespace smpc_sales_app.Pages.Sales
             this.panel8.ResumeLayout(false);
             this.panel11.ResumeLayout(false);
             this.panel10.ResumeLayout(false);
+            this.aftersales_preview.ResumeLayout(false);
+            this.aftersales_preview.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
             this.panel7.ResumeLayout(false);
             this.panel7.PerformLayout();
             this.panel5.ResumeLayout(false);
             this.panel13.ResumeLayout(false);
-            this.panel3.ResumeLayout(false);
-            this.panel3.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.bs_project_item_sets)).EndInit();
             this.sales_preview.ResumeLayout(false);
             this.sales_preview.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
-            this.aftersales_preview.ResumeLayout(false);
-            this.aftersales_preview.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
+            this.panel3.ResumeLayout(false);
+            this.panel3.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.bs_project_item_sets)).EndInit();
             this.ResumeLayout(false);
 
         }

@@ -470,5 +470,7 @@ namespace smpc_sales_system.Pages.Sales
                 }
             }
         }
+
     }
+
 }

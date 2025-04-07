@@ -71,7 +71,7 @@ namespace smpc_sales_system.Models
 
     class BpiAddress
     {
-        public int address_id { get; set; }
+        public int address_ids { get; set; }
         public int address_based_id { get; set; }
         public string location { get; set; }
     }

@@ -36,6 +36,7 @@ namespace smpc_sales_app.Services
             { "Sales Quotation", new Quotation() },
             { "Sales Order", new Orders() },
             { "Opportunities", new Opportunities() },
+            { "CRM", new CRM() },
 
             // application setup transaction
             { "Application Setup", new Applications() },
@@ -43,8 +44,6 @@ namespace smpc_sales_app.Services
 
             //purchasing 
             { "Purchase Requisition", new PurchaseRequisition() }
-
-
         };
 
         private string _selectedRoute;

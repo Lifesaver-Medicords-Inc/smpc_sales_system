@@ -73,6 +73,7 @@ namespace smpc_sales_system.Pages.Sales
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(1143, 64);
             this.panel1.TabIndex = 0;
+            this.panel1.Paint += new System.Windows.Forms.PaintEventHandler(this.panel1_Paint);
             // 
             // label2
             // 
@@ -82,6 +83,7 @@ namespace smpc_sales_system.Pages.Sales
             this.label2.Size = new System.Drawing.Size(41, 13);
             this.label2.TabIndex = 3;
             this.label2.Text = "Search";
+            this.label2.Click += new System.EventHandler(this.label2_Click);
             // 
             // txt_search
             // 
@@ -100,6 +102,7 @@ namespace smpc_sales_system.Pages.Sales
             this.label1.Size = new System.Drawing.Size(194, 25);
             this.label1.TabIndex = 1;
             this.label1.Text = "OPPORTUNITIES";
+            this.label1.Click += new System.EventHandler(this.label1_Click);
             // 
             // panel2
             // 
@@ -109,6 +112,7 @@ namespace smpc_sales_system.Pages.Sales
             this.panel2.Name = "panel2";
             this.panel2.Size = new System.Drawing.Size(1143, 722);
             this.panel2.TabIndex = 1;
+            this.panel2.Paint += new System.Windows.Forms.PaintEventHandler(this.panel2_Paint);
             // 
             // dgv_sales_opportunities
             // 
@@ -145,6 +149,7 @@ namespace smpc_sales_system.Pages.Sales
             this.dgv_sales_opportunities.Size = new System.Drawing.Size(1143, 722);
             this.dgv_sales_opportunities.TabIndex = 0;
             this.dgv_sales_opportunities.CellBeginEdit += new System.Windows.Forms.DataGridViewCellCancelEventHandler(this.dgv_sales_opportunities_CellBeginEdit);
+            this.dgv_sales_opportunities.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgv_sales_opportunities_CellContentClick);
             this.dgv_sales_opportunities.CellDoubleClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgv_sales_opportunities_CellDoubleClick);
             this.dgv_sales_opportunities.CellEndEdit += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgv_sales_opportunities_CellEndEdit);
             this.dgv_sales_opportunities.CellFormatting += new System.Windows.Forms.DataGridViewCellFormattingEventHandler(this.dgv_sales_opportunities_CellFormatting);
@@ -153,6 +158,7 @@ namespace smpc_sales_system.Pages.Sales
             // 
             this.tag.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
             this.tag.DataPropertyName = "tag";
+            this.tag.FillWeight = 122.2222F;
             this.tag.HeaderText = "TAG";
             this.tag.Name = "tag";
             // 
@@ -174,6 +180,7 @@ namespace smpc_sales_system.Pages.Sales
             dataGridViewCellStyle2.BackColor = System.Drawing.Color.Gainsboro;
             dataGridViewCellStyle2.ForeColor = System.Drawing.Color.Teal;
             this.final_ref_no.DefaultCellStyle = dataGridViewCellStyle2;
+            this.final_ref_no.FillWeight = 97.77777F;
             this.final_ref_no.HeaderText = "QUOTE REF.";
             this.final_ref_no.Name = "final_ref_no";
             this.final_ref_no.ReadOnly = true;
@@ -184,6 +191,7 @@ namespace smpc_sales_system.Pages.Sales
             this.branch_name.DataPropertyName = "branch_name";
             dataGridViewCellStyle3.BackColor = System.Drawing.Color.Gainsboro;
             this.branch_name.DefaultCellStyle = dataGridViewCellStyle3;
+            this.branch_name.FillWeight = 97.77777F;
             this.branch_name.HeaderText = "COMPANY NAME";
             this.branch_name.Name = "branch_name";
             this.branch_name.ReadOnly = true;
@@ -194,6 +202,7 @@ namespace smpc_sales_system.Pages.Sales
             this.project_name.DataPropertyName = "project_name";
             dataGridViewCellStyle4.BackColor = System.Drawing.Color.Gainsboro;
             this.project_name.DefaultCellStyle = dataGridViewCellStyle4;
+            this.project_name.FillWeight = 97.77777F;
             this.project_name.HeaderText = "PROJECT NAME";
             this.project_name.Name = "project_name";
             this.project_name.ReadOnly = true;
@@ -204,6 +213,7 @@ namespace smpc_sales_system.Pages.Sales
             this.date.DataPropertyName = "date";
             dataGridViewCellStyle5.BackColor = System.Drawing.Color.Gainsboro;
             this.date.DefaultCellStyle = dataGridViewCellStyle5;
+            this.date.FillWeight = 97.77777F;
             this.date.HeaderText = "INQUIRY DATE";
             this.date.Name = "date";
             this.date.ReadOnly = true;
@@ -212,6 +222,7 @@ namespace smpc_sales_system.Pages.Sales
             // 
             this.client_req.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
             this.client_req.DataPropertyName = "client_req";
+            this.client_req.FillWeight = 97.77777F;
             this.client_req.HeaderText = "CLIENT REQ";
             this.client_req.Name = "client_req";
             // 
@@ -223,6 +234,7 @@ namespace smpc_sales_system.Pages.Sales
             dataGridViewCellStyle6.Format = "C2";
             dataGridViewCellStyle6.NullValue = null;
             this.value.DefaultCellStyle = dataGridViewCellStyle6;
+            this.value.FillWeight = 97.77777F;
             this.value.HeaderText = "VALUE";
             this.value.Name = "value";
             this.value.ReadOnly = true;
@@ -234,6 +246,7 @@ namespace smpc_sales_system.Pages.Sales
             dataGridViewCellStyle7.Format = "d";
             dataGridViewCellStyle7.NullValue = null;
             this.last_update.DefaultCellStyle = dataGridViewCellStyle7;
+            this.last_update.FillWeight = 97.77777F;
             this.last_update.HeaderText = "LAST UPDATE";
             this.last_update.Name = "last_update";
             this.last_update.ToolTipText = "double click to update";
@@ -242,6 +255,7 @@ namespace smpc_sales_system.Pages.Sales
             // 
             this.stage.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
             this.stage.DataPropertyName = "stage";
+            this.stage.FillWeight = 97.77777F;
             this.stage.HeaderText = "STAGE";
             this.stage.Items.AddRange(new object[] {
             "QUOTED",
@@ -258,6 +272,7 @@ namespace smpc_sales_system.Pages.Sales
             // 
             this.status.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
             this.status.DataPropertyName = "status";
+            this.status.FillWeight = 97.77777F;
             this.status.HeaderText = "STATUS";
             this.status.Items.AddRange(new object[] {
             "QUOTED",
@@ -275,6 +290,7 @@ namespace smpc_sales_system.Pages.Sales
             // 
             this.special_deal.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
             this.special_deal.DataPropertyName = "special_deal";
+            this.special_deal.FillWeight = 97.77777F;
             this.special_deal.HeaderText = "SPECIAL DEAL/NOTES";
             this.special_deal.Name = "special_deal";
             // 
