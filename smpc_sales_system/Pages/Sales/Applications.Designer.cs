@@ -41,14 +41,14 @@ namespace smpc_sales_app.Pages.Sales
             this.txt_code = new System.Windows.Forms.TextBox();
             this.pnl_application_dgv = new System.Windows.Forms.Panel();
             this.dgv_application_setup = new System.Windows.Forms.DataGridView();
+            this.Column1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Column2 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Column3 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
             this.btn_new = new System.Windows.Forms.ToolStripButton();
             this.btn_delete = new System.Windows.Forms.ToolStripButton();
             this.btn_edit = new System.Windows.Forms.ToolStripButton();
             this.btn_save = new System.Windows.Forms.ToolStripButton();
-            this.Column1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Column2 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Column3 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.pnl_name.SuspendLayout();
             this.pnl_input.SuspendLayout();
             this.pnl_application_dgv.SuspendLayout();
@@ -93,7 +93,7 @@ namespace smpc_sales_app.Pages.Sales
             // 
             this.lbl_id.AutoSize = true;
             this.lbl_id.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lbl_id.Location = new System.Drawing.Point(352, 54);
+            this.lbl_id.Location = new System.Drawing.Point(342, 54);
             this.lbl_id.Name = "lbl_id";
             this.lbl_id.Size = new System.Drawing.Size(19, 16);
             this.lbl_id.TabIndex = 5;
@@ -103,7 +103,7 @@ namespace smpc_sales_app.Pages.Sales
             // 
             this.lbl_name.AutoSize = true;
             this.lbl_name.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lbl_name.Location = new System.Drawing.Point(39, 81);
+            this.lbl_name.Location = new System.Drawing.Point(29, 81);
             this.lbl_name.Name = "lbl_name";
             this.lbl_name.Size = new System.Drawing.Size(45, 16);
             this.lbl_name.TabIndex = 4;
@@ -113,7 +113,7 @@ namespace smpc_sales_app.Pages.Sales
             // 
             this.lbl_code.AutoSize = true;
             this.lbl_code.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lbl_code.Location = new System.Drawing.Point(42, 55);
+            this.lbl_code.Location = new System.Drawing.Point(32, 55);
             this.lbl_code.Name = "lbl_code";
             this.lbl_code.Size = new System.Drawing.Size(41, 16);
             this.lbl_code.TabIndex = 3;
@@ -122,7 +122,7 @@ namespace smpc_sales_app.Pages.Sales
             // txt_id
             // 
             this.txt_id.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.txt_id.Location = new System.Drawing.Point(374, 53);
+            this.txt_id.Location = new System.Drawing.Point(364, 53);
             this.txt_id.Name = "txt_id";
             this.txt_id.Size = new System.Drawing.Size(171, 20);
             this.txt_id.TabIndex = 2;
@@ -130,7 +130,7 @@ namespace smpc_sales_app.Pages.Sales
             // txt_name
             // 
             this.txt_name.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.txt_name.Location = new System.Drawing.Point(86, 79);
+            this.txt_name.Location = new System.Drawing.Point(76, 79);
             this.txt_name.Name = "txt_name";
             this.txt_name.Size = new System.Drawing.Size(197, 20);
             this.txt_name.TabIndex = 1;
@@ -138,7 +138,7 @@ namespace smpc_sales_app.Pages.Sales
             // txt_code
             // 
             this.txt_code.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.txt_code.Location = new System.Drawing.Point(86, 55);
+            this.txt_code.Location = new System.Drawing.Point(76, 55);
             this.txt_code.Name = "txt_code";
             this.txt_code.Size = new System.Drawing.Size(197, 20);
             this.txt_code.TabIndex = 0;
@@ -166,6 +166,27 @@ namespace smpc_sales_app.Pages.Sales
             this.dgv_application_setup.Size = new System.Drawing.Size(633, 427);
             this.dgv_application_setup.TabIndex = 0;
             this.dgv_application_setup.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgv_application_setup_CellClick);
+            // 
+            // Column1
+            // 
+            this.Column1.DataPropertyName = "id";
+            this.Column1.HeaderText = "ID";
+            this.Column1.Name = "Column1";
+            this.Column1.Visible = false;
+            // 
+            // Column2
+            // 
+            this.Column2.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.Column2.DataPropertyName = "code";
+            this.Column2.HeaderText = "CODE";
+            this.Column2.Name = "Column2";
+            // 
+            // Column3
+            // 
+            this.Column3.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.Column3.DataPropertyName = "name";
+            this.Column3.HeaderText = "NAME";
+            this.Column3.Name = "Column3";
             // 
             // toolStrip1
             // 
@@ -216,27 +237,6 @@ namespace smpc_sales_app.Pages.Sales
             this.btn_save.Size = new System.Drawing.Size(51, 22);
             this.btn_save.Text = "Save";
             this.btn_save.Click += new System.EventHandler(this.btn_save_Click);
-            // 
-            // Column1
-            // 
-            this.Column1.DataPropertyName = "id";
-            this.Column1.HeaderText = "ID";
-            this.Column1.Name = "Column1";
-            this.Column1.Visible = false;
-            // 
-            // Column2
-            // 
-            this.Column2.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.Column2.DataPropertyName = "code";
-            this.Column2.HeaderText = "CODE";
-            this.Column2.Name = "Column2";
-            // 
-            // Column3
-            // 
-            this.Column3.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.Column3.DataPropertyName = "name";
-            this.Column3.HeaderText = "NAME";
-            this.Column3.Name = "Column3";
             // 
             // Applications
             // 

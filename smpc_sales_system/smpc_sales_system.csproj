@@ -42,6 +42,7 @@
     </Reference>
     <Reference Include="System.Core" />
     <Reference Include="System.Management" />
+    <Reference Include="System.Windows.Forms.DataVisualization" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -67,8 +68,72 @@
     <Compile Include="Models\BPI.cs" />
     <Compile Include="Models\bpi_list.cs" />
     <Compile Include="Models\ItemParent.cs" />
+    <Compile Include="Models\ItemPumpsView.cs" />
     <Compile Include="Models\PaymentTermsModel.cs" />
-    <Compile Include="Models\QuotationModel.cs" />
+    <Compile Include="Models\ProjectTemplateModel.cs" />
+    <Compile Include="Models\SalesCanvasModel.cs" />
+    <Compile Include="Models\SalesProject.cs" />
+    <Compile Include="Models\SalesWiringModel.cs" />
+    <Compile Include="Pages\ModelSelection.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Pages\ModelSelection.Designer.cs">
+      <DependentUpon>ModelSelection.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\ProjectTemplateSetup.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Pages\ProjectTemplateSetup.Designer.cs">
+      <DependentUpon>ProjectTemplateSetup.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\Sales\BomSelection.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Pages\Sales\BomSelection.Designer.cs">
+      <DependentUpon>BomSelection.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\Sales\frm_canvas_modal.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Pages\Sales\frm_canvas_modal.Designer.cs">
+      <DependentUpon>frm_canvas_modal.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\Sales\ItemImageModal.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Pages\Sales\ItemImageModal.Designer.cs">
+      <DependentUpon>ItemImageModal.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\Sales\itemsetModal.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Pages\Sales\itemsetModal.Designer.cs">
+      <DependentUpon>itemsetModal.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\Sales\ItemSetUC.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Pages\Sales\ItemSetUC.Designer.cs">
+      <DependentUpon>ItemSetUC.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\Sales\ProjectTest.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Pages\Sales\ProjectTest.Designer.cs">
+      <DependentUpon>ProjectTest.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\Sales\TemplateSelectionModal.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Pages\Sales\TemplateSelectionModal.Designer.cs">
+      <DependentUpon>TemplateSelectionModal.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\Sales\UC_History.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Pages\Sales\UC_History.Designer.cs">
+      <DependentUpon>UC_History.cs</DependentUpon>
+    </Compile>
     <Compile Include="Pages\VersionModal.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -145,18 +210,23 @@
     <Compile Include="Services\RoutesServices.cs" />
     <Compile Include="Services\Sales\ApplicationService.cs" />
     <Compile Include="Services\Sales\BpiService.cs" />
+    <Compile Include="Services\Sales\ItemBomList.cs" />
     <Compile Include="Services\Sales\ItemService.cs" />
     <Compile Include="Services\Sales\Models\AdditionalSpecsModel.cs" />
     <Compile Include="Services\Sales\Models\ApplicationModel.cs" />
     <Compile Include="Services\Sales\Models\BpiCustomer.cs" />
     <Compile Include="Services\Sales\Models\Combined.cs" />
     <Compile Include="Services\Sales\Models\GetBpiList.cs" />
+    <Compile Include="Services\Sales\Models\ItemBomListModel.cs" />
+    <Compile Include="Services\Sales\Models\ItemImageModel.cs" />
     <Compile Include="Services\Sales\Models\OpportunityModel.cs" />
     <Compile Include="Services\Sales\Models\ItemModel.cs" />
     <Compile Include="Services\Sales\Models\ItemSpecsModel.cs" />
     <Compile Include="Services\Sales\Models\OrderDetailsModel.cs" />
     <Compile Include="Services\Sales\Models\OrderList.cs" />
     <Compile Include="Services\Sales\Models\OrderModel.cs" />
+    <Compile Include="Services\Sales\Models\Project.cs" />
+    <Compile Include="Services\Sales\Models\SalesCanvasModel.cs" />
     <Compile Include="Services\Sales\Models\SalesQuotationModel.cs" />
     <Compile Include="Services\Sales\Models\SalesQuotationQuick.cs" />
     <Compile Include="Services\Sales\Models\SalesQuotationList.cs" />
@@ -164,12 +234,16 @@
     <Compile Include="Services\Sales\Models\UnitOfMeasurementModel.cs" />
     <Compile Include="Services\Sales\OpportunityService.cs" />
     <Compile Include="Services\Sales\OrderService.cs" />
+    <Compile Include="Services\Sales\ProjectService.cs" />
     <Compile Include="Services\Sales\QuotationService.cs" />
     <Compile Include="Services\Sales\ShipService.cs" />
     <Compile Include="Services\Sales\UnitOfMeasurementServices.cs" />
     <Compile Include="Services\Setup\ApplicationService.cs" />
     <Compile Include="Services\Setup\ItemClassServices.cs" />
     <Compile Include="Services\Setup\PaymentTermsServices.cs" />
+    <Compile Include="Services\Setup\ProjectModel.cs" />
+    <Compile Include="Services\Setup\ProjectServicesss.cs" />
+    <Compile Include="Services\Setup\ProjectTemplatesService.cs" />
     <Compile Include="Utils\Taxation.cs" />
     <EmbeddedResource Include="Pages\ItemModal.resx">
       <DependentUpon>ItemModal.cs</DependentUpon>
@@ -180,14 +254,38 @@
     <EmbeddedResource Include="Pages\Login.resx">
       <DependentUpon>Login.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Pages\ModelSelection.resx">
+      <DependentUpon>ModelSelection.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Pages\ProjectTemplateSetup.resx">
+      <DependentUpon>ProjectTemplateSetup.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Pages\Sales\Applications.resx">
       <DependentUpon>Applications.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Pages\Sales\BomSelection.resx">
+      <DependentUpon>BomSelection.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Pages\Sales\frm_canvas_modal.resx">
+      <DependentUpon>frm_canvas_modal.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Pages\Sales\ItemImageModal.resx">
+      <DependentUpon>ItemImageModal.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Pages\Sales\itemsetModal.resx">
+      <DependentUpon>itemsetModal.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Pages\Sales\ItemSetUC.resx">
+      <DependentUpon>ItemSetUC.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Pages\Sales\Opportunities.resx">
       <DependentUpon>Opportunities.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Pages\Sales\Orders.resx">
       <DependentUpon>Orders.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Pages\Sales\ProjectTest.resx">
+      <DependentUpon>ProjectTest.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Pages\Sales\Quotation.resx">
       <DependentUpon>Quotation.cs</DependentUpon>
@@ -197,6 +295,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Pages\Sales\ShipTypeSetup.resx">
       <DependentUpon>ShipTypeSetup.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Pages\Sales\TemplateSelectionModal.resx">
+      <DependentUpon>TemplateSelectionModal.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Pages\Sales\UC_History.resx">
+      <DependentUpon>UC_History.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Pages\SetupModal.resx">
       <DependentUpon>SetupModal.cs</DependentUpon>
@@ -235,6 +339,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\search.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\three-dots-vertical_1.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

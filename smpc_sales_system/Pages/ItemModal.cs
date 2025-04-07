@@ -1,4 +1,8 @@
-﻿using smpc_sales_app.Pages.Sales;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using smpc_app.Services.Helpers;
+using smpc_inventory_app.Services.Setup.Model.Item;
+using smpc_sales_app.Pages.Sales;
 using smpc_sales_app.Services.Helpers;
 using smpc_sales_app.Services.Sales;
 using System;
@@ -7,7 +11,9 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
+using System.Net.WebSockets;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -20,11 +26,19 @@ namespace smpc_sales_app.Pages
         Quotation quote = new Quotation();
         int result;
 
+
+        private ClientWebSocket _websocket;
+        private CancellationTokenSource _cancelTokenSource;
+
         public ItemModal(DataTable dgv)
         {
             InitializeComponent();
             this.dt = dgv;
+
+            _websocket = new ClientWebSocket();
+            _cancelTokenSource = new CancellationTokenSource();
         }
+
 
         public int GetResult()
         {
@@ -60,5 +74,14 @@ namespace smpc_sales_app.Pages
         {
             fetchData();
         }
+
+
+        private async void button2_Click(object sender, EventArgs e)
+        {
+            Panel[] pnl_list = { pnl_title };
+            var data = Helpers.GetControlsValues(pnl_list);
+            
+        }
+
     }
 }

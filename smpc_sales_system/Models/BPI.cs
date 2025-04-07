@@ -31,7 +31,7 @@ namespace smpc_sales_system.Models
     class BpiGeneral
     {
 
-        public int id { get; set; }
+        //public int id { get; set; }
 
         public int based_id { get; set; }
         public int social_id { get; set; }
@@ -76,12 +76,45 @@ namespace smpc_sales_system.Models
         public string location { get; set; }
     }
 
+    class BpiItems
+    {
+        public int bpi_itembased_id { get; set; }
+        public float price { get; set; }
+        public int item_id { get; set; }
+    }
+
+    class BpiSuppliers
+    {
+        public int id { get; set; }
+        public int based_id { get; set; }   
+        public string supplier_code { get; set; }
+        public int item_id { get; set; }
+        public string item_name { get; set; }
+        public float price { get; set; }
+    }
+    class BpiSupplierList
+    {
+        public List<BpiSuppliers> BpiSuppliers { get; set; }
+    }
+
+
+
+
+
+
+
+
+
+    
+
+    //class Bpi
     class Bpi_Class
     {
         public List<Bpi> bpi { get; set; }
         public List<BpiGeneral> general { get; set; }
         public List<BpiContacts> contacts { get; set; }
         public List<BpiAddress> address { get; set; }
+        public List<BpiItems> items { get; set; }
 
     }
 }
