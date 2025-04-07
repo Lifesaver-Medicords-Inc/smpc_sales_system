@@ -26,12 +26,12 @@ namespace smpc_sales_app.Services.Sales
         // GET: quotations list
         public static async Task<SalesQuotationList> GetQuotations()
         {
-
-           
             var response = await RequestToApi<ApiResponseModel<SalesQuotationList>>.Get(url);
             SalesQuotationList quotationData = response.Data;
             return quotationData;
         }
+
+        //public static async Task
 
         public static async Task<Items> GetItems()
         {

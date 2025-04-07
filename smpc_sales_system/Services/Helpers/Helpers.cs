@@ -42,11 +42,11 @@ namespace smpc_app.Services.Helpers
                     {
                         ((Button)ctrl).Enabled = false;
                     }
-                    if (ctrl is ComboBox)
-                    {
-                        ((ComboBox)ctrl).DropDownStyle = ComboBoxStyle.Simple;
-                        ((ComboBox)ctrl).Enabled = false;
-                    }
+                    //if (ctrl is ComboBox)
+                    //{
+                    //    ((ComboBox)ctrl).DropDownStyle = ComboBoxStyle.Simple;
+                    //    ((ComboBox)ctrl).Enabled = false;
+                    //}
                     if (ctrl is DateTimePicker)
                     {
                         ((DateTimePicker)ctrl).Enabled = false;
@@ -201,25 +201,25 @@ namespace smpc_app.Services.Helpers
                         }
                         values[key] = val;
                     }
-        
 
-                   
                     if (control is ComboBox comboBox)
                     {
                         string key = comboBox.Name.Replace("cmb_", "");
                         string val = "";
-                        if (string.IsNullOrEmpty(comboBox.Text))
+                   
+                        if (comboBox.Tag == "DYNAMIC")
                         {
-                            val = "";
+                            key = key + "_id";
+                            values.Add(key, comboBox.SelectedValue);
                         }
                         else
                         {
-                            val = String.Format("'{0}'", comboBox.Text.ToString());
+                            val = comboBox.Text.ToString();
+                            values.Add(key, val);
                         }
-                        values.Add(key, val);
                     }
 
-                    
+
                     if (control is CheckBox checkbox)
                     {
                         string key = checkbox.Name.Replace("chk_", "");
@@ -231,7 +231,7 @@ namespace smpc_app.Services.Helpers
                     if (control is DateTimePicker dateTimePicker)
                     {
                         string key = dateTimePicker.Name.Replace("dtp_", "");
-                        string val = String.Format("'{0:yyyy-MM-dd}'", dateTimePicker.Value);
+                        string val = String.Format("{0:yyyy-MM-dd HH:mm:ss}", dateTimePicker.Value);
                         values.Add(key, val);
                     }
 
@@ -282,24 +282,26 @@ namespace smpc_app.Services.Helpers
                 { 
                     foreach (Control control in pnl.Controls)
                     {
+                        
                         if (control.Name.Contains(col_name.ToString() ))
                         {
                             string column_name = col_name.ToString();
+                            Console.WriteLine(column_name);
 
                             // Check if the control is a TextBox 
                             if (control is TextBox textBox && textBox.Name.Replace("txt_", "") == column_name)
                             {
                                
-                                string key = textBox.Name.Replace("txt_", "");  
-                                 
+                                string key = textBox.Name.Replace("txt_", "");
+                             
                                 if (textBox.Tag == "money_format")
                                 { 
                                     textBox.Text = Helpers.MoneyFormat(double.Parse(dt.Rows[selectedIndex][column_name].ToString()));
                                 }
                                 else
                                 {
-                                    //Console.WriteLine("TextBox Name: " + textBox.Name);
-                                    //Console.WriteLine("customer_name: " + dt.Rows[selectedIndex][column_name]);
+
+               
                                     textBox.Text = (string)dt.Rows[selectedIndex][column_name].ToString();
                                 }
                             }
@@ -307,15 +309,20 @@ namespace smpc_app.Services.Helpers
                             // Check if the control is a Combobox
                             if (control is ComboBox comboBox)
                             {
-                                string key = comboBox.Name.Replace("cmb_", "");
-                                //comboBox.Text = (string)dt.Rows[selectedIndex][column_name].ToString();
+
+                                Console.WriteLine(comboBox.Name);
+                                string key = comboBox.Name.Replace("cmb_", "") + "_id";
+
                                 if (comboBox.Tag == "DYNAMIC")
                                 {
-                                    key = key + "_id";
-                                    values.Add(key, comboBox.SelectedValue);
+                                   
+                                    //Console.WriteLine(comboBox.Name);
+                                    comboBox.SelectedValue = (string)dt.Rows[selectedIndex][key].ToString();
                                 }
                                 else
                                 {
+                                    string keys = comboBox.Name.Replace("cmb_", "");
+                                    //Console.WriteLine(comboBox.Name);
                                     comboBox.Text = (string)dt.Rows[selectedIndex][column_name].ToString();
                                 }
                             }
@@ -323,6 +330,7 @@ namespace smpc_app.Services.Helpers
                             // Check if the control is a Checkbox
                             if (control is CheckBox checkbox)
                             {
+                                
                                 string key = checkbox.Name.Replace("chk_", ""); 
                                 checkbox.Checked = (string)dt.Rows[selectedIndex][column_name].ToString() == "1" ? true : false; 
                             }
@@ -485,6 +493,24 @@ namespace smpc_app.Services.Helpers
 
             return filteredRows.Any() ? filteredRows.CopyToDataTable() : dataTable.Clone();
         }
+
+
+        public static DataTable FilterExactDataTable(DataTable dataTable, string searchTerm, params string[] columnsToSearch)
+        {
+            if (dataTable == null || columnsToSearch == null || columnsToSearch.Length == 0)
+            {
+                return dataTable;
+            }
+
+            searchTerm = searchTerm?.ToLower() ?? string.Empty;
+
+            var filteredRows = dataTable.AsEnumerable().Where(row =>
+                columnsToSearch.Any(column =>
+                    row[column]?.ToString().ToLower() == searchTerm));
+
+            return filteredRows.Any() ? filteredRows.CopyToDataTable() : dataTable.Clone();
+        }
+
         public static void GetBPIModalData(TextBox textBox, DataView dataView, int columnIndex)
         {
             if (dataView != null && dataView.Count > 0)

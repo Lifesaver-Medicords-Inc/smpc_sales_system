@@ -22,7 +22,7 @@ namespace smpc_sales_app.Pages.Sales
             InitializeComponent();
         }
 
-
+       
         DataTable applicationData { get; set; }  = new DataTable();
         private async void FetchData()
         {
@@ -31,7 +31,7 @@ namespace smpc_sales_app.Pages.Sales
             dgv_application_setup.DataSource = data;
         }
 
-        private async void DisableBtn()
+        private void DisableBtn()
         {
             btn_delete.Enabled = false;
             btn_edit.Enabled = false;
@@ -41,7 +41,7 @@ namespace smpc_sales_app.Pages.Sales
             btn_save.Visible = false;
         }
 
-        private async void EnableTxtBtn()
+        private void EnableTxtBtn()
         {
             txt_code.Enabled = true;
             txt_name.Enabled = true;
@@ -75,7 +75,7 @@ namespace smpc_sales_app.Pages.Sales
             }
         }
 
-        private async void btn_edit_Click(object sender, EventArgs e)
+        private void btn_edit_Click(object sender, EventArgs e)
         {
             txt_code.ReadOnly = false;
             txt_id.ReadOnly = false;

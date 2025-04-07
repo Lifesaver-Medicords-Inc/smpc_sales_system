@@ -90,8 +90,10 @@ namespace smpc_sales_app.Pages
             // btn_login
             // 
             this.btn_login.BackColor = System.Drawing.Color.LimeGreen;
+            this.btn_login.FlatAppearance.BorderSize = 0;
             this.btn_login.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btn_login.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btn_login.ForeColor = System.Drawing.SystemColors.Control;
             this.btn_login.Location = new System.Drawing.Point(200, 68);
             this.btn_login.Name = "btn_login";
             this.btn_login.Size = new System.Drawing.Size(75, 23);

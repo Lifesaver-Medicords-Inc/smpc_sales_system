@@ -9,6 +9,7 @@ namespace smpc_sales_system.Services.Sales.Models
     public class SalesQuotationModel
     {
         public int id { get; set; }
+        public string project_name { get; set; }
         public int customer_id { get; set; }
         public string project_name { get; set; }
         public int application_id { get; set; }
@@ -26,18 +27,22 @@ namespace smpc_sales_system.Services.Sales.Models
         public float gross_sales { get; set; }
         public float vat_amount { get; set; }
         public double net_sales { get; set; }
-        public double sub_total_before_discount { get; set; }
         public double percent_discount { get; set; }
-        public double sub_total { get; set; }
         public double cash_discount { get; set; }
         public double net_amount_due { get; set; }
+
         public float total_amount_due { get; set; }
         public bool is_vat { get; set; }
         public double vat_percent { get; set; }
+
         public string contact_1 { get; set; }
         public string contact_2 { get; set; }
         public string document_no { get; set; }
+        public string final_ref_no { get; set; }
+        public bool is_finalized { get; set; }
         public string version_no { get; set; }
+        public string version_description { get; set; }
+        public string version_remarks { get; set; }
         public string created_by { get; set; }
         public double discounted_amount { get; set; }
     }

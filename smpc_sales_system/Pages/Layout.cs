@@ -1,5 +1,6 @@
 ﻿using smpc_app.Services.Helpers;
 using smpc_sales_app.Data;
+using smpc_sales_app.Pages.Sales;
 using smpc_sales_app.Services;
 using System;
 using System.Collections.Generic;
@@ -42,7 +43,9 @@ namespace smpc_sales_app.Pages
 
         }
 
-        public void showForm(string tabTitle, Control control)
+     
+        private void showForm(string tabTitle, Control control)
+
         {
             tabCount++;
             Button closeButton = new Button();
@@ -67,7 +70,6 @@ namespace smpc_sales_app.Pages
         private void removeTab(object sender, EventArgs e)
         {
             tabContainer.TabPages.Remove(tabContainer.SelectedTab);
-            //tabControl1.SelectTab();
         }
 
         private void Sidebar_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
