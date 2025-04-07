@@ -29,9 +29,6 @@ namespace smpc_inventory_app.Pages
         /// </summary>
         private void InitializeComponent()
         {
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
             this.panel_header = new System.Windows.Forms.Panel();
             this.panel1 = new System.Windows.Forms.Panel();
             this.lbl_title = new System.Windows.Forms.Label();
@@ -40,9 +37,9 @@ namespace smpc_inventory_app.Pages
             this.panel2 = new System.Windows.Forms.Panel();
             this.panel3 = new System.Windows.Forms.Panel();
             this.dg_general = new System.Windows.Forms.DataGridView();
-            this.base_id = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.cust_name = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.cust_code = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.id = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.code = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.name = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.panel_header.SuspendLayout();
             this.panel1.SuspendLayout();
             this.panel3.SuspendLayout();
@@ -119,64 +116,40 @@ namespace smpc_inventory_app.Pages
             this.dg_general.AllowUserToDeleteRows = false;
             this.dg_general.AllowUserToResizeColumns = false;
             this.dg_general.AllowUserToResizeRows = false;
-            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dg_general.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
             this.dg_general.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dg_general.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.base_id,
-            this.cust_name,
-            this.cust_code});
-            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.ControlText;
-            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.dg_general.DefaultCellStyle = dataGridViewCellStyle2;
+            this.id,
+            this.code,
+            this.name});
             this.dg_general.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dg_general.Location = new System.Drawing.Point(0, 0);
             this.dg_general.Name = "dg_general";
-            dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle3.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle3.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle3.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle3.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle3.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle3.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dg_general.RowHeadersDefaultCellStyle = dataGridViewCellStyle3;
             this.dg_general.RowHeadersVisible = false;
             this.dg_general.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
             this.dg_general.Size = new System.Drawing.Size(400, 365);
             this.dg_general.TabIndex = 0;
             this.dg_general.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dg_general_CellClick);
             // 
-            // base_id
+            // id
             // 
-            this.base_id.DataPropertyName = "based_id";
-            this.base_id.HeaderText = "BASED_ID";
-            this.base_id.Name = "base_id";
-            this.base_id.Visible = false;
+            this.id.DataPropertyName = "bpi_id";
+            this.id.HeaderText = "BASED_ID";
+            this.id.Name = "id";
+            this.id.Visible = false;
             // 
-            // cust_name
+            // code
             // 
-            this.cust_name.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.cust_name.DataPropertyName = "branch_name";
-            this.cust_name.HeaderText = "CUSTOMER NAME";
-            this.cust_name.Name = "cust_name";
+            this.code.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.code.DataPropertyName = "branch_name";
+            this.code.HeaderText = "CUSTOMER NAME";
+            this.code.Name = "code";
             // 
-            // cust_code
+            // name
             // 
-            this.cust_code.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.cust_code.DataPropertyName = "customer_code";
-            this.cust_code.HeaderText = "CUSTOMER CODE";
-            this.cust_code.Name = "cust_code";
+            this.name.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.name.DataPropertyName = "customer_code";
+            this.name.HeaderText = "CUSTOMER CODE";
+            this.name.Name = "name";
             // 
             // SetupSelectionModal
             // 
@@ -213,8 +186,8 @@ namespace smpc_inventory_app.Pages
         private System.Windows.Forms.Panel panel2;
         private System.Windows.Forms.Panel panel3;
         private System.Windows.Forms.DataGridView dg_general;
-        private System.Windows.Forms.DataGridViewTextBoxColumn base_id;
-        private System.Windows.Forms.DataGridViewTextBoxColumn cust_name;
-        private System.Windows.Forms.DataGridViewTextBoxColumn cust_code;
+        private System.Windows.Forms.DataGridViewTextBoxColumn id;
+        private System.Windows.Forms.DataGridViewTextBoxColumn code;
+        private System.Windows.Forms.DataGridViewTextBoxColumn name;
     }
 }

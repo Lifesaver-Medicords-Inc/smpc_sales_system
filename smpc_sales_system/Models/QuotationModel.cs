@@ -4,7 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace smpc_sales_system.Services.Sales.Models
+namespace smpc_sales_app.Services.Sales.Models
 {
-  
+    class QuotationModel
+    {
+    }
 }

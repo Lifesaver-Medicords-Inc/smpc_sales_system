@@ -32,20 +32,20 @@ namespace smpc_sales_app.Pages
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(SetupModal));
             this.panel1 = new System.Windows.Forms.Panel();
-            this.button1 = new System.Windows.Forms.Button();
-            this.label1 = new System.Windows.Forms.Label();
-            this.txt_search = new System.Windows.Forms.TextBox();
             this.lbl_setup_title = new System.Windows.Forms.Label();
             this.dgv_application_setup = new System.Windows.Forms.DataGridView();
-            this.d_document_no = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.d_customer_name = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.d_version_no = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.bs_quotation_list = new System.Windows.Forms.BindingSource(this.components);
             this.ds_quotation_list = new System.Data.DataSet();
             this.dataTable1 = new System.Data.DataTable();
             this.document_no = new System.Data.DataColumn();
             this.dataColumn1 = new System.Data.DataColumn();
             this.dataTable2 = new System.Data.DataTable();
+            this.txt_search = new System.Windows.Forms.TextBox();
+            this.label1 = new System.Windows.Forms.Label();
+            this.button1 = new System.Windows.Forms.Button();
+            this.d_document_no = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.d_customer_name = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.d_version_no = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgv_application_setup)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.bs_quotation_list)).BeginInit();
@@ -66,41 +66,12 @@ namespace smpc_sales_app.Pages
             this.panel1.Size = new System.Drawing.Size(400, 47);
             this.panel1.TabIndex = 0;
             // 
-            // button1
-            // 
-            this.button1.BackgroundImage = global::smpc_sales_system.Properties.Resources.search;
-            this.button1.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
-            this.button1.Image = global::smpc_sales_system.Properties.Resources.search;
-            this.button1.Location = new System.Drawing.Point(360, 11);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(26, 25);
-            this.button1.TabIndex = 3;
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.button1_Click);
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(193, 17);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(44, 13);
-            this.label1.TabIndex = 2;
-            this.label1.Text = "Search:";
-            // 
-            // txt_search
-            // 
-            this.txt_search.Location = new System.Drawing.Point(239, 14);
-            this.txt_search.Name = "txt_search";
-            this.txt_search.Size = new System.Drawing.Size(115, 20);
-            this.txt_search.TabIndex = 1;
-            // 
             // lbl_setup_title
             // 
             this.lbl_setup_title.AutoSize = true;
-            this.lbl_setup_title.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lbl_setup_title.Location = new System.Drawing.Point(6, 17);
+            this.lbl_setup_title.Location = new System.Drawing.Point(12, 15);
             this.lbl_setup_title.Name = "lbl_setup_title";
-            this.lbl_setup_title.Size = new System.Drawing.Size(154, 13);
+            this.lbl_setup_title.Size = new System.Drawing.Size(134, 13);
             this.lbl_setup_title.TabIndex = 0;
             this.lbl_setup_title.Text = "SALES QUOTATION LIST";
             // 
@@ -120,29 +91,6 @@ namespace smpc_sales_app.Pages
             this.dgv_application_setup.TabIndex = 2;
             this.dgv_application_setup.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgv_application_setup_CellContentClick);
             this.dgv_application_setup.CellContentDoubleClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgv_application_setup_CellContentDoubleClick);
-            // 
-            // d_document_no
-            // 
-            this.d_document_no.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.d_document_no.DataPropertyName = "document_no";
-            this.d_document_no.HeaderText = "DOCUMENT NO.";
-            this.d_document_no.Name = "d_document_no";
-            this.d_document_no.ReadOnly = true;
-            // 
-            // d_customer_name
-            // 
-            this.d_customer_name.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.d_customer_name.DataPropertyName = "customer_name";
-            this.d_customer_name.HeaderText = "CUSTOMER NAME";
-            this.d_customer_name.Name = "d_customer_name";
-            this.d_customer_name.ReadOnly = true;
-            // 
-            // d_version_no
-            // 
-            this.d_version_no.DataPropertyName = "version_no";
-            this.d_version_no.HeaderText = "VERSION NO.";
-            this.d_version_no.Name = "d_version_no";
-            this.d_version_no.ReadOnly = true;
             // 
             // bs_quotation_list
             // 
@@ -174,6 +122,57 @@ namespace smpc_sales_app.Pages
             // dataTable2
             // 
             this.dataTable2.TableName = "Table2";
+            // 
+            // txt_search
+            // 
+            this.txt_search.Location = new System.Drawing.Point(239, 12);
+            this.txt_search.Name = "txt_search";
+            this.txt_search.Size = new System.Drawing.Size(115, 20);
+            this.txt_search.TabIndex = 1;
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(194, 16);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(44, 13);
+            this.label1.TabIndex = 2;
+            this.label1.Text = "Search:";
+            // 
+            // button1
+            // 
+            this.button1.BackgroundImage = global::smpc_sales_system.Properties.Resources.search;
+            this.button1.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
+            this.button1.Image = global::smpc_sales_system.Properties.Resources.search;
+            this.button1.Location = new System.Drawing.Point(360, 10);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(26, 25);
+            this.button1.TabIndex = 3;
+            this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.button1_Click);
+            // 
+            // d_document_no
+            // 
+            this.d_document_no.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.d_document_no.DataPropertyName = "document_no";
+            this.d_document_no.HeaderText = "DOCUMENT NO.";
+            this.d_document_no.Name = "d_document_no";
+            this.d_document_no.ReadOnly = true;
+            // 
+            // d_customer_name
+            // 
+            this.d_customer_name.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.d_customer_name.DataPropertyName = "customer_name";
+            this.d_customer_name.HeaderText = "CUSTOMER NAME";
+            this.d_customer_name.Name = "d_customer_name";
+            this.d_customer_name.ReadOnly = true;
+            // 
+            // d_version_no
+            // 
+            this.d_version_no.DataPropertyName = "version_no";
+            this.d_version_no.HeaderText = "VERSION NO.";
+            this.d_version_no.Name = "d_version_no";
+            this.d_version_no.ReadOnly = true;
             // 
             // SetupModal
             // 

@@ -35,24 +35,19 @@ namespace smpc_sales_app.Pages
             System.Windows.Forms.TreeNode treeNode4 = new System.Windows.Forms.TreeNode("Sales Return");
             System.Windows.Forms.TreeNode treeNode5 = new System.Windows.Forms.TreeNode("Business Partners");
             System.Windows.Forms.TreeNode treeNode6 = new System.Windows.Forms.TreeNode("Opportunities");
-
-            System.Windows.Forms.TreeNode treeNode7 = new System.Windows.Forms.TreeNode("Ship Type Setup");
-            System.Windows.Forms.TreeNode treeNode8 = new System.Windows.Forms.TreeNode("Application Setup");
-            System.Windows.Forms.TreeNode treeNode9 = new System.Windows.Forms.TreeNode("Template Setup");
-            System.Windows.Forms.TreeNode treeNode10 = new System.Windows.Forms.TreeNode("Setup", new System.Windows.Forms.TreeNode[] {
-            treeNode7,
-            treeNode8,
-            treeNode9});
-
+            System.Windows.Forms.TreeNode treeNode7 = new System.Windows.Forms.TreeNode("Purchase Requisition");
+            System.Windows.Forms.TreeNode treeNode8 = new System.Windows.Forms.TreeNode("CRM");
+            System.Windows.Forms.TreeNode treeNode9 = new System.Windows.Forms.TreeNode("Ship Type Setup");
+            System.Windows.Forms.TreeNode treeNode10 = new System.Windows.Forms.TreeNode("Application Setup");
+            System.Windows.Forms.TreeNode treeNode11 = new System.Windows.Forms.TreeNode("Setup", new System.Windows.Forms.TreeNode[] {
+            treeNode9,
+            treeNode10});
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Layout));
             this.tabContainer = new System.Windows.Forms.TabControl();
             this.panel3 = new System.Windows.Forms.Panel();
             this.Sidebar = new System.Windows.Forms.TreeView();
             this.panel4 = new System.Windows.Forms.Panel();
             this.panel5 = new System.Windows.Forms.Panel();
-            this.panel1 = new System.Windows.Forms.Panel();
-            this.label2 = new System.Windows.Forms.Label();
-            this.panel2 = new System.Windows.Forms.Panel();
             this.label1 = new System.Windows.Forms.Label();
             this.panel6 = new System.Windows.Forms.Panel();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
@@ -70,7 +65,6 @@ namespace smpc_sales_app.Pages
             this.panel3.SuspendLayout();
             this.panel4.SuspendLayout();
             this.panel5.SuspendLayout();
-            this.panel1.SuspendLayout();
             this.statusStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -111,16 +105,16 @@ namespace smpc_sales_app.Pages
             treeNode5.Text = "Business Partners";
             treeNode6.Name = "Opportunities";
             treeNode6.Text = "Opportunities";
-
-            treeNode7.Name = "Ship Type Setup";
-            treeNode7.Text = "Ship Type Setup";
-            treeNode8.Name = "Application Setup";
-            treeNode8.Text = "Application Setup";
-            treeNode9.Name = "Template Setup";
-            treeNode9.Text = "Template Setup";
-            treeNode10.Name = "parent";
-            treeNode10.Text = "Setup";
-
+            treeNode7.Name = "Purchase Requisition";
+            treeNode7.Text = "Purchase Requisition";
+            treeNode8.Name = "CRM";
+            treeNode8.Text = "CRM";
+            treeNode9.Name = "Ship Type Setup";
+            treeNode9.Text = "Ship Type Setup";
+            treeNode10.Name = "Application Setup";
+            treeNode10.Text = "Application Setup";
+            treeNode11.Name = "parent";
+            treeNode11.Text = "Setup";
             this.Sidebar.Nodes.AddRange(new System.Windows.Forms.TreeNode[] {
             treeNode1,
             treeNode2,
@@ -128,13 +122,9 @@ namespace smpc_sales_app.Pages
             treeNode4,
             treeNode5,
             treeNode6,
-
-            treeNode10});
-
             treeNode7,
             treeNode8,
             treeNode11});
-
             this.Sidebar.Size = new System.Drawing.Size(200, 428);
             this.Sidebar.TabIndex = 0;
             this.Sidebar.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.Sidebar_AfterSelect);
@@ -152,8 +142,7 @@ namespace smpc_sales_app.Pages
             // 
             // panel5
             // 
-            this.panel5.BackColor = System.Drawing.Color.Gainsboro;
-            this.panel5.Controls.Add(this.panel1);
+            this.panel5.BackColor = System.Drawing.Color.LightCoral;
             this.panel5.Controls.Add(this.label1);
             this.panel5.Controls.Add(this.panel6);
             this.panel5.Dock = System.Windows.Forms.DockStyle.Right;
@@ -161,36 +150,6 @@ namespace smpc_sales_app.Pages
             this.panel5.Name = "panel5";
             this.panel5.Size = new System.Drawing.Size(313, 428);
             this.panel5.TabIndex = 1;
-            // 
-            // panel1
-            // 
-            this.panel1.BackColor = System.Drawing.Color.IndianRed;
-            this.panel1.Controls.Add(this.label2);
-            this.panel1.Controls.Add(this.panel2);
-            this.panel1.Dock = System.Windows.Forms.DockStyle.Right;
-            this.panel1.Location = new System.Drawing.Point(0, 0);
-            this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(313, 428);
-            this.panel1.TabIndex = 2;
-            // 
-            // label2
-            // 
-            this.label2.AutoSize = true;
-            this.label2.Font = new System.Drawing.Font("Microsoft Sans Serif", 15.75F, System.Drawing.FontStyle.Bold);
-            this.label2.ImeMode = System.Windows.Forms.ImeMode.NoControl;
-            this.label2.Location = new System.Drawing.Point(108, 9);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(113, 25);
-            this.label2.TabIndex = 1;
-            this.label2.Text = "RED BOX";
-            // 
-            // panel2
-            // 
-            this.panel2.BackColor = System.Drawing.Color.DarkRed;
-            this.panel2.Location = new System.Drawing.Point(1, 39);
-            this.panel2.Name = "panel2";
-            this.panel2.Size = new System.Drawing.Size(312, 1);
-            this.panel2.TabIndex = 0;
             // 
             // label1
             // 
@@ -317,8 +276,6 @@ namespace smpc_sales_app.Pages
             this.panel4.ResumeLayout(false);
             this.panel5.ResumeLayout(false);
             this.panel5.PerformLayout();
-            this.panel1.ResumeLayout(false);
-            this.panel1.PerformLayout();
             this.statusStrip1.ResumeLayout(false);
             this.statusStrip1.PerformLayout();
             this.ResumeLayout(false);
@@ -332,6 +289,9 @@ namespace smpc_sales_app.Pages
         private System.Windows.Forms.Panel panel3;
         private System.Windows.Forms.TreeView Sidebar;
         private System.Windows.Forms.Panel panel4;
+        private System.Windows.Forms.Panel panel5;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Panel panel6;
         private System.Windows.Forms.StatusStrip statusStrip1;
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel1;
         private System.Windows.Forms.ToolStripStatusLabel lbl_name;
@@ -344,11 +304,5 @@ namespace smpc_sales_app.Pages
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel6;
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel7;
         private System.Windows.Forms.ToolStripStatusLabel lbl_department;
-        private System.Windows.Forms.Panel panel5;
-        private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.Panel panel6;
-        private System.Windows.Forms.Panel panel1;
-        private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.Panel panel2;
     }
 }
