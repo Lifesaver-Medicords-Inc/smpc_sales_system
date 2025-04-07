@@ -403,11 +403,6 @@ namespace smpc_sales_app.Pages.Sales
                         // CHECKER IF THE ROW IS AN ITEM / ACCESSORIES
                         if (itemId > 0 && bomId == 0)
                         {
-                            //if (bomDetailIndex > 1)
-                            //{
-                            //    bomCounter += 1;
-                            //    bomDetailIndex = 1;
-                            //}
                             bomCounter += 1;
                             DataRow[] itemRows = ItemList.Select($"id = {itemId}");
                             if (itemRows.Length > 0)
@@ -484,11 +479,19 @@ namespace smpc_sales_app.Pages.Sales
                     }
                     CalculateTotalPrice();
                 }
-                if (string.IsNullOrEmpty(txt_document_no.Text))
+                if (documentNo == "0")
                 {
                     BindControlsForNewOrderORexisting();
-                    FetchData(false);
+                    await FetchData(false);
                     CalculateTotalPrice();
+                    SOIncrementer();
+                }
+                else
+                {
+                    btn_print.Visible = false;
+                    BindControlsForNewOrderORexisting();
+                    bindQuotation(documentNo, true);
+                    SOIncrementer();
                 }
                 CheckStatus();
             }
@@ -735,7 +738,7 @@ namespace smpc_sales_app.Pages.Sales
         private void AFTERSALES_TV_AfterSelect(object sender, TreeViewEventArgs e)
         {
             aftersales_preview.Visible = false;
-            string selectedPath = GetFullPathFromTreeNode(e.Node);
+            string selectedPath = GetFullPathFromTreeNode(e.Node);    
             lbl_path2.Text = selectedPath;
             LoadFiles(AFTERSALES_LV, selectedPath);
         }
@@ -841,8 +844,8 @@ namespace smpc_sales_app.Pages.Sales
         private void PopulateCustomerAndAddressInfo(string customerID, string shipID, string billID, DataRow newRow)
         {
             DataRow[] bpiGenRows = bpi_general.Select($"general_based_id = '{customerID}'");
-            DataRow[] billRows = bpi_address.Select($"address_id = '{billID}'");
-            DataRow[] shipRows = bpi_address.Select($"address_id = '{shipID}'");
+            DataRow[] billRows = bpi_address.Select($"address_ids = '{billID}'");
+            DataRow[] shipRows = bpi_address.Select($"address_ids = '{shipID}'");
 
             if (bpiGenRows.Length > 0)
             {
@@ -955,6 +958,7 @@ namespace smpc_sales_app.Pages.Sales
             txt_remarks.ReadOnly = isStatusCancelled;
             txt_approved_by.ReadOnly = isStatusCancelled;
             btn_save.Enabled = !isStatusCancelled;
+            btn_print.Enabled = isStatusActive || !isStatusCancelled;
 
             foreach (DataGridViewColumn column in dgv_order_sales.Columns)
             {

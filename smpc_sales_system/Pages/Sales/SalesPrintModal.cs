@@ -31,16 +31,6 @@ namespace smpc_sales_system.Pages.Sales
             this.isQuotation = isQuotation;
             this.isProject = isProject;
         }
-
-        private void label1_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void label2_Click(object sender, EventArgs e)
-        {
-
-        }
         public DataTable OrderList { get; set; } = new DataTable();
         public DataTable DetailsList { get; set; } = new DataTable();
         public DataTable allTransactionList { get; set; } = new DataTable();
@@ -53,6 +43,7 @@ namespace smpc_sales_system.Pages.Sales
         public DataTable OriginalProjectItemList { get; set; } = new DataTable();
         private DataTable bpi_general = new DataTable();
         private DataTable bpi_address = new DataTable();
+        //FETCHERS OF DATA METHODS
         private async void fetchItemData()
         {
             var itemData = await ItemService.GetItem();
@@ -66,33 +57,28 @@ namespace smpc_sales_system.Pages.Sales
         }
         private async Task fetchQuotationDetailsByDocumentNo(string documentNo)
         {
-            // Get all the quotations from the service
             SalesQuotationList data = await QuotationService.GetQuotations();
-            // Check if data is valid
             if (data == null || string.IsNullOrEmpty(documentNo))
             {
-                return;  // Exit if no data or documentNo is provided
+                MessageBox.Show("No document number received");
+                return;
             }
-            // Filter the SalesQuotation and SalesQuotationQuick based on the converted documentNo
             var filteredSalesQuotation = data.SalesQuotation
-                .Where(q => q.document_no == documentNo)  // Assuming document_no is int
+                .Where(q => q.document_no == documentNo)
                 .ToList();
-
             var quotationId = filteredSalesQuotation.FirstOrDefault()?.id;
 
             if (quotationId != null)
             {
                 var filteredSalesQuotationQuick = data.SalesQuotationQuick
-                    .Where(q => q.based_id == quotationId)  // Filter by based_id, converted to int
+                    .Where(q => q.based_id == quotationId)
                     .ToList();
-                // Convert the filtered lists to DataTables (using your helper method)
                 transactionList = JsonHelper.ToDataTable(filteredSalesQuotation);
                 childList = JsonHelper.ToDataTable(filteredSalesQuotationQuick);
 
-                // If filtered data exists, bind it to the DataGridView
                 if (filteredSalesQuotation.Any() || filteredSalesQuotationQuick.Any())
                 {
-                    //bind(true);
+                    //bind(true); continue
                 }
                 else
                 {
@@ -114,7 +100,6 @@ namespace smpc_sales_system.Pages.Sales
             var filteredSalesQuotation = data.SalesQuotation
                 .Where(q => q.document_no == documentNo)
                 .ToList();
-
             var quotationId = filteredSalesQuotation.FirstOrDefault()?.id;
 
             if (quotationId != null)
@@ -122,7 +107,6 @@ namespace smpc_sales_system.Pages.Sales
                 var filteredItemSets = data.sales_project_item_set
                     .Where(q => q.based_id == quotationId)  
                     .ToList();
-
                 transactionList = JsonHelper.ToDataTable(filteredSalesQuotation);
                 ItemSets = JsonHelper.ToDataTable(filteredItemSets);
 
@@ -133,29 +117,24 @@ namespace smpc_sales_system.Pages.Sales
                 .ToList();
                 ItemSetContent = JsonHelper.ToDataTable(filteredcontent);
 
-                // Filter the items based on itemsIds
                 var filteredProjectItems = data.sales_project_items
-                    .Where(q => itemsIds.Contains(q.based_id)) // Filter by `itemsIds`
+                    .Where(q => itemsIds.Contains(q.based_id))
                     .ToList();
 
                 // Split the data into two lists based on template_id
                 var templateGreaterThanZero = filteredProjectItems
-                    .Where(item => item.template_id > 0) // Filter rows where template_id > 0
-                    .GroupBy(item => item.based_id)  // Group by `based_id`
-                    .Select(group => group.First())  // Keep only the first occurrence from each group
+                    .Where(item => item.template_id > 0)
+                    .GroupBy(item => item.based_id)
+                    .Select(group => group.First())
                     .ToList();
 
                 var templateZero = filteredProjectItems
                     .Where(item => item.template_id == 0) // Filter rows where template_id == 0
                     .ToList();
 
-                // Combine both lists: template_id > 0 (grouped) and template_id == 0 (all rows)
                 var filteredProjectItems2 = templateGreaterThanZero.Concat(templateZero).ToList();
-
-                // Convert the filtered list into a DataTable
                 ProjectItemList = JsonHelper.ToDataTable(filteredProjectItems2);
                 OriginalProjectItemList = JsonHelper.ToDataTable(filteredProjectItems);
-
             }
             else
             {
@@ -164,16 +143,14 @@ namespace smpc_sales_system.Pages.Sales
         }
         private async Task fetchOrderDetailsByDocumentNo(string documentNo)
         {
-            // Get all the quotations from the service
             OrderList data = await OrderService.GetOrders();
- 
             if (data == null || string.IsNullOrEmpty(documentNo))
             {
                 return;  // Exit if no data or documentNo is provided
             }
-            // Filter the SalesQuotation and SalesQuotationQuick based on the converted documentNo
+
             var filteredSalesOrder = data.order
-                .Where(q => q.doc == documentNo)  // Assuming document_no is int
+                .Where(q => q.doc == documentNo) 
                 .ToList();
 
             var orderId = filteredSalesOrder.FirstOrDefault()?.order_id;
@@ -181,16 +158,15 @@ namespace smpc_sales_system.Pages.Sales
             if (orderId != null)
             {
                 var filteredSalesOrderDetails = data.sales_order_details
-                    .Where(q => q.based_id == orderId)  // Filter by based_id, converted to int
+                    .Where(q => q.based_id == orderId)
                     .ToList();
-                // Convert the filtered lists to DataTables (using your helper method)
+
                 OrderList = JsonHelper.ToDataTable(filteredSalesOrder);
                 DetailsList = JsonHelper.ToDataTable(filteredSalesOrderDetails);
 
-                // If filtered data exists, bind it to the DataGridView
                 if (filteredSalesOrder.Any() || filteredSalesOrderDetails.Any())
                 {
-                    //bind(true);
+                    //bind(true); continue
                 }
                 else
                 {
@@ -202,8 +178,8 @@ namespace smpc_sales_system.Pages.Sales
                 MessageBox.Show("No SalesQuotation found for the provided document number.");
             }
         }
-
-        private async void QuotationPrintModal_Load(object sender, EventArgs e)
+        //ON LOAD FOR PRINTMODAL
+        private async void SalesPrintModal_Load(object sender, EventArgs e)
         {
             if (isProject)
             {
@@ -221,7 +197,7 @@ namespace smpc_sales_system.Pages.Sales
                         int shiptoId = (int)filteredRows[0]["ship_to_id"];  
 
                         DataRow[] bpiRows = bpi_general.Select($"general_based_id = '{customerId}'");
-                        DataRow[] bpiaddrows = bpi_address.Select($"address_id = '{shiptoId}'");
+                        DataRow[] bpiaddrows = bpi_address.Select($"address_ids = '{shiptoId}'");
                         string addressName = "Address not found";
                         addressName = bpiaddrows[0]["location"].ToString();
 
@@ -241,12 +217,9 @@ namespace smpc_sales_system.Pages.Sales
                         {
                             DataRow[] componentRows = OriginalProjectItemList.Select($"based_id = '{itemsetId}'");
 
-                            // Initialize the sum for components
                             float componentTotalSum = 0f;
-
                             foreach (DataRow row in componentRows)
                             {
-                                // Check if template_id is 0
                                 if ((int)row["template_id"] == 0)
                                 {
                                     var componentTotal = row["component_total"];
@@ -261,7 +234,6 @@ namespace smpc_sales_system.Pages.Sales
                                 }
                                 else
                                 {
-                                    // Sum up the component totals for rows where template_id > 0
                                     var componentTotal = row["component_total"];
                                     if (componentTotal != DBNull.Value && !string.IsNullOrWhiteSpace(componentTotal.ToString()))
                                     {
@@ -273,13 +245,11 @@ namespace smpc_sales_system.Pages.Sales
                                 }
                             }
 
-                            // After looping through all componentRows, if template_id > 0, add the sum to unitprices
                             if (componentTotalSum > 0)
                             {
                                 unitprices.Add(componentTotalSum.ToString("F2"));
                             }
                         }
-
                         DataRow[] componentitemRows = ProjectItemList.Select();
 
                         List<string> itemDescriptions = new List<string>();
@@ -318,14 +288,11 @@ namespace smpc_sales_system.Pages.Sales
                             foreach (DataRow componentdetailRow in componentitemRows)
                             {
                                 int itemid = (int)componentdetailRow["based_id"];
-
-                                // Otherwise, proceed with the selection from ItemList
                                 DataRow[] itemrows = ItemSetContent.Select();
 
                                     foreach (DataRow itemRow in itemrows)
                                     {
                                         string shortDesc = itemRow["item_set_description"].ToString();
-                                        // Concatenate the item_model and short_desc in the desired format
                                         string detail = $"{shortDesc}";
                                         details.Add(detail);
                                     }
@@ -430,9 +397,6 @@ namespace smpc_sales_system.Pages.Sales
                                 {
                                     string shortDesc = itemRow["short_desc"].ToString();
                                     string itemModel = itemRow["item_model"].ToString();
-
-                                    // Concatenate the item_model and short_desc in the desired format
-                                    //string itemDescription = $"{itemModel} - {shortDesc}";
                                     string itemDescription = $"{shortDesc}";
 
                                     itemDescriptions.Add(itemDescription);
@@ -442,7 +406,6 @@ namespace smpc_sales_system.Pages.Sales
 
                         string[] itemDescriptionArray = itemDescriptions.ToArray();
                         ReportParameter itemDescriptionParameter = new ReportParameter("ItemDescriptions", itemDescriptionArray);
-
                         ReportParameter branchNameParameter = new ReportParameter("BranchName", branchName);
                         ReportParameter addressNameParameter = new ReportParameter("AddressName", addressName);
                         ReportDataSource headerReportDataSource = new ReportDataSource("DataSet1", transactionList);
@@ -513,7 +476,6 @@ namespace smpc_sales_system.Pages.Sales
                 }
             }
         }
-
         private void btn_prev_Click(object sender, EventArgs e)
         {
             this.Close();
