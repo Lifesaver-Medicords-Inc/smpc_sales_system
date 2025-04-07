@@ -115,18 +115,12 @@ namespace smpc_app.Services.Helpers
                     values[key] = val;
                 }
 
-            // Check if the control is a Combobox
-            if (control is ComboBox comboBox)
+                // Check if the control is a Combobox
+                if (control is ComboBox comboBox)
                 {
                     string key = comboBox.Name.Replace("cmb_", "");
                     string val = "";
-
-                    if (comboBox.Tag == "DYNAMIC")
-                    {
-                        key = key + "_id";
-                        val = comboBox.SelectedValue.ToString();
-                    }
-                    else if (string.IsNullOrEmpty(comboBox.Text.ToString()))
+                    if (string.IsNullOrEmpty(comboBox.Text.ToString()))
                     {
                         val = "";
                     }
@@ -134,16 +128,16 @@ namespace smpc_app.Services.Helpers
                     {
                         val = comboBox.Text.ToString();
                     }
-
                     if (comboBox.Tag == "DYNAMIC")
                     {
-                        values.Add(key, int.Parse(val));
+                        key = key + "_id";
+                        values.Add(key, comboBox.SelectedValue);
                     }
                     else
                     {
+                        val = comboBox.Text.ToString();
                         values.Add(key, val);
                     }
-                    
                 }
 
                 // Check if the control is a Checkbox
@@ -306,7 +300,8 @@ namespace smpc_app.Services.Helpers
                                 }
                                 else
                                 {
-                                   
+
+               
                                     textBox.Text = (string)dt.Rows[selectedIndex][column_name].ToString();
                                 }
                             }
@@ -314,6 +309,7 @@ namespace smpc_app.Services.Helpers
                             // Check if the control is a Combobox
                             if (control is ComboBox comboBox)
                             {
+
                                 Console.WriteLine(comboBox.Name);
                                 string key = comboBox.Name.Replace("cmb_", "") + "_id";
 
@@ -329,7 +325,6 @@ namespace smpc_app.Services.Helpers
                                     //Console.WriteLine(comboBox.Name);
                                     comboBox.Text = (string)dt.Rows[selectedIndex][column_name].ToString();
                                 }
-                             
                             }
 
                             // Check if the control is a Checkbox

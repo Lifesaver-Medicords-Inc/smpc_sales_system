@@ -29,6 +29,7 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
+
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle49 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle50 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle51 = new System.Windows.Forms.DataGridViewCellStyle();
@@ -46,6 +47,22 @@
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle62 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle63 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle64 = new System.Windows.Forms.DataGridViewCellStyle();
+
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle14 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle15 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle16 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle17 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle18 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle19 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle20 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle21 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Quotation));
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle22 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle23 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle24 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle25 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle26 = new System.Windows.Forms.DataGridViewCellStyle();
+
             this.panel1 = new System.Windows.Forms.Panel();
             this.button3 = new System.Windows.Forms.Button();
             this.button1 = new System.Windows.Forms.Button();
@@ -84,6 +101,7 @@
             this.Column4 = new System.Windows.Forms.DataGridViewButtonColumn();
             this.Column5 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Column1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+
             this.txt_unit = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.unitpriceDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.percentdiscountDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -92,6 +110,7 @@
             this.linetotalDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.itemclassidDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.bs_quick_quotes_details = new System.Windows.Forms.BindingSource(this.components);
+
             this.ds_quick_quote = new System.Data.DataSet();
             this.dataTable1 = new System.Data.DataTable();
             this.based_id = new System.Data.DataColumn();
@@ -107,6 +126,7 @@
             this.code = new System.Data.DataColumn();
             this.dataTable3 = new System.Data.DataTable();
             this.dataColumn1 = new System.Data.DataColumn();
+
             this.dataTable4 = new System.Data.DataTable();
             this.dataColumn2 = new System.Data.DataColumn();
             this.dataColumn3 = new System.Data.DataColumn();
@@ -119,6 +139,7 @@
             this.dataTable7 = new System.Data.DataTable();
             this.dataColumn13 = new System.Data.DataColumn();
             this.dataColumn14 = new System.Data.DataColumn();
+
             this.project_tab = new System.Windows.Forms.TabPage();
             this.tabControl2 = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
@@ -154,6 +175,7 @@
             this.txt_project_name = new System.Windows.Forms.TextBox();
             this.label22 = new System.Windows.Forms.Label();
             this.label21 = new System.Windows.Forms.Label();
+
             this.pnl_header = new System.Windows.Forms.Panel();
             this.btn_request_for_engr = new System.Windows.Forms.Button();
             this.txtTabName = new System.Windows.Forms.TextBox();
@@ -161,6 +183,42 @@
             this.bs_payment_terms = new System.Windows.Forms.BindingSource(this.components);
             this.txt_customer_id = new System.Windows.Forms.TextBox();
             this.btn_project = new System.Windows.Forms.Button();
+
+            this.pnl_footer = new System.Windows.Forms.Panel();
+            this.btn_SO = new System.Windows.Forms.Button();
+            this.btn_cancel = new System.Windows.Forms.Button();
+            this.btn_save = new System.Windows.Forms.Button();
+            this.txt_short_description = new System.Windows.Forms.TextBox();
+            this.label34 = new System.Windows.Forms.Label();
+            this.txt_long_description = new System.Windows.Forms.TextBox();
+            this.label33 = new System.Windows.Forms.Label();
+            this.chk_isVat = new System.Windows.Forms.CheckBox();
+            this.txt_vat_percent = new System.Windows.Forms.TextBox();
+            this.txt_vat_amount = new System.Windows.Forms.TextBox();
+            this.label32 = new System.Windows.Forms.Label();
+            this.txt_total_amount_due = new System.Windows.Forms.TextBox();
+            this.txt_net_amount_due = new System.Windows.Forms.TextBox();
+            this.txt_cash_discount = new System.Windows.Forms.TextBox();
+            this.label29 = new System.Windows.Forms.Label();
+            this.label30 = new System.Windows.Forms.Label();
+            this.label31 = new System.Windows.Forms.Label();
+            this.txt_sub_total = new System.Windows.Forms.TextBox();
+            this.txt_percent_discount = new System.Windows.Forms.TextBox();
+            this.txt_sub_total_before_discount = new System.Windows.Forms.TextBox();
+            this.label26 = new System.Windows.Forms.Label();
+            this.label27 = new System.Windows.Forms.Label();
+            this.label28 = new System.Windows.Forms.Label();
+            this.txt_net_sales = new System.Windows.Forms.TextBox();
+            this.vat_amount_computed = new System.Windows.Forms.TextBox();
+            this.txt_gross_sales = new System.Windows.Forms.TextBox();
+            this.label23 = new System.Windows.Forms.Label();
+            this.label24 = new System.Windows.Forms.Label();
+            this.label25 = new System.Windows.Forms.Label();
+            this.pnl_header = new System.Windows.Forms.Panel();
+            this.txt_project_name = new System.Windows.Forms.TextBox();
+            this.txt_customer_id = new System.Windows.Forms.TextBox();
+            this.label59 = new System.Windows.Forms.Label();
+
             this.btn_add_customer = new System.Windows.Forms.Button();
             this.label60 = new System.Windows.Forms.Label();
             this.cmb_warranty = new System.Windows.Forms.ComboBox();
@@ -223,7 +281,9 @@
             this.net_discount = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.net_total = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.line_total = new System.Windows.Forms.DataGridViewTextBoxColumn();
+
             this.timer1 = new System.Windows.Forms.Timer(this.components);
+
             this.panel1.SuspendLayout();
             this.panel3.SuspendLayout();
             this.pnl_footer.SuspendLayout();
@@ -673,6 +733,65 @@
             this.dgv_quick_quote_details.CellEndEdit += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgv_quick_quote_details_CellEndEdit);
             // 
             // Column2
+
+            // 
+            this.Column2.DataPropertyName = "id";
+            this.Column2.HeaderText = "id";
+            this.Column2.Name = "Column2";
+            this.Column2.Visible = false;
+            // 
+            // basedidDataGridViewTextBoxColumn
+            // 
+            this.basedidDataGridViewTextBoxColumn.DataPropertyName = "based_id";
+            this.basedidDataGridViewTextBoxColumn.HeaderText = "based_id";
+            this.basedidDataGridViewTextBoxColumn.Name = "basedidDataGridViewTextBoxColumn";
+            this.basedidDataGridViewTextBoxColumn.Visible = false;
+            // 
+            // Column3
+            // 
+            this.Column3.DataPropertyName = "item_name_id";
+            this.Column3.HeaderText = "item_id";
+            this.Column3.Name = "Column3";
+            this.Column3.Visible = false;
+            // 
+            // Column4
+            // 
+            this.Column4.DataPropertyName = "item_code";
+            this.Column4.HeaderText = "ITEM CODE";
+            this.Column4.Name = "Column4";
+            this.Column4.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+            this.Column4.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
+            // 
+            // Column5
+            // 
+            this.Column5.DataPropertyName = "item_name";
+            dataGridViewCellStyle14.BackColor = System.Drawing.Color.LightGray;
+            this.Column5.DefaultCellStyle = dataGridViewCellStyle14;
+            this.Column5.HeaderText = "ITEM NAME";
+            this.Column5.Name = "Column5";
+            this.Column5.ReadOnly = true;
+            // 
+            // Column1
+            // 
+            this.Column1.DataPropertyName = "qty";
+            dataGridViewCellStyle15.NullValue = "0";
+            this.Column1.DefaultCellStyle = dataGridViewCellStyle15;
+            this.Column1.HeaderText = "QTY";
+            this.Column1.Name = "Column1";
+            // 
+            // cmb_unit
+            // 
+            this.cmb_unit.DataPropertyName = "unit_id";
+            this.cmb_unit.DataSource = this.bs_unit;
+            this.cmb_unit.DisplayMember = "name";
+            this.cmb_unit.HeaderText = "UNIT";
+            this.cmb_unit.Name = "cmb_unit";
+            this.cmb_unit.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+            this.cmb_unit.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
+            this.cmb_unit.ValueMember = "id";
+            // 
+            // bs_unit
+
             // 
             this.Column2.DataPropertyName = "id";
             this.Column2.HeaderText = "id";
@@ -895,7 +1014,476 @@
             // 
             this.dataColumn1.ColumnName = "Column1";
             // 
-            // dataTable4
+ 
+            // unitpriceDataGridViewTextBoxColumn
+            // 
+            this.unitpriceDataGridViewTextBoxColumn.DataPropertyName = "unit_price";
+            dataGridViewCellStyle16.Format = "C2";
+            dataGridViewCellStyle16.NullValue = "0";
+            this.unitpriceDataGridViewTextBoxColumn.DefaultCellStyle = dataGridViewCellStyle16;
+            this.unitpriceDataGridViewTextBoxColumn.HeaderText = "UNIT PRICE";
+            this.unitpriceDataGridViewTextBoxColumn.Name = "unitpriceDataGridViewTextBoxColumn";
+            // 
+            // percentdiscountDataGridViewTextBoxColumn
+            // 
+            this.percentdiscountDataGridViewTextBoxColumn.DataPropertyName = "percent_discount";
+            dataGridViewCellStyle17.NullValue = "0";
+            this.percentdiscountDataGridViewTextBoxColumn.DefaultCellStyle = dataGridViewCellStyle17;
+            this.percentdiscountDataGridViewTextBoxColumn.HeaderText = "DISCOUNT(%)";
+            this.percentdiscountDataGridViewTextBoxColumn.Name = "percentdiscountDataGridViewTextBoxColumn";
+            // 
+            // netdiscountDataGridViewTextBoxColumn
+            // 
+            this.netdiscountDataGridViewTextBoxColumn.DataPropertyName = "net_discount";
+            dataGridViewCellStyle18.BackColor = System.Drawing.Color.LightGray;
+            dataGridViewCellStyle18.Format = "C2";
+            dataGridViewCellStyle18.NullValue = "0";
+            this.netdiscountDataGridViewTextBoxColumn.DefaultCellStyle = dataGridViewCellStyle18;
+            this.netdiscountDataGridViewTextBoxColumn.HeaderText = "DISCOUNT AMOUNT";
+            this.netdiscountDataGridViewTextBoxColumn.Name = "netdiscountDataGridViewTextBoxColumn";
+            this.netdiscountDataGridViewTextBoxColumn.ReadOnly = true;
+            // 
+            // nettotalDataGridViewTextBoxColumn
+            // 
+            this.nettotalDataGridViewTextBoxColumn.DataPropertyName = "net_total";
+            dataGridViewCellStyle19.BackColor = System.Drawing.Color.LightGray;
+            dataGridViewCellStyle19.Format = "C2";
+            dataGridViewCellStyle19.NullValue = "0";
+            this.nettotalDataGridViewTextBoxColumn.DefaultCellStyle = dataGridViewCellStyle19;
+            this.nettotalDataGridViewTextBoxColumn.HeaderText = "NET DISCOUNT";
+            this.nettotalDataGridViewTextBoxColumn.Name = "nettotalDataGridViewTextBoxColumn";
+            // 
+            // linetotalDataGridViewTextBoxColumn
+            // 
+            this.linetotalDataGridViewTextBoxColumn.DataPropertyName = "line_total";
+            dataGridViewCellStyle20.BackColor = System.Drawing.Color.LightGray;
+            dataGridViewCellStyle20.Format = "C2";
+            dataGridViewCellStyle20.NullValue = "0";
+            this.linetotalDataGridViewTextBoxColumn.DefaultCellStyle = dataGridViewCellStyle20;
+            this.linetotalDataGridViewTextBoxColumn.HeaderText = "NET AMOUNT";
+            this.linetotalDataGridViewTextBoxColumn.Name = "linetotalDataGridViewTextBoxColumn";
+            // 
+            // itemclassidDataGridViewTextBoxColumn
+            // 
+            this.itemclassidDataGridViewTextBoxColumn.DataPropertyName = "line_total";
+            dataGridViewCellStyle21.BackColor = System.Drawing.Color.LightGray;
+            dataGridViewCellStyle21.Format = "C2";
+            dataGridViewCellStyle21.NullValue = "0";
+            this.itemclassidDataGridViewTextBoxColumn.DefaultCellStyle = dataGridViewCellStyle21;
+            this.itemclassidDataGridViewTextBoxColumn.HeaderText = "LINE TOTAL";
+            this.itemclassidDataGridViewTextBoxColumn.Name = "itemclassidDataGridViewTextBoxColumn";
+            // 
+            // bs_quick_quotes_details
+            // 
+            this.bs_quick_quotes_details.DataMember = "tbl_quick_quote_details";
+            this.bs_quick_quotes_details.DataSource = this.ds_quick_quote;
+            // 
+            // project_tab
+            // 
+            this.project_tab.Controls.Add(this.panel7);
+            this.project_tab.Controls.Add(this.panel6);
+            this.project_tab.Location = new System.Drawing.Point(4, 37);
+            this.project_tab.Name = "project_tab";
+            this.project_tab.Padding = new System.Windows.Forms.Padding(3);
+            this.project_tab.Size = new System.Drawing.Size(1020, 2052);
+            this.project_tab.TabIndex = 1;
+            this.project_tab.UseVisualStyleBackColor = true;
+            // 
+            // panel7
+            // 
+            this.panel7.Controls.Add(this.tabControl2);
+            this.panel7.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.panel7.Location = new System.Drawing.Point(3, 225);
+            this.panel7.Name = "panel7";
+            this.panel7.Size = new System.Drawing.Size(1014, 1824);
+            this.panel7.TabIndex = 85;
+            // 
+            // tabControl2
+            // 
+            this.tabControl2.Controls.Add(this.tabPage3);
+            this.tabControl2.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tabControl2.Location = new System.Drawing.Point(0, 0);
+            this.tabControl2.Name = "tabControl2";
+            this.tabControl2.SelectedIndex = 0;
+            this.tabControl2.Size = new System.Drawing.Size(1014, 1824);
+            this.tabControl2.TabIndex = 0;
+            // 
+            // tabPage3
+            // 
+            this.tabPage3.Controls.Add(this.label58);
+            this.tabPage3.Controls.Add(this.label57);
+            this.tabPage3.Controls.Add(this.label56);
+            this.tabPage3.Controls.Add(this.textBox64);
+            this.tabPage3.Controls.Add(this.dataGridView4);
+            this.tabPage3.Controls.Add(this.dataGridView3);
+            this.tabPage3.Controls.Add(this.panel8);
+            this.tabPage3.Controls.Add(this.label45);
+            this.tabPage3.Controls.Add(this.label44);
+            this.tabPage3.Controls.Add(this.textBox50);
+            this.tabPage3.Controls.Add(this.textBox49);
+            this.tabPage3.Controls.Add(this.label43);
+            this.tabPage3.Controls.Add(this.label42);
+            this.tabPage3.Controls.Add(this.textBox52);
+            this.tabPage3.Controls.Add(this.textBox53);
+            this.tabPage3.Controls.Add(this.textBox54);
+            this.tabPage3.Controls.Add(this.textBox43);
+            this.tabPage3.Controls.Add(this.textBox44);
+            this.tabPage3.Controls.Add(this.textBox45);
+            this.tabPage3.Controls.Add(this.textBox46);
+            this.tabPage3.Controls.Add(this.textBox47);
+            this.tabPage3.Controls.Add(this.textBox48);
+            this.tabPage3.Controls.Add(this.label41);
+            this.tabPage3.Controls.Add(this.textBox42);
+            this.tabPage3.Controls.Add(this.label40);
+            this.tabPage3.Controls.Add(this.label39);
+            this.tabPage3.Controls.Add(this.textBox41);
+            this.tabPage3.Controls.Add(this.textBox39);
+            this.tabPage3.Controls.Add(this.textBox40);
+            this.tabPage3.Controls.Add(this.textBox38);
+            this.tabPage3.Controls.Add(this.textBox37);
+            this.tabPage3.Controls.Add(this.textBox36);
+            this.tabPage3.Controls.Add(this.textBox35);
+            this.tabPage3.Controls.Add(this.textBox34);
+            this.tabPage3.Controls.Add(this.label38);
+            this.tabPage3.Controls.Add(this.textBox33);
+            this.tabPage3.Controls.Add(this.label37);
+            this.tabPage3.Location = new System.Drawing.Point(4, 22);
+            this.tabPage3.Name = "tabPage3";
+            this.tabPage3.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage3.Size = new System.Drawing.Size(1006, 1798);
+            this.tabPage3.TabIndex = 0;
+            this.tabPage3.Text = "ITEM / SET 1";
+            this.tabPage3.UseVisualStyleBackColor = true;
+            // 
+            // label58
+            // 
+            this.label58.AutoSize = true;
+            this.label58.Location = new System.Drawing.Point(694, 843);
+            this.label58.Name = "label58";
+            this.label58.Size = new System.Drawing.Size(99, 13);
+            this.label58.TabIndex = 146;
+            this.label58.Text = "ASSIGNED ENGR.";
+            // 
+            // label57
+            // 
+            this.label57.AutoSize = true;
+            this.label57.Location = new System.Drawing.Point(13, 843);
+            this.label57.Name = "label57";
+            this.label57.Size = new System.Drawing.Size(48, 13);
+            this.label57.TabIndex = 145;
+            this.label57.Text = "WIRING";
+            // 
+            // label56
+            // 
+            this.label56.AutoSize = true;
+            this.label56.Location = new System.Drawing.Point(13, 377);
+            this.label56.Name = "label56";
+            this.label56.Size = new System.Drawing.Size(79, 13);
+            this.label56.TabIndex = 144;
+            this.label56.Text = "PUMP BRAND";
+            // 
+            // textBox64
+            // 
+            this.textBox64.Location = new System.Drawing.Point(98, 374);
+            this.textBox64.Name = "textBox64";
+            this.textBox64.Size = new System.Drawing.Size(167, 20);
+            this.textBox64.TabIndex = 143;
+            // 
+            // dataGridView4
+            // 
+            this.dataGridView4.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.dataGridView4.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dataGridView4.Location = new System.Drawing.Point(14, 859);
+            this.dataGridView4.Name = "dataGridView4";
+            this.dataGridView4.Size = new System.Drawing.Size(968, 522);
+            this.dataGridView4.TabIndex = 133;
+            // 
+            // dataGridView3
+            // 
+            this.dataGridView3.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.dataGridView3.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dataGridView3.Location = new System.Drawing.Point(14, 400);
+            this.dataGridView3.Name = "dataGridView3";
+            this.dataGridView3.Size = new System.Drawing.Size(968, 408);
+            this.dataGridView3.TabIndex = 132;
+            // 
+            // panel8
+            // 
+            this.panel8.Controls.Add(this.label55);
+            this.panel8.Controls.Add(this.textBox63);
+            this.panel8.Controls.Add(this.label52);
+            this.panel8.Controls.Add(this.label53);
+            this.panel8.Controls.Add(this.label54);
+            this.panel8.Controls.Add(this.label49);
+            this.panel8.Controls.Add(this.label50);
+            this.panel8.Controls.Add(this.label51);
+            this.panel8.Controls.Add(this.label48);
+            this.panel8.Controls.Add(this.label47);
+            this.panel8.Controls.Add(this.label46);
+            this.panel8.Controls.Add(this.textBox60);
+            this.panel8.Controls.Add(this.textBox61);
+            this.panel8.Controls.Add(this.textBox62);
+            this.panel8.Controls.Add(this.textBox57);
+            this.panel8.Controls.Add(this.textBox58);
+            this.panel8.Controls.Add(this.textBox59);
+            this.panel8.Controls.Add(this.textBox51);
+            this.panel8.Controls.Add(this.textBox56);
+            this.panel8.Controls.Add(this.textBox55);
+            this.panel8.Location = new System.Drawing.Point(14, 249);
+            this.panel8.Name = "panel8";
+            this.panel8.Size = new System.Drawing.Size(969, 100);
+            this.panel8.TabIndex = 131;
+            // 
+            // label55
+            // 
+            this.label55.AutoSize = true;
+            this.label55.Location = new System.Drawing.Point(781, 72);
+            this.label55.Name = "label55";
+            this.label55.Size = new System.Drawing.Size(97, 13);
+            this.label55.TabIndex = 152;
+            this.label55.Text = "DISCHARGE SIZE";
+            // 
+            // textBox63
+            // 
+            this.textBox63.Location = new System.Drawing.Point(884, 69);
+            this.textBox63.Name = "textBox63";
+            this.textBox63.Size = new System.Drawing.Size(70, 20);
+            this.textBox63.TabIndex = 151;
+            // 
+            // label52
+            // 
+            this.label52.AutoSize = true;
+            this.label52.Location = new System.Drawing.Point(595, 72);
+            this.label52.Name = "label52";
+            this.label52.Size = new System.Drawing.Size(82, 13);
+            this.label52.TabIndex = 150;
+            this.label52.Text = "SUCTION SIZE";
+            // 
+            // label53
+            // 
+            this.label53.AutoSize = true;
+            this.label53.Location = new System.Drawing.Point(664, 45);
+            this.label53.Name = "label53";
+            this.label53.Size = new System.Drawing.Size(104, 13);
+            this.label53.TabIndex = 149;
+            this.label53.Text = "STATING METHOD";
+            // 
+            // label54
+            // 
+            this.label54.AutoSize = true;
+            this.label54.Location = new System.Drawing.Point(595, 26);
+            this.label54.Name = "label54";
+            this.label54.Size = new System.Drawing.Size(173, 13);
+            this.label54.TabIndex = 148;
+            this.label54.Text = "CONTROLLER MANUFACTURER";
+            // 
+            // label49
+            // 
+            this.label49.AutoSize = true;
+            this.label49.Location = new System.Drawing.Point(341, 64);
+            this.label49.Name = "label49";
+            this.label49.Size = new System.Drawing.Size(74, 13);
+            this.label49.TabIndex = 147;
+            this.label49.Text = "LIQUID TYPE";
+            // 
+            // label50
+            // 
+            this.label50.AutoSize = true;
+            this.label50.Location = new System.Drawing.Point(275, 45);
+            this.label50.Name = "label50";
+            this.label50.Size = new System.Drawing.Size(140, 13);
+            this.label50.TabIndex = 146;
+            this.label50.Text = "MOTOR MANUFACTURER";
+            // 
+            // label51
+            // 
+            this.label51.AutoSize = true;
+            this.label51.Location = new System.Drawing.Point(299, 26);
+            this.label51.Name = "label51";
+            this.label51.Size = new System.Drawing.Size(116, 13);
+            this.label51.TabIndex = 145;
+            this.label51.Text = "MOTOR ENCLOSURE";
+            // 
+            // label48
+            // 
+            this.label48.AutoSize = true;
+            this.label48.Location = new System.Drawing.Point(29, 64);
+            this.label48.Name = "label48";
+            this.label48.Size = new System.Drawing.Size(66, 13);
+            this.label48.TabIndex = 144;
+            this.label48.Text = "PRESSURE";
+            // 
+            // label47
+            // 
+            this.label47.AutoSize = true;
+            this.label47.Location = new System.Drawing.Point(16, 45);
+            this.label47.Name = "label47";
+            this.label47.Size = new System.Drawing.Size(79, 13);
+            this.label47.TabIndex = 143;
+            this.label47.Text = "DRIVER TYPE";
+            // 
+            // label46
+            // 
+            this.label46.AutoSize = true;
+            this.label46.Location = new System.Drawing.Point(16, 26);
+            this.label46.Name = "label46";
+            this.label46.Size = new System.Drawing.Size(79, 13);
+            this.label46.TabIndex = 142;
+            this.label46.Text = "PUMP BRAND";
+            // 
+            // textBox60
+            // 
+            this.textBox60.Location = new System.Drawing.Point(683, 68);
+            this.textBox60.Name = "textBox60";
+            this.textBox60.Size = new System.Drawing.Size(70, 20);
+            this.textBox60.TabIndex = 141;
+            // 
+            // textBox61
+            // 
+            this.textBox61.Location = new System.Drawing.Point(770, 42);
+            this.textBox61.Name = "textBox61";
+            this.textBox61.Size = new System.Drawing.Size(167, 20);
+            this.textBox61.TabIndex = 140;
+            // 
+            // textBox62
+            // 
+            this.textBox62.Location = new System.Drawing.Point(770, 23);
+            this.textBox62.Name = "textBox62";
+            this.textBox62.Size = new System.Drawing.Size(167, 20);
+            this.textBox62.TabIndex = 139;
+            // 
+            // textBox57
+            // 
+            this.textBox57.Location = new System.Drawing.Point(421, 61);
+            this.textBox57.Name = "textBox57";
+            this.textBox57.Size = new System.Drawing.Size(167, 20);
+            this.textBox57.TabIndex = 138;
+            // 
+            // textBox58
+            // 
+            this.textBox58.Location = new System.Drawing.Point(421, 42);
+            this.textBox58.Name = "textBox58";
+            this.textBox58.Size = new System.Drawing.Size(167, 20);
+            this.textBox58.TabIndex = 137;
+            // 
+            // textBox59
+            // 
+            this.textBox59.Location = new System.Drawing.Point(421, 23);
+            this.textBox59.Name = "textBox59";
+            this.textBox59.Size = new System.Drawing.Size(167, 20);
+            this.textBox59.TabIndex = 136;
+            // 
+            // textBox51
+            // 
+            this.textBox51.Location = new System.Drawing.Point(101, 61);
+            this.textBox51.Name = "textBox51";
+            this.textBox51.Size = new System.Drawing.Size(167, 20);
+            this.textBox51.TabIndex = 135;
+            // 
+            // textBox56
+            // 
+            this.textBox56.Location = new System.Drawing.Point(101, 23);
+            this.textBox56.Name = "textBox56";
+            this.textBox56.Size = new System.Drawing.Size(167, 20);
+            this.textBox56.TabIndex = 133;
+            // 
+            // textBox55
+            // 
+            this.textBox55.Location = new System.Drawing.Point(101, 42);
+            this.textBox55.Name = "textBox55";
+            this.textBox55.Size = new System.Drawing.Size(167, 20);
+            this.textBox55.TabIndex = 134;
+            // 
+            // label45
+            // 
+            this.label45.AutoSize = true;
+            this.label45.Location = new System.Drawing.Point(11, 233);
+            this.label45.Name = "label45";
+            this.label45.Size = new System.Drawing.Size(177, 13);
+            this.label45.TabIndex = 130;
+            this.label45.Text = "ITEMS AND PUMP DESIGNATION";
+            // 
+            // label44
+            // 
+            this.label44.AutoSize = true;
+            this.label44.Location = new System.Drawing.Point(813, 139);
+            this.label44.Name = "label44";
+            this.label44.Size = new System.Drawing.Size(37, 13);
+            this.label44.TabIndex = 129;
+            this.label44.Text = "FINAL";
+            // 
+            // textBox50
+            // 
+            this.textBox50.Location = new System.Drawing.Point(816, 155);
+            this.textBox50.Name = "textBox50";
+            this.textBox50.Size = new System.Drawing.Size(167, 20);
+            this.textBox50.TabIndex = 128;
+            // 
+            // textBox49
+            // 
+            this.textBox49.Location = new System.Drawing.Point(422, 159);
+            this.textBox49.Multiline = true;
+            this.textBox49.Name = "textBox49";
+            this.textBox49.Size = new System.Drawing.Size(336, 41);
+            this.textBox49.TabIndex = 127;
+            // 
+            // label43
+            // 
+            this.label43.AutoSize = true;
+            this.label43.Location = new System.Drawing.Point(338, 162);
+            this.label43.Name = "label43";
+            this.label43.Size = new System.Drawing.Size(72, 13);
+            this.label43.TabIndex = 126;
+            this.label43.Text = "ADDITIONAL";
+            // 
+            // label42
+            // 
+            this.label42.AutoSize = true;
+            this.label42.Location = new System.Drawing.Point(813, 25);
+            this.label42.Name = "label42";
+            this.label42.Size = new System.Drawing.Size(49, 13);
+            this.label42.TabIndex = 125;
+            this.label42.Text = "SIZE UP";
+            // 
+            // textBox52
+            // 
+            this.textBox52.Location = new System.Drawing.Point(816, 79);
+            this.textBox52.Name = "textBox52";
+            this.textBox52.Size = new System.Drawing.Size(167, 20);
+            this.textBox52.TabIndex = 124;
+            // 
+            // textBox53
+            // 
+            this.textBox53.Location = new System.Drawing.Point(816, 60);
+            this.textBox53.Name = "textBox53";
+            this.textBox53.Size = new System.Drawing.Size(167, 20);
+            this.textBox53.TabIndex = 123;
+            // 
+            // textBox54
+            // 
+            this.textBox54.Location = new System.Drawing.Point(816, 41);
+            this.textBox54.Name = "textBox54";
+            this.textBox54.Size = new System.Drawing.Size(167, 20);
+            this.textBox54.TabIndex = 122;
+            // 
+            // textBox43
+            // 
+            this.textBox43.Location = new System.Drawing.Point(586, 79);
+            this.textBox43.Name = "textBox43";
+            this.textBox43.Size = new System.Drawing.Size(66, 20);
+            this.textBox43.TabIndex = 121;
+            this.textBox43.Text = "PHASE";
+            // 
+            // textBox44
+            // 
+            this.textBox44.Location = new System.Drawing.Point(586, 60);
+            this.textBox44.Name = "textBox44";
+            this.textBox44.Size = new System.Drawing.Size(66, 20);
+            this.textBox44.TabIndex = 120;
+            this.textBox44.Text = "HP";
+
             // 
             this.dataTable4.Columns.AddRange(new System.Data.DataColumn[] {
             this.dataColumn2,
@@ -1028,12 +1616,62 @@
             this.dgv_project_multiplier.TabIndex = 82;
             this.dgv_project_multiplier.CellEndEdit += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgv_project_multiplier_CellEndEdit);
             // 
+
             // brandDataGridViewTextBoxColumn
             // 
             this.brandDataGridViewTextBoxColumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
             this.brandDataGridViewTextBoxColumn.DataPropertyName = "brand";
             this.brandDataGridViewTextBoxColumn.HeaderText = "BRAND";
             this.brandDataGridViewTextBoxColumn.Name = "brandDataGridViewTextBoxColumn";
+
+            this.pnl_footer.Controls.Add(this.btn_SO);
+            this.pnl_footer.Controls.Add(this.btn_cancel);
+            this.pnl_footer.Controls.Add(this.btn_save);
+            this.pnl_footer.Controls.Add(this.txt_short_description);
+            this.pnl_footer.Controls.Add(this.label34);
+            this.pnl_footer.Controls.Add(this.txt_long_description);
+            this.pnl_footer.Controls.Add(this.label33);
+            this.pnl_footer.Controls.Add(this.chk_isVat);
+            this.pnl_footer.Controls.Add(this.txt_vat_percent);
+            this.pnl_footer.Controls.Add(this.txt_vat_amount);
+            this.pnl_footer.Controls.Add(this.label32);
+            this.pnl_footer.Controls.Add(this.txt_total_amount_due);
+            this.pnl_footer.Controls.Add(this.txt_net_amount_due);
+            this.pnl_footer.Controls.Add(this.txt_cash_discount);
+            this.pnl_footer.Controls.Add(this.label29);
+            this.pnl_footer.Controls.Add(this.label30);
+            this.pnl_footer.Controls.Add(this.label31);
+            this.pnl_footer.Controls.Add(this.txt_sub_total);
+            this.pnl_footer.Controls.Add(this.txt_percent_discount);
+            this.pnl_footer.Controls.Add(this.txt_sub_total_before_discount);
+            this.pnl_footer.Controls.Add(this.label26);
+            this.pnl_footer.Controls.Add(this.label27);
+            this.pnl_footer.Controls.Add(this.label28);
+            this.pnl_footer.Controls.Add(this.txt_net_sales);
+            this.pnl_footer.Controls.Add(this.vat_amount_computed);
+            this.pnl_footer.Controls.Add(this.txt_gross_sales);
+            this.pnl_footer.Controls.Add(this.label23);
+            this.pnl_footer.Controls.Add(this.label24);
+            this.pnl_footer.Controls.Add(this.label25);
+            this.pnl_footer.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.pnl_footer.Enabled = false;
+            this.pnl_footer.Location = new System.Drawing.Point(0, 2350);
+            this.pnl_footer.Name = "pnl_footer";
+            this.pnl_footer.Size = new System.Drawing.Size(1028, 258);
+            this.pnl_footer.TabIndex = 78;
+            // 
+            // btn_SO
+            // 
+            this.btn_SO.Location = new System.Drawing.Point(17, 213);
+            this.btn_SO.Name = "btn_SO";
+            this.btn_SO.Size = new System.Drawing.Size(107, 23);
+            this.btn_SO.TabIndex = 105;
+            this.btn_SO.Text = "SALES ORDER";
+            this.btn_SO.UseVisualStyleBackColor = true;
+            this.btn_SO.Click += new System.EventHandler(this.btn_SO_Click);
+            // 
+            // btn_cancel
+
             // 
             // componentDataGridViewTextBoxColumn
             // 
@@ -1218,6 +1856,9 @@
             this.pnl_header.Controls.Add(this.btn_request_for_engr);
             this.pnl_header.Controls.Add(this.txtTabName);
             this.pnl_header.Controls.Add(this.cmb_payment_terms);
+
+            this.pnl_header.Controls.Add(this.txt_project_name);
+
             this.pnl_header.Controls.Add(this.txt_customer_id);
             this.pnl_header.Controls.Add(this.btn_project);
             this.pnl_header.Controls.Add(this.btn_add_customer);
@@ -1269,6 +1910,7 @@
             this.pnl_header.Size = new System.Drawing.Size(1182, 243);
             this.pnl_header.TabIndex = 77;
             // 
+
             // btn_request_for_engr
             // 
             this.btn_request_for_engr.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
@@ -1309,17 +1951,26 @@
             // 
             this.bs_payment_terms.DataMember = "tbl_payment_terms";
             this.bs_payment_terms.DataSource = this.ds_quick_quote;
+
+            // txt_project_name
+            // 
+            this.txt_project_name.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
+            this.txt_project_name.Location = new System.Drawing.Point(87, 97);
+            this.txt_project_name.Name = "txt_project_name";
+            this.txt_project_name.Size = new System.Drawing.Size(200, 20);
+            this.txt_project_name.TabIndex = 111;
             // 
             // txt_customer_id
             // 
             this.txt_customer_id.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
+
             this.txt_customer_id.Location = new System.Drawing.Point(322, 18);
+          
             this.txt_customer_id.Name = "txt_customer_id";
             this.txt_customer_id.Size = new System.Drawing.Size(37, 20);
             this.txt_customer_id.TabIndex = 110;
             this.txt_customer_id.Visible = false;
             // 
-            // btn_project
             // 
             this.btn_project.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.btn_project.BackColor = System.Drawing.Color.White;
@@ -1765,6 +2416,7 @@
             // 
             this.toolstrip_quotation.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
             this.toolstrip_quotation.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.back,
             this.btn_new,
             this.btn_new_version,
             this.btn_search,
@@ -1820,7 +2472,7 @@
             this.btn_next.Image = ((System.Drawing.Image)(resources.GetObject("btn_next.Image")));
             this.btn_next.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.btn_next.Name = "btn_next";
-            this.btn_next.Size = new System.Drawing.Size(51, 22);
+            this.btn_next.Size = new System.Drawing.Size(52, 22);
             this.btn_next.Text = "Next";
             this.btn_next.Click += new System.EventHandler(this.btn_next_Click);
             // 
@@ -1831,6 +2483,7 @@
             this.btn_print.Name = "btn_print";
             this.btn_print.Size = new System.Drawing.Size(52, 22);
             this.btn_print.Text = "Print";
+            this.btn_print.Click += new System.EventHandler(this.btn_print_Click);
             // 
             // toolStripButton1
             // 
@@ -1866,9 +2519,11 @@
             // 
             this.unit_price.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
             this.unit_price.DataPropertyName = "unit_price";
+
             dataGridViewCellStyle60.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
             dataGridViewCellStyle60.Format = "N2";
             this.unit_price.DefaultCellStyle = dataGridViewCellStyle60;
+
             this.unit_price.HeaderText = "UNIT PRICE";
             this.unit_price.Name = "unit_price";
             // 
@@ -1883,11 +2538,13 @@
             // 
             this.amount_discounted.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
             this.amount_discounted.DataPropertyName = "amount_discounted";
+
             dataGridViewCellStyle61.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
             dataGridViewCellStyle61.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
             dataGridViewCellStyle61.Format = "N2";
             dataGridViewCellStyle61.NullValue = "0";
             this.amount_discounted.DefaultCellStyle = dataGridViewCellStyle61;
+
             this.amount_discounted.HeaderText = "DISCOUNTED AMOUNT";
             this.amount_discounted.Name = "amount_discounted";
             this.amount_discounted.ReadOnly = true;
@@ -1896,11 +2553,13 @@
             // 
             this.net_discount.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
             this.net_discount.DataPropertyName = "net_discount";
+
             dataGridViewCellStyle62.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
             dataGridViewCellStyle62.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
             dataGridViewCellStyle62.Format = "N2";
             dataGridViewCellStyle62.NullValue = "0";
             this.net_discount.DefaultCellStyle = dataGridViewCellStyle62;
+
             this.net_discount.HeaderText = "NET DISCOUNT";
             this.net_discount.Name = "net_discount";
             this.net_discount.ReadOnly = true;
@@ -1909,11 +2568,13 @@
             // 
             this.net_total.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
             this.net_total.DataPropertyName = "net_total";
+
             dataGridViewCellStyle63.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
             dataGridViewCellStyle63.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
             dataGridViewCellStyle63.Format = "N2";
             dataGridViewCellStyle63.NullValue = "0";
             this.net_total.DefaultCellStyle = dataGridViewCellStyle63;
+
             this.net_total.HeaderText = "NET AMOUNT";
             this.net_total.Name = "net_total";
             this.net_total.ReadOnly = true;
@@ -1922,19 +2583,23 @@
             // 
             this.line_total.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
             this.line_total.DataPropertyName = "line_total";
+
             dataGridViewCellStyle64.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
             dataGridViewCellStyle64.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
             dataGridViewCellStyle64.Format = "N2";
             dataGridViewCellStyle64.NullValue = "0";
             this.line_total.DefaultCellStyle = dataGridViewCellStyle64;
+
             this.line_total.HeaderText = "LINE TOTAL";
             this.line_total.Name = "line_total";
             this.line_total.ReadOnly = true;
             // 
+
             // timer1
             // 
             this.timer1.Interval = 5000;
             this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
+
             // 
             // Quotation
             // 

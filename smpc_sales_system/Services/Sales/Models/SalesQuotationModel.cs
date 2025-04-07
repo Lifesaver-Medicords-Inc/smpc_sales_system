@@ -11,6 +11,7 @@ namespace smpc_sales_system.Services.Sales.Models
         public int id { get; set; }
         public string project_name { get; set; }
         public int customer_id { get; set; }
+        public string project_name { get; set; }
         public int application_id { get; set; }
         public int payment_terms_id { get; set; }
         public int ship_type_id { get; set; }
@@ -23,12 +24,17 @@ namespace smpc_sales_system.Services.Sales.Models
         public string warranty { get; set; }
         public string address_to { get; set; }
         public string thru { get; set; }
-        public double gross_sales { get; set; }
-        public double vat_amount { get; set; }
+        public float gross_sales { get; set; }
+        public float vat_amount { get; set; }
         public double net_sales { get; set; }
         public double percent_discount { get; set; }
         public double cash_discount { get; set; }
         public double net_amount_due { get; set; }
+
+        public float total_amount_due { get; set; }
+        public bool is_vat { get; set; }
+        public double vat_percent { get; set; }
+
         public string contact_1 { get; set; }
         public string contact_2 { get; set; }
         public string document_no { get; set; }

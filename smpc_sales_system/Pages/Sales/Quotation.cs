@@ -9,6 +9,7 @@ using smpc_sales_system.Models;
 using smpc_sales_system.Pages;
 using smpc_sales_system.Pages.Sales;
 using smpc_sales_system.Services.Sales;
+
 using smpc_sales_system.Services.Sales.Models;
 using smpc_sales_system.Services.Setup;
 using System;
@@ -16,8 +17,10 @@ using System.Collections.Generic;
 using System.Data;
 using System.Drawing;
 using System.Linq;
+
 using System.Net.WebSockets;
 using System.Threading;
+
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -32,11 +35,16 @@ namespace smpc_sales_app.Pages.Sales
         private ClientWebSocket _websocket;
         private CancellationTokenSource _cancelTokenSource;
 
-        public Quotation(string documentNo = null)
+        private string version_no;
+        private bool is_finalized;
+
+
+        public Quotation(string documentNo = null, string version_no = null, bool is_finalized = false)
         {
             InitializeComponent();
 
             cmb_warranty.Text = "1 year";
+
             this.documentNo = documentNo;
 
 
@@ -169,6 +177,15 @@ namespace smpc_sales_app.Pages.Sales
                     }
                 }
             }
+
+            // CALL THE DEFAULT VALUES OF DATAGRIDVIEW
+            //this.QuickQuotesDgvDefaultValues();
+
+            //KRIS: NEED ITONG DALAWA KAPAG MAY VERSION_NO NA PERO GINAGAMIT KO NA RIN GANYAN
+            this.documentNo = documentNo;
+            this.version_no = version_no;
+            this.is_finalized = is_finalized;
+
         }
         private async void Cell_EditedUC(object sender, EventArgs e)
         {
@@ -325,7 +342,7 @@ namespace smpc_sales_app.Pages.Sales
             ImageList = JsonHelper.ToDataTable(itemData.ItemImages);
         }
 
-        private async void fetchBpiData()
+        private async Task fetchBpiData()
         {
             Bpi_Class bpi_data = await QuotationService.GetBpiCustomers();
 
@@ -382,6 +399,7 @@ namespace smpc_sales_app.Pages.Sales
                 Helpers.ResetReadOnlyControls(a);
             }
         }
+
 
        
         public DataTable dt { get; set; }
@@ -554,6 +572,7 @@ namespace smpc_sales_app.Pages.Sales
                 MessageBox.Show("No SalesQuotation found for the provided document number.");
             }
         }
+
 
         private void DocumentIncrementer()
         {
@@ -927,6 +946,7 @@ namespace smpc_sales_app.Pages.Sales
         {
 
             fetchItemData();
+
             fetchBpiData();
             tabControl2.DrawMode = TabDrawMode.OwnerDrawFixed;
             tabControl2.DrawItem += tabControl2_DrawItem;
@@ -936,9 +956,29 @@ namespace smpc_sales_app.Pages.Sales
             dtp_valid_until.CustomFormat = "MMM dd yyyy";
 
 
+
+            await fetchBpiData();
+            //KRIS: GINAGAMIT TO FOR PAG NAG BACK GALING SALES QUOTATION
+
             if (!string.IsNullOrEmpty(documentNo))
             {
-                fetchQuotationDetailsByDocumentNo(documentNo);
+                back.Visible = true;
+                if (is_finalized){
+                    Panel[] panels = { pnl_header, pnl_footer };
+                    Helpers.ReadOnlyControls(panels);
+                    dgv_quick_quote_details.ReadOnly = true;
+                }
+                this.btn_quick_quote.BackColor = Color.FromArgb(255, 128, 128);
+                this.btn_project.BackColor = Color.White;
+
+                this.tabControl.SelectedIndex = 0;
+                this.tabControl.Height = 600;
+                this.Size = new Size(1386 - 80, 900);
+
+                this.tabControl.ItemSize = new Size(0, 0);
+
+                fetchQuotationDetailsByDocumentNo(documentNo, version_no);
+                bs_unit.DataSource = CacheData.UoM;
             }
             else
             {
@@ -994,7 +1034,7 @@ namespace smpc_sales_app.Pages.Sales
 
         private void bind(bool isBind = false)
         {
-            if (isBind)
+            if (isBind) 
             {
                 Panel[] pnlList = { pnl_header, pnl_footer };
                 DataTable HeaderList = this.transactionList.Clone();
@@ -1015,12 +1055,17 @@ namespace smpc_sales_app.Pages.Sales
                     }
 
                     string ID = parentRow["customer_id"].ToString();
+
                     string BillToId = parentRow["bill_to_id"].ToString();
                     string ShipToId = parentRow["ship_to_id"].ToString();
 
 
                     DataRow[] bpiRows = bpi_general.Select($"based_id = '{ID}'");
                     DataRow[] contactsRows = bpi_contacts.Select($"contacts_based_id = '{ID}'");
+
+                    DataRow[] bpiRows = customerList.Select($"general_based_id = '{ID}'");
+                    DataRow[] contactsRows = customerList.Select($"contacts_based_id = '{ID}'");
+
 
                     if (bpiRows.Length > 0)
                     {
@@ -1441,7 +1486,9 @@ namespace smpc_sales_app.Pages.Sales
                 {
                     if (this.Qty > 0 && this.UnitPrice > 0)
                     {
+
                         this.NetAmount = this.Qty * this.UnitPrice;
+
                         //// COMPUTE DISCOUNTED AMOUNT
                         if (!string.IsNullOrEmpty(this.DiscountPercent) && this.DiscountPercent != "0")
                         {
@@ -1733,6 +1780,99 @@ namespace smpc_sales_app.Pages.Sales
 
         private void btn_finalize_Click(object sender, EventArgs e)
         {
+
+
+        //KRIS: BELOW IS MGA FUNCTION NA INADD KO SA QUOTATION
+        private void btn_SO_Click(object sender, EventArgs e)
+        {
+            string documentNo = txt_document_no.Text.Trim();  // Assuming you have a document_no textbox in Quotation
+
+            if (string.IsNullOrEmpty(documentNo))
+            {
+                MessageBox.Show("Please enter a valid document number.");
+                return;
+            }
+
+            // Create an instance of Orders user control
+            Orders ordersPage = new Orders(documentNo);
+            ordersPage.Width = this.Parent.Width;
+            this.Parent.Controls.Add(ordersPage);
+            this.Hide();
+        }
+        private void btn_print_Click(object sender, EventArgs e)
+        {
+            string documentNo = txt_document_no.Text.Trim();
+            string proj = txt_project_name.Text.Trim();
+            if (string.IsNullOrEmpty(proj))
+            {
+                SalesPrintModal printPage = new SalesPrintModal(true, false, documentNo);
+                int screenHeight = Screen.PrimaryScreen.Bounds.Height;
+                printPage.Height = (int)(screenHeight);
+                printPage.StartPosition = FormStartPosition.CenterParent; 
+                printPage.ShowDialog();
+            }
+            else
+            {
+                SalesPrintModal printPage = new SalesPrintModal(false, true, documentNo);
+                int screenHeight = Screen.PrimaryScreen.Bounds.Height;
+                printPage.Height = (int)(screenHeight);
+                printPage.StartPosition = FormStartPosition.CenterParent;
+                printPage.ShowDialog();
+            }
+            
+        }
+        private async void fetchQuotationDetailsByDocumentNo(string documentNo, string version_no = null)
+        {
+            SalesQuotationList data = await QuotationService.GetQuotations();
+            var itemData = await ItemService.GetItem();
+            ItemList = JsonHelper.ToDataTable(itemData.items);
+            if (data == null || string.IsNullOrEmpty(documentNo))
+            {
+                return; 
+            }
+            var filteredSalesQuotation = data.SalesQuotation
+            .Where(q => q.document_no == documentNo &&
+                        (q.version_no == version_no || version_no == null))
+            .ToList();
+
+            var quotationId = filteredSalesQuotation.FirstOrDefault()?.id;
+
+            if (quotationId != null)
+            {
+                var filteredSalesQuotationQuick = data.SalesQuotationQuick
+                    .Where(q => q.based_id == quotationId)
+                    .ToList();
+
+                transactionList = JsonHelper.ToDataTable(filteredSalesQuotation);
+                childList = JsonHelper.ToDataTable(filteredSalesQuotationQuick);
+
+                pnl_header.Enabled = true;
+                pnl_footer.Enabled = true;
+                toolstrip_quotation.Enabled = false;
+                dgv_quick_quote_details.Enabled = true;
+
+                toolstrip_quotation.Enabled = true;
+                if (filteredSalesQuotation.Any() || filteredSalesQuotationQuick.Any())
+                {
+                    bind(true);
+                }
+                else
+                {
+                    MessageBox.Show("No records found for the provided document number.");
+                }
+            }
+            else
+            {
+                MessageBox.Show("No SalesQuotation found for the provided document number.");
+            }
+        }
+        //KRIS: BACK BUTTON SA TOOLBAR NAKA INITIAL VISIBLE FALSE
+        private void back_Click(object sender, EventArgs e)
+        {
+            Opportunities OpportunitiesPage = new Opportunities();
+            OpportunitiesPage.Width = this.Parent.Width;
+            this.Parent.Controls.Add(OpportunitiesPage);
+            this.Dispose();
 
         }
     }

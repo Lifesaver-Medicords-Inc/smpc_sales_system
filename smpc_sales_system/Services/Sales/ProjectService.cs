@@ -1,3 +1,4 @@
+
 ﻿using smpc_app.Services.Helpers;
 using smpc_inventory_app.Services.Helpers;
 using smpc_sales_app.Services.Helpers;
@@ -10,6 +11,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using static smpc_sales_system.Services.Sales.Models.ItemBomListModel;
+
 
 namespace smpc_sales_system.Services.Sales
 {
@@ -96,6 +98,5 @@ namespace smpc_sales_system.Services.Sales
             ItemPumpsViewList pumpsData = response.Data;
             return pumpsData;
         }
-
     }
 }

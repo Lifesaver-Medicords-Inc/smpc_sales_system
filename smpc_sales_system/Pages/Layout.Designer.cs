@@ -35,6 +35,7 @@ namespace smpc_sales_app.Pages
             System.Windows.Forms.TreeNode treeNode4 = new System.Windows.Forms.TreeNode("Sales Return");
             System.Windows.Forms.TreeNode treeNode5 = new System.Windows.Forms.TreeNode("Business Partners");
             System.Windows.Forms.TreeNode treeNode6 = new System.Windows.Forms.TreeNode("Opportunities");
+
             System.Windows.Forms.TreeNode treeNode7 = new System.Windows.Forms.TreeNode("Ship Type Setup");
             System.Windows.Forms.TreeNode treeNode8 = new System.Windows.Forms.TreeNode("Application Setup");
             System.Windows.Forms.TreeNode treeNode9 = new System.Windows.Forms.TreeNode("Template Setup");
@@ -42,6 +43,7 @@ namespace smpc_sales_app.Pages
             treeNode7,
             treeNode8,
             treeNode9});
+
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Layout));
             this.tabContainer = new System.Windows.Forms.TabControl();
             this.panel3 = new System.Windows.Forms.Panel();
@@ -109,6 +111,7 @@ namespace smpc_sales_app.Pages
             treeNode5.Text = "Business Partners";
             treeNode6.Name = "Opportunities";
             treeNode6.Text = "Opportunities";
+
             treeNode7.Name = "Ship Type Setup";
             treeNode7.Text = "Ship Type Setup";
             treeNode8.Name = "Application Setup";
@@ -117,6 +120,7 @@ namespace smpc_sales_app.Pages
             treeNode9.Text = "Template Setup";
             treeNode10.Name = "parent";
             treeNode10.Text = "Setup";
+
             this.Sidebar.Nodes.AddRange(new System.Windows.Forms.TreeNode[] {
             treeNode1,
             treeNode2,
@@ -124,7 +128,13 @@ namespace smpc_sales_app.Pages
             treeNode4,
             treeNode5,
             treeNode6,
+
             treeNode10});
+
+            treeNode7,
+            treeNode8,
+            treeNode11});
+
             this.Sidebar.Size = new System.Drawing.Size(200, 428);
             this.Sidebar.TabIndex = 0;
             this.Sidebar.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.Sidebar_AfterSelect);
