@@ -21,7 +21,7 @@ namespace smpc_inventory_app.Services.Helpers
         //PROD ENV
         //static string baseUrl = "http://52.76.70.203:8000/api";
 
-        //static string baseUrl = "https://b088-2001-4451-83a9-cd00-d35-514e-7116-c76a.ngrok-free.app/api";
+        //static string baseUrl = "https://7609-2001-4451-83a9-cd00-4dc3-1a4c-96ac-b41a.ngrok-free.app/api";
 
         static Uri baseUri = new Uri(baseUrl); 
 

@@ -12,7 +12,6 @@ namespace smpc_sales_system.Models
             public List<BpiGeneral> general { get; set; }
             public List<BpiContacts> contacts { get; set; }
             public List<BpiAddress> address { get; set; }
-            public List<BpiItems> items { get; set; }
 
         }
 }

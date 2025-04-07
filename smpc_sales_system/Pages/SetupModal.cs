@@ -8,7 +8,6 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
-using System.Net.WebSockets;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -48,8 +47,6 @@ namespace smpc_sales_app.Pages
                 bindQuotation(true);
             }
         }
-
-
 
         private void bindQuotation(bool isBind = false)
         {
@@ -94,12 +91,13 @@ namespace smpc_sales_app.Pages
         }
         private void dgv_application_setup_CellContentDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
-            if (e.RowIndex >= 0)
+            if (e.ColumnIndex >= 0)
             {
                 this.result = e.RowIndex;
                 this.DialogResult = DialogResult.OK;
                 this.Close();
             }
+
         }
 
         private void dgv_application_setup_CellContentClick(object sender, DataGridViewCellEventArgs e)
@@ -115,7 +113,7 @@ namespace smpc_sales_app.Pages
         private void button1_Click(object sender, EventArgs e)
         {
             string searchval = txt_search.Text.ToString();
-            var data = Helpers.FilterDataTable(Dt, searchval, "document_no", "customer_id");
+            var data = Helpers.FilterDataTable(Dt, searchval, "document_no", "customer_name");
             dgv_application_setup.DataSource = data;
         }
     }

@@ -1,4 +1,3 @@
-using smpc_sales_system.Services.Sales.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -31,7 +30,6 @@ namespace smpc_inventory_app.Services.Setup.Model.Item
         public List<ItemModel> items { get; set; }
         public List<ItemSpecsModel> itemspecs {get; set;}
         public List<AdditionalSpecsModel> additionalspecs { get; set; }
-        public List<ItemImageModel> ItemImages { get; set; }
 
     }
 }

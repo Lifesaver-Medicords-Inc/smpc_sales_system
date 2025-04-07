@@ -41,8 +41,6 @@ namespace smpc_sales_app.Services
             // application setup transaction
             { "Application Setup", new Applications() },
             { "Ship Type Setup", new ShipTypeSetup() },
-            { "Template Setup", new TemplateSelectionModal() },
-
 
             //purchasing 
             { "Purchase Requisition", new PurchaseRequisition() }

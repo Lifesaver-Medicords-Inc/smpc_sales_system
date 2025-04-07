@@ -3,7 +3,6 @@ using smpc_inventory_app.Services.Setup.Item;
 using smpc_sales_app.Data;
 using smpc_sales_app.Services.Sales;
 using smpc_sales_app.Services.Setup;
-using smpc_sales_system.Pages.Sales;
 using smpc_sales_system.Services;
 using System;
 using System.Collections.Generic;
@@ -53,18 +52,18 @@ namespace smpc_sales_app.Pages
 
         private async void btn_login_Click_1(object sender, EventArgs e)
         {
+            
 
-
-            var data = Helpers.GetControlsValues(pnl_auth);
+            var data =   Helpers.GetControlsValues(pnl_auth);
             data.Add("motherboard_serial_no", Helpers.GetSerialNumber());
             data.Add("machine_name", Environment.MachineName);
             var currentUser = await AuthServices.Login(data);
 
-
+         
             if (currentUser.Success)
             {
                 CacheData.CurrentUser = currentUser.Data;
-                CacheData.ShipTypeSetup = await ShipService.GetAsDatatable();
+                CacheData.ShipTypeSetup = await ShipService.GetAsDatatable(); 
                 CacheData.PaymentTerms = await PaymentTermsServices.GetAsDatatable();
                 CacheData.ApplicationSetup = await ApplicationService.GetAsDatatable();
                 CacheData.UoM = await UnitOfMeasurementServices.GetAsDatatable();
@@ -72,8 +71,10 @@ namespace smpc_sales_app.Pages
             }
             else
             {
-                Helpers.ShowDialogMessage("error", "Invalid Credentials");
+                Helpers.ShowDialogMessage("error", "Invalid Credentials"); 
             }
+           
+
         }
     }
 }
