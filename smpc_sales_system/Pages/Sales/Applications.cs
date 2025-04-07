@@ -22,7 +22,7 @@ namespace smpc_sales_app.Pages.Sales
             InitializeComponent();
         }
 
-
+       
         DataTable applicationData { get; set; }  = new DataTable();
         private async void FetchData()
         {
@@ -75,7 +75,7 @@ namespace smpc_sales_app.Pages.Sales
             }
         }
 
-        private async void btn_edit_Click(object sender, EventArgs e)
+        private void btn_edit_Click(object sender, EventArgs e)
         {
             txt_code.ReadOnly = false;
             txt_id.ReadOnly = false;

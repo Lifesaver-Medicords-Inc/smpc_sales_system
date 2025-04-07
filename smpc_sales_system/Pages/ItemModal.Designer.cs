@@ -30,13 +30,12 @@ namespace smpc_sales_app.Pages
         private void InitializeComponent()
         {
             this.pnl_title = new System.Windows.Forms.Panel();
+            this.label2 = new System.Windows.Forms.Label();
+            this.button2 = new System.Windows.Forms.Button();
+            this.txt_specs = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
             this.pnl_dgv = new System.Windows.Forms.Panel();
             this.dgv_itemList = new System.Windows.Forms.DataGridView();
-            this.id = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Column1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.item_code = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.item_name = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.ds_item_list = new System.Data.DataSet();
             this.pnl_title.SuspendLayout();
             this.pnl_dgv.SuspendLayout();
@@ -46,6 +45,9 @@ namespace smpc_sales_app.Pages
             // 
             // pnl_title
             // 
+            this.pnl_title.Controls.Add(this.label2);
+            this.pnl_title.Controls.Add(this.button2);
+            this.pnl_title.Controls.Add(this.txt_specs);
             this.pnl_title.Controls.Add(this.label1);
             this.pnl_title.Dock = System.Windows.Forms.DockStyle.Top;
             this.pnl_title.Location = new System.Drawing.Point(0, 0);
@@ -53,10 +55,36 @@ namespace smpc_sales_app.Pages
             this.pnl_title.Size = new System.Drawing.Size(537, 62);
             this.pnl_title.TabIndex = 0;
             // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(253, 23);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(44, 13);
+            this.label2.TabIndex = 5;
+            this.label2.Text = "Search:";
+            // 
+            // button2
+            // 
+            this.button2.Location = new System.Drawing.Point(450, 20);
+            this.button2.Name = "button2";
+            this.button2.Size = new System.Drawing.Size(75, 23);
+            this.button2.TabIndex = 4;
+            this.button2.Text = "search";
+            this.button2.UseVisualStyleBackColor = true;
+            this.button2.Click += new System.EventHandler(this.button2_Click);
+            // 
+            // txt_specs
+            // 
+            this.txt_specs.Location = new System.Drawing.Point(303, 20);
+            this.txt_specs.Name = "txt_specs";
+            this.txt_specs.Size = new System.Drawing.Size(141, 20);
+            this.txt_specs.TabIndex = 2;
+            // 
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(12, 23);
+            this.label1.Location = new System.Drawing.Point(12, 25);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(46, 13);
             this.label1.TabIndex = 0;
@@ -74,11 +102,6 @@ namespace smpc_sales_app.Pages
             // dgv_itemList
             // 
             this.dgv_itemList.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dgv_itemList.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.id,
-            this.Column1,
-            this.item_code,
-            this.item_name});
             this.dgv_itemList.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dgv_itemList.Location = new System.Drawing.Point(0, 0);
             this.dgv_itemList.MultiSelect = false;
@@ -88,38 +111,6 @@ namespace smpc_sales_app.Pages
             this.dgv_itemList.Size = new System.Drawing.Size(537, 382);
             this.dgv_itemList.TabIndex = 0;
             this.dgv_itemList.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgv_itemList_CellClick);
-            // 
-            // id
-            // 
-            this.id.DataPropertyName = "id";
-            this.id.HeaderText = "id";
-            this.id.Name = "id";
-            this.id.ReadOnly = true;
-            this.id.Visible = false;
-            // 
-            // Column1
-            // 
-            this.Column1.DataPropertyName = "item_name_id";
-            this.Column1.HeaderText = "NAME ID";
-            this.Column1.Name = "Column1";
-            this.Column1.ReadOnly = true;
-            this.Column1.Visible = false;
-            // 
-            // item_code
-            // 
-            this.item_code.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.item_code.DataPropertyName = "item_code";
-            this.item_code.HeaderText = "ITEM CODE";
-            this.item_code.Name = "item_code";
-            this.item_code.ReadOnly = true;
-            // 
-            // item_name
-            // 
-            this.item_name.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.item_name.DataPropertyName = "item_name";
-            this.item_name.HeaderText = "ITEM NAME";
-            this.item_name.Name = "item_name";
-            this.item_name.ReadOnly = true;
             // 
             // ds_item_list
             // 
@@ -150,10 +141,9 @@ namespace smpc_sales_app.Pages
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Panel pnl_dgv;
         private System.Windows.Forms.DataGridView dgv_itemList;
-        private System.Windows.Forms.DataGridViewTextBoxColumn id;
-        private System.Windows.Forms.DataGridViewTextBoxColumn Column1;
-        private System.Windows.Forms.DataGridViewTextBoxColumn item_code;
-        private System.Windows.Forms.DataGridViewTextBoxColumn item_name;
         private System.Data.DataSet ds_item_list;
+        private System.Windows.Forms.Button button2;
+        private System.Windows.Forms.TextBox txt_specs;
+        private System.Windows.Forms.Label label2;
     }
 }
