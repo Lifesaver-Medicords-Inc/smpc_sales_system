@@ -83,7 +83,7 @@ namespace smpc_sales_system.Pages
 
                 foreach (DataGridViewColumn column in dgv_version_modal.Columns)
                 {
-                    if (column.Name != "v_no" && column.Name != "v_desc" && column.Name != "ver_status" && column.Name != "v_remark")
+                    if (column.Name != "version_no" && column.Name != "document_no")
                     {
                         column.Visible = false;
                     }
