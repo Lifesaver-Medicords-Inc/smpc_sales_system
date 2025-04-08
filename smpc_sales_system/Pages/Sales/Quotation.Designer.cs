@@ -224,6 +224,7 @@
             this.net_total = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.line_total = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.timer1 = new System.Windows.Forms.Timer(this.components);
+            this.back = new System.Windows.Forms.ToolStripLabel();
             this.panel1.SuspendLayout();
             this.panel3.SuspendLayout();
             this.pnl_footer.SuspendLayout();
@@ -360,6 +361,7 @@
             this.btn_sales_order.TabIndex = 106;
             this.btn_sales_order.Text = "SALES ORDER";
             this.btn_sales_order.UseVisualStyleBackColor = false;
+            this.btn_sales_order.Click += new System.EventHandler(this.btn_sales_order_Click);
             // 
             // btn_finalize
             // 
@@ -1765,6 +1767,7 @@
             // 
             this.toolstrip_quotation.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
             this.toolstrip_quotation.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.back,
             this.btn_new,
             this.btn_new_version,
             this.btn_search,
@@ -1820,7 +1823,7 @@
             this.btn_next.Image = ((System.Drawing.Image)(resources.GetObject("btn_next.Image")));
             this.btn_next.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.btn_next.Name = "btn_next";
-            this.btn_next.Size = new System.Drawing.Size(51, 22);
+            this.btn_next.Size = new System.Drawing.Size(52, 22);
             this.btn_next.Text = "Next";
             this.btn_next.Click += new System.EventHandler(this.btn_next_Click);
             // 
@@ -1831,13 +1834,14 @@
             this.btn_print.Name = "btn_print";
             this.btn_print.Size = new System.Drawing.Size(52, 22);
             this.btn_print.Text = "Print";
+            this.btn_print.Click += new System.EventHandler(this.btn_print_Click);
             // 
             // toolStripButton1
             // 
             this.toolStripButton1.Image = ((System.Drawing.Image)(resources.GetObject("toolStripButton1.Image")));
             this.toolStripButton1.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.toolStripButton1.Name = "toolStripButton1";
-            this.toolStripButton1.Size = new System.Drawing.Size(51, 22);
+            this.toolStripButton1.Size = new System.Drawing.Size(50, 22);
             this.toolStripButton1.Text = "EDIT";
             this.toolStripButton1.Click += new System.EventHandler(this.toolStripButton1_Click);
             // 
@@ -1935,6 +1939,14 @@
             // 
             this.timer1.Interval = 5000;
             this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
+            // 
+            // back
+            // 
+            this.back.Name = "back";
+            this.back.Size = new System.Drawing.Size(32, 22);
+            this.back.Text = "Back";
+            this.back.Visible = false;
+            this.back.Click += new System.EventHandler(this.back_Click);
             // 
             // Quotation
             // 
@@ -2171,5 +2183,6 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn nettotalDataGridViewTextBoxColumn;
         private System.Windows.Forms.DataGridViewTextBoxColumn linetotalDataGridViewTextBoxColumn;
         private System.Windows.Forms.DataGridViewTextBoxColumn itemclassidDataGridViewTextBoxColumn;
+        private System.Windows.Forms.ToolStripLabel back;
     }
 }

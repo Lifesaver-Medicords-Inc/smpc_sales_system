@@ -92,11 +92,23 @@
     <Compile Include="Models\SalesCanvasModel.cs" />
     <Compile Include="Models\SalesProject.cs" />
     <Compile Include="Models\SalesWiringModel.cs" />
+    <Compile Include="Pages\CRMModal.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Pages\CRMModal.designer.cs">
+      <DependentUpon>CRMModal.cs</DependentUpon>
+    </Compile>
     <Compile Include="Pages\ModelSelection.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Pages\ModelSelection.Designer.cs">
       <DependentUpon>ModelSelection.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\PRModal.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Pages\PRModal.Designer.cs">
+      <DependentUpon>PRModal.cs</DependentUpon>
     </Compile>
     <Compile Include="Pages\ProjectTemplateSetup.cs">
       <SubType>Form</SubType>
@@ -109,6 +121,12 @@
     </Compile>
     <Compile Include="Pages\Sales\BomSelection.Designer.cs">
       <DependentUpon>BomSelection.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\Sales\CRM.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Pages\Sales\CRM.Designer.cs">
+      <DependentUpon>CRM.cs</DependentUpon>
     </Compile>
     <Compile Include="Pages\Sales\frm_canvas_modal.cs">
       <SubType>Form</SubType>
@@ -140,6 +158,18 @@
     <Compile Include="Pages\Sales\ProjectTest.Designer.cs">
       <DependentUpon>ProjectTest.cs</DependentUpon>
     </Compile>
+    <Compile Include="Pages\Sales\PurchaseRequisition.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Pages\Sales\PurchaseRequisition.designer.cs">
+      <DependentUpon>PurchaseRequisition.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\Sales\SalesPrintModal.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Pages\Sales\SalesPrintModal.Designer.cs">
+      <DependentUpon>SalesPrintModal.cs</DependentUpon>
+    </Compile>
     <Compile Include="Pages\Sales\TemplateSelectionModal.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -151,6 +181,12 @@
     </Compile>
     <Compile Include="Pages\Sales\UC_History.Designer.cs">
       <DependentUpon>UC_History.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\SearchOrder.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Pages\SearchOrder.Designer.cs">
+      <DependentUpon>SearchOrder.cs</DependentUpon>
     </Compile>
     <Compile Include="Pages\VersionModal.cs">
       <SubType>Form</SubType>
@@ -225,15 +261,21 @@
     <Compile Include="Services\Helpers\Helpers.cs" />
     <Compile Include="Services\Helpers\JsonHelper.cs" />
     <Compile Include="Services\Helpers\RequestToApi.cs" />
+    <Compile Include="Services\Purchasing\Models\PurchaseRequisitionList.cs" />
+    <Compile Include="Services\Purchasing\Models\PurchaseRequisitionModel.cs" />
+    <Compile Include="Services\Purchasing\Models\PurchaseRequisitionOrderModel.cs" />
+    <Compile Include="Services\Purchasing\PurchaseRequisitionService.cs" />
     <Compile Include="Services\RoutesServices.cs" />
     <Compile Include="Services\Sales\ApplicationService.cs" />
     <Compile Include="Services\Sales\BpiService.cs" />
+    <Compile Include="Services\Sales\CRMService.cs" />
     <Compile Include="Services\Sales\ItemBomList.cs" />
     <Compile Include="Services\Sales\ItemService.cs" />
     <Compile Include="Services\Sales\Models\AdditionalSpecsModel.cs" />
     <Compile Include="Services\Sales\Models\ApplicationModel.cs" />
     <Compile Include="Services\Sales\Models\BpiCustomer.cs" />
     <Compile Include="Services\Sales\Models\Combined.cs" />
+    <Compile Include="Services\Sales\Models\CRMModel.cs" />
     <Compile Include="Services\Sales\Models\GetBpiList.cs" />
     <Compile Include="Services\Sales\Models\ItemBomListModel.cs" />
     <Compile Include="Services\Sales\Models\ItemImageModel.cs" />
@@ -258,12 +300,17 @@
     <Compile Include="Services\Sales\UnitOfMeasurementServices.cs" />
     <Compile Include="Services\Setup\ApplicationService.cs" />
     <Compile Include="Services\Setup\ItemClassServices.cs" />
+    <Compile Include="Services\Setup\ItemNameModel.cs" />
+    <Compile Include="Services\Setup\ItemNameServices.cs" />
     <Compile Include="Services\Setup\PaymentTermsServices.cs" />
     <Compile Include="Services\Setup\ProjectModel.cs" />
     <Compile Include="Services\Setup\ProjectServicesss.cs" />
     <Compile Include="Services\Setup\ProjectTemplatesService.cs" />
     <Compile Include="SqlServerTypes\Loader.cs" />
     <Compile Include="Utils\Taxation.cs" />
+    <EmbeddedResource Include="Pages\CRMModal.resx">
+      <DependentUpon>CRMModal.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Pages\ItemModal.resx">
       <DependentUpon>ItemModal.cs</DependentUpon>
     </EmbeddedResource>
@@ -276,6 +323,9 @@
     <EmbeddedResource Include="Pages\ModelSelection.resx">
       <DependentUpon>ModelSelection.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Pages\PRModal.resx">
+      <DependentUpon>PRModal.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Pages\ProjectTemplateSetup.resx">
       <DependentUpon>ProjectTemplateSetup.cs</DependentUpon>
     </EmbeddedResource>
@@ -284,6 +334,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Pages\Sales\BomSelection.resx">
       <DependentUpon>BomSelection.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Pages\Sales\CRM.resx">
+      <DependentUpon>CRM.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Pages\Sales\frm_canvas_modal.resx">
       <DependentUpon>frm_canvas_modal.cs</DependentUpon>
@@ -300,14 +353,23 @@
     <EmbeddedResource Include="Pages\Sales\Opportunities.resx">
       <DependentUpon>Opportunities.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Pages\Sales\OrderReport.rdlc" />
     <EmbeddedResource Include="Pages\Sales\Orders.resx">
       <DependentUpon>Orders.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Pages\Sales\ProjectReport.rdlc" />
     <EmbeddedResource Include="Pages\Sales\ProjectTest.resx">
       <DependentUpon>ProjectTest.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Pages\Sales\PurchaseRequisition.resx">
+      <DependentUpon>PurchaseRequisition.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Pages\Sales\Quotation.resx">
       <DependentUpon>Quotation.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Pages\Sales\QuotationReport.rdlc" />
+    <EmbeddedResource Include="Pages\Sales\SalesPrintModal.resx">
+      <DependentUpon>SalesPrintModal.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Pages\Sales\SetupSelectionModal.resx">
       <DependentUpon>SetupSelectionModal.cs</DependentUpon>
@@ -320,6 +382,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Pages\Sales\UC_History.resx">
       <DependentUpon>UC_History.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Pages\SearchOrder.resx">
+      <DependentUpon>SearchOrder.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Pages\SetupModal.resx">
       <DependentUpon>SetupModal.cs</DependentUpon>
@@ -354,6 +419,7 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Data\TempFiles\" />
     <Folder Include="Pages\Setup\" />
   </ItemGroup>
   <ItemGroup>
@@ -361,6 +427,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\three-dots-vertical_1.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Resources\check.png" />
+    <None Include="Resources\check1.png" />
+    <None Include="Resources\FileIcon.png" />
+    <None Include="Resources\FolderIcon.png" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="SqlServerTypes\readme.htm" />

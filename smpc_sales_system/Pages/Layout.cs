@@ -58,7 +58,7 @@ namespace smpc_sales_app.Pages
         private void Sidebar_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
         {
             
-            if (e.Node.Name.Contains("Dashboard") || e.Node.Name.Contains("Sales Order") || e.Node.Name.Contains("Sales Return") || e.Node.Name.Contains("Business Partners") || e.Node.Name.Contains("Application Setup") || e.Node.Name.Contains("Ship Type Setup"))
+            if (e.Node.Name.Contains("Dashboard") || e.Node.Name.Contains("Sales Return") || e.Node.Name.Contains("Business Partners") || e.Node.Name.Contains("Application Setup") || e.Node.Name.Contains("Ship Type Setup"))
             {
                 Helpers.ShowDialogMessage("error", "This module is not available at the moment!");
                 return;
