@@ -206,5 +206,19 @@ namespace smpc_sales_system.Pages.Sales
                 MessageBox.Show("Error: " + ex.Message);
             }
         }
+
+        private void txt_search_TextChanged(object sender, EventArgs e)
+        {
+            string searchval = txt_search.Text.ToString();
+            var data = Helpers.FilterDataTable(crm, searchval, "tag", "branch_name", "number", "name", "email", "date", "remark");
+            if (string.IsNullOrEmpty(searchval))
+            {
+                bindQuotation(true);
+            }
+            else
+            {
+                dgv_branch.DataSource = data;
+            }
+        }
     }
 }

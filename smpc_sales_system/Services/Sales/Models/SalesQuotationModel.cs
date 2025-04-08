@@ -29,7 +29,7 @@ namespace smpc_sales_system.Services.Sales.Models
         public double percent_discount { get; set; }
         public double cash_discount { get; set; }
         public double net_amount_due { get; set; }
-        public double total_amount_due { get; set; }
+        public double total_amount_due { get; set; }   
         public string contact_1 { get; set; }
         public string contact_2 { get; set; }
         public string document_no { get; set; }

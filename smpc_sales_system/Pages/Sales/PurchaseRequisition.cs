@@ -397,6 +397,11 @@ namespace smpc_sales_system.Pages.Sales
             {
                 Panel[] pnls = { pnl_header, pnl_header_2, pnl_footer, pnl_body, pnl_footer_2 };
                 Helpers.ReadOnlyControls(pnls);
+            } else if (isStatusWaiting)
+            {
+                Panel[] pnls = { pnl_header, pnl_header_2, pnl_footer, pnl_body, pnl_footer_2 };
+                Helpers.ReadOnlyControls(pnls);
+                btn_edit.Enabled = !isStatusApproved;
             }
         }
         //DGV ACTIONS

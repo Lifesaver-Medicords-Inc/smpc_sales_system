@@ -25,8 +25,7 @@ namespace smpc_sales_system.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("C:\\Users\\SMPC\\source\\repos\\smpc_sales_system\\smpc_sales_system2\\smpc_sales_system" +
-            "\\Data\\TempFiles")]
+        [global::System.Configuration.DefaultSettingValueAttribute("C:\\Users\\Public\\Documents\\SMPC\\SALES")]
         public string SALESPATH {
             get {
                 return ((string)(this["SALESPATH"]));
@@ -35,8 +34,7 @@ namespace smpc_sales_system.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("C:\\Users\\SMPC\\source\\repos\\smpc_sales_system\\smpc_sales_system2\\smpc_sales_system" +
-            "\\Data\\TempFiles")]
+        [global::System.Configuration.DefaultSettingValueAttribute("C:\\Users\\Public\\Documents\\SMPC\\AFTERSALES")]
         public string AFTERSALESPATH {
             get {
                 return ((string)(this["AFTERSALESPATH"]));

@@ -38,6 +38,8 @@ namespace smpc_sales_system.Pages.Sales
             if (transactionList != null)
             {
                 bindQuotation(true);
+                int numberOfRows = transactionList.Rows.Count;
+                txt_counter.Text = numberOfRows.ToString();
             }
         }
         private void bindQuotation(bool isBind = false)
@@ -54,6 +56,7 @@ namespace smpc_sales_system.Pages.Sales
                     filteredTable.ImportRow(row);
                 }
                 dgv_sales_opportunities.DataSource = filteredTable;
+                CheckStatus();
             }
         }
         private async void Opportunities_Load(object sender, EventArgs e)
@@ -307,8 +310,34 @@ namespace smpc_sales_system.Pages.Sales
             else
             {
                 dgv_sales_opportunities.DataSource = data;
+                CheckStatus();
             }
         }
+        private void CheckStatus()
+        {
+            foreach (DataGridViewRow row in dgv_sales_opportunities.Rows)
+            {
+                if (!row.IsNewRow)
+                {
+                    var statusCell = row.Cells["status"];
+                    if (statusCell is DataGridViewComboBoxCell comboBoxCell)
+                    {
+                        var statusValue = comboBoxCell.Value?.ToString();
+                        if (statusValue == "LOST")
+                        {
+                            row.DefaultCellStyle.BackColor = Color.FromArgb(255, 204, 204); // Lighter red
+                        }
+                        else
+                        {
+                            row.DefaultCellStyle.BackColor = Color.White;
+                        }
+                    }
+
+                    // If you want to keep other column styles intact (like custom fonts, colors), don't change them here.
+                }
+            }
+        }
+
 
         private void label2_Click(object sender, EventArgs e)
         {
