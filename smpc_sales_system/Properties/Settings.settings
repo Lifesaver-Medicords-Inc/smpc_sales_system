@@ -3,10 +3,10 @@
   <Profiles />
   <Settings>
     <Setting Name="SALESPATH" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">C:\Users\SMPC\source\repos\smpc_sales_system\smpc_sales_system2\smpc_sales_system\Data\TempFiles</Value>
+      <Value Profile="(Default)">C:\Users\Public\Documents\SMPC\SALES</Value>
     </Setting>
     <Setting Name="AFTERSALESPATH" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">C:\Users\SMPC\source\repos\smpc_sales_system\smpc_sales_system2\smpc_sales_system\Data\TempFiles</Value>
+      <Value Profile="(Default)">C:\Users\Public\Documents\SMPC\AFTERSALES</Value>
     </Setting>
   </Settings>
 </SettingsFile>

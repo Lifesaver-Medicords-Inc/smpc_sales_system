@@ -642,6 +642,12 @@ namespace smpc_sales_app.Pages.Sales
         //METHODS FOR LOADING THE DIRECTORIES PATHS
         private void LoadDirectory(TreeView treeView, string directoryPath)
         {
+            if (!Directory.Exists(directoryPath))
+            {
+                // Optionally, create the directory if it doesn't exist
+                Directory.CreateDirectory(directoryPath);
+            }
+            CreateSubDirectories(directoryPath);
             treeView.Nodes.Clear();
             treeView.ImageKey = "folder";
             treeView.SelectedImageKey = "folder";
@@ -650,6 +656,23 @@ namespace smpc_sales_app.Pages.Sales
             LoadDirectories(directoryPath, rootNode, treeView);
             rootNode.Expand();
         }
+        private void CreateSubDirectories(string directoryPath)
+        {
+            // Create the "ACTIVE" subdirectory if it doesn't exist
+            string activeDir = Path.Combine(directoryPath, "ACTIVE");
+            if (!Directory.Exists(activeDir))
+            {
+                Directory.CreateDirectory(activeDir);
+            }
+
+            // Create the "BENCHED" subdirectory if it doesn't exist
+            string benchedDir = Path.Combine(directoryPath, "BENCHED");
+            if (!Directory.Exists(benchedDir))
+            {
+                Directory.CreateDirectory(benchedDir);
+            }
+        }
+
         private void LoadDirectories(string path, TreeNode node, TreeView treeView)
         {
             try
