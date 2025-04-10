@@ -11,7 +11,7 @@ namespace smpc_sales_system.Models
 
         public int id { get; set; }
 
-        public int sales_id { get; set; }
+        public string sales_id { get; set; }
 
         public string name { get; set; }
 

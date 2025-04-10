@@ -59,8 +59,6 @@ namespace smpc_sales_system.Pages.Sales
             this.Opportunity_id = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.version_no = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.document_no = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.txt_counter = new System.Windows.Forms.TextBox();
-            this.label3 = new System.Windows.Forms.Label();
             this.panel1.SuspendLayout();
             this.panel3.SuspendLayout();
             this.panel2.SuspendLayout();
@@ -80,8 +78,6 @@ namespace smpc_sales_system.Pages.Sales
             // 
             // panel3
             // 
-            this.panel3.Controls.Add(this.label3);
-            this.panel3.Controls.Add(this.txt_counter);
             this.panel3.Controls.Add(this.txt_search);
             this.panel3.Controls.Add(this.label2);
             this.panel3.Dock = System.Windows.Forms.DockStyle.Right;
@@ -92,7 +88,7 @@ namespace smpc_sales_system.Pages.Sales
             // 
             // txt_search
             // 
-            this.txt_search.Location = new System.Drawing.Point(49, 44);
+            this.txt_search.Location = new System.Drawing.Point(48, 25);
             this.txt_search.Name = "txt_search";
             this.txt_search.Size = new System.Drawing.Size(209, 20);
             this.txt_search.TabIndex = 2;
@@ -101,7 +97,7 @@ namespace smpc_sales_system.Pages.Sales
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(8, 47);
+            this.label2.Location = new System.Drawing.Point(7, 28);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(41, 13);
             this.label2.TabIndex = 3;
@@ -330,28 +326,6 @@ namespace smpc_sales_system.Pages.Sales
             this.document_no.Name = "document_no";
             this.document_no.Visible = false;
             // 
-            // txt_counter
-            // 
-            this.txt_counter.BackColor = System.Drawing.SystemColors.ButtonHighlight;
-            this.txt_counter.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txt_counter.ForeColor = System.Drawing.SystemColors.MenuHighlight;
-            this.txt_counter.Location = new System.Drawing.Point(127, 19);
-            this.txt_counter.Name = "txt_counter";
-            this.txt_counter.ReadOnly = true;
-            this.txt_counter.Size = new System.Drawing.Size(43, 20);
-            this.txt_counter.TabIndex = 4;
-            this.txt_counter.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            // 
-            // label3
-            // 
-            this.label3.AutoSize = true;
-            this.label3.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label3.Location = new System.Drawing.Point(76, 3);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(144, 13);
-            this.label3.TabIndex = 5;
-            this.label3.Text = "QUOTATION COUNTER";
-            // 
             // Opportunities
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -395,7 +369,5 @@ namespace smpc_sales_system.Pages.Sales
         private System.Windows.Forms.DataGridViewTextBoxColumn Opportunity_id;
         private System.Windows.Forms.DataGridViewTextBoxColumn version_no;
         private System.Windows.Forms.DataGridViewTextBoxColumn document_no;
-        private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.TextBox txt_counter;
     }
 }

@@ -38,6 +38,7 @@ namespace smpc_sales_system.Pages.Sales
             this.pnl_print = new System.Windows.Forms.Panel();
             this.pnl_dgv = new System.Windows.Forms.Panel();
             this.printDialog1 = new System.Windows.Forms.PrintDialog();
+            this.toolStripButton1 = new System.Windows.Forms.ToolStripButton();
             this.toolStrip1.SuspendLayout();
             this.panel6.SuspendLayout();
             this.pnl_print.SuspendLayout();
@@ -58,7 +59,8 @@ namespace smpc_sales_system.Pages.Sales
             // 
             this.toolStrip1.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
             this.toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.btn_prev});
+            this.btn_prev,
+            this.toolStripButton1});
             this.toolStrip1.Location = new System.Drawing.Point(0, 47);
             this.toolStrip1.Name = "toolStrip1";
             this.toolStrip1.RenderMode = System.Windows.Forms.ToolStripRenderMode.Professional;
@@ -117,7 +119,15 @@ namespace smpc_sales_system.Pages.Sales
             // 
             this.printDialog1.UseEXDialog = true;
             // 
-            // QuotationPrintModal
+            // toolStripButton1
+            // 
+            this.toolStripButton1.Image = global::smpc_sales_system.Properties.Resources.FolderIcon;
+            this.toolStripButton1.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.toolStripButton1.Name = "toolStripButton1";
+            this.toolStripButton1.Size = new System.Drawing.Size(116, 22);
+            this.toolStripButton1.Text = "Save to Directory";
+            // 
+            // SalesPrintModal
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -125,7 +135,7 @@ namespace smpc_sales_system.Pages.Sales
             this.Controls.Add(this.pnl_print);
             this.Controls.Add(this.toolStrip1);
             this.Controls.Add(this.panel6);
-            this.Name = "QuotationPrintModal";
+            this.Name = "SalesPrintModal";
             this.Text = "QuotationPrintModal";
             this.Load += new System.EventHandler(this.SalesPrintModal_Load);
             this.toolStrip1.ResumeLayout(false);
@@ -149,5 +159,6 @@ namespace smpc_sales_system.Pages.Sales
         private System.Windows.Forms.Panel pnl_print;
         private System.Windows.Forms.Panel pnl_dgv;
         private System.Windows.Forms.PrintDialog printDialog1;
+        private System.Windows.Forms.ToolStripButton toolStripButton1;
     }
 }

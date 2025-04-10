@@ -658,20 +658,60 @@ namespace smpc_sales_app.Pages.Sales
         }
         private void CreateSubDirectories(string directoryPath)
         {
-            // Create the "ACTIVE" subdirectory if it doesn't exist
+            // Create ACTIVE and BENCHED
             string activeDir = Path.Combine(directoryPath, "ACTIVE");
             if (!Directory.Exists(activeDir))
             {
                 Directory.CreateDirectory(activeDir);
             }
 
-            // Create the "BENCHED" subdirectory if it doesn't exist
             string benchedDir = Path.Combine(directoryPath, "BENCHED");
             if (!Directory.Exists(benchedDir))
             {
                 Directory.CreateDirectory(benchedDir);
             }
+
+            // Determine folder type based on parent path
+            string[] innerFolders;
+
+            if (directoryPath.ToUpper().Contains("SALES"))
+            {
+                innerFolders = new[]
+                {
+                    "Quotation Versions", "Technical Evaluation Report", "Clarificatories",
+                    "Bid Bulletin", "Client Purchase Order"
+                };
+            }
+            else if (directoryPath.ToUpper().Contains("AFTER SALES") || directoryPath.ToUpper().Contains("AFTERSALES"))
+            {
+                innerFolders = new[]
+                {
+                    "Warranty", "Distributorship", "Test Certificates", "Manufacture Conformities", "Certificate of Origin",
+                    "Technical Data Sheet", "Brochure", "Operating Instruction Manuals", "Wiring Diagrams", "Sequence of Operations",
+                    "Testing & Commissioning Methodology", "Site Visit Reports", "Serial Numbers of Equipment",
+                    "General Arrangement", "CAD Files", "Bill of Quantities & Bill of Materials"
+                };
+            }
+            else
+            {
+                // Unknown type – optionally skip or log
+                return;
+            }
+
+            // Create folders in ACTIVE and BENCHED
+            foreach (string subDir in new[] { activeDir, benchedDir })
+            {
+                foreach (string folderName in innerFolders)
+                {
+                    string folderPath = Path.Combine(subDir, folderName);
+                    if (!Directory.Exists(folderPath))
+                    {
+                        Directory.CreateDirectory(folderPath);
+                    }
+                }
+            }
         }
+
 
         private void LoadDirectories(string path, TreeNode node, TreeView treeView)
         {
@@ -701,11 +741,19 @@ namespace smpc_sales_app.Pages.Sales
                 string[] files = Directory.GetFiles(path);
                 foreach (string file in files)
                 {
-                    ListViewItem item = new ListViewItem(Path.GetFileName(file));
-                    item.SubItems.Add(new FileInfo(file).Length.ToString());
-                    item.SubItems.Add(File.GetLastWriteTime(file).ToString());
-                    item.ImageKey = "default";
-                    listView.Items.Add(item);
+                    string fileName = Path.GetFileName(file);
+
+                    // Filter: only include files that contain "- SO#1"
+
+                    string tag = txt_doc.Text;
+                    if (fileName.Contains("- "+ tag))
+                    {
+                        ListViewItem item = new ListViewItem(fileName);
+                        item.SubItems.Add(new FileInfo(file).Length.ToString());
+                        item.SubItems.Add(File.GetLastWriteTime(file).ToString());
+                        item.ImageKey = "default";
+                        listView.Items.Add(item);
+                    }
                 }
             }
             catch (UnauthorizedAccessException)
@@ -717,6 +765,7 @@ namespace smpc_sales_app.Pages.Sales
                 MessageBox.Show($"Error loading files: {ex.Message}");
             }
         }
+
         private string GetFullPathFromTreeNode(TreeNode node)
         {
             string path = node.Text;
@@ -783,11 +832,17 @@ namespace smpc_sales_app.Pages.Sales
             {
                 try
                 {
-                    string fileName = Path.GetFileName(file); // Get the file name from the full path
-                    string latestpath = lbl_path1.Text;
-                    string targetFilePath = Path.Combine(latestpath, fileName);
+                    string tag = txt_doc.Text;
+                    string fileName = Path.GetFileNameWithoutExtension(file); // e.g. "filename"
+                    string extension = Path.GetExtension(file);               // e.g. ".pdf"
+                    string taggedFileName = $"{fileName} - {tag}{extension}";  // e.g. "filename - SO#1.pdf"
+
+                    string latestPath = lbl_path1.Text;
+                    string targetFilePath = Path.Combine(latestPath, taggedFileName);
+
                     File.Copy(file, targetFilePath, true); // true to overwrite if the file already exists
-                    ListViewItem item = new ListViewItem(fileName);
+
+                    ListViewItem item = new ListViewItem(taggedFileName);
                     item.ImageKey = "default";
                     SALES_LV.Items.Add(item);
                 }
@@ -815,11 +870,17 @@ namespace smpc_sales_app.Pages.Sales
             {
                 try
                 {
-                    string fileName = Path.GetFileName(file);
+                    string tag = txt_doc.Text;
+                    string fileName = Path.GetFileNameWithoutExtension(file); // e.g. "filename"
+                    string extension = Path.GetExtension(file);               // e.g. ".pdf"
+                    string taggedFileName = $"{fileName} - {tag}{extension}";  // e.g. "filename - SO#1.pdf"
+
                     string latestpath = lbl_path2.Text;
-                    string targetFilePath = Path.Combine(latestpath, fileName);
+                    string targetFilePath = Path.Combine(latestpath, taggedFileName);
+
                     File.Copy(file, targetFilePath, true); // true to overwrite if the file already exists
-                    ListViewItem item = new ListViewItem(fileName);
+
+                    ListViewItem item = new ListViewItem(taggedFileName);
                     item.ImageKey = "default";
                     AFTERSALES_LV.Items.Add(item);
                 }
