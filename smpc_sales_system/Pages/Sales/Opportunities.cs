@@ -38,8 +38,6 @@ namespace smpc_sales_system.Pages.Sales
             if (transactionList != null)
             {
                 bindQuotation(true);
-                int numberOfRows = transactionList.Rows.Count;
-                txt_counter.Text = numberOfRows.ToString();
             }
         }
         private void bindQuotation(bool isBind = false)
