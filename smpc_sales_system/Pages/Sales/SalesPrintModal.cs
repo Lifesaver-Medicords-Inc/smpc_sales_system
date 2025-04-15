@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -22,6 +23,19 @@ namespace smpc_sales_system.Pages.Sales
         private string documentNo;
         private bool isQuotation;
         private bool isProject;
+        string branchName = "Branch not found";
+        List<string> unitprices = new List<string>();
+        string addressName = "Address not found";
+        string[] detailsArray;
+        string[] itemDescriptionArray;
+        string[] qtyArray;
+        string[] unitpricesArray;
+        float[] unitpricesFloatArray;
+        float unitpricesSum;
+        int[] qtytotalArray;
+        int qtySum;
+
+
         public SalesPrintModal(bool isQuotation = false, bool isProject = false, string documentNo = null)
         {
             InitializeComponent();
@@ -179,6 +193,8 @@ namespace smpc_sales_system.Pages.Sales
             }
         }
         //ON LOAD FOR PRINTMODAL
+        public bool AutoExport { get; set; } = false;
+        public string ExportPath { get; set; } = "";
         private async void SalesPrintModal_Load(object sender, EventArgs e)
         {
             if (isProject)
@@ -198,10 +214,9 @@ namespace smpc_sales_system.Pages.Sales
 
                         DataRow[] bpiRows = bpi_general.Select($"general_based_id = '{customerId}'");
                         DataRow[] bpiaddrows = bpi_address.Select($"address_ids = '{shiptoId}'");
-                        string addressName = "Address not found";
+                        
                         addressName = bpiaddrows[0]["location"].ToString();
 
-                        string branchName = "Branch not found";
                         if (bpiRows.Length > 0)
                         {
                             branchName = bpiRows[0]["branch_name"].ToString();
@@ -210,8 +225,6 @@ namespace smpc_sales_system.Pages.Sales
                         var itemsetIds = ItemSets.AsEnumerable()
                        .Select(row => row.Field<int>("itemset_id"))  // Assuming 'items_id' is an integer column
                        .ToList();
-
-                        List<string> unitprices = new List<string>();
 
                         foreach (var itemsetId in itemsetIds)
                         {
@@ -421,6 +434,19 @@ namespace smpc_sales_system.Pages.Sales
                         reportViewer1.LocalReport.DataSources.Add(childReportDataSource);
                         reportViewer1.LocalReport.SetParameters(new ReportParameter[] { branchNameParameter, addressNameParameter, itemDescriptionParameter });
                         reportViewer1.RefreshReport();
+
+                        if (AutoExport && !string.IsNullOrWhiteSpace(ExportPath))
+                        {
+                            Warning[] warnings;
+                            string[] streamIds;
+                            string mimeType, encoding, extension;
+
+                            byte[] pdfBytes = reportViewer1.LocalReport.Render("PDF", null, out mimeType, out encoding, out extension, out streamIds, out warnings);
+                            File.WriteAllBytes(ExportPath, pdfBytes);
+
+                            // Optionally close the form after exporting if shown manually
+                            this.Close();
+                        }
                     }
                     else
                     {
@@ -489,6 +515,110 @@ namespace smpc_sales_system.Pages.Sales
         {
             this.Close();
         }
+        private void DisposeTables()
+        {
+            // Public properties
+            OrderList?.Dispose(); OrderList = null;
+            DetailsList?.Dispose(); DetailsList = null;
+            allTransactionList?.Dispose(); allTransactionList = null;
+            transactionList?.Dispose(); transactionList = null;
+            childList?.Dispose(); childList = null;
+            ItemList?.Dispose(); ItemList = null;
+            ItemSets?.Dispose(); ItemSets = null;
+            ItemSetContent?.Dispose(); ItemSetContent = null;
+            ProjectItemList?.Dispose(); ProjectItemList = null;
+            OriginalProjectItemList?.Dispose(); OriginalProjectItemList = null;
+
+            // Private fields
+            bpi_general?.Dispose(); bpi_general = null;
+            bpi_address?.Dispose(); bpi_address = null;
+        }
+
+        private void SalesPrintModal_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            DisposeTables();
+
+            if (reportViewer1 != null)
+            {
+                reportViewer1.LocalReport.ReleaseSandboxAppDomain();
+                reportViewer1.LocalReport.DataSources.Clear();
+                reportViewer1.Dispose();
+            }
+
+            GC.Collect(); // optional: force immediate cleanup
+            GC.WaitForPendingFinalizers();
+        }
+        public async Task ExportReportAsync(string savePath)
+        {
+            if (isProject)
+            {
+                await fetchQuotationProjectByDocumentNo(documentNo);
+                if (transactionList == null || transactionList.Rows.Count == 0)
+                    throw new Exception("No project data found.");
+
+                // Perform your existing logic here (load datasets, parameters, etc.)
+
+                LocalReport report = new LocalReport();
+                report.ReportPath = @"C:\Users\SMPC\source\repos\smpc_sales_system\smpc_sales_system2\smpc_sales_system\Pages\Sales\ProjectReport.rdlc"; // Adjust this path
+
+                report.DataSources.Clear();
+                report.DataSources.Add(new ReportDataSource("DataSet1", transactionList));
+                report.DataSources.Add(new ReportDataSource("DataSet2", ItemSetContent));
+                report.DataSources.Add(new ReportDataSource("DataSet3", ProjectItemList));
+
+                // Add parameters just like in your current code
+                var parameters = new List<ReportParameter>
+                {
+                    new ReportParameter("BranchName", branchName),
+                    new ReportParameter("AddressName", addressName),
+                    new ReportParameter("ItemDescriptions", itemDescriptionArray),
+                    new ReportParameter("details", detailsArray),
+                    new ReportParameter("qty", qtyArray),
+                    new ReportParameter("unitprices", unitpricesArray),
+                    new ReportParameter("unitpricesSum", unitpricesSum.ToString()),
+                    new ReportParameter("qtySum", qtySum.ToString())
+                };
+                report.SetParameters(parameters);
+
+                // Export to PDF
+                Warning[] warnings;
+                string[] streamIds;
+                string mimeType, encoding, extension;
+
+                byte[] pdfBytes = report.Render("PDF", null, out mimeType, out encoding, out extension, out streamIds, out warnings);
+                File.WriteAllBytes(savePath, pdfBytes);
+            }
+            else if (isQuotation)
+            {
+                await fetchQuotationDetailsByDocumentNo(documentNo);
+                if (transactionList == null || transactionList.Rows.Count == 0)
+                    throw new Exception("No quotation data found.");
+
+                LocalReport report = new LocalReport();
+                report.ReportPath = @"C:\Users\SMPC\source\repos\smpc_sales_system\smpc_sales_system2\smpc_sales_system\Pages\Sales\QuotationReport.rdlc"; // Adjust this path
+
+                report.DataSources.Clear();
+                report.DataSources.Add(new ReportDataSource("DataSet1", transactionList));
+                report.DataSources.Add(new ReportDataSource("DataSet2", childList));
+
+                var parameters = new List<ReportParameter>
+                {
+                    new ReportParameter("BranchName", branchName ?? string.Empty),
+                    new ReportParameter("AddressName", addressName ?? string.Empty),
+                    new ReportParameter("ItemDescriptions", itemDescriptionArray ?? Array.Empty<string>())
+                };
+
+                report.SetParameters(parameters);
+
+                Warning[] warnings;
+                string[] streamIds;
+                string mimeType, encoding, extension;
+
+                byte[] pdfBytes = report.Render("PDF", null, out mimeType, out encoding, out extension, out streamIds, out warnings);
+                File.WriteAllBytes(savePath, pdfBytes);
+            }
+        }
+
     }
 }
        

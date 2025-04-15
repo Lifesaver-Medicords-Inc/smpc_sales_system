@@ -112,14 +112,12 @@ namespace smpc_sales_system.Pages.Sales
                         }
                         else
                         {
-                            // Handle the case where the uint value exceeds the int range (optional)
                             MessageBox.Show("based_id value is too large to fit into an int.");
                             return;  // Exit or handle accordingly
                         }
                     }
                     else
                     {
-                        // If the conversion fails, you could handle it here (e.g., set to null or show an error message)
                         data["based_id"] = null; // Or handle the case where the value is invalid
                     }
                 }
@@ -130,22 +128,19 @@ namespace smpc_sales_system.Pages.Sales
                     var crmIdValue = editedItem["crm_id"].ToString();
                     if (uint.TryParse(crmIdValue, out uint crmIdUint))
                     {
-                        // Convert to int (ensure the value is within int's range)
                         if (crmIdUint <= int.MaxValue)
                         {
                             data["crm_id"] = (int)crmIdUint;  // Safely cast to int
                         }
                         else
                         {
-                            // Handle the case where the uint value exceeds the int range (optional)
                             MessageBox.Show("crm_id value is too large to fit into an int.");
-                            return;  // Exit or handle accordingly
+                            return;
                         }
                     }
                     else
                     {
-                        // If the conversion fails, you could handle it here (e.g., set to null or show an error message)
-                        data["crm_id"] = null; // Or handle the case where the value is invalid
+                        data["crm_id"] = null;
                     }
                 }
 
@@ -153,15 +148,12 @@ namespace smpc_sales_system.Pages.Sales
                 string dateValue = editedItem["date"].ToString();
                 string currentDate = DateTime.Now.ToString("dd-MM-yyyy");
 
-                // Check if the 'date' column has a value
                 if (string.IsNullOrWhiteSpace(dateValue))
                 {
-                    // No value, set the current date
                     editedItem["date"] = currentDate;
                 }
                 else
                 {
-                    // If the value doesn't match today's date, update it to the current date
                     if (dateValue != currentDate)
                     {
                         editedItem["date"] = currentDate;
