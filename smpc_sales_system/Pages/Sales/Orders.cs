@@ -448,16 +448,20 @@ namespace smpc_sales_app.Pages.Sales
         //ON LOAD OF ORDER
         private async void Orders_Load(object sender, EventArgs e)
         {
-            LoadDirectory(AFTERSALES_TV, AfterSalesPath);
-            LoadDirectory(SALES_TV, SalesPath);
             bs_payment_terms.DataSource = CacheData.PaymentTerms;
             bs_ship_type.DataSource = CacheData.ShipTypeSetup;
+            toBenchedToolStripMenuItem.Click += toBenchedToolStripMenuItem_Click;
+            toActiveToolStripMenuItem.Click += toActiveToolStripMenuItem_Click;
+            renameFileToolStripMenuItem.Click += renameFileToolStripMenuItem_Click;
+            AddFoldertoolStripMenuItem.Click += addFolderToolStripMenuItem_Click;
+            renameFolderToolStripMenuItem.Click += renameFolderToolStripMenuItem_Click;
             this.Width = 1380;
             await fetchQuotationDetails();
             await fetchProject();
             await fetchBpiData();
             await fetchItemData();
             await FetchData(false);
+            
 
             if (!string.IsNullOrEmpty(documentNo))
             {
@@ -476,10 +480,12 @@ namespace smpc_sales_app.Pages.Sales
                         BindControlsForNewOrderORexisting();
                         bindQuotation(documentNo, true);
                         SOIncrementer();
+                        TV1_preview.Visible = true;
+                        TV2_preview.Visible = true;
                     }
                     CalculateTotalPrice();
                 }
-                if (documentNo == "0")
+                else if (documentNo == "0")
                 {
                     BindControlsForNewOrderORexisting();
                     await FetchData(false);
@@ -492,9 +498,14 @@ namespace smpc_sales_app.Pages.Sales
                     BindControlsForNewOrderORexisting();
                     bindQuotation(documentNo, true);
                     SOIncrementer();
+                    TV1_preview.Visible = true;
+                    TV2_preview.Visible = true;
                 }
                 CheckStatus();
+                
             }
+            LoadDirectory(AFTERSALES_TV, AfterSalesPath);
+            LoadDirectory(SALES_TV, SalesPath);
         }
         //ACTIONS METHOD (BUTTONS, CLICKS)
         private void btn_search_Click(object sender, EventArgs e)
@@ -607,6 +618,10 @@ namespace smpc_sales_app.Pages.Sales
                 Helpers.ResetControls(pnl_header);
                 Helpers.ResetControls(pnl_footer);
                 await FetchData(false);
+                LoadDirectory(AFTERSALES_TV, AfterSalesPath);
+                LoadDirectory(SALES_TV, SalesPath);
+                sales_preview.Visible = true;
+                aftersales_preview.Visible = true;
             }
         }
         private async void btn_prev_Click_1(object sender, EventArgs e)
@@ -617,6 +632,10 @@ namespace smpc_sales_app.Pages.Sales
                 Helpers.ResetControls(pnl_header);
                 Helpers.ResetControls(pnl_footer);
                 await FetchData(false);
+                LoadDirectory(AFTERSALES_TV, AfterSalesPath);
+                LoadDirectory(SALES_TV, SalesPath);
+                sales_preview.Visible = true;
+                aftersales_preview.Visible = true;
             }
         }
         private void btn_back_Click(object sender, EventArgs e)
@@ -639,7 +658,7 @@ namespace smpc_sales_app.Pages.Sales
             printPage.StartPosition = FormStartPosition.CenterParent;
             printPage.ShowDialog();
         }
-        //METHODS FOR LOADING THE DIRECTORIES PATHS
+        //METHODS FOR LOADING THE DIRECTORIES PATHS =================================================
         private void LoadDirectory(TreeView treeView, string directoryPath)
         {
             if (!Directory.Exists(directoryPath))
@@ -674,15 +693,7 @@ namespace smpc_sales_app.Pages.Sales
             // Determine folder type based on parent path
             string[] innerFolders;
 
-            if (directoryPath.ToUpper().Contains("SALES"))
-            {
-                innerFolders = new[]
-                {
-                    "Quotation Versions", "Technical Evaluation Report", "Clarificatories",
-                    "Bid Bulletin", "Client Purchase Order"
-                };
-            }
-            else if (directoryPath.ToUpper().Contains("AFTER SALES") || directoryPath.ToUpper().Contains("AFTERSALES"))
+            if (directoryPath.ToUpper().Contains("AFTERSALES") || directoryPath.ToUpper().Contains("AFTERSALES"))
             {
                 innerFolders = new[]
                 {
@@ -690,6 +701,14 @@ namespace smpc_sales_app.Pages.Sales
                     "Technical Data Sheet", "Brochure", "Operating Instruction Manuals", "Wiring Diagrams", "Sequence of Operations",
                     "Testing & Commissioning Methodology", "Site Visit Reports", "Serial Numbers of Equipment",
                     "General Arrangement", "CAD Files", "Bill of Quantities & Bill of Materials"
+                };
+            }
+            else if (directoryPath.ToUpper().Contains("SALES"))
+            {
+                innerFolders = new[]
+                {
+                    "Quotation Versions", "Technical Evaluation Report", "Clarificatories",
+                    "Bid Bulletin", "Client Purchase Order"
                 };
             }
             else
@@ -711,8 +730,6 @@ namespace smpc_sales_app.Pages.Sales
                 }
             }
         }
-
-
         private void LoadDirectories(string path, TreeNode node, TreeView treeView)
         {
             try
@@ -720,10 +737,24 @@ namespace smpc_sales_app.Pages.Sales
                 string[] directories = Directory.GetDirectories(path);
                 foreach (string directory in directories)
                 {
-                    TreeNode directoryNode = new TreeNode(Path.GetFileName(directory));
+                    string folderName = Path.GetFileName(directory);
+
+                    if (folderName.ToUpper().Contains("- SO#"))
+                    {
+                        // Extract the SO# part from folder
+                        string soTagFromFolder = folderName.Split('-').LastOrDefault()?.Trim();
+                        if (!string.Equals(soTagFromFolder, txt_doc.Text, StringComparison.OrdinalIgnoreCase))
+                        {
+                            continue; // Skip this folder since it doesn't match txt_doc.Text
+                        }
+                    }
+
+                    TreeNode directoryNode = new TreeNode(folderName);
                     directoryNode.ImageKey = "folder";
                     directoryNode.SelectedImageKey = "folder";
                     node.Nodes.Add(directoryNode);
+
+                    // Recursively process subfolders
                     LoadDirectories(directory, directoryNode, treeView);
                     directoryNode.Expand();
                 }
@@ -742,9 +773,6 @@ namespace smpc_sales_app.Pages.Sales
                 foreach (string file in files)
                 {
                     string fileName = Path.GetFileName(file);
-
-                    // Filter: only include files that contain "- SO#1"
-
                     string tag = txt_doc.Text;
                     if (fileName.Contains("- "+ tag))
                     {
@@ -765,30 +793,156 @@ namespace smpc_sales_app.Pages.Sales
                 MessageBox.Show($"Error loading files: {ex.Message}");
             }
         }
+        //END=========================================================================================
 
-        private string GetFullPathFromTreeNode(TreeNode node)
+        //FUNCTIONS OF FOLDERS/DIRECTORIES============================================================
+        private void renameFolderToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            string path = node.Text;
-            while (node.Parent != null)
+            TreeNode selectedNode = SALES_TV.SelectedNode ?? AFTERSALES_TV.SelectedNode;
+            if (selectedNode == null)
             {
-                path = Path.Combine(node.Parent.Text, path);
-                node = node.Parent;
+                MessageBox.Show("Please select a folder to rename.", "No Folder Selected", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
             }
-            return path;
+            string oldFolderName = selectedNode.Text;
+
+            if (!oldFolderName.ToUpper().Contains("- SO#"))
+            {
+                MessageBox.Show("Only folders with ' - SO#' in the name can be renamed.", "Rename Not Allowed", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            string tag = txt_doc.Text;
+            string userInput = Microsoft.VisualBasic.Interaction.InputBox("Enter new folder name:", "Rename Folder", "");
+
+            if (string.IsNullOrWhiteSpace(userInput)) return;
+
+            string newFolderName = $"{userInput} - {tag}";
+
+            string relativePath = GetRelativePathFromNode(selectedNode);
+
+            // Determine base paths for ACTIVE and BENCHED
+            string activeBase = SalesPath;
+            string activeRelPath = relativePath.Replace("BENCHED", "ACTIVE");
+            string benchedRelPath = relativePath.Replace("ACTIVE", "BENCHED");
+
+            RenameFolder(activeBase, activeRelPath, oldFolderName, newFolderName);
+            RenameFolder(activeBase, benchedRelPath, oldFolderName, newFolderName);
+            LoadDirectory(SALES_TV, SalesPath);
+            LoadDirectory(AFTERSALES_TV, AfterSalesPath);
         }
+        private void RenameFolder(string basePath, string relativePath, string oldName, string newName)
+        {
+            try
+            {
+                string fullPath = Path.Combine(basePath, relativePath);
+                string currentFolder = Path.Combine(Path.GetDirectoryName(fullPath), oldName);
+                string renamedFolder = Path.Combine(Path.GetDirectoryName(fullPath), newName);
+
+                if (Directory.Exists(currentFolder))
+                {
+                    Directory.Move(currentFolder, renamedFolder);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error renaming folder in '{basePath}': {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+        private string GetRelativePathFromNode(TreeNode node)
+        {
+            if (node == null) return string.Empty;
+
+            var parts = new Stack<string>();
+            TreeNode current = node;
+
+            while (current != null)
+            {
+                parts.Push(current.Text);
+                current = current.Parent;
+            }
+
+            return Path.Combine(parts.ToArray());
+        }
+        private void addFolderToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            TreeView targetTreeView = null;
+            string basePath = "";
+            bool isSales = false;
+            // Treeview checker
+            if (SALES_TV.Focused)
+            {
+                targetTreeView = SALES_TV;
+                basePath = SalesPath;
+                isSales = true;
+            }
+            else if (AFTERSALES_TV.Focused)
+            {
+                targetTreeView = AFTERSALES_TV;
+                basePath = AfterSalesPath;
+                isSales = false;
+            }
+
+            if (targetTreeView == null)
+            {
+                MessageBox.Show("Please click on a TreeView to add the folder.", "No TreeView Selected", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            string folderName = Microsoft.VisualBasic.Interaction.InputBox("Enter folder name:", "Add Folder", "New Folder");
+            string tag = txt_doc.Text;
+            folderName = folderName + " - " + tag;
+            if (string.IsNullOrWhiteSpace(folderName)) return;
+
+            string[] categories = { "ACTIVE", "BENCHED" };
+            foreach (var category in categories)
+            {
+                string fullPath = Path.Combine(basePath, category, folderName);
+                try
+                {
+                    if (!Directory.Exists(fullPath))
+                        Directory.CreateDirectory(fullPath);
+                    if (isSales)
+                    {
+                        LoadDirectory(SALES_TV, SalesPath);
+                    }
+                    else
+                    {
+                        LoadDirectory(AFTERSALES_TV, AfterSalesPath);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Failed to create folder in '{category}':\n{ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+            MessageBox.Show($"Folder '{folderName}' created in both ACTIVE and BENCHED.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+        //END=========================================================================================
+
         //METHODS FOR TREEVIEWS AND LISTVIEWS
         private void SALES_TV_AfterSelect(object sender, TreeViewEventArgs e)
         {
-            sales_preview.Visible = false;
-            string selectedPath = GetFullPathFromTreeNode(e.Node);
+            string nodeText = e.Node.Text.ToUpper();
+            if (e.Node.Parent == null || nodeText == "ACTIVE" || nodeText == "BENCHED")
+            {
+                sales_preview.Visible = true;
+            }
+            else
+            {
+                sales_preview.Visible = false;
+            }
+
+            string selectedPath = GetPathFromTreeNode(e.Node);
             lbl_path1.Text = selectedPath;
             LoadFiles(SALES_LV, selectedPath);
         }
+
         private void SALES_LV_DoubleClick(object sender, EventArgs e)
         {
             if (SALES_LV.SelectedItems.Count > 0)
             {
-                string folderPath = GetFullPathFromTreeNode(SALES_TV.SelectedNode);
+                string folderPath = GetPathFromTreeNode(SALES_TV.SelectedNode);
                 string filePath = Path.Combine(folderPath, SALES_LV.SelectedItems[0].Text);
                 if (File.Exists(filePath))
                 {
@@ -807,10 +961,194 @@ namespace smpc_sales_app.Pages.Sales
                 }
             }
         }
+        private string GetPathFromTreeNode(TreeNode node, bool isRelative = false)
+        {
+            if (node == null) return string.Empty;
+
+            string path = node.Text;
+            TreeNode current = node;
+
+            while (current.Parent != null)
+            {
+                current = current.Parent;
+                path = Path.Combine(current.Text, path);
+            }
+
+            if (isRelative)
+                return path;
+
+            // Assuming the root node text is the base path
+            string basePath = current.Text;
+            return Path.Combine(basePath, path.Substring(basePath.Length).TrimStart(Path.DirectorySeparatorChar));
+        }
+
+        private void renameFileToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ListView activeListView = null;
+            string currentPath = "";
+
+            if (SALES_LV.SelectedItems.Count > 0)
+            {
+                activeListView = SALES_LV;
+                currentPath = lbl_path1.Text;
+            }
+            else if (AFTERSALES_LV.SelectedItems.Count > 0)
+            {
+                activeListView = AFTERSALES_LV;
+                currentPath = lbl_path2.Text;
+            }
+
+            if (activeListView == null || activeListView.SelectedItems.Count == 0)
+            {
+                MessageBox.Show("Please select a file to rename.", "No File Selected", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            string selectedFileName = activeListView.SelectedItems[0].Text;
+            string fullCurrentFilePath = Path.Combine(currentPath, selectedFileName);
+            string fileExtension = Path.GetExtension(selectedFileName);
+            string tag = txt_doc.Text;
+
+            string input = Microsoft.VisualBasic.Interaction.InputBox("Enter new File name:", "Rename File", "");
+
+            if (string.IsNullOrWhiteSpace(input))
+            {
+                MessageBox.Show("No input provided. Rename cancelled.", "Cancelled", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            string newFileName = $"{input} - {tag}{fileExtension}";
+            string newFilePath = Path.Combine(currentPath, newFileName);
+
+            try
+            {
+                File.Move(fullCurrentFilePath, newFilePath);
+                activeListView.SelectedItems[0].Text = newFileName;
+
+                MessageBox.Show("File renamed successfully.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error renaming file: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+        private void toBenchedToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (SALES_LV.SelectedItems.Count > 0)
+            {
+                MoveSelectedFileToBenched(SALES_LV, lbl_path1.Text);
+            }
+            else if (AFTERSALES_LV.SelectedItems.Count > 0)
+            {
+                MoveSelectedFileToBenched(AFTERSALES_LV, lbl_path2.Text);
+            }
+            else
+            {
+                MessageBox.Show("Please select a file to move.", "No File Selected", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+        }
+
+        private void toActiveToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (SALES_LV.SelectedItems.Count > 0)
+            {
+                MoveSelectedFileToActive(SALES_LV, lbl_path1.Text);
+            }
+            else if (AFTERSALES_LV.SelectedItems.Count > 0)
+            {
+                MoveSelectedFileToActive(AFTERSALES_LV, lbl_path2.Text);
+            }
+            else
+            {
+                MessageBox.Show("Please select a file to move.", "No File Selected", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+        }
+        private void MoveSelectedFileToActive(ListView listView, string currentPath)
+        {
+            if (listView.SelectedItems.Count == 0) return;
+
+            string selectedFileName = listView.SelectedItems[0].Text;
+            string fullCurrentFilePath = Path.Combine(currentPath, selectedFileName);
+
+            if (currentPath.Contains(@"\ACTIVE\"))
+            {
+                MessageBox.Show("The file is already in ACTIVE.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            string activePath = currentPath.Replace(@"\BENCHED\", @"\ACTIVE\");
+
+            try
+            {
+                // Ensure target directory exists
+                if (!Directory.Exists(activePath))
+                {
+                    Directory.CreateDirectory(activePath);
+                }
+
+                string targetFilePath = Path.Combine(activePath, selectedFileName);
+
+                File.Move(fullCurrentFilePath, targetFilePath);
+                listView.Items.Remove(listView.SelectedItems[0]);
+
+                MessageBox.Show($"File moved to ACTIVE:\n{targetFilePath}", "Success");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error moving file: {ex.Message}");
+            }
+        }
+
+        private void MoveSelectedFileToBenched(ListView listView, string currentPath)
+        {
+            if (listView.SelectedItems.Count == 0) return;
+
+            string selectedFileName = listView.SelectedItems[0].Text;
+            string fullCurrentFilePath = Path.Combine(currentPath, selectedFileName);
+
+            if (currentPath.Contains(@"\BENCHED\"))
+            {
+                MessageBox.Show("The file is already in BENCHED.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            string benchedPath = currentPath.Replace(@"\ACTIVE\", @"\BENCHED\");
+
+            try
+            {
+                // Ensure target directory exists
+                if (!Directory.Exists(benchedPath))
+                {
+                    Directory.CreateDirectory(benchedPath);
+                }
+
+                string targetFilePath = Path.Combine(benchedPath, selectedFileName);
+
+                File.Move(fullCurrentFilePath, targetFilePath);
+                listView.Items.Remove(listView.SelectedItems[0]);
+
+                MessageBox.Show($"File moved to BENCHED:\n{targetFilePath}", "Success");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error moving file: {ex.Message}");
+            }
+        }
+        
+
         private void AFTERSALES_TV_AfterSelect(object sender, TreeViewEventArgs e)
         {
-            aftersales_preview.Visible = false;
-            string selectedPath = GetFullPathFromTreeNode(e.Node);    
+            string nodeText = e.Node.Text.ToUpper();
+            if (e.Node.Parent == null || nodeText == "ACTIVE" || nodeText == "BENCHED")
+            {
+                aftersales_preview.Visible = true;
+            }
+            else
+            {
+                aftersales_preview.Visible = false;
+            }
+            
+            string selectedPath = GetPathFromTreeNode(e.Node);    
             lbl_path2.Text = selectedPath;
             LoadFiles(AFTERSALES_LV, selectedPath);
         }
@@ -894,7 +1232,7 @@ namespace smpc_sales_app.Pages.Sales
         {
             if (AFTERSALES_LV.SelectedItems.Count > 0)
             {
-                string folderPath = GetFullPathFromTreeNode(AFTERSALES_TV.SelectedNode);
+                string folderPath = GetPathFromTreeNode(AFTERSALES_TV.SelectedNode);
                 string filePath = Path.Combine(folderPath, AFTERSALES_LV.SelectedItems[0].Text);
 
                 if (File.Exists(filePath))
@@ -1053,6 +1391,7 @@ namespace smpc_sales_app.Pages.Sales
         {
             try
             {
+                
                 List<string> missingFields = new List<string>();
 
                 if (string.IsNullOrWhiteSpace(txt_receiver.Text)) missingFields.Add("Receiver");
@@ -1208,6 +1547,8 @@ namespace smpc_sales_app.Pages.Sales
                             await FetchData(true);
                             CheckStatus();
                         }
+                        TV1_preview.Visible = false;
+                        TV2_preview.Visible = false;
                     }
                 }
             }
@@ -1216,6 +1557,36 @@ namespace smpc_sales_app.Pages.Sales
                 MessageBox.Show("Error: " + ex.Message + "\n\n" + "Stack Trace: " + ex.StackTrace);
             }
         }
+
+        private async void button1_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                string documentNo = txt_doc.Text;
+                string saveDirectory = Settings.Default.SALESPATH;
+                Directory.CreateDirectory(saveDirectory);
+
+                string fileName = $"Sales_{documentNo}.pdf";
+                string fullPath = Path.Combine(saveDirectory, fileName);
+
+                var modal = new SalesPrintModal(isQuotation: true, documentNo: "1")
+                {
+                    AutoExport = true,
+                    ExportPath = fullPath
+                };
+
+                // Instead of showing the modal, just manually trigger Load logic
+                // by showing the form minimized and hidden — still triggers Load
+                modal.ShowInTaskbar = false;
+                modal.WindowState = FormWindowState.Minimized;
+                modal.Show();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error exporting PDF: " + ex.Message);
+            }
+        }
+
         private void BindControlsForNewOrderORexisting()
         {
             Helpers.ResetControls(pnl_header);

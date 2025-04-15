@@ -33,12 +33,12 @@ namespace smpc_sales_system.Pages.Sales
             this.reportViewer1 = new Microsoft.Reporting.WinForms.ReportViewer();
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
             this.btn_prev = new System.Windows.Forms.ToolStripButton();
+            this.toolStripButton1 = new System.Windows.Forms.ToolStripButton();
             this.panel6 = new System.Windows.Forms.Panel();
             this.label1 = new System.Windows.Forms.Label();
             this.pnl_print = new System.Windows.Forms.Panel();
             this.pnl_dgv = new System.Windows.Forms.Panel();
             this.printDialog1 = new System.Windows.Forms.PrintDialog();
-            this.toolStripButton1 = new System.Windows.Forms.ToolStripButton();
             this.toolStrip1.SuspendLayout();
             this.panel6.SuspendLayout();
             this.pnl_print.SuspendLayout();
@@ -76,6 +76,14 @@ namespace smpc_sales_system.Pages.Sales
             this.btn_prev.Size = new System.Drawing.Size(52, 22);
             this.btn_prev.Text = "Back";
             this.btn_prev.Click += new System.EventHandler(this.btn_prev_Click);
+            // 
+            // toolStripButton1
+            // 
+            this.toolStripButton1.Image = global::smpc_sales_system.Properties.Resources.FolderIcon;
+            this.toolStripButton1.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.toolStripButton1.Name = "toolStripButton1";
+            this.toolStripButton1.Size = new System.Drawing.Size(116, 22);
+            this.toolStripButton1.Text = "Save to Directory";
             // 
             // panel6
             // 
@@ -119,14 +127,6 @@ namespace smpc_sales_system.Pages.Sales
             // 
             this.printDialog1.UseEXDialog = true;
             // 
-            // toolStripButton1
-            // 
-            this.toolStripButton1.Image = global::smpc_sales_system.Properties.Resources.FolderIcon;
-            this.toolStripButton1.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.toolStripButton1.Name = "toolStripButton1";
-            this.toolStripButton1.Size = new System.Drawing.Size(116, 22);
-            this.toolStripButton1.Text = "Save to Directory";
-            // 
             // SalesPrintModal
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -137,6 +137,7 @@ namespace smpc_sales_system.Pages.Sales
             this.Controls.Add(this.panel6);
             this.Name = "SalesPrintModal";
             this.Text = "QuotationPrintModal";
+            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.SalesPrintModal_FormClosed);
             this.Load += new System.EventHandler(this.SalesPrintModal_Load);
             this.toolStrip1.ResumeLayout(false);
             this.toolStrip1.PerformLayout();

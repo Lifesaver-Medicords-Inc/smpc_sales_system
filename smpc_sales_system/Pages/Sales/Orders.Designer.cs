@@ -30,14 +30,14 @@ namespace smpc_sales_app.Pages.Sales
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle5 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle6 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle7 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle8 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle25 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle26 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle27 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle28 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle29 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle30 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle31 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle32 = new System.Windows.Forms.DataGridViewCellStyle();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Orders));
             this.quick_quotes = new System.Windows.Forms.BindingSource(this.components);
             this.dataSet1 = new System.Data.DataSet();
@@ -224,11 +224,18 @@ namespace smpc_sales_app.Pages.Sales
             this.panel8 = new System.Windows.Forms.Panel();
             this.panel11 = new System.Windows.Forms.Panel();
             this.AFTERSALES_TV = new System.Windows.Forms.TreeView();
+            this.contextMenu_treeview = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.AddFoldertoolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.renameFolderToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.panel10 = new System.Windows.Forms.Panel();
             this.aftersales_preview = new System.Windows.Forms.Panel();
             this.label28 = new System.Windows.Forms.Label();
             this.pictureBox2 = new System.Windows.Forms.PictureBox();
             this.AFTERSALES_LV = new System.Windows.Forms.ListView();
+            this.contextMenu_Sales = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.toBenchedToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toActiveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.renameFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.panel7 = new System.Windows.Forms.Panel();
             this.lbl_path2 = new System.Windows.Forms.Label();
             this.label24 = new System.Windows.Forms.Label();
@@ -243,6 +250,13 @@ namespace smpc_sales_app.Pages.Sales
             this.lbl_path1 = new System.Windows.Forms.Label();
             this.label22 = new System.Windows.Forms.Label();
             this.bs_project_item_sets = new System.Windows.Forms.BindingSource(this.components);
+            this.TV2_preview = new System.Windows.Forms.Panel();
+            this.label30 = new System.Windows.Forms.Label();
+            this.pictureBox4 = new System.Windows.Forms.PictureBox();
+            this.TV1_preview = new System.Windows.Forms.Panel();
+            this.label29 = new System.Windows.Forms.Label();
+            this.pictureBox3 = new System.Windows.Forms.PictureBox();
+            this.button1 = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.quick_quotes)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dataSet1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.tbl_quick_quotes)).BeginInit();
@@ -271,9 +285,11 @@ namespace smpc_sales_app.Pages.Sales
             this.panel12.SuspendLayout();
             this.panel8.SuspendLayout();
             this.panel11.SuspendLayout();
+            this.contextMenu_treeview.SuspendLayout();
             this.panel10.SuspendLayout();
             this.aftersales_preview.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
+            this.contextMenu_Sales.SuspendLayout();
             this.panel7.SuspendLayout();
             this.panel5.SuspendLayout();
             this.panel13.SuspendLayout();
@@ -281,6 +297,10 @@ namespace smpc_sales_app.Pages.Sales
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.panel3.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.bs_project_item_sets)).BeginInit();
+            this.TV2_preview.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox4)).BeginInit();
+            this.TV1_preview.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox3)).BeginInit();
             this.SuspendLayout();
             // 
             // quick_quotes
@@ -631,7 +651,7 @@ namespace smpc_sales_app.Pages.Sales
             this.panel4.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panel4.Location = new System.Drawing.Point(0, 0);
             this.panel4.Name = "panel4";
-            this.panel4.Size = new System.Drawing.Size(1028, 1200);
+            this.panel4.Size = new System.Drawing.Size(1229, 1200);
             this.panel4.TabIndex = 12;
             // 
             // panel14
@@ -641,7 +661,7 @@ namespace smpc_sales_app.Pages.Sales
             this.panel14.Dock = System.Windows.Forms.DockStyle.Top;
             this.panel14.Location = new System.Drawing.Point(0, 240);
             this.panel14.Name = "panel14";
-            this.panel14.Size = new System.Drawing.Size(1028, 252);
+            this.panel14.Size = new System.Drawing.Size(1229, 252);
             this.panel14.TabIndex = 11;
             // 
             // dgv_order_sales
@@ -650,14 +670,14 @@ namespace smpc_sales_app.Pages.Sales
             this.dgv_order_sales.AllowUserToDeleteRows = false;
             this.dgv_order_sales.AutoGenerateColumns = false;
             this.dgv_order_sales.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
-            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dgv_order_sales.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
+            dataGridViewCellStyle25.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle25.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle25.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle25.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle25.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle25.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle25.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dgv_order_sales.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle25;
             this.dgv_order_sales.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dgv_order_sales.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.number1,
@@ -682,14 +702,14 @@ namespace smpc_sales_app.Pages.Sales
             this.dgv_order_sales.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dgv_order_sales.Location = new System.Drawing.Point(0, 0);
             this.dgv_order_sales.Name = "dgv_order_sales";
-            this.dgv_order_sales.Size = new System.Drawing.Size(1028, 252);
+            this.dgv_order_sales.Size = new System.Drawing.Size(1229, 252);
             this.dgv_order_sales.TabIndex = 12;
             // 
             // number1
             // 
             this.number1.DataPropertyName = "numbering";
-            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            this.number1.DefaultCellStyle = dataGridViewCellStyle2;
+            dataGridViewCellStyle26.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            this.number1.DefaultCellStyle = dataGridViewCellStyle26;
             this.number1.FillWeight = 30.55143F;
             this.number1.HeaderText = "#";
             this.number1.Name = "number1";
@@ -805,8 +825,8 @@ namespace smpc_sales_app.Pages.Sales
             // unitprice
             // 
             this.unitprice.DataPropertyName = "list_price";
-            dataGridViewCellStyle3.Format = "c2";
-            this.unitprice.DefaultCellStyle = dataGridViewCellStyle3;
+            dataGridViewCellStyle27.Format = "c2";
+            this.unitprice.DefaultCellStyle = dataGridViewCellStyle27;
             this.unitprice.FillWeight = 98.33942F;
             this.unitprice.HeaderText = "LIST PRICE";
             this.unitprice.Name = "unitprice";
@@ -814,8 +834,8 @@ namespace smpc_sales_app.Pages.Sales
             // linetotal
             // 
             this.linetotal.DataPropertyName = "total_price";
-            dataGridViewCellStyle4.Format = "c2";
-            this.linetotal.DefaultCellStyle = dataGridViewCellStyle4;
+            dataGridViewCellStyle28.Format = "c2";
+            this.linetotal.DefaultCellStyle = dataGridViewCellStyle28;
             this.linetotal.FillWeight = 98.33942F;
             this.linetotal.HeaderText = "TOTAL PRICE";
             this.linetotal.Name = "linetotal";
@@ -832,14 +852,14 @@ namespace smpc_sales_app.Pages.Sales
             this.dgv_project.AllowUserToDeleteRows = false;
             this.dgv_project.AutoGenerateColumns = false;
             this.dgv_project.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
-            dataGridViewCellStyle5.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle5.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle5.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle5.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle5.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle5.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle5.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dgv_project.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle5;
+            dataGridViewCellStyle29.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle29.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle29.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle29.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle29.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle29.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle29.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dgv_project.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle29;
             this.dgv_project.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dgv_project.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.number,
@@ -865,15 +885,15 @@ namespace smpc_sales_app.Pages.Sales
             this.dgv_project.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dgv_project.Location = new System.Drawing.Point(0, 0);
             this.dgv_project.Name = "dgv_project";
-            this.dgv_project.Size = new System.Drawing.Size(1028, 252);
+            this.dgv_project.Size = new System.Drawing.Size(1229, 252);
             this.dgv_project.TabIndex = 11;
             this.dgv_project.Visible = false;
             // 
             // number
             // 
             this.number.DataPropertyName = "number";
-            dataGridViewCellStyle6.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            this.number.DefaultCellStyle = dataGridViewCellStyle6;
+            dataGridViewCellStyle30.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            this.number.DefaultCellStyle = dataGridViewCellStyle30;
             this.number.FillWeight = 26.5718F;
             this.number.HeaderText = "#";
             this.number.Name = "number";
@@ -923,9 +943,9 @@ namespace smpc_sales_app.Pages.Sales
             // listpriceproject
             // 
             this.listpriceproject.DataPropertyName = "list_price_per_unit";
-            dataGridViewCellStyle7.Format = "C2";
-            dataGridViewCellStyle7.NullValue = null;
-            this.listpriceproject.DefaultCellStyle = dataGridViewCellStyle7;
+            dataGridViewCellStyle31.Format = "C2";
+            dataGridViewCellStyle31.NullValue = null;
+            this.listpriceproject.DefaultCellStyle = dataGridViewCellStyle31;
             this.listpriceproject.FillWeight = 100.1291F;
             this.listpriceproject.HeaderText = "LIST PRICE";
             this.listpriceproject.Name = "listpriceproject";
@@ -933,8 +953,8 @@ namespace smpc_sales_app.Pages.Sales
             // componenttotalproject
             // 
             this.componenttotalproject.DataPropertyName = "component_total";
-            dataGridViewCellStyle8.Format = "C2";
-            this.componenttotalproject.DefaultCellStyle = dataGridViewCellStyle8;
+            dataGridViewCellStyle32.Format = "C2";
+            this.componenttotalproject.DefaultCellStyle = dataGridViewCellStyle32;
             this.componenttotalproject.FillWeight = 100.1291F;
             this.componenttotalproject.HeaderText = "TOTAL PRICE";
             this.componenttotalproject.Name = "componenttotalproject";
@@ -1024,6 +1044,7 @@ namespace smpc_sales_app.Pages.Sales
             // 
             // pnl_header
             // 
+            this.pnl_header.Controls.Add(this.button1);
             this.pnl_header.Controls.Add(this.label26);
             this.pnl_header.Controls.Add(this.txt_project_name);
             this.pnl_header.Controls.Add(this.txt_contact_no);
@@ -1044,7 +1065,7 @@ namespace smpc_sales_app.Pages.Sales
             this.pnl_header.Dock = System.Windows.Forms.DockStyle.Top;
             this.pnl_header.Location = new System.Drawing.Point(0, 72);
             this.pnl_header.Name = "pnl_header";
-            this.pnl_header.Size = new System.Drawing.Size(1028, 168);
+            this.pnl_header.Size = new System.Drawing.Size(1229, 168);
             this.pnl_header.TabIndex = 10;
             // 
             // label26
@@ -1220,7 +1241,7 @@ namespace smpc_sales_app.Pages.Sales
             this.pnl_header_2.Controls.Add(this.label16);
             this.pnl_header_2.Controls.Add(this.cmb_ship_type);
             this.pnl_header_2.Dock = System.Windows.Forms.DockStyle.Right;
-            this.pnl_header_2.Location = new System.Drawing.Point(463, 0);
+            this.pnl_header_2.Location = new System.Drawing.Point(664, 0);
             this.pnl_header_2.Name = "pnl_header_2";
             this.pnl_header_2.Size = new System.Drawing.Size(565, 168);
             this.pnl_header_2.TabIndex = 267;
@@ -1466,7 +1487,7 @@ namespace smpc_sales_app.Pages.Sales
             this.toolStrip1.Location = new System.Drawing.Point(0, 47);
             this.toolStrip1.Name = "toolStrip1";
             this.toolStrip1.RenderMode = System.Windows.Forms.ToolStripRenderMode.Professional;
-            this.toolStrip1.Size = new System.Drawing.Size(1028, 25);
+            this.toolStrip1.Size = new System.Drawing.Size(1229, 25);
             this.toolStrip1.TabIndex = 9;
             this.toolStrip1.Text = "toolStrip1";
             // 
@@ -1561,7 +1582,7 @@ namespace smpc_sales_app.Pages.Sales
             this.panel6.Dock = System.Windows.Forms.DockStyle.Top;
             this.panel6.Location = new System.Drawing.Point(0, 0);
             this.panel6.Name = "panel6";
-            this.panel6.Size = new System.Drawing.Size(1028, 47);
+            this.panel6.Size = new System.Drawing.Size(1229, 47);
             this.panel6.TabIndex = 8;
             // 
             // label1
@@ -1588,7 +1609,7 @@ namespace smpc_sales_app.Pages.Sales
             this.panel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panel1.Location = new System.Drawing.Point(0, 0);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(1028, 1200);
+            this.panel1.Size = new System.Drawing.Size(1229, 1200);
             this.panel1.TabIndex = 0;
             // 
             // pnl_footer
@@ -1599,7 +1620,7 @@ namespace smpc_sales_app.Pages.Sales
             this.pnl_footer.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.pnl_footer.Location = new System.Drawing.Point(0, 492);
             this.pnl_footer.Name = "pnl_footer";
-            this.pnl_footer.Size = new System.Drawing.Size(1028, 180);
+            this.pnl_footer.Size = new System.Drawing.Size(1229, 180);
             this.pnl_footer.TabIndex = 11;
             // 
             // txt_remarks
@@ -1634,7 +1655,7 @@ namespace smpc_sales_app.Pages.Sales
             this.pnl_footer_2.Controls.Add(this.label21);
             this.pnl_footer_2.Controls.Add(this.label20);
             this.pnl_footer_2.Dock = System.Windows.Forms.DockStyle.Right;
-            this.pnl_footer_2.Location = new System.Drawing.Point(368, 0);
+            this.pnl_footer_2.Location = new System.Drawing.Point(569, 0);
             this.pnl_footer_2.Name = "pnl_footer_2";
             this.pnl_footer_2.Size = new System.Drawing.Size(660, 180);
             this.pnl_footer_2.TabIndex = 175;
@@ -1643,7 +1664,7 @@ namespace smpc_sales_app.Pages.Sales
             // 
             this.label23.AutoSize = true;
             this.label23.ImeMode = System.Windows.Forms.ImeMode.NoControl;
-            this.label23.Location = new System.Drawing.Point(336, 3);
+            this.label23.Location = new System.Drawing.Point(302, 3);
             this.label23.Name = "label23";
             this.label23.Size = new System.Drawing.Size(42, 13);
             this.label23.TabIndex = 174;
@@ -1660,7 +1681,7 @@ namespace smpc_sales_app.Pages.Sales
             // 
             // txt_total
             // 
-            this.txt_total.Location = new System.Drawing.Point(384, 0);
+            this.txt_total.Location = new System.Drawing.Point(350, 0);
             this.txt_total.Name = "txt_total";
             this.txt_total.ReadOnly = true;
             this.txt_total.Size = new System.Drawing.Size(146, 20);
@@ -1774,7 +1795,7 @@ namespace smpc_sales_app.Pages.Sales
             this.panel2.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.panel2.Location = new System.Drawing.Point(0, 672);
             this.panel2.Name = "panel2";
-            this.panel2.Size = new System.Drawing.Size(1028, 528);
+            this.panel2.Size = new System.Drawing.Size(1229, 528);
             this.panel2.TabIndex = 13;
             // 
             // panel9
@@ -1784,14 +1805,14 @@ namespace smpc_sales_app.Pages.Sales
             this.panel9.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.panel9.Location = new System.Drawing.Point(0, 468);
             this.panel9.Name = "panel9";
-            this.panel9.Size = new System.Drawing.Size(1028, 60);
+            this.panel9.Size = new System.Drawing.Size(1229, 60);
             this.panel9.TabIndex = 4;
             // 
             // panel12
             // 
             this.panel12.Controls.Add(this.btn_save);
             this.panel12.Dock = System.Windows.Forms.DockStyle.Right;
-            this.panel12.Location = new System.Drawing.Point(826, 0);
+            this.panel12.Location = new System.Drawing.Point(1027, 0);
             this.panel12.Name = "panel12";
             this.panel12.Size = new System.Drawing.Size(200, 58);
             this.panel12.TabIndex = 174;
@@ -1822,33 +1843,55 @@ namespace smpc_sales_app.Pages.Sales
             this.panel8.Dock = System.Windows.Forms.DockStyle.Top;
             this.panel8.Location = new System.Drawing.Point(0, 285);
             this.panel8.Name = "panel8";
-            this.panel8.Size = new System.Drawing.Size(1028, 185);
+            this.panel8.Size = new System.Drawing.Size(1229, 185);
             this.panel8.TabIndex = 3;
             // 
             // panel11
             // 
+            this.panel11.Controls.Add(this.TV2_preview);
             this.panel11.Controls.Add(this.AFTERSALES_TV);
             this.panel11.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panel11.Location = new System.Drawing.Point(0, 0);
             this.panel11.Name = "panel11";
-            this.panel11.Size = new System.Drawing.Size(377, 185);
+            this.panel11.Size = new System.Drawing.Size(578, 185);
             this.panel11.TabIndex = 1;
             // 
             // AFTERSALES_TV
             // 
+            this.AFTERSALES_TV.ContextMenuStrip = this.contextMenu_treeview;
             this.AFTERSALES_TV.Dock = System.Windows.Forms.DockStyle.Fill;
             this.AFTERSALES_TV.Location = new System.Drawing.Point(0, 0);
             this.AFTERSALES_TV.Name = "AFTERSALES_TV";
-            this.AFTERSALES_TV.Size = new System.Drawing.Size(377, 185);
+            this.AFTERSALES_TV.Size = new System.Drawing.Size(578, 185);
             this.AFTERSALES_TV.TabIndex = 0;
             this.AFTERSALES_TV.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.AFTERSALES_TV_AfterSelect);
+            // 
+            // contextMenu_treeview
+            // 
+            this.contextMenu_treeview.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.AddFoldertoolStripMenuItem,
+            this.renameFolderToolStripMenuItem});
+            this.contextMenu_treeview.Name = "contextMenuStrip1";
+            this.contextMenu_treeview.Size = new System.Drawing.Size(163, 48);
+            // 
+            // AddFoldertoolStripMenuItem
+            // 
+            this.AddFoldertoolStripMenuItem.Name = "AddFoldertoolStripMenuItem";
+            this.AddFoldertoolStripMenuItem.Size = new System.Drawing.Size(162, 22);
+            this.AddFoldertoolStripMenuItem.Text = "Add Folder...";
+            // 
+            // renameFolderToolStripMenuItem
+            // 
+            this.renameFolderToolStripMenuItem.Name = "renameFolderToolStripMenuItem";
+            this.renameFolderToolStripMenuItem.Size = new System.Drawing.Size(162, 22);
+            this.renameFolderToolStripMenuItem.Text = "Rename Folder...";
             // 
             // panel10
             // 
             this.panel10.Controls.Add(this.aftersales_preview);
             this.panel10.Controls.Add(this.AFTERSALES_LV);
             this.panel10.Dock = System.Windows.Forms.DockStyle.Right;
-            this.panel10.Location = new System.Drawing.Point(377, 0);
+            this.panel10.Location = new System.Drawing.Point(578, 0);
             this.panel10.Name = "panel10";
             this.panel10.Size = new System.Drawing.Size(651, 185);
             this.panel10.TabIndex = 0;
@@ -1868,7 +1911,7 @@ namespace smpc_sales_app.Pages.Sales
             // 
             this.label28.AutoSize = true;
             this.label28.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label28.Location = new System.Drawing.Point(243, 125);
+            this.label28.Location = new System.Drawing.Point(240, 125);
             this.label28.Name = "label28";
             this.label28.Size = new System.Drawing.Size(179, 23);
             this.label28.TabIndex = 1;
@@ -1887,6 +1930,7 @@ namespace smpc_sales_app.Pages.Sales
             // AFTERSALES_LV
             // 
             this.AFTERSALES_LV.AllowDrop = true;
+            this.AFTERSALES_LV.ContextMenuStrip = this.contextMenu_Sales;
             this.AFTERSALES_LV.Dock = System.Windows.Forms.DockStyle.Fill;
             this.AFTERSALES_LV.HideSelection = false;
             this.AFTERSALES_LV.Location = new System.Drawing.Point(0, 0);
@@ -1898,6 +1942,33 @@ namespace smpc_sales_app.Pages.Sales
             this.AFTERSALES_LV.DragEnter += new System.Windows.Forms.DragEventHandler(this.AFTERSALES_LV_DragEnter);
             this.AFTERSALES_LV.DoubleClick += new System.EventHandler(this.AFTERSALES_LV_DoubleClick);
             // 
+            // contextMenu_Sales
+            // 
+            this.contextMenu_Sales.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.toBenchedToolStripMenuItem,
+            this.toActiveToolStripMenuItem,
+            this.renameFileToolStripMenuItem});
+            this.contextMenu_Sales.Name = "contextMenu_Sales";
+            this.contextMenu_Sales.Size = new System.Drawing.Size(145, 70);
+            // 
+            // toBenchedToolStripMenuItem
+            // 
+            this.toBenchedToolStripMenuItem.Name = "toBenchedToolStripMenuItem";
+            this.toBenchedToolStripMenuItem.Size = new System.Drawing.Size(144, 22);
+            this.toBenchedToolStripMenuItem.Text = "To Benched...";
+            // 
+            // toActiveToolStripMenuItem
+            // 
+            this.toActiveToolStripMenuItem.Name = "toActiveToolStripMenuItem";
+            this.toActiveToolStripMenuItem.Size = new System.Drawing.Size(144, 22);
+            this.toActiveToolStripMenuItem.Text = "To Active...";
+            // 
+            // renameFileToolStripMenuItem
+            // 
+            this.renameFileToolStripMenuItem.Name = "renameFileToolStripMenuItem";
+            this.renameFileToolStripMenuItem.Size = new System.Drawing.Size(144, 22);
+            this.renameFileToolStripMenuItem.Text = "Rename...";
+            // 
             // panel7
             // 
             this.panel7.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
@@ -1906,7 +1977,7 @@ namespace smpc_sales_app.Pages.Sales
             this.panel7.Dock = System.Windows.Forms.DockStyle.Top;
             this.panel7.Location = new System.Drawing.Point(0, 233);
             this.panel7.Name = "panel7";
-            this.panel7.Size = new System.Drawing.Size(1028, 52);
+            this.panel7.Size = new System.Drawing.Size(1229, 52);
             this.panel7.TabIndex = 2;
             // 
             // lbl_path2
@@ -1931,20 +2002,22 @@ namespace smpc_sales_app.Pages.Sales
             // 
             // panel5
             // 
+            this.panel5.Controls.Add(this.TV1_preview);
             this.panel5.Controls.Add(this.SALES_TV);
             this.panel5.Controls.Add(this.panel13);
             this.panel5.Dock = System.Windows.Forms.DockStyle.Top;
             this.panel5.Location = new System.Drawing.Point(0, 46);
             this.panel5.Name = "panel5";
-            this.panel5.Size = new System.Drawing.Size(1028, 187);
+            this.panel5.Size = new System.Drawing.Size(1229, 187);
             this.panel5.TabIndex = 1;
             // 
             // SALES_TV
             // 
+            this.SALES_TV.ContextMenuStrip = this.contextMenu_treeview;
             this.SALES_TV.Dock = System.Windows.Forms.DockStyle.Fill;
             this.SALES_TV.Location = new System.Drawing.Point(0, 0);
             this.SALES_TV.Name = "SALES_TV";
-            this.SALES_TV.Size = new System.Drawing.Size(377, 187);
+            this.SALES_TV.Size = new System.Drawing.Size(578, 187);
             this.SALES_TV.TabIndex = 1;
             this.SALES_TV.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.SALES_TV_AfterSelect);
             // 
@@ -1953,7 +2026,7 @@ namespace smpc_sales_app.Pages.Sales
             this.panel13.Controls.Add(this.sales_preview);
             this.panel13.Controls.Add(this.SALES_LV);
             this.panel13.Dock = System.Windows.Forms.DockStyle.Right;
-            this.panel13.Location = new System.Drawing.Point(377, 0);
+            this.panel13.Location = new System.Drawing.Point(578, 0);
             this.panel13.Name = "panel13";
             this.panel13.Size = new System.Drawing.Size(651, 187);
             this.panel13.TabIndex = 0;
@@ -1973,7 +2046,7 @@ namespace smpc_sales_app.Pages.Sales
             // 
             this.label27.AutoSize = true;
             this.label27.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label27.Location = new System.Drawing.Point(243, 125);
+            this.label27.Location = new System.Drawing.Point(240, 125);
             this.label27.Name = "label27";
             this.label27.Size = new System.Drawing.Size(179, 23);
             this.label27.TabIndex = 1;
@@ -1992,6 +2065,7 @@ namespace smpc_sales_app.Pages.Sales
             // SALES_LV
             // 
             this.SALES_LV.AllowDrop = true;
+            this.SALES_LV.ContextMenuStrip = this.contextMenu_Sales;
             this.SALES_LV.Dock = System.Windows.Forms.DockStyle.Fill;
             this.SALES_LV.HideSelection = false;
             this.SALES_LV.HoverSelection = true;
@@ -2012,7 +2086,7 @@ namespace smpc_sales_app.Pages.Sales
             this.panel3.Dock = System.Windows.Forms.DockStyle.Top;
             this.panel3.Location = new System.Drawing.Point(0, 0);
             this.panel3.Name = "panel3";
-            this.panel3.Size = new System.Drawing.Size(1028, 46);
+            this.panel3.Size = new System.Drawing.Size(1229, 46);
             this.panel3.TabIndex = 0;
             // 
             // lbl_path1
@@ -2040,13 +2114,87 @@ namespace smpc_sales_app.Pages.Sales
             this.bs_project_item_sets.DataMember = "tbl_project_item_sets";
             this.bs_project_item_sets.DataSource = this.dataSet1;
             // 
+            // TV2_preview
+            // 
+            this.TV2_preview.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.TV2_preview.Controls.Add(this.label30);
+            this.TV2_preview.Controls.Add(this.pictureBox4);
+            this.TV2_preview.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.TV2_preview.Location = new System.Drawing.Point(0, 0);
+            this.TV2_preview.Name = "TV2_preview";
+            this.TV2_preview.Size = new System.Drawing.Size(578, 185);
+            this.TV2_preview.TabIndex = 3;
+            this.TV2_preview.Visible = false;
+            // 
+            // label30
+            // 
+            this.label30.AutoSize = true;
+            this.label30.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label30.Location = new System.Drawing.Point(205, 125);
+            this.label30.Name = "label30";
+            this.label30.Size = new System.Drawing.Size(260, 23);
+            this.label30.TabIndex = 2;
+            this.label30.Text = "Directory will open when saved";
+            // 
+            // pictureBox4
+            // 
+            this.pictureBox4.Image = global::smpc_sales_system.Properties.Resources.search;
+            this.pictureBox4.Location = new System.Drawing.Point(249, 33);
+            this.pictureBox4.Name = "pictureBox4";
+            this.pictureBox4.Size = new System.Drawing.Size(151, 79);
+            this.pictureBox4.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            this.pictureBox4.TabIndex = 1;
+            this.pictureBox4.TabStop = false;
+            // 
+            // TV1_preview
+            // 
+            this.TV1_preview.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.TV1_preview.Controls.Add(this.label29);
+            this.TV1_preview.Controls.Add(this.pictureBox3);
+            this.TV1_preview.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.TV1_preview.Location = new System.Drawing.Point(0, 0);
+            this.TV1_preview.Name = "TV1_preview";
+            this.TV1_preview.Size = new System.Drawing.Size(578, 187);
+            this.TV1_preview.TabIndex = 2;
+            this.TV1_preview.Visible = false;
+            // 
+            // label29
+            // 
+            this.label29.AutoSize = true;
+            this.label29.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label29.Location = new System.Drawing.Point(205, 125);
+            this.label29.Name = "label29";
+            this.label29.Size = new System.Drawing.Size(260, 23);
+            this.label29.TabIndex = 4;
+            this.label29.Text = "Directory will open when saved";
+            // 
+            // pictureBox3
+            // 
+            this.pictureBox3.Image = global::smpc_sales_system.Properties.Resources.search;
+            this.pictureBox3.Location = new System.Drawing.Point(249, 33);
+            this.pictureBox3.Name = "pictureBox3";
+            this.pictureBox3.Size = new System.Drawing.Size(151, 79);
+            this.pictureBox3.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            this.pictureBox3.TabIndex = 3;
+            this.pictureBox3.TabStop = false;
+            // 
+            // button1
+            // 
+            this.button1.Location = new System.Drawing.Point(578, 72);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(75, 23);
+            this.button1.TabIndex = 268;
+            this.button1.Text = "button1";
+            this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.button1_Click);
+            // 
             // Orders
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.Controls.Add(this.panel1);
             this.Name = "Orders";
-            this.Size = new System.Drawing.Size(1028, 1200);
+            this.Size = new System.Drawing.Size(1229, 1200);
             this.Load += new System.EventHandler(this.Orders_Load);
             ((System.ComponentModel.ISupportInitialize)(this.quick_quotes)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.dataSet1)).EndInit();
@@ -2083,10 +2231,12 @@ namespace smpc_sales_app.Pages.Sales
             this.panel12.ResumeLayout(false);
             this.panel8.ResumeLayout(false);
             this.panel11.ResumeLayout(false);
+            this.contextMenu_treeview.ResumeLayout(false);
             this.panel10.ResumeLayout(false);
             this.aftersales_preview.ResumeLayout(false);
             this.aftersales_preview.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
+            this.contextMenu_Sales.ResumeLayout(false);
             this.panel7.ResumeLayout(false);
             this.panel7.PerformLayout();
             this.panel5.ResumeLayout(false);
@@ -2097,6 +2247,12 @@ namespace smpc_sales_app.Pages.Sales
             this.panel3.ResumeLayout(false);
             this.panel3.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.bs_project_item_sets)).EndInit();
+            this.TV2_preview.ResumeLayout(false);
+            this.TV2_preview.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox4)).EndInit();
+            this.TV1_preview.ResumeLayout(false);
+            this.TV1_preview.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox3)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -2309,5 +2465,19 @@ namespace smpc_sales_app.Pages.Sales
         private System.Windows.Forms.Panel sales_preview;
         private System.Windows.Forms.Label label27;
         private System.Windows.Forms.PictureBox pictureBox1;
+        private System.Windows.Forms.ContextMenuStrip contextMenu_Sales;
+        private System.Windows.Forms.ToolStripMenuItem toBenchedToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem toActiveToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem renameFileToolStripMenuItem;
+        private System.Windows.Forms.ContextMenuStrip contextMenu_treeview;
+        private System.Windows.Forms.ToolStripMenuItem AddFoldertoolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem renameFolderToolStripMenuItem;
+        private System.Windows.Forms.Panel TV2_preview;
+        private System.Windows.Forms.Label label30;
+        private System.Windows.Forms.PictureBox pictureBox4;
+        private System.Windows.Forms.Panel TV1_preview;
+        private System.Windows.Forms.Label label29;
+        private System.Windows.Forms.PictureBox pictureBox3;
+        private System.Windows.Forms.Button button1;
     }
 }
