@@ -45,6 +45,7 @@ namespace smpc_sales_system.Models
         public int id { get; set; }
         public int based_id { get; set; }
         public string item_designation { get; set; }
+        public string item_set_description { get; set; }
         public string application { get; set; }
         public string additional { get; set; }
         public string flow { get; set; }

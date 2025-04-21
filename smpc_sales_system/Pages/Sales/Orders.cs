@@ -399,7 +399,7 @@ namespace smpc_sales_app.Pages.Sales
                             {
                                 bomDetailIndex = 1;
                             }
-                        }
+                        }    
                         // CHECKER IF THE ROW IS AN ITEM / ACCESSORIES
                         if (itemId > 0 && bomId == 0)
                         {
@@ -770,11 +770,21 @@ namespace smpc_sales_app.Pages.Sales
             try
             {
                 string[] files = Directory.GetFiles(path);
+                bool isQuotationVersions = Path.GetFileName(path).Equals("Quotation Versions", StringComparison.OrdinalIgnoreCase);
+
+                // Toggle the visibility of the Rename option
+                renameFileToolStripMenuItem.Visible = !isQuotationVersions;
+
                 foreach (string file in files)
                 {
                     string fileName = Path.GetFileName(file);
-                    string tag = txt_doc.Text;
-                    if (fileName.Contains("- "+ tag))
+                    string documentTag = isQuotationVersions ? txt_document_no.Text : txt_doc.Text;
+
+                    bool isMatch = isQuotationVersions
+                        ? fileName.Contains(documentTag)
+                        : fileName.Contains("- " + documentTag);
+
+                    if (isMatch)
                     {
                         ListViewItem item = new ListViewItem(fileName);
                         item.SubItems.Add(new FileInfo(file).Length.ToString());
@@ -1171,9 +1181,9 @@ namespace smpc_sales_app.Pages.Sales
                 try
                 {
                     string tag = txt_doc.Text;
-                    string fileName = Path.GetFileNameWithoutExtension(file); // e.g. "filename"
-                    string extension = Path.GetExtension(file);               // e.g. ".pdf"
-                    string taggedFileName = $"{fileName} - {tag}{extension}";  // e.g. "filename - SO#1.pdf"
+                    string fileName = Path.GetFileNameWithoutExtension(file);
+                    string extension = Path.GetExtension(file);       
+                    string taggedFileName = $"{fileName} - {tag}{extension}";  
 
                     string latestPath = lbl_path1.Text;
                     string targetFilePath = Path.Combine(latestPath, taggedFileName);
@@ -1209,9 +1219,9 @@ namespace smpc_sales_app.Pages.Sales
                 try
                 {
                     string tag = txt_doc.Text;
-                    string fileName = Path.GetFileNameWithoutExtension(file); // e.g. "filename"
-                    string extension = Path.GetExtension(file);               // e.g. ".pdf"
-                    string taggedFileName = $"{fileName} - {tag}{extension}";  // e.g. "filename - SO#1.pdf"
+                    string fileName = Path.GetFileNameWithoutExtension(file); 
+                    string extension = Path.GetExtension(file);               
+                    string taggedFileName = $"{fileName} - {tag}{extension}"; 
 
                     string latestpath = lbl_path2.Text;
                     string targetFilePath = Path.Combine(latestpath, taggedFileName);
@@ -1452,7 +1462,7 @@ namespace smpc_sales_app.Pages.Sales
                         parentDataHeader2[column] = parsedValue;
                     }
                 }
-
+               
                 var parentData = MergeDictionaries(parentDataHeader, parentDataHeader2, parentDataFooter, parentDataFooter2);
                 string projectName = parentDataHeader["project_name"]?.ToString();
                 var dataSource = Helpers.ConvertDataGridViewToDataTable(dgv_order_sales);
@@ -1557,36 +1567,6 @@ namespace smpc_sales_app.Pages.Sales
                 MessageBox.Show("Error: " + ex.Message + "\n\n" + "Stack Trace: " + ex.StackTrace);
             }
         }
-
-        private async void button1_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                string documentNo = txt_doc.Text;
-                string saveDirectory = Settings.Default.SALESPATH;
-                Directory.CreateDirectory(saveDirectory);
-
-                string fileName = $"Sales_{documentNo}.pdf";
-                string fullPath = Path.Combine(saveDirectory, fileName);
-
-                var modal = new SalesPrintModal(isQuotation: true, documentNo: "1")
-                {
-                    AutoExport = true,
-                    ExportPath = fullPath
-                };
-
-                // Instead of showing the modal, just manually trigger Load logic
-                // by showing the form minimized and hidden — still triggers Load
-                modal.ShowInTaskbar = false;
-                modal.WindowState = FormWindowState.Minimized;
-                modal.Show();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Error exporting PDF: " + ex.Message);
-            }
-        }
-
         private void BindControlsForNewOrderORexisting()
         {
             Helpers.ResetControls(pnl_header);
