@@ -3,6 +3,7 @@ using smpc_sales_app.Pages.Sales;
 using smpc_sales_app.Services.Helpers;
 using smpc_sales_app.Services.Sales;
 using smpc_sales_system.Models;
+using smpc_sales_system.Properties;
 using smpc_sales_system.Services.Sales;
 using smpc_sales_system.Services.Sales.Models;
 using System;
@@ -357,7 +358,7 @@ namespace smpc_sales_system.Pages.Sales
                         ReportDataSource childReportDataSource = new ReportDataSource("DataSet2", ItemSetContent);
                         ReportDataSource ComponentsReportDataSource = new ReportDataSource("DataSet3", ProjectItemList);
 
-                        reportViewer1.LocalReport.ReportPath = @"C:\Users\SMPC\source\repos\smpc_sales_system\smpc_sales_system2\smpc_sales_system\Pages\Sales\ProjectReport.rdlc";
+                        reportViewer1.LocalReport.ReportPath = Path.Combine(Settings.Default.REPORTPATH, "ProjectReport.rdlc");
                         reportViewer1.LocalReport.DataSources.Clear();
                         reportViewer1.LocalReport.DataSources.Add(headerReportDataSource);
                         reportViewer1.LocalReport.DataSources.Add(childReportDataSource);
@@ -428,7 +429,7 @@ namespace smpc_sales_system.Pages.Sales
                         ReportDataSource headerReportDataSource = new ReportDataSource("DataSet1", transactionList);
                         ReportDataSource childReportDataSource = new ReportDataSource("DataSet2", childList);
 
-                        reportViewer1.LocalReport.ReportPath = @"C:\Users\SMPC\source\repos\smpc_sales_system\smpc_sales_system2\smpc_sales_system\Pages\Sales\QuotationReport.rdlc";
+                        reportViewer1.LocalReport.ReportPath = Path.Combine(Settings.Default.REPORTPATH, "QuotationReport.rdlc");
                         reportViewer1.LocalReport.DataSources.Clear();
                         reportViewer1.LocalReport.DataSources.Add(headerReportDataSource);
                         reportViewer1.LocalReport.DataSources.Add(childReportDataSource);
@@ -497,7 +498,7 @@ namespace smpc_sales_system.Pages.Sales
                         ReportDataSource headerReportDataSource = new ReportDataSource("DataSet1", OrderList);
                         ReportDataSource childReportDataSource = new ReportDataSource("DataSet2", DetailsList);
 
-                        reportViewer1.LocalReport.ReportPath = @"C:\Users\SMPC\source\repos\smpc_sales_system\smpc_sales_system2\smpc_sales_system\Pages\Sales\OrderReport.rdlc";
+                        reportViewer1.LocalReport.ReportPath = Path.Combine(Settings.Default.REPORTPATH, "OrderReport.rdlc");
                         reportViewer1.LocalReport.DataSources.Clear();
                         reportViewer1.LocalReport.DataSources.Add(headerReportDataSource);
                         reportViewer1.LocalReport.DataSources.Add(childReportDataSource);
@@ -559,7 +560,7 @@ namespace smpc_sales_system.Pages.Sales
                 // Perform your existing logic here (load datasets, parameters, etc.)
 
                 LocalReport report = new LocalReport();
-                report.ReportPath = @"C:\Users\SMPC\source\repos\smpc_sales_system\smpc_sales_system2\smpc_sales_system\Pages\Sales\ProjectReport.rdlc"; // Adjust this path
+                report.ReportPath = Path.Combine(Settings.Default.REPORTPATH, "ProjectReport.rdlc"); // Adjust this path
 
                 report.DataSources.Clear();
                 report.DataSources.Add(new ReportDataSource("DataSet1", transactionList));
@@ -595,7 +596,7 @@ namespace smpc_sales_system.Pages.Sales
                     throw new Exception("No quotation data found.");
 
                 LocalReport report = new LocalReport();
-                report.ReportPath = @"C:\Users\SMPC\source\repos\smpc_sales_system\smpc_sales_system2\smpc_sales_system\Pages\Sales\QuotationReport.rdlc"; // Adjust this path
+                report.ReportPath = Path.Combine(Settings.Default.REPORTPATH, "QuotationReport.rdlc");
 
                 report.DataSources.Clear();
                 report.DataSources.Add(new ReportDataSource("DataSet1", transactionList));
