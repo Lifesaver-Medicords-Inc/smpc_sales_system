@@ -30,7 +30,6 @@ namespace smpc_sales_system.Pages.Sales
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(SalesPrintModal));
-            this.reportViewer1 = new Microsoft.Reporting.WinForms.ReportViewer();
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
             this.btn_prev = new System.Windows.Forms.ToolStripButton();
             this.toolStripButton1 = new System.Windows.Forms.ToolStripButton();
@@ -39,21 +38,12 @@ namespace smpc_sales_system.Pages.Sales
             this.pnl_print = new System.Windows.Forms.Panel();
             this.pnl_dgv = new System.Windows.Forms.Panel();
             this.printDialog1 = new System.Windows.Forms.PrintDialog();
+            this.reportViewer1 = new Microsoft.Reporting.WinForms.ReportViewer();
             this.toolStrip1.SuspendLayout();
             this.panel6.SuspendLayout();
             this.pnl_print.SuspendLayout();
             this.pnl_dgv.SuspendLayout();
             this.SuspendLayout();
-            // 
-            // reportViewer1
-            // 
-            this.reportViewer1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.reportViewer1.LocalReport.ReportEmbeddedResource = "smpc_sales_system.Pages.Sales.QuotationReport.rdlc";
-            this.reportViewer1.Location = new System.Drawing.Point(0, 0);
-            this.reportViewer1.Name = "reportViewer1";
-            this.reportViewer1.ServerReport.BearerToken = null;
-            this.reportViewer1.Size = new System.Drawing.Size(800, 686);
-            this.reportViewer1.TabIndex = 0;
             // 
             // toolStrip1
             // 
@@ -127,6 +117,16 @@ namespace smpc_sales_system.Pages.Sales
             // 
             this.printDialog1.UseEXDialog = true;
             // 
+            // reportViewer1
+            // 
+            this.reportViewer1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.reportViewer1.LocalReport.ReportEmbeddedResource = "smpc_sales_system.Pages.Sales.QuotationReport.rdlc";
+            this.reportViewer1.Location = new System.Drawing.Point(0, 0);
+            this.reportViewer1.Name = "reportViewer1";
+            this.reportViewer1.ServerReport.BearerToken = null;
+            this.reportViewer1.Size = new System.Drawing.Size(800, 686);
+            this.reportViewer1.TabIndex = 0;
+            // 
             // SalesPrintModal
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -151,8 +151,6 @@ namespace smpc_sales_system.Pages.Sales
         }
 
         #endregion
-
-        private Microsoft.Reporting.WinForms.ReportViewer reportViewer1;
         private System.Windows.Forms.ToolStrip toolStrip1;
         private System.Windows.Forms.ToolStripButton btn_prev;
         private System.Windows.Forms.Panel panel6;
@@ -161,5 +159,6 @@ namespace smpc_sales_system.Pages.Sales
         private System.Windows.Forms.Panel pnl_dgv;
         private System.Windows.Forms.PrintDialog printDialog1;
         private System.Windows.Forms.ToolStripButton toolStripButton1;
+        private Microsoft.Reporting.WinForms.ReportViewer reportViewer1;
     }
 }
