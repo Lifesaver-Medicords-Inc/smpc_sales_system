@@ -771,6 +771,7 @@ namespace smpc_sales_app.Pages.Sales
             {
                 string[] files = Directory.GetFiles(path);
                 bool isQuotationVersions = Path.GetFileName(path).Equals("Quotation Versions", StringComparison.OrdinalIgnoreCase);
+                bool isBOQ = Path.GetFileName(path).Equals("Bill of Quantities & Bill of Materials", StringComparison.OrdinalIgnoreCase);
 
                 // Toggle the visibility of the Rename option
                 renameFileToolStripMenuItem.Visible = !isQuotationVersions;
@@ -778,9 +779,11 @@ namespace smpc_sales_app.Pages.Sales
                 foreach (string file in files)
                 {
                     string fileName = Path.GetFileName(file);
-                    string documentTag = isQuotationVersions ? txt_document_no.Text : txt_doc.Text;
+                    string documentTag = (isQuotationVersions || isBOQ)
+                    ? txt_document_no.Text
+                    : txt_doc.Text;
 
-                    bool isMatch = isQuotationVersions
+                    bool isMatch = isQuotationVersions || isBOQ
                         ? fileName.Contains(documentTag)
                         : fileName.Contains("- " + documentTag);
 

@@ -27,14 +27,6 @@ namespace smpc_sales_system.Pages.Sales
         string branchName = "Branch not found";
         List<string> unitprices = new List<string>();
         string addressName = "Address not found";
-        string[] detailsArray;
-        string[] itemDescriptionArray;
-        string[] qtyArray;
-        string[] unitpricesArray;
-        float[] unitpricesFloatArray;
-        float unitpricesSum;
-        int[] qtytotalArray;
-        int qtySum;
 
 
         public SalesPrintModal(bool isQuotation = false, bool isProject = false, string documentNo = null)
@@ -497,7 +489,7 @@ namespace smpc_sales_system.Pages.Sales
                         ReportParameter codeNameParameter = new ReportParameter("CodeName", codeName);
                         ReportDataSource headerReportDataSource = new ReportDataSource("DataSet1", OrderList);
                         ReportDataSource childReportDataSource = new ReportDataSource("DataSet2", DetailsList);
-
+                        
                         reportViewer1.LocalReport.ReportPath = Path.Combine(Settings.Default.REPORTPATH, "OrderReport.rdlc");
                         reportViewer1.LocalReport.DataSources.Clear();
                         reportViewer1.LocalReport.DataSources.Add(headerReportDataSource);
@@ -549,76 +541,7 @@ namespace smpc_sales_system.Pages.Sales
             GC.Collect(); // optional: force immediate cleanup
             GC.WaitForPendingFinalizers();
         }
-        public async Task ExportReportAsync(string savePath)
-        {
-            if (isProject)
-            {
-                await fetchQuotationProjectByDocumentNo(documentNo);
-                if (transactionList == null || transactionList.Rows.Count == 0)
-                    throw new Exception("No project data found.");
-
-                // Perform your existing logic here (load datasets, parameters, etc.)
-
-                LocalReport report = new LocalReport();
-                report.ReportPath = Path.Combine(Settings.Default.REPORTPATH, "ProjectReport.rdlc"); // Adjust this path
-
-                report.DataSources.Clear();
-                report.DataSources.Add(new ReportDataSource("DataSet1", transactionList));
-                report.DataSources.Add(new ReportDataSource("DataSet2", ItemSetContent));
-                report.DataSources.Add(new ReportDataSource("DataSet3", ProjectItemList));
-
-                // Add parameters just like in your current code
-                var parameters = new List<ReportParameter>
-                {
-                    new ReportParameter("BranchName", branchName),
-                    new ReportParameter("AddressName", addressName),
-                    new ReportParameter("ItemDescriptions", itemDescriptionArray),
-                    new ReportParameter("details", detailsArray),
-                    new ReportParameter("qty", qtyArray),
-                    new ReportParameter("unitprices", unitpricesArray),
-                    new ReportParameter("unitpricesSum", unitpricesSum.ToString()),
-                    new ReportParameter("qtySum", qtySum.ToString())
-                };
-                report.SetParameters(parameters);
-
-                // Export to PDF
-                Warning[] warnings;
-                string[] streamIds;
-                string mimeType, encoding, extension;
-
-                byte[] pdfBytes = report.Render("PDF", null, out mimeType, out encoding, out extension, out streamIds, out warnings);
-                File.WriteAllBytes(savePath, pdfBytes);
-            }
-            else if (isQuotation)
-            {
-                await fetchQuotationDetailsByDocumentNo(documentNo);
-                if (transactionList == null || transactionList.Rows.Count == 0)
-                    throw new Exception("No quotation data found.");
-
-                LocalReport report = new LocalReport();
-                report.ReportPath = Path.Combine(Settings.Default.REPORTPATH, "QuotationReport.rdlc");
-
-                report.DataSources.Clear();
-                report.DataSources.Add(new ReportDataSource("DataSet1", transactionList));
-                report.DataSources.Add(new ReportDataSource("DataSet2", childList));
-
-                var parameters = new List<ReportParameter>
-                {
-                    new ReportParameter("BranchName", branchName ?? string.Empty),
-                    new ReportParameter("AddressName", addressName ?? string.Empty),
-                    new ReportParameter("ItemDescriptions", itemDescriptionArray ?? Array.Empty<string>())
-                };
-
-                report.SetParameters(parameters);
-
-                Warning[] warnings;
-                string[] streamIds;
-                string mimeType, encoding, extension;
-
-                byte[] pdfBytes = report.Render("PDF", null, out mimeType, out encoding, out extension, out streamIds, out warnings);
-                File.WriteAllBytes(savePath, pdfBytes);
-            }
-        }
+      
 
     }
 }

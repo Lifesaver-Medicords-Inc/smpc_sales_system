@@ -32,13 +32,12 @@ namespace smpc_sales_system.Pages.Sales
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(SalesPrintModal));
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
             this.btn_prev = new System.Windows.Forms.ToolStripButton();
-            this.toolStripButton1 = new System.Windows.Forms.ToolStripButton();
             this.panel6 = new System.Windows.Forms.Panel();
             this.label1 = new System.Windows.Forms.Label();
             this.pnl_print = new System.Windows.Forms.Panel();
             this.pnl_dgv = new System.Windows.Forms.Panel();
-            this.printDialog1 = new System.Windows.Forms.PrintDialog();
             this.reportViewer1 = new Microsoft.Reporting.WinForms.ReportViewer();
+            this.printDialog1 = new System.Windows.Forms.PrintDialog();
             this.toolStrip1.SuspendLayout();
             this.panel6.SuspendLayout();
             this.pnl_print.SuspendLayout();
@@ -49,8 +48,7 @@ namespace smpc_sales_system.Pages.Sales
             // 
             this.toolStrip1.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
             this.toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.btn_prev,
-            this.toolStripButton1});
+            this.btn_prev});
             this.toolStrip1.Location = new System.Drawing.Point(0, 47);
             this.toolStrip1.Name = "toolStrip1";
             this.toolStrip1.RenderMode = System.Windows.Forms.ToolStripRenderMode.Professional;
@@ -66,14 +64,6 @@ namespace smpc_sales_system.Pages.Sales
             this.btn_prev.Size = new System.Drawing.Size(52, 22);
             this.btn_prev.Text = "Back";
             this.btn_prev.Click += new System.EventHandler(this.btn_prev_Click);
-            // 
-            // toolStripButton1
-            // 
-            this.toolStripButton1.Image = global::smpc_sales_system.Properties.Resources.FolderIcon;
-            this.toolStripButton1.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.toolStripButton1.Name = "toolStripButton1";
-            this.toolStripButton1.Size = new System.Drawing.Size(116, 22);
-            this.toolStripButton1.Text = "Save to Directory";
             // 
             // panel6
             // 
@@ -113,10 +103,6 @@ namespace smpc_sales_system.Pages.Sales
             this.pnl_dgv.Size = new System.Drawing.Size(800, 686);
             this.pnl_dgv.TabIndex = 1;
             // 
-            // printDialog1
-            // 
-            this.printDialog1.UseEXDialog = true;
-            // 
             // reportViewer1
             // 
             this.reportViewer1.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -126,6 +112,10 @@ namespace smpc_sales_system.Pages.Sales
             this.reportViewer1.ServerReport.BearerToken = null;
             this.reportViewer1.Size = new System.Drawing.Size(800, 686);
             this.reportViewer1.TabIndex = 0;
+            // 
+            // printDialog1
+            // 
+            this.printDialog1.UseEXDialog = true;
             // 
             // SalesPrintModal
             // 
@@ -158,7 +148,6 @@ namespace smpc_sales_system.Pages.Sales
         private System.Windows.Forms.Panel pnl_print;
         private System.Windows.Forms.Panel pnl_dgv;
         private System.Windows.Forms.PrintDialog printDialog1;
-        private System.Windows.Forms.ToolStripButton toolStripButton1;
         private Microsoft.Reporting.WinForms.ReportViewer reportViewer1;
     }
 }
