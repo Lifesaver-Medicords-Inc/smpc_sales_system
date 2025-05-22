@@ -18,10 +18,12 @@ using smpc_sales_app.Pages;
 
 namespace smpc_sales_system.Pages.Sales
 {
-    public delegate void HandleShowForm(string tabTitle, Control control);
-
+    
+    
     public partial class Opportunities : UserControl
     {
+        public delegate void TriggerNewFormDelegate(string title, Control control);
+        public event TriggerNewFormDelegate TriggerNewForm;
         private DateTimePicker dateTimePicker;
         ApiResponseModel response;
         public Opportunities()
@@ -62,6 +64,8 @@ namespace smpc_sales_system.Pages.Sales
             await fetchQuotationDetails();
         }
         //DGV ACTIONS
+        
+
         private void dgv_sales_opportunities_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
             if (dgv_sales_opportunities.Columns[e.ColumnIndex].Name == "prospectref")
@@ -74,11 +78,11 @@ namespace smpc_sales_system.Pages.Sales
                     {
                         documentNo = documentNo.Substring(2);
                     }
+
                     Quotation quotationPage = new Quotation(documentNo, versionNo);
+                    string title = "Q#"+documentNo;
+                    TriggerNewForm?.Invoke(title, quotationPage);
 
-                    this.Parent.Controls.Add(quotationPage);
-
-                    this.Hide();
                 }
             }
             if (dgv_sales_opportunities.Columns[e.ColumnIndex].Name == "final_ref_no")
@@ -155,7 +159,6 @@ namespace smpc_sales_system.Pages.Sales
                             response = await OpportunityService.Insert(data);
                             if (response != null && response.Success)
                             {
-                                MessageBox.Show("Opportunity Successfully saved");
                                 fetchQuotationDetails();
                             }
                             else
@@ -168,7 +171,6 @@ namespace smpc_sales_system.Pages.Sales
                             response = await OpportunityService.Update(data);
                             if (response != null && response.Success)
                             {
-                                MessageBox.Show("Opportunity Successfully updated");
                                 fetchQuotationDetails();
                             }
                             else
@@ -361,5 +363,6 @@ namespace smpc_sales_system.Pages.Sales
         {
 
         }
+
     }
 }
