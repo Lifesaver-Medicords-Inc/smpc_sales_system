@@ -19,7 +19,7 @@ namespace smpc_inventory_app.Services.Setup.Model.Item
         public string liquid_type { get; set; }
         public float volume { get; set; }
         public float weight { get; set; }
-        public string long_desc { get; set; }
+        public string long_description { get; set; }
     }
     class AdditionalSpecs
     {

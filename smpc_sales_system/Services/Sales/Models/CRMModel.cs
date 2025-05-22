@@ -24,5 +24,7 @@ namespace smpc_sales_system.Services.Sales.Models
         public string date { get; set; }
         public string remark { get; set; }
         public int crm_id { get; set; }
+        public string sales_id { get; set; }
     }
 }
+ 

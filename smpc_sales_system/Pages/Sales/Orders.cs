@@ -62,6 +62,7 @@ namespace smpc_sales_app.Pages.Sales
         public DataTable transactionList { get; set; } = new DataTable();
         public DataTable childList { get; set; } = new DataTable();
         public DataTable ItemList { get; set; } = new DataTable();
+        public DataTable ItemSpecs { get; set; } = new DataTable();
         public DataTable ItemSets { get; set; } = new DataTable();
         public DataTable ProjectItemList { get; set; } = new DataTable();
         public DataTable bom { get; set; } = new DataTable();
@@ -89,6 +90,7 @@ namespace smpc_sales_app.Pages.Sales
         {
             var itemData = await ItemService.GetItem();
             ItemList = JsonHelper.ToDataTable(itemData.items);
+            ItemSpecs = JsonHelper.ToDataTable(itemData.additionalspecs);
         }
         private async Task fetchBpiData()
         {
@@ -293,11 +295,11 @@ namespace smpc_sales_app.Pages.Sales
 
                         string itemId = childRow["item_id"].ToString();
                         DataRow[] itemRows = ItemList.Select($"id = '{itemId}'");
-
+                        DataRow[] itemspecRows = ItemSpecs.Select($"based_id = '{itemId}'");
                         // Add item details to newRow
                         if (itemRows.Length > 0)
                         {
-                            newRow["item_description"] = $"{itemRows[0]["item_model"]} - {itemRows[0]["short_desc"]}";
+                            newRow["item_description"] = itemspecRows[0]["long_description"].ToString();
                             newRow["item_code"] = itemRows[0]["item_code"].ToString();
                             newRow["numbering"] = itemcounter;
                         }
