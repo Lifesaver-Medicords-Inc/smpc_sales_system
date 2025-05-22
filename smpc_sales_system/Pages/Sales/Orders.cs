@@ -1389,7 +1389,6 @@ namespace smpc_sales_app.Pages.Sales
             txt_ref_po.ReadOnly = isStatusActive || isStatusCancelled;
             dtp_date.Enabled = !isStatusCancelled;
             dtp_delivery_date.Enabled = !isStatusCancelled;
-            txt_created_by.ReadOnly = isStatusCancelled;
             txt_receiver.ReadOnly = isStatusCancelled;
             txt_contact_no.ReadOnly = isStatusCancelled;
             txt_remarks.ReadOnly = isStatusCancelled;
