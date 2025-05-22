@@ -542,7 +542,7 @@
                       <Paragraph>
                         <TextRuns>
                           <TextRun>
-                            <Value>[Not Available yet in BPI]</Value>
+                            <Value>=First(Fields!created_by.Value, "DataSet1")</Value>
                             <Style>
                               <FontFamily>Calibri</FontFamily>
                               <FontSize>9pt</FontSize>
@@ -2537,11 +2537,92 @@ LIABILITY: Sunshine Multi Plus Corporation's liability under, for the breach of,
                   </Border>
                 </Style>
               </Rectangle>
+              <Textbox Name="lbl_receiver2">
+                <CanGrow>true</CanGrow>
+                <KeepTogether>true</KeepTogether>
+                <Paragraphs>
+                  <Paragraph>
+                    <TextRuns>
+                      <TextRun>
+                        <Value>=First(Fields!created_by.Value, "DataSet1")</Value>
+                        <Style>
+                          <FontFamily>Calibri</FontFamily>
+                          <FontSize>9pt</FontSize>
+                          <FontWeight>Bold</FontWeight>
+                        </Style>
+                      </TextRun>
+                    </TextRuns>
+                    <Style>
+                      <TextAlign>Center</TextAlign>
+                    </Style>
+                  </Paragraph>
+                </Paragraphs>
+                <Top>36.22585cm</Top>
+                <Left>13.88816cm</Left>
+                <Height>0.48976cm</Height>
+                <Width>4.771cm</Width>
+                <ZIndex>3</ZIndex>
+                <Style>
+                  <Border>
+                    <Style>None</Style>
+                  </Border>
+                  <PaddingLeft>2pt</PaddingLeft>
+                  <PaddingRight>2pt</PaddingRight>
+                  <PaddingTop>2pt</PaddingTop>
+                  <PaddingBottom>2pt</PaddingBottom>
+                </Style>
+              </Textbox>
+              <Line Name="Line1">
+                <Top>36.71561cm</Top>
+                <Left>13.39144cm</Left>
+                <Height>0cm</Height>
+                <Width>5.80113cm</Width>
+                <ZIndex>4</ZIndex>
+                <Style>
+                  <Border>
+                    <Style>Solid</Style>
+                  </Border>
+                </Style>
+              </Line>
+              <Textbox Name="Textbox22">
+                <CanGrow>true</CanGrow>
+                <KeepTogether>true</KeepTogether>
+                <Paragraphs>
+                  <Paragraph>
+                    <TextRuns>
+                      <TextRun>
+                        <Value>SALES EXECUTIVE</Value>
+                        <Style>
+                          <FontFamily>Calibri</FontFamily>
+                          <FontSize>9pt</FontSize>
+                          <FontWeight>Bold</FontWeight>
+                        </Style>
+                      </TextRun>
+                    </TextRuns>
+                    <Style />
+                  </Paragraph>
+                </Paragraphs>
+                <rd:DefaultName>Textbox7</rd:DefaultName>
+                <Top>36.71561cm</Top>
+                <Left>15.00229cm</Left>
+                <Height>0.48976cm</Height>
+                <Width>2.56614cm</Width>
+                <ZIndex>5</ZIndex>
+                <Style>
+                  <Border>
+                    <Style>None</Style>
+                  </Border>
+                  <PaddingLeft>2pt</PaddingLeft>
+                  <PaddingRight>2pt</PaddingRight>
+                  <PaddingTop>2pt</PaddingTop>
+                  <PaddingBottom>2pt</PaddingBottom>
+                </Style>
+              </Textbox>
             </ReportItems>
             <KeepTogether>true</KeepTogether>
             <Top>0.01899in</Top>
             <Left>0.17914in</Left>
-            <Height>14.13992in</Height>
+            <Height>14.73112in</Height>
             <Width>7.63314in</Width>
             <Style>
               <Border>
@@ -2550,7 +2631,7 @@ LIABILITY: Sunshine Multi Plus Corporation's liability under, for the breach of,
             </Style>
           </Rectangle>
         </ReportItems>
-        <Height>14.2883in</Height>
+        <Height>14.81955in</Height>
         <Style />
       </Body>
       <Width>8.07786in</Width>
