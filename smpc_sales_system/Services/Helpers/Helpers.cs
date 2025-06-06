@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Sockets;
@@ -11,6 +11,8 @@ using System.Data.SqlTypes;
 using System.Windows.Forms;
 using System.Drawing;
 using System.IO;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace smpc_app.Services.Helpers
 {
@@ -183,47 +185,75 @@ namespace smpc_app.Services.Helpers
                 foreach (Control control in pnl.Controls)
                 {
                     // Check if the control is a TextBox
+                    // Check if the control is a TextBox
                     if (control is TextBox textBox)
                     {
                         string key = textBox.Name.Replace("txt_", "");
                         dynamic val = null;
 
+                        // Handle money formatting
                         if (textBox.Tag != null && textBox.Tag.ToString() == "money_format")
                         {
-                            bool isParsed = decimal.TryParse(textBox.Text.ToString().Replace(",", ""), out decimal tempVal);
-                            if (isParsed)
+                            if (decimal.TryParse(textBox.Text.Replace(",", ""), out decimal tempVal))
                             {
                                 val = tempVal;
                             }
                             else
                             {
                                 MessageBox.Show("Invalid money format. Please enter a valid number.");
+                                val = 0m;
+                            }
+                        }
+                        // Handle _id conversion
+                        else if (key.EndsWith("_id"))
+                        {
+                            if (int.TryParse(textBox.Text, out int idVal))
+                            {
+                                val = idVal;
+                            }
+                            else
+                            {
+                                MessageBox.Show($"Invalid ID format for '{key}'. Please enter a valid number.");
                                 val = 0;
                             }
                         }
                         else
                         {
+                            // Default to string if no special formatting
                             val = textBox.Text.ToString();
                         }
+
                         values[key] = val;
                     }
+
 
                     if (control is ComboBox comboBox)
                     {
                         string key = comboBox.Name.Replace("cmb_", "");
                         string val = "";
-                   
-                        if (comboBox.Tag == "DYNAMIC")
+
+                        if (comboBox.Tag?.ToString() == "DYNAMIC")
                         {
-                            key = key + "_id";
-                            values.Add(key, comboBox.SelectedValue);
+                            key += "_id";
+                            var selectedValue = comboBox.SelectedValue;
+
+                            // Handle null SelectedValue
+                            if (selectedValue != null && !(selectedValue is DataRowView))
+                            {
+                                values.Add(key, int.Parse(selectedValue.ToString()));
+                            }
+                            else
+                            {
+                                Console.WriteLine($"Warning: No valid selected value for {comboBox.Name}");
+                            }
                         }
                         else
                         {
-                            val = comboBox.Text.ToString();
+                            val = comboBox.Text?.ToString() ?? string.Empty;
                             values.Add(key, val);
                         }
                     }
+
 
 
                     if (control is CheckBox checkbox)
@@ -390,6 +420,44 @@ namespace smpc_app.Services.Helpers
 
             return localIP;
         }
+
+        public static DataTable GetDataTableFromUnboundGrid(DataGridView dgv)
+        {
+            DataTable dt = new DataTable();
+
+            // Create columns using DataPropertyName
+            foreach (DataGridViewColumn col in dgv.Columns)
+            {
+                string columnName = string.IsNullOrWhiteSpace(col.DataPropertyName) ? col.Name : col.DataPropertyName;
+                dt.Columns.Add(columnName, typeof(string)); // Adjust the type as needed
+            }
+
+            // Add rows
+            foreach (DataGridViewRow row in dgv.Rows)
+            {
+                if (!row.IsNewRow)
+                {
+                    DataRow dtRow = dt.NewRow();
+                    for (int i = 0; i < row.Cells.Count; i++)
+                    {
+                        dtRow[i] = row.Cells[i].Value ?? DBNull.Value;
+                    }
+                    dt.Rows.Add(dtRow);
+                }
+            }
+
+            return dt;
+        }
+
+
+
+
+
+
+
+
+
+
         public static string GetSerialNumber()
         {
             try
@@ -465,10 +533,74 @@ namespace smpc_app.Services.Helpers
 
             return dataTable;
         }
+
+
+
         public static string MoneyFormat(double money)
         {
             return String.Format("{0:N2}", money);
-        } 
+        }
+
+        public static string MoneyFormatDecimal(decimal money)
+        {
+            return String.Format("{0:N2}", money);
+        }
+
+
+        // format to peso
+        public static string FormatAsCurrency(object value)
+        {
+            if (decimal.TryParse(value?.ToString().Replace("₱", "").Replace(",", "").Trim(), out decimal number))
+            {
+                return number.ToString("C2", System.Globalization.CultureInfo.GetCultureInfo("en-PH"));
+            }
+            return "₱0.00";
+        }
+
+
+        // trims the peso sign
+        public static string GetCleanedPriceValue(string input)
+        {
+            if (string.IsNullOrWhiteSpace(input)) return "0";
+            // Remove currency symbols and thousands separators
+            var cleaned = input.Replace("₱", "")
+                               .Replace("$", "")
+                               .Replace(",", "")
+                               .Trim();
+
+            return cleaned;
+        }
+
+
+        // Converts the data types to string so it can be easily editable
+        public static DataTable ConvertDataTableToStringTable(DataTable originalTable)
+        {
+            DataTable stringTable = new DataTable();
+
+            
+            foreach (DataColumn col in originalTable.Columns)
+            {
+                stringTable.Columns.Add(col.ColumnName, typeof(string));
+            }
+
+            // Copy rows as strings
+            foreach (DataRow row in originalTable.Rows)
+            {
+                var newRow = stringTable.NewRow();
+                foreach (DataColumn col in originalTable.Columns)
+                {
+                    newRow[col.ColumnName] = row[col]?.ToString();
+                }
+                stringTable.Rows.Add(newRow);
+            }
+
+            return stringTable;
+        }
+
+
+
+
+
         public static void GetModalData(TextBox textBox, DataView dataView)
         {
             int recordIndex = 0;
@@ -483,6 +615,25 @@ namespace smpc_app.Services.Helpers
             }
 
         }
+
+        public static bool ConvertToIntIfString(Dictionary<string, object> data, string key)
+        {
+            if (data.ContainsKey(key) && data[key] is string strValue)
+            {
+                if (int.TryParse(strValue, out int intValue))
+                {
+                    data[key] = intValue;
+                    return true;
+                }
+                else
+                {
+                    MessageBox.Show($"Invalid {key.Replace("_", " ")}");
+                    return false;
+                }
+            }
+            return true; // If the key is not present or not a string, no conversion needed
+        }
+        
         public static DataTable FilterDataTable(DataTable dataTable, string searchTerm, params string[] columnsToSearch)
         {
             if (dataTable == null || columnsToSearch == null || columnsToSearch.Length == 0)
@@ -585,6 +736,60 @@ namespace smpc_app.Services.Helpers
                 // Handle access permissions issues if necessary
             }
         }
-     
+
+        public static JObject GetChangedEntries(JObject newData, Dictionary<string, dynamic> cachedData)
+        {
+            var changedEntries = new Dictionary<string, dynamic>();
+           
+            foreach (var kvp in newData)
+            {
+                string key = kvp.Key;
+                var newValue = kvp.Value;
+
+                if (cachedData.TryGetValue(key, out var cachedValue))
+                {
+                    string newJson = JsonConvert.SerializeObject(newValue);
+                    string cachedJson = JsonConvert.SerializeObject(cachedValue);
+
+                    if (newJson == cachedJson)
+                    {
+                        continue; // Value is the same, skip it
+                    }
+                }
+
+                // Either new key or changed value
+                changedEntries[key] = newValue;
+            }
+
+            return JObject.FromObject(changedEntries);
+        }
+
+        public static Dictionary<string, dynamic> GetChangedEntries(Dictionary<string, JArray> newData, Dictionary<string, dynamic> cachedData)
+        {
+            var changedEntries = new Dictionary<string, dynamic>();
+
+            foreach (var kvp in newData)
+            {
+                string key = kvp.Key;
+                var newValue = kvp.Value;
+
+                if (cachedData.TryGetValue(key, out var cachedValue))
+                {
+                    string newJson = JsonConvert.SerializeObject(newValue);
+                    string cachedJson = JsonConvert.SerializeObject(cachedValue);
+
+                    if (newJson == cachedJson)
+                    {
+                        continue; // Value is the same, skip it
+                    }
+                }
+
+                // Either new key or changed value
+                changedEntries[key] = newValue;
+            }
+
+            return changedEntries;
+        }
+
     }
 } 

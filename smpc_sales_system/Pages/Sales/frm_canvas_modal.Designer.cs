@@ -183,7 +183,7 @@ namespace smpc_sales_system.Pages.Sales
             this.Controls.Add(this.panel1);
             this.Name = "frm_canvas_modal";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "frm_canvas_modal";
+            this.Text = "Canvas Sheet";
             this.panel1.ResumeLayout(false);
             this.panel3.ResumeLayout(false);
             this.panel3.PerformLayout();

@@ -14,7 +14,7 @@ namespace smpc_sales_system.Models
 
     public class SalesProjectMultiplier
     {
-        public int id { get; set; }
+        public int multiplier_id { get; set; }
         public uint based_id { get; set; }
         public string brand { get; set; }
         public string component { get; set; }
@@ -42,7 +42,7 @@ namespace smpc_sales_system.Models
 
     public class SalesProjectContent
     {
-        public int id { get; set; }
+        public int content_id { get; set; }
         public int based_id { get; set; }
         public string item_designation { get; set; }
         public string item_set_description { get; set; }
@@ -56,12 +56,14 @@ namespace smpc_sales_system.Models
         public string phase { get; set; }
         public string no_of_sets { get; set; }
         public string no_of_pump_set { get; set; }
+        public string item_set_description { get; set; }
+        public string item_set_notes { get; set; }
     }
 
 
     public class SalesProjectAdvancedConditions
     {
-        public int id { get; set; }
+        public int conditions_id { get; set; }
         public int based_id { get; set; }
         public string pump_brand { get; set; }
         public string driver_type { get; set; }
@@ -77,7 +79,7 @@ namespace smpc_sales_system.Models
 
     public class SalesProjectItems
     {
-        public int id { get; set; }
+        public int items_id { get; set; }
         public int bom_id { get; set; }
         public int item_id { get; set; }
         public int based_id { get; set; }
@@ -91,10 +93,12 @@ namespace smpc_sales_system.Models
         public string model { get; set; }
         public string item_inv_type { get; set; }
         public int qty { get; set; }
+        public decimal list_price_per_unit {get; set; }
+        public decimal unit_price { get; set; }
         public string multiplier { get; set; }
-        public double discount_price { get; set; }
-        public double list_price_per_unit { get; set; }
-        public double component_total { get; set; }
+
+        public decimal discount_price { get; set; }
+        public decimal component_total { get; set; }
         public string notes { get; set; }
         public int template_id { get; set; }
     }
@@ -110,8 +114,5 @@ namespace smpc_sales_system.Models
         public List<SalesProjectItems> sales_project_items { get; set; }
         public List<SalesWiringModel> sales_project_wiring { get; set; }
     }
-
-
-
 
 }

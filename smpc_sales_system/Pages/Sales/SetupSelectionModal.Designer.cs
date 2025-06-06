@@ -159,7 +159,7 @@ namespace smpc_inventory_app.Pages
             // 
             // base_id
             // 
-            this.base_id.DataPropertyName = "based_id";
+            this.base_id.DataPropertyName = "general_based_id";
             this.base_id.HeaderText = "BASED_ID";
             this.base_id.Name = "base_id";
             this.base_id.Visible = false;

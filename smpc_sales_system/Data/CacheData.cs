@@ -24,6 +24,11 @@ namespace smpc_sales_app.Data
 
 
 
+        public static Dictionary<string, dynamic> Cached_Advanced_Conditions_Data { get; set; }
+        public static Dictionary<string, dynamic> Cached_Content_Data { get; set; }
+
+
+
 
     }
 }

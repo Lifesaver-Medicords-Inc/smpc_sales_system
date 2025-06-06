@@ -42,8 +42,8 @@ namespace smpc_sales_system.Pages.Sales
         private async void FetchBomItems()
         {
             var data = await ProjectService.GetBom();
-            DataTable parent = JsonHelper.ToDataTable(data.BomParent);
-            DataTable child = JsonHelper.ToDataTable(data.setup_bom_details);
+            DataTable parent = JsonHelper.ToDataTable(data.bom_head);
+            DataTable child = JsonHelper.ToDataTable(data.bom_details);
             table = child;
             childTable = parent;
 
@@ -51,7 +51,7 @@ namespace smpc_sales_system.Pages.Sales
             DataTable childCopy = child.Clone();
 
             parentCopy.Columns.Add("item_name", typeof(string));
-            childCopy.Columns.Add("item_name", typeof(string));
+            //childCopy.Columns.Add("item_name", typeof(string));
 
 
             foreach (DataRow parentRow in parent.Rows)
@@ -86,7 +86,6 @@ namespace smpc_sales_system.Pages.Sales
 
                 childCopy.Rows.Add(newRow);
             }
-
 
             dataGridView1.DataSource = parentCopy;
 

@@ -17,11 +17,13 @@ namespace smpc_sales_system.Services.Sales
     {
         static string url = "/sales/projects";
         static string url_conditions = "/sales/project_conditions";
-        static string url_content = "/sales/project_content";
+        static string url_content = "/sales/project_contents";
+        static string url_items = "/sales/project_items";
         static string url_bom = "/setup/bom";
         static string url_suppliers = "/BpiSuppliers";
         static string url_canvas = "/sales/salescanvas";
         static string url_pumps = "/sales/projects_pumps";
+        static string url_wiring = "/sales/project_wiring";
         public static async Task<SalesProjectList> GetProjects()
         {
             var response = await RequestToApi<ApiResponseModel<SalesProjectList>>.Get(url);
@@ -68,9 +70,27 @@ namespace smpc_sales_system.Services.Sales
             return response;
         }
 
+        public static async Task<ApiResponseModel> InsertItems(Dictionary<string, dynamic> data)
+        {
+            var response = await RequestToApi<ApiResponseModel>.Post(url_items, data);
+            return response;
+        }
+
+        public static async Task<ApiResponseModel> InsertWiring(Dictionary<string, dynamic> data)
+        {
+            var response = await RequestToApi<ApiResponseModel>.Post(url_wiring, data);
+            return response;
+        }
+
+        public static async Task<ApiResponseModel> UpdateWiring(Dictionary<string, dynamic> data)
+        {
+            var response = await RequestToApi<ApiResponseModel>.Put(url_wiring, data);
+            return response;
+        }
+
         public static async Task<ApiResponseModel> UpdateProjectItems(Dictionary<string, dynamic> data)
         {
-            var response = await RequestToApi<ApiResponseModel>.Put(url_content, data);
+            var response = await RequestToApi<ApiResponseModel>.Put(url_items, data);
             return response;
         }
 

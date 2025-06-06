@@ -23,20 +23,28 @@ namespace smpc_sales_app.Pages
     {
 
         private DataTable dt;
+        private DataTable bomHead;
+        private DataTable bomDetails;
         Quotation quote = new Quotation();
         int result;
+        int bomResult;
+        int itemId;
 
 
-        private ClientWebSocket _websocket;
-        private CancellationTokenSource _cancelTokenSource;
+
 
         public ItemModal(DataTable dgv)
         {
             InitializeComponent();
             this.dt = dgv;
+        }
 
-            _websocket = new ClientWebSocket();
-            _cancelTokenSource = new CancellationTokenSource();
+        public ItemModal(DataTable dgv, DataTable BomHead, DataTable BomDetails)
+        {
+            InitializeComponent();
+            this.dt = dgv;
+            this.bomHead = BomHead;
+            this.bomDetails = BomDetails;
         }
 
 
@@ -44,12 +52,61 @@ namespace smpc_sales_app.Pages
         {
             return result;
         }
+        public int GetBomResult()
+        {
+            return bomResult;
+        }
+        public int GetParentItemId()
+        {
+            return itemId;
+        }
+
+        public bool isBom { get; set; }
+
+        public bool isItem { get; set; }
+  
+
+
+
+
+            
 
         private void dgv_itemList_CellClick(object sender, DataGridViewCellEventArgs e)
         {
             if (e.RowIndex >= 0)
             {
-                this.result = e.RowIndex;
+                int itemID = Convert.ToInt32(dgv_itemList.Rows[e.RowIndex].Cells["id"].Value);
+
+                checkIfItemHasBom(itemID, e.RowIndex);
+                //this.DialogResult = DialogResult.OK;
+                //this.Close();
+            }
+        }
+
+
+        private void checkIfItemHasBom(int itemid, int rowIndex)
+        {
+            int? checkData = bomHead.AsEnumerable()
+                        .Where(row => row.Field<int>("item_id") == itemid)
+                        .Select(row => row.Field<int>("id"))
+                        .FirstOrDefault();
+
+            if (checkData != 0)
+            {
+                MessageBox.Show("Item has bom");
+                this.bomResult = checkData.Value;
+                this.itemId = itemid;
+                isBom = true;
+                this.DialogResult = DialogResult.OK;
+                this.Close();
+
+            }
+            else
+            {
+                MessageBox.Show("no bom");
+                this.result = rowIndex;
+                this.itemId = itemid;
+                isItem = true;
                 this.DialogResult = DialogResult.OK;
                 this.Close();
             }
