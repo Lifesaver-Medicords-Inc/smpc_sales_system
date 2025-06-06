@@ -62,6 +62,7 @@ namespace smpc_sales_app.Pages.Sales
         public DataTable transactionList { get; set; } = new DataTable();
         public DataTable childList { get; set; } = new DataTable();
         public DataTable ItemList { get; set; } = new DataTable();
+        public DataTable ItemSpecs { get; set; } = new DataTable();
         public DataTable ItemSets { get; set; } = new DataTable();
         public DataTable ProjectItemList { get; set; } = new DataTable();
         public DataTable bom { get; set; } = new DataTable();
@@ -89,6 +90,7 @@ namespace smpc_sales_app.Pages.Sales
         {
             var itemData = await ItemService.GetItem();
             ItemList = JsonHelper.ToDataTable(itemData.items);
+            ItemSpecs = JsonHelper.ToDataTable(itemData.additionalspecs);
         }
         private async Task fetchBpiData()
         {
@@ -293,11 +295,11 @@ namespace smpc_sales_app.Pages.Sales
 
                         string itemId = childRow["item_id"].ToString();
                         DataRow[] itemRows = ItemList.Select($"id = '{itemId}'");
-
+                        DataRow[] itemspecRows = ItemSpecs.Select($"based_id = '{itemId}'");
                         // Add item details to newRow
                         if (itemRows.Length > 0)
                         {
-                            newRow["item_description"] = $"{itemRows[0]["item_model"]} - {itemRows[0]["short_desc"]}";
+                            newRow["item_description"] = itemspecRows[0]["long_description"].ToString();
                             newRow["item_code"] = itemRows[0]["item_code"].ToString();
                             newRow["numbering"] = itemcounter;
                         }
@@ -399,7 +401,7 @@ namespace smpc_sales_app.Pages.Sales
                             {
                                 bomDetailIndex = 1;
                             }
-                        }
+                        }    
                         // CHECKER IF THE ROW IS AN ITEM / ACCESSORIES
                         if (itemId > 0 && bomId == 0)
                         {
@@ -770,11 +772,24 @@ namespace smpc_sales_app.Pages.Sales
             try
             {
                 string[] files = Directory.GetFiles(path);
+                bool isQuotationVersions = Path.GetFileName(path).Equals("Quotation Versions", StringComparison.OrdinalIgnoreCase);
+                bool isBOQ = Path.GetFileName(path).Equals("Bill of Quantities & Bill of Materials", StringComparison.OrdinalIgnoreCase);
+
+                // Toggle the visibility of the Rename option
+                renameFileToolStripMenuItem.Visible = !isQuotationVersions;
+
                 foreach (string file in files)
                 {
                     string fileName = Path.GetFileName(file);
-                    string tag = txt_doc.Text;
-                    if (fileName.Contains("- "+ tag))
+                    string documentTag = (isQuotationVersions || isBOQ)
+                    ? txt_document_no.Text
+                    : txt_doc.Text;
+
+                    bool isMatch = isQuotationVersions || isBOQ
+                        ? fileName.Contains(documentTag)
+                        : fileName.Contains("- " + documentTag);
+
+                    if (isMatch)
                     {
                         ListViewItem item = new ListViewItem(fileName);
                         item.SubItems.Add(new FileInfo(file).Length.ToString());
@@ -1171,9 +1186,9 @@ namespace smpc_sales_app.Pages.Sales
                 try
                 {
                     string tag = txt_doc.Text;
-                    string fileName = Path.GetFileNameWithoutExtension(file); // e.g. "filename"
-                    string extension = Path.GetExtension(file);               // e.g. ".pdf"
-                    string taggedFileName = $"{fileName} - {tag}{extension}";  // e.g. "filename - SO#1.pdf"
+                    string fileName = Path.GetFileNameWithoutExtension(file);
+                    string extension = Path.GetExtension(file);       
+                    string taggedFileName = $"{fileName} - {tag}{extension}";  
 
                     string latestPath = lbl_path1.Text;
                     string targetFilePath = Path.Combine(latestPath, taggedFileName);
@@ -1209,9 +1224,9 @@ namespace smpc_sales_app.Pages.Sales
                 try
                 {
                     string tag = txt_doc.Text;
-                    string fileName = Path.GetFileNameWithoutExtension(file); // e.g. "filename"
-                    string extension = Path.GetExtension(file);               // e.g. ".pdf"
-                    string taggedFileName = $"{fileName} - {tag}{extension}";  // e.g. "filename - SO#1.pdf"
+                    string fileName = Path.GetFileNameWithoutExtension(file); 
+                    string extension = Path.GetExtension(file);               
+                    string taggedFileName = $"{fileName} - {tag}{extension}"; 
 
                     string latestpath = lbl_path2.Text;
                     string targetFilePath = Path.Combine(latestpath, taggedFileName);
@@ -1374,7 +1389,6 @@ namespace smpc_sales_app.Pages.Sales
             txt_ref_po.ReadOnly = isStatusActive || isStatusCancelled;
             dtp_date.Enabled = !isStatusCancelled;
             dtp_delivery_date.Enabled = !isStatusCancelled;
-            txt_sales_executive.ReadOnly = isStatusCancelled;
             txt_receiver.ReadOnly = isStatusCancelled;
             txt_contact_no.ReadOnly = isStatusCancelled;
             txt_remarks.ReadOnly = isStatusCancelled;
@@ -1452,7 +1466,7 @@ namespace smpc_sales_app.Pages.Sales
                         parentDataHeader2[column] = parsedValue;
                     }
                 }
-
+               
                 var parentData = MergeDictionaries(parentDataHeader, parentDataHeader2, parentDataFooter, parentDataFooter2);
                 string projectName = parentDataHeader["project_name"]?.ToString();
                 var dataSource = Helpers.ConvertDataGridViewToDataTable(dgv_order_sales);
@@ -1557,36 +1571,6 @@ namespace smpc_sales_app.Pages.Sales
                 MessageBox.Show("Error: " + ex.Message + "\n\n" + "Stack Trace: " + ex.StackTrace);
             }
         }
-
-        private async void button1_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                string documentNo = txt_doc.Text;
-                string saveDirectory = Settings.Default.SALESPATH;
-                Directory.CreateDirectory(saveDirectory);
-
-                string fileName = $"Sales_{documentNo}.pdf";
-                string fullPath = Path.Combine(saveDirectory, fileName);
-
-                var modal = new SalesPrintModal(isQuotation: true, documentNo: "1")
-                {
-                    AutoExport = true,
-                    ExportPath = fullPath
-                };
-
-                // Instead of showing the modal, just manually trigger Load logic
-                // by showing the form minimized and hidden — still triggers Load
-                modal.ShowInTaskbar = false;
-                modal.WindowState = FormWindowState.Minimized;
-                modal.Show();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Error exporting PDF: " + ex.Message);
-            }
-        }
-
         private void BindControlsForNewOrderORexisting()
         {
             Helpers.ResetControls(pnl_header);

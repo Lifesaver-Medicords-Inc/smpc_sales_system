@@ -2,6 +2,7 @@
 using smpc_sales_app.Data;
 using smpc_sales_app.Pages.Sales;
 using smpc_sales_app.Services;
+using smpc_sales_system.Pages.Sales;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -27,7 +28,7 @@ namespace smpc_sales_app.Pages
         {
 
         }
-     
+        
         private void showForm(string tabTitle, Control control)
         {
             tabCount++;
@@ -40,6 +41,12 @@ namespace smpc_sales_app.Pages
             TabPage newTab = new TabPage(tabTitle);
             newTab.Controls.Add(closeButton);
             closeButton.Location = new Point(newTab.Width, 10); // Adjust position as needed
+
+            if (control is Opportunities)
+            {
+                Opportunities OpportunitiesControl = (Opportunities)control;
+                OpportunitiesControl.TriggerNewForm += showForm;
+            }
 
             //control.Width = this.Width - 235; 
             tabContainer.Height = this.Height * 2;
@@ -54,7 +61,6 @@ namespace smpc_sales_app.Pages
         {
             tabContainer.TabPages.Remove(tabContainer.SelectedTab);
         }
-
         private void Sidebar_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
         {
             
@@ -69,7 +75,6 @@ namespace smpc_sales_app.Pages
                 showForm(route.GetTitle(), route.GetForm());
             }
         }
-
         private void Layout_Load(object sender, EventArgs e)
         {
             Login login = new Login();
@@ -85,7 +90,6 @@ namespace smpc_sales_app.Pages
                 Application.Exit();
             }
         }
-
         private void Sidebar_AfterSelect(object sender, TreeViewEventArgs e)
         {
 
