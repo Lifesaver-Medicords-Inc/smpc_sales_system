@@ -562,51 +562,65 @@ namespace smpc_sales_app.Pages.Sales
 
         private async void fetchQuotationDetails()
         {
-            SalesQuotationList data = await QuotationService.GetQuotations();
+           
+            pnl_header.Enabled = false;
+            pnl_footer.Enabled = false;
+            toolstrip_quotation.Enabled = false;
+            dgv_quick_quote_details.Enabled = false;
 
-            if (data != null && data.SalesQuotation != null && data.SalesQuotation.Any())
+            var result = await Task.Run(async () =>
             {
-                // Version filter
-                var latestQuotations = data.SalesQuotation
-                    .GroupBy(q => q.document_no)
-                    .Select(group => group.OrderByDescending(q => q.version_no)
-                    .First())
-                    .ToList();
+              
+                SalesQuotationList data = await QuotationService.GetQuotations();
 
-          
+                if (data != null && data.SalesQuotation != null && data.SalesQuotation.Any())
+                {
+                   
+                    var latestQuotations = data.SalesQuotation
+                        .GroupBy(q => q.document_no)
+                        .Select(group => group.OrderByDescending(q => q.version_no).First())
+                        .ToList();
 
-                // GET the latest version
-                transactionList = JsonHelper.ToDataTable(latestQuotations);
-                allTransactionList = JsonHelper.ToDataTable(data.SalesQuotation);
-                childList = JsonHelper.ToDataTable(data.SalesQuotationQuick);
+                    return new
+                    {
+                        Data = data,
+                        Latest = JsonHelper.ToDataTable(latestQuotations),
+                        All = JsonHelper.ToDataTable(data.SalesQuotation),
+                        Quick = JsonHelper.ToDataTable(data.SalesQuotationQuick)
+                    };
+                }
+
+                return null;
+            });
+
+            
+            if (result != null)
+            {
+                transactionList = result.Latest;
+                allTransactionList = result.All;
+                childList = result.Quick;
 
                 pnl_header.Enabled = true;
                 pnl_footer.Enabled = true;
 
-                Panel[] pnl_list = { pnl_header, pnl_footer };
-                //Helpers.ReadOnlyControls(pnl_list);
                 dgv_quick_quote_details.ReadOnly = true;
-                //button1.Enabled = true;
-
-                toolstrip_quotation.Enabled = false;
                 dgv_quick_quote_details.Enabled = true;
                 toolstrip_quotation.Enabled = true;
 
-                if (data != null)
-                {
-                    await Task.Delay(2000);
-                    bind(true);
-                }
+                await Task.Delay(2000); 
+                bind(true);
             }
             else
             {
                 MessageBox.Show("Please create a new data!");
-                Panel[] a = { pnl_header };
                 pnl_header.Enabled = true;
                 pnl_footer.Enabled = true;
-                Helpers.ResetReadOnlyControls(a);
+
+                Panel[] panels = { pnl_header };
+                Helpers.ResetReadOnlyControls(panels);
             }
         }
+
 
 
         public DataTable dt_multiplier { get; set; }
@@ -1585,7 +1599,7 @@ namespace smpc_sales_app.Pages.Sales
                 //combobox.DataSource = CacheData.UoM;
                 //combobox.DisplayMember = "name";
                 //combobox.ValueMember = "id";
-
+                
                 fetchQuotationDetails();
                 
             }

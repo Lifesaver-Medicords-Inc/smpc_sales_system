@@ -37,6 +37,8 @@ namespace smpc_sales_system.Pages
             System.Windows.Forms.TreeNode treeNode4 = new System.Windows.Forms.TreeNode("WIRING LABOR");
             System.Windows.Forms.TreeNode treeNode5 = new System.Windows.Forms.TreeNode("ACCESSORIES");
             System.Windows.Forms.TreeNode treeNode6 = new System.Windows.Forms.TreeNode("LABOR (INSTALLATION, HAULING, ETC)");
+            System.Windows.Forms.TreeNode treeNode7 = new System.Windows.Forms.TreeNode("T&C LABOR");
+            System.Windows.Forms.TreeNode treeNode8 = new System.Windows.Forms.TreeNode("BONDS");
             this.panel1 = new System.Windows.Forms.Panel();
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
@@ -117,11 +119,17 @@ namespace smpc_sales_system.Pages
             treeNode5.Text = "ACCESSORIES";
             treeNode6.Name = "Node7";
             treeNode6.Text = "LABOR (INSTALLATION, HAULING, ETC)";
+            treeNode7.Name = "Node0";
+            treeNode7.Text = "T&C LABOR";
+            treeNode8.Name = "Node1";
+            treeNode8.Text = "BONDS";
             this.treeView1.Nodes.AddRange(new System.Windows.Forms.TreeNode[] {
             treeNode3,
             treeNode4,
             treeNode5,
-            treeNode6});
+            treeNode6,
+            treeNode7,
+            treeNode8});
             this.treeView1.Size = new System.Drawing.Size(382, 398);
             this.treeView1.TabIndex = 0;
             this.treeView1.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.treeView1_AfterSelect);
