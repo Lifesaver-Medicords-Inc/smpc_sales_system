@@ -30,22 +30,23 @@ namespace smpc_sales_system.Pages.Sales
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle9 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle10 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle5 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle6 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle7 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle8 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle11 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle12 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle13 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle28 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle32 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle33 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle29 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle30 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle31 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle34 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle35 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle36 = new System.Windows.Forms.DataGridViewCellStyle();
             this.pnl_project_content = new System.Windows.Forms.Panel();
-            this.txt_item_id = new System.Windows.Forms.TextBox();
-            this.textBox7 = new System.Windows.Forms.TextBox();
+            this.txt_size_up_5 = new System.Windows.Forms.TextBox();
+            this.label9 = new System.Windows.Forms.Label();
+            this.txt_item_set_notes = new System.Windows.Forms.TextBox();
+            this.label8 = new System.Windows.Forms.Label();
+            this.txt_item_set_description = new System.Windows.Forms.TextBox();
+            this.txt_item_ = new System.Windows.Forms.TextBox();
+            this.txt_size_up_4 = new System.Windows.Forms.TextBox();
             this.textBox6 = new System.Windows.Forms.TextBox();
             this.textBox5 = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
@@ -54,7 +55,7 @@ namespace smpc_sales_system.Pages.Sales
             this.comboBox1 = new System.Windows.Forms.ComboBox();
             this.txt_content_id = new System.Windows.Forms.TextBox();
             this.label5 = new System.Windows.Forms.Label();
-            this.textBox4 = new System.Windows.Forms.TextBox();
+            this.txt_item_designation = new System.Windows.Forms.TextBox();
             this.label38 = new System.Windows.Forms.Label();
             this.txt_application = new System.Windows.Forms.TextBox();
             this.txt_flow = new System.Windows.Forms.TextBox();
@@ -74,11 +75,11 @@ namespace smpc_sales_system.Pages.Sales
             this.txt_no_of_pump_set = new System.Windows.Forms.TextBox();
             this.label42 = new System.Windows.Forms.Label();
             this.label41 = new System.Windows.Forms.Label();
-            this.textBox52 = new System.Windows.Forms.TextBox();
+            this.txt_size_up_3 = new System.Windows.Forms.TextBox();
             this.txt_rpm = new System.Windows.Forms.TextBox();
-            this.textBox53 = new System.Windows.Forms.TextBox();
+            this.txt_size_up_2 = new System.Windows.Forms.TextBox();
             this.txt_hp = new System.Windows.Forms.TextBox();
-            this.textBox54 = new System.Windows.Forms.TextBox();
+            this.txt_size_up_1 = new System.Windows.Forms.TextBox();
             this.txt_phase = new System.Windows.Forms.TextBox();
             this.textBox43 = new System.Windows.Forms.TextBox();
             this.textBox45 = new System.Windows.Forms.TextBox();
@@ -88,9 +89,9 @@ namespace smpc_sales_system.Pages.Sales
             this.label2 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
-            this.textBox1 = new System.Windows.Forms.TextBox();
-            this.textBox2 = new System.Windows.Forms.TextBox();
-            this.textBox3 = new System.Windows.Forms.TextBox();
+            this.txt_pressure = new System.Windows.Forms.TextBox();
+            this.txt_driver_type = new System.Windows.Forms.TextBox();
+            this.txt_pump_brand = new System.Windows.Forms.TextBox();
             this.txt_conditions_id = new System.Windows.Forms.TextBox();
             this.label53 = new System.Windows.Forms.Label();
             this.label54 = new System.Windows.Forms.Label();
@@ -105,26 +106,28 @@ namespace smpc_sales_system.Pages.Sales
             this.label56 = new System.Windows.Forms.Label();
             this.txt_template_name = new System.Windows.Forms.TextBox();
             this.dgv_project_items = new System.Windows.Forms.DataGridView();
-            this.Column13 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Column1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Column17 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.bom_id = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Column12 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Column14 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Column15 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Column16 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.node_type = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Images = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.col_components = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Column2 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Column3 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Column4 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Column5 = new System.Windows.Forms.DataGridViewComboBoxColumn();
+            this.project_items_id = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.project_items_item_id = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.project_items_based_id = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.project_items_template_id = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.project_items_bom_id = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.project_items_node_id = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.project_items_node_name = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.project_items_parent_node_id = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.project_items_node_order = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.project_items_node_type = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.project_items_images = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.project_items_components = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.project_items_model = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.project_items_item_inv_type = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.project_items_qty = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.project_items_list_price = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.project_items_unit_price = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.project_items_multiplier = new System.Windows.Forms.DataGridViewComboBoxColumn();
             this.bs_multiplier = new System.Windows.Forms.BindingSource(this.components);
-            this.Column6 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Column7 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Column8 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Column9 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.project_items_discount = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.project_items_line_total = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.project_items_notes = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.bs_project_components = new System.Windows.Forms.BindingSource(this.components);
             this.ds_project = new System.Data.DataSet();
             this.dataTable9 = new System.Data.DataTable();
@@ -160,37 +163,40 @@ namespace smpc_sales_system.Pages.Sales
             this.label58 = new System.Windows.Forms.Label();
             this.label57 = new System.Windows.Forms.Label();
             this.dgv_wiring = new System.Windows.Forms.DataGridView();
-            this.mATERIALSDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.aMPREQDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.wIREAMPDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.dESCRIPTIONDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.oFWIRESSETDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.oFQTYSETDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.project_wiring_id = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.project_wiring_based_id = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.cmb_unit = new System.Windows.Forms.DataGridViewComboBoxColumn();
             this.bs_units_qty_set = new System.Windows.Forms.BindingSource(this.components);
-            this.dISTANCETRAVELLEDSETDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.aLLOWANCEWIRESETDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.qTYDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.oFSETSDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.tOTALQTYDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.cOSTDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.tOTALCOSTDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridViewTextBoxColumn21 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.project_wiring_materials = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.project_wiring_amp_req = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.project_wiring_wire_amp = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.project_wiring_description = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.project_wiring_num_of_wires_set = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.project_wiring_num_of_qty_set = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.project_wiring_distance_travelled = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.project_wiring_allowance = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.project_wiring_qty = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.project_wiring_num_of_sets = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.project_wiring_total_qty = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.project_wiring_cost = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.project_wiring_total_cost = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.project_wiring_unit = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.bs_project_wiring = new System.Windows.Forms.BindingSource(this.components);
-            this.timer_push = new System.Windows.Forms.Timer(this.components);
-            this.timer_push_content = new System.Windows.Forms.Timer(this.components);
-            this.timer_push_cell_project = new System.Windows.Forms.Timer(this.components);
-            this.timer_push_cell_wiring = new System.Windows.Forms.Timer(this.components);
+            this.timer_send_message_conditions = new System.Windows.Forms.Timer(this.components);
+            this.timer_send_message_content = new System.Windows.Forms.Timer(this.components);
+            this.timer_send_message_cell_items = new System.Windows.Forms.Timer(this.components);
+            this.timer_send_message_cell_wiring = new System.Windows.Forms.Timer(this.components);
             this.button1 = new System.Windows.Forms.Button();
-            this.dataGridView1 = new System.Windows.Forms.DataGridView();
-            this.Column10 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Column11 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.label6 = new System.Windows.Forms.Label();
             this.txt_FLA = new System.Windows.Forms.TextBox();
             this.label7 = new System.Windows.Forms.Label();
             this.txt_VOLT = new System.Windows.Forms.TextBox();
             this.errorProvider1 = new System.Windows.Forms.ErrorProvider(this.components);
             this.bs_units_qty = new System.Windows.Forms.BindingSource(this.components);
-            this.textBox8 = new System.Windows.Forms.TextBox();
+            this.template_id = new System.Windows.Forms.TextBox();
+            this.timer_update_conditions = new System.Windows.Forms.Timer(this.components);
+            this.timer_update_content = new System.Windows.Forms.Timer(this.components);
             this.pnl_project_content.SuspendLayout();
             this.pnl_advanced_conditions.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgv_project_items)).BeginInit();
@@ -205,15 +211,19 @@ namespace smpc_sales_system.Pages.Sales
             ((System.ComponentModel.ISupportInitialize)(this.dgv_wiring)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.bs_units_qty_set)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.bs_project_wiring)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.errorProvider1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.bs_units_qty)).BeginInit();
             this.SuspendLayout();
             // 
             // pnl_project_content
             // 
-            this.pnl_project_content.Controls.Add(this.txt_item_id);
-            this.pnl_project_content.Controls.Add(this.textBox7);
+            this.pnl_project_content.Controls.Add(this.txt_size_up_5);
+            this.pnl_project_content.Controls.Add(this.label9);
+            this.pnl_project_content.Controls.Add(this.txt_item_set_notes);
+            this.pnl_project_content.Controls.Add(this.label8);
+            this.pnl_project_content.Controls.Add(this.txt_item_set_description);
+            this.pnl_project_content.Controls.Add(this.txt_item_);
+            this.pnl_project_content.Controls.Add(this.txt_size_up_4);
             this.pnl_project_content.Controls.Add(this.textBox6);
             this.pnl_project_content.Controls.Add(this.textBox5);
             this.pnl_project_content.Controls.Add(this.label1);
@@ -222,7 +232,7 @@ namespace smpc_sales_system.Pages.Sales
             this.pnl_project_content.Controls.Add(this.comboBox1);
             this.pnl_project_content.Controls.Add(this.txt_content_id);
             this.pnl_project_content.Controls.Add(this.label5);
-            this.pnl_project_content.Controls.Add(this.textBox4);
+            this.pnl_project_content.Controls.Add(this.txt_item_designation);
             this.pnl_project_content.Controls.Add(this.label38);
             this.pnl_project_content.Controls.Add(this.txt_application);
             this.pnl_project_content.Controls.Add(this.txt_flow);
@@ -242,11 +252,11 @@ namespace smpc_sales_system.Pages.Sales
             this.pnl_project_content.Controls.Add(this.txt_no_of_pump_set);
             this.pnl_project_content.Controls.Add(this.label42);
             this.pnl_project_content.Controls.Add(this.label41);
-            this.pnl_project_content.Controls.Add(this.textBox52);
+            this.pnl_project_content.Controls.Add(this.txt_size_up_3);
             this.pnl_project_content.Controls.Add(this.txt_rpm);
-            this.pnl_project_content.Controls.Add(this.textBox53);
+            this.pnl_project_content.Controls.Add(this.txt_size_up_2);
             this.pnl_project_content.Controls.Add(this.txt_hp);
-            this.pnl_project_content.Controls.Add(this.textBox54);
+            this.pnl_project_content.Controls.Add(this.txt_size_up_1);
             this.pnl_project_content.Controls.Add(this.txt_phase);
             this.pnl_project_content.Controls.Add(this.textBox43);
             this.pnl_project_content.Controls.Add(this.textBox45);
@@ -255,25 +265,73 @@ namespace smpc_sales_system.Pages.Sales
             this.pnl_project_content.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.pnl_project_content.Location = new System.Drawing.Point(0, 0);
             this.pnl_project_content.Name = "pnl_project_content";
-            this.pnl_project_content.Size = new System.Drawing.Size(1074, 227);
+            this.pnl_project_content.Size = new System.Drawing.Size(1074, 332);
             this.pnl_project_content.TabIndex = 148;
             // 
-            // txt_item_id
+            // txt_size_up_5
             // 
-            this.txt_item_id.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F);
-            this.txt_item_id.Location = new System.Drawing.Point(881, 170);
-            this.txt_item_id.Name = "txt_item_id";
-            this.txt_item_id.Size = new System.Drawing.Size(53, 20);
-            this.txt_item_id.TabIndex = 165;
-            this.txt_item_id.Visible = false;
+            this.txt_size_up_5.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F);
+            this.txt_size_up_5.Location = new System.Drawing.Point(881, 102);
+            this.txt_size_up_5.Name = "txt_size_up_5";
+            this.txt_size_up_5.Size = new System.Drawing.Size(230, 20);
+            this.txt_size_up_5.TabIndex = 170;
+            this.txt_size_up_5.Tag = "size up";
             // 
-            // textBox7
+            // label9
             // 
-            this.textBox7.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F);
-            this.textBox7.Location = new System.Drawing.Point(881, 83);
-            this.textBox7.Name = "textBox7";
-            this.textBox7.Size = new System.Drawing.Size(167, 20);
-            this.textBox7.TabIndex = 164;
+            this.label9.AutoSize = true;
+            this.label9.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label9.Location = new System.Drawing.Point(581, 208);
+            this.label9.Name = "label9";
+            this.label9.Size = new System.Drawing.Size(121, 13);
+            this.label9.TabIndex = 168;
+            this.label9.Text = "ITEM / SET NOTES";
+            // 
+            // txt_item_set_notes
+            // 
+            this.txt_item_set_notes.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F);
+            this.txt_item_set_notes.Location = new System.Drawing.Point(584, 225);
+            this.txt_item_set_notes.Multiline = true;
+            this.txt_item_set_notes.Name = "txt_item_set_notes";
+            this.txt_item_set_notes.Size = new System.Drawing.Size(468, 93);
+            this.txt_item_set_notes.TabIndex = 169;
+            // 
+            // label8
+            // 
+            this.label8.AutoSize = true;
+            this.label8.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label8.Location = new System.Drawing.Point(31, 208);
+            this.label8.Name = "label8";
+            this.label8.Size = new System.Drawing.Size(163, 13);
+            this.label8.TabIndex = 166;
+            this.label8.Text = "ITEM / SET DESCRIPTION";
+            // 
+            // txt_item_set_description
+            // 
+            this.txt_item_set_description.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F);
+            this.txt_item_set_description.Location = new System.Drawing.Point(34, 225);
+            this.txt_item_set_description.Multiline = true;
+            this.txt_item_set_description.Name = "txt_item_set_description";
+            this.txt_item_set_description.Size = new System.Drawing.Size(468, 93);
+            this.txt_item_set_description.TabIndex = 167;
+            // 
+            // txt_item_
+            // 
+            this.txt_item_.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F);
+            this.txt_item_.Location = new System.Drawing.Point(881, 170);
+            this.txt_item_.Name = "txt_item_";
+            this.txt_item_.Size = new System.Drawing.Size(53, 20);
+            this.txt_item_.TabIndex = 165;
+            this.txt_item_.Visible = false;
+            // 
+            // txt_size_up_4
+            // 
+            this.txt_size_up_4.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F);
+            this.txt_size_up_4.Location = new System.Drawing.Point(881, 83);
+            this.txt_size_up_4.Name = "txt_size_up_4";
+            this.txt_size_up_4.Size = new System.Drawing.Size(230, 20);
+            this.txt_size_up_4.TabIndex = 164;
+            this.txt_size_up_4.Tag = "size up";
             // 
             // textBox6
             // 
@@ -331,11 +389,10 @@ namespace smpc_sales_system.Pages.Sales
             // 
             // txt_content_id
             // 
-            this.txt_content_id.Location = new System.Drawing.Point(78, 171);
+            this.txt_content_id.Location = new System.Drawing.Point(68, 156);
             this.txt_content_id.Name = "txt_content_id";
             this.txt_content_id.Size = new System.Drawing.Size(35, 20);
             this.txt_content_id.TabIndex = 154;
-            this.txt_content_id.Visible = false;
             // 
             // label5
             // 
@@ -347,20 +404,20 @@ namespace smpc_sales_system.Pages.Sales
             this.label5.TabIndex = 103;
             this.label5.Text = "ITEMS AND PUMP DESIGNATION";
             // 
-            // textBox4
+            // txt_item_designation
             // 
-            this.textBox4.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F);
-            this.textBox4.Location = new System.Drawing.Point(29, 26);
-            this.textBox4.Multiline = true;
-            this.textBox4.Name = "textBox4";
-            this.textBox4.Size = new System.Drawing.Size(290, 99);
-            this.textBox4.TabIndex = 104;
+            this.txt_item_designation.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F);
+            this.txt_item_designation.Location = new System.Drawing.Point(29, 26);
+            this.txt_item_designation.Multiline = true;
+            this.txt_item_designation.Name = "txt_item_designation";
+            this.txt_item_designation.Size = new System.Drawing.Size(290, 99);
+            this.txt_item_designation.TabIndex = 104;
             // 
             // label38
             // 
             this.label38.AutoSize = true;
             this.label38.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label38.Location = new System.Drawing.Point(27, 155);
+            this.label38.Location = new System.Drawing.Point(17, 140);
             this.label38.Name = "label38";
             this.label38.Size = new System.Drawing.Size(88, 13);
             this.label38.TabIndex = 103;
@@ -369,7 +426,7 @@ namespace smpc_sales_system.Pages.Sales
             // txt_application
             // 
             this.txt_application.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F);
-            this.txt_application.Location = new System.Drawing.Point(119, 151);
+            this.txt_application.Location = new System.Drawing.Point(109, 136);
             this.txt_application.Multiline = true;
             this.txt_application.Name = "txt_application";
             this.txt_application.Size = new System.Drawing.Size(210, 54);
@@ -457,7 +514,7 @@ namespace smpc_sales_system.Pages.Sales
             this.txt_final.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F);
             this.txt_final.Location = new System.Drawing.Point(881, 144);
             this.txt_final.Name = "txt_final";
-            this.txt_final.Size = new System.Drawing.Size(167, 20);
+            this.txt_final.Size = new System.Drawing.Size(230, 20);
             this.txt_final.TabIndex = 128;
             this.txt_final.Click += new System.EventHandler(this.textBox50_Click);
             this.txt_final.TextChanged += new System.EventHandler(this.txt_final_TextChanged);
@@ -478,7 +535,7 @@ namespace smpc_sales_system.Pages.Sales
             this.txt_additional.Location = new System.Drawing.Point(437, 144);
             this.txt_additional.Multiline = true;
             this.txt_additional.Name = "txt_additional";
-            this.txt_additional.Size = new System.Drawing.Size(336, 72);
+            this.txt_additional.Size = new System.Drawing.Size(336, 61);
             this.txt_additional.TabIndex = 127;
             // 
             // label40
@@ -530,13 +587,14 @@ namespace smpc_sales_system.Pages.Sales
             this.label41.TabIndex = 115;
             this.label41.Text = "NO. OF PUMP/SET";
             // 
-            // textBox52
+            // txt_size_up_3
             // 
-            this.textBox52.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F);
-            this.textBox52.Location = new System.Drawing.Point(881, 64);
-            this.textBox52.Name = "textBox52";
-            this.textBox52.Size = new System.Drawing.Size(167, 20);
-            this.textBox52.TabIndex = 124;
+            this.txt_size_up_3.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F);
+            this.txt_size_up_3.Location = new System.Drawing.Point(881, 64);
+            this.txt_size_up_3.Name = "txt_size_up_3";
+            this.txt_size_up_3.Size = new System.Drawing.Size(230, 20);
+            this.txt_size_up_3.TabIndex = 124;
+            this.txt_size_up_3.Tag = "size up";
             // 
             // txt_rpm
             // 
@@ -546,13 +604,14 @@ namespace smpc_sales_system.Pages.Sales
             this.txt_rpm.Size = new System.Drawing.Size(102, 20);
             this.txt_rpm.TabIndex = 116;
             // 
-            // textBox53
+            // txt_size_up_2
             // 
-            this.textBox53.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F);
-            this.textBox53.Location = new System.Drawing.Point(881, 45);
-            this.textBox53.Name = "textBox53";
-            this.textBox53.Size = new System.Drawing.Size(167, 20);
-            this.textBox53.TabIndex = 123;
+            this.txt_size_up_2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F);
+            this.txt_size_up_2.Location = new System.Drawing.Point(881, 45);
+            this.txt_size_up_2.Name = "txt_size_up_2";
+            this.txt_size_up_2.Size = new System.Drawing.Size(230, 20);
+            this.txt_size_up_2.TabIndex = 123;
+            this.txt_size_up_2.Tag = "size up";
             // 
             // txt_hp
             // 
@@ -562,13 +621,14 @@ namespace smpc_sales_system.Pages.Sales
             this.txt_hp.Size = new System.Drawing.Size(102, 20);
             this.txt_hp.TabIndex = 117;
             // 
-            // textBox54
+            // txt_size_up_1
             // 
-            this.textBox54.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F);
-            this.textBox54.Location = new System.Drawing.Point(881, 26);
-            this.textBox54.Name = "textBox54";
-            this.textBox54.Size = new System.Drawing.Size(167, 20);
-            this.textBox54.TabIndex = 122;
+            this.txt_size_up_1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F);
+            this.txt_size_up_1.Location = new System.Drawing.Point(881, 26);
+            this.txt_size_up_1.Name = "txt_size_up_1";
+            this.txt_size_up_1.Size = new System.Drawing.Size(230, 20);
+            this.txt_size_up_1.TabIndex = 122;
+            this.txt_size_up_1.Tag = "size up";
             // 
             // txt_phase
             // 
@@ -614,9 +674,9 @@ namespace smpc_sales_system.Pages.Sales
             this.pnl_advanced_conditions.Controls.Add(this.label2);
             this.pnl_advanced_conditions.Controls.Add(this.label3);
             this.pnl_advanced_conditions.Controls.Add(this.label4);
-            this.pnl_advanced_conditions.Controls.Add(this.textBox1);
-            this.pnl_advanced_conditions.Controls.Add(this.textBox2);
-            this.pnl_advanced_conditions.Controls.Add(this.textBox3);
+            this.pnl_advanced_conditions.Controls.Add(this.txt_pressure);
+            this.pnl_advanced_conditions.Controls.Add(this.txt_driver_type);
+            this.pnl_advanced_conditions.Controls.Add(this.txt_pump_brand);
             this.pnl_advanced_conditions.Controls.Add(this.txt_conditions_id);
             this.pnl_advanced_conditions.Controls.Add(this.label53);
             this.pnl_advanced_conditions.Controls.Add(this.label54);
@@ -627,7 +687,7 @@ namespace smpc_sales_system.Pages.Sales
             this.pnl_advanced_conditions.Controls.Add(this.txt_liquid_type);
             this.pnl_advanced_conditions.Controls.Add(this.txt_motor_manufacturer);
             this.pnl_advanced_conditions.Controls.Add(this.txt_motor_enclosure);
-            this.pnl_advanced_conditions.Location = new System.Drawing.Point(22, 252);
+            this.pnl_advanced_conditions.Location = new System.Drawing.Point(22, 352);
             this.pnl_advanced_conditions.Name = "pnl_advanced_conditions";
             this.pnl_advanced_conditions.Size = new System.Drawing.Size(1034, 107);
             this.pnl_advanced_conditions.TabIndex = 150;
@@ -673,34 +733,33 @@ namespace smpc_sales_system.Pages.Sales
             this.label4.TabIndex = 157;
             this.label4.Text = "PUMP BRAND";
             // 
-            // textBox1
+            // txt_pressure
             // 
-            this.textBox1.Location = new System.Drawing.Point(124, 61);
-            this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(167, 20);
-            this.textBox1.TabIndex = 156;
+            this.txt_pressure.Location = new System.Drawing.Point(124, 61);
+            this.txt_pressure.Name = "txt_pressure";
+            this.txt_pressure.Size = new System.Drawing.Size(167, 20);
+            this.txt_pressure.TabIndex = 156;
             // 
-            // textBox2
+            // txt_driver_type
             // 
-            this.textBox2.Location = new System.Drawing.Point(124, 41);
-            this.textBox2.Name = "textBox2";
-            this.textBox2.Size = new System.Drawing.Size(167, 20);
-            this.textBox2.TabIndex = 155;
+            this.txt_driver_type.Location = new System.Drawing.Point(124, 41);
+            this.txt_driver_type.Name = "txt_driver_type";
+            this.txt_driver_type.Size = new System.Drawing.Size(167, 20);
+            this.txt_driver_type.TabIndex = 155;
             // 
-            // textBox3
+            // txt_pump_brand
             // 
-            this.textBox3.Location = new System.Drawing.Point(124, 21);
-            this.textBox3.Name = "textBox3";
-            this.textBox3.Size = new System.Drawing.Size(167, 20);
-            this.textBox3.TabIndex = 154;
+            this.txt_pump_brand.Location = new System.Drawing.Point(124, 21);
+            this.txt_pump_brand.Name = "txt_pump_brand";
+            this.txt_pump_brand.Size = new System.Drawing.Size(167, 20);
+            this.txt_pump_brand.TabIndex = 154;
             // 
             // txt_conditions_id
             // 
-            this.txt_conditions_id.Location = new System.Drawing.Point(34, 3);
+            this.txt_conditions_id.Location = new System.Drawing.Point(124, 0);
             this.txt_conditions_id.Name = "txt_conditions_id";
             this.txt_conditions_id.Size = new System.Drawing.Size(35, 20);
             this.txt_conditions_id.TabIndex = 153;
-            this.txt_conditions_id.Visible = false;
             // 
             // label53
             // 
@@ -779,7 +838,7 @@ namespace smpc_sales_system.Pages.Sales
             // 
             this.label45.AutoSize = true;
             this.label45.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label45.Location = new System.Drawing.Point(21, 235);
+            this.label45.Location = new System.Drawing.Point(21, 335);
             this.label45.Name = "label45";
             this.label45.Size = new System.Drawing.Size(155, 13);
             this.label45.TabIndex = 149;
@@ -789,7 +848,7 @@ namespace smpc_sales_system.Pages.Sales
             // 
             this.label56.AutoSize = true;
             this.label56.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label56.Location = new System.Drawing.Point(21, 367);
+            this.label56.Location = new System.Drawing.Point(21, 467);
             this.label56.Name = "label56";
             this.label56.Size = new System.Drawing.Size(72, 13);
             this.label56.TabIndex = 153;
@@ -797,7 +856,7 @@ namespace smpc_sales_system.Pages.Sales
             // 
             // txt_template_name
             // 
-            this.txt_template_name.Location = new System.Drawing.Point(105, 364);
+            this.txt_template_name.Location = new System.Drawing.Point(105, 464);
             this.txt_template_name.Name = "txt_template_name";
             this.txt_template_name.Size = new System.Drawing.Size(218, 20);
             this.txt_template_name.TabIndex = 152;
@@ -807,186 +866,206 @@ namespace smpc_sales_system.Pages.Sales
             // 
             this.dgv_project_items.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dgv_project_items.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
+            dataGridViewCellStyle28.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle28.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle28.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle28.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle28.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle28.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle28.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dgv_project_items.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle28;
             this.dgv_project_items.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dgv_project_items.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.Column13,
-            this.Column1,
-            this.Column17,
-            this.bom_id,
-            this.Column12,
-            this.Column14,
-            this.Column15,
-            this.Column16,
-            this.node_type,
-            this.Images,
-            this.col_components,
-            this.Column2,
-            this.Column3,
-            this.Column4,
-            this.Column5,
-            this.Column6,
-            this.Column7,
-            this.Column8,
-            this.Column9});
-            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.ControlText;
-            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.dgv_project_items.DefaultCellStyle = dataGridViewCellStyle2;
-            this.dgv_project_items.Location = new System.Drawing.Point(18, 390);
+            this.project_items_id,
+            this.project_items_item_id,
+            this.project_items_based_id,
+            this.project_items_template_id,
+            this.project_items_bom_id,
+            this.project_items_node_id,
+            this.project_items_node_name,
+            this.project_items_parent_node_id,
+            this.project_items_node_order,
+            this.project_items_node_type,
+            this.project_items_images,
+            this.project_items_components,
+            this.project_items_model,
+            this.project_items_item_inv_type,
+            this.project_items_qty,
+            this.project_items_list_price,
+            this.project_items_unit_price,
+            this.project_items_multiplier,
+            this.project_items_discount,
+            this.project_items_line_total,
+            this.project_items_notes});
+            dataGridViewCellStyle32.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle32.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle32.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle32.ForeColor = System.Drawing.SystemColors.ControlText;
+            dataGridViewCellStyle32.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle32.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle32.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.dgv_project_items.DefaultCellStyle = dataGridViewCellStyle32;
+            this.dgv_project_items.Location = new System.Drawing.Point(18, 490);
             this.dgv_project_items.Name = "dgv_project_items";
-            dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle3.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle3.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle3.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle3.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle3.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle3.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dgv_project_items.RowHeadersDefaultCellStyle = dataGridViewCellStyle3;
+            dataGridViewCellStyle33.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle33.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle33.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle33.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle33.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle33.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle33.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dgv_project_items.RowHeadersDefaultCellStyle = dataGridViewCellStyle33;
             this.dgv_project_items.Size = new System.Drawing.Size(1034, 408);
             this.dgv_project_items.TabIndex = 151;
             this.dgv_project_items.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgv_project_items_CellClick);
-            this.dgv_project_items.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgv_project_items_CellContentClick);
             this.dgv_project_items.CellEndEdit += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgv_project_items_CellEndEdit);
             // 
-            // Column13
+            // project_items_id
             // 
-            this.Column13.DataPropertyName = "item_id";
-            this.Column13.HeaderText = "item_id";
-            this.Column13.Name = "Column13";
-            this.Column13.Visible = false;
+            this.project_items_id.DataPropertyName = "items_id";
+            this.project_items_id.HeaderText = "id";
+            this.project_items_id.Name = "project_items_id";
+            this.project_items_id.Visible = false;
             // 
-            // Column1
+            // project_items_item_id
             // 
-            this.Column1.DataPropertyName = "based_id";
-            this.Column1.HeaderText = "based_id";
-            this.Column1.Name = "Column1";
-            this.Column1.Visible = false;
+            this.project_items_item_id.DataPropertyName = "item_id";
+            this.project_items_item_id.HeaderText = "item_id";
+            this.project_items_item_id.Name = "project_items_item_id";
+            this.project_items_item_id.Visible = false;
             // 
-            // Column17
+            // project_items_based_id
             // 
-            this.Column17.DataPropertyName = "template_id";
-            this.Column17.HeaderText = "template_id";
-            this.Column17.Name = "Column17";
-            this.Column17.Visible = false;
+            this.project_items_based_id.DataPropertyName = "based_id";
+            this.project_items_based_id.HeaderText = "based_id";
+            this.project_items_based_id.Name = "project_items_based_id";
+            this.project_items_based_id.Visible = false;
             // 
-            // bom_id
+            // project_items_template_id
             // 
-            this.bom_id.DataPropertyName = "bom_id";
-            this.bom_id.HeaderText = "bom_id";
-            this.bom_id.Name = "bom_id";
-            this.bom_id.Visible = false;
+            this.project_items_template_id.DataPropertyName = "template_id";
+            this.project_items_template_id.HeaderText = "template_id";
+            this.project_items_template_id.Name = "project_items_template_id";
+            this.project_items_template_id.Visible = false;
             // 
-            // Column12
+            // project_items_bom_id
             // 
-            this.Column12.DataPropertyName = "node_id";
-            this.Column12.HeaderText = "node_id";
-            this.Column12.Name = "Column12";
-            this.Column12.Visible = false;
+            this.project_items_bom_id.DataPropertyName = "bom_id";
+            this.project_items_bom_id.HeaderText = "bom_id";
+            this.project_items_bom_id.Name = "project_items_bom_id";
+            this.project_items_bom_id.Visible = false;
             // 
-            // Column14
+            // project_items_node_id
             // 
-            this.Column14.DataPropertyName = "node_name";
-            this.Column14.HeaderText = "node_name";
-            this.Column14.Name = "Column14";
-            this.Column14.Visible = false;
+            this.project_items_node_id.DataPropertyName = "node_id";
+            this.project_items_node_id.HeaderText = "node_id";
+            this.project_items_node_id.Name = "project_items_node_id";
+            this.project_items_node_id.Visible = false;
             // 
-            // Column15
+            // project_items_node_name
             // 
-            this.Column15.DataPropertyName = "parent_node_id";
-            this.Column15.HeaderText = "parent_node_id";
-            this.Column15.Name = "Column15";
-            this.Column15.Visible = false;
+            this.project_items_node_name.DataPropertyName = "node_name";
+            this.project_items_node_name.HeaderText = "node_name";
+            this.project_items_node_name.Name = "project_items_node_name";
+            this.project_items_node_name.Visible = false;
             // 
-            // Column16
+            // project_items_parent_node_id
             // 
-            this.Column16.DataPropertyName = "node_order";
-            this.Column16.HeaderText = "node_order";
-            this.Column16.Name = "Column16";
-            this.Column16.Visible = false;
+            this.project_items_parent_node_id.DataPropertyName = "parent_node_id";
+            this.project_items_parent_node_id.HeaderText = "parent_node_id";
+            this.project_items_parent_node_id.Name = "project_items_parent_node_id";
+            this.project_items_parent_node_id.Visible = false;
             // 
-            // node_type
+            // project_items_node_order
             // 
-            this.node_type.DataPropertyName = "node_type";
-            this.node_type.HeaderText = "node_type";
-            this.node_type.Name = "node_type";
-            this.node_type.Visible = false;
+            this.project_items_node_order.DataPropertyName = "node_order";
+            this.project_items_node_order.HeaderText = "node_order";
+            this.project_items_node_order.Name = "project_items_node_order";
+            this.project_items_node_order.Visible = false;
             // 
-            // Images
+            // project_items_node_type
             // 
-            this.Images.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
-            this.Images.HeaderText = "IMAGES";
-            this.Images.Name = "Images";
-            this.Images.Width = 60;
+            this.project_items_node_type.DataPropertyName = "node_type";
+            this.project_items_node_type.HeaderText = "node_type";
+            this.project_items_node_type.Name = "project_items_node_type";
+            this.project_items_node_type.Visible = false;
             // 
-            // col_components
+            // project_items_images
             // 
-            this.col_components.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.col_components.DataPropertyName = "components";
-            this.col_components.HeaderText = "COMPONENTS";
-            this.col_components.Name = "col_components";
+            this.project_items_images.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
+            this.project_items_images.HeaderText = "IMAGES";
+            this.project_items_images.Name = "project_items_images";
+            this.project_items_images.Width = 60;
             // 
-            // Column2
+            // project_items_components
             // 
-            this.Column2.DataPropertyName = "model";
-            this.Column2.HeaderText = "MODEL";
-            this.Column2.Name = "Column2";
+            this.project_items_components.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.project_items_components.DataPropertyName = "components";
+            this.project_items_components.HeaderText = "COMPONENTS";
+            this.project_items_components.Name = "project_items_components";
             // 
-            // Column3
+            // project_items_model
             // 
-            this.Column3.DataPropertyName = "item_inv_type";
-            this.Column3.HeaderText = "ITEM INV TYPE";
-            this.Column3.Name = "Column3";
+            this.project_items_model.DataPropertyName = "model";
+            this.project_items_model.HeaderText = "MODEL";
+            this.project_items_model.Name = "project_items_model";
             // 
-            // Column4
+            // project_items_item_inv_type
             // 
-            this.Column4.DataPropertyName = "qty";
-            this.Column4.HeaderText = "QTY";
-            this.Column4.Name = "Column4";
+            this.project_items_item_inv_type.DataPropertyName = "item_inv_type";
+            this.project_items_item_inv_type.HeaderText = "ITEM INV TYPE";
+            this.project_items_item_inv_type.Name = "project_items_item_inv_type";
             // 
-            // Column5
+            // project_items_qty
             // 
-            this.Column5.DataPropertyName = "multiplier";
-            this.Column5.DataSource = this.bs_multiplier;
-            this.Column5.HeaderText = "MULTIPLIER";
-            this.Column5.Name = "Column5";
-            this.Column5.Resizable = System.Windows.Forms.DataGridViewTriState.True;
-            this.Column5.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
+            this.project_items_qty.DataPropertyName = "qty";
+            this.project_items_qty.HeaderText = "QTY";
+            this.project_items_qty.Name = "project_items_qty";
             // 
-            // Column6
+            // project_items_list_price
             // 
-            this.Column6.DataPropertyName = "discount_price";
-            this.Column6.HeaderText = "DISCOUNT/MARK UP PRICE";
-            this.Column6.Name = "Column6";
+            this.project_items_list_price.DataPropertyName = "list_price_per_unit";
+            dataGridViewCellStyle29.NullValue = "0.00";
+            this.project_items_list_price.DefaultCellStyle = dataGridViewCellStyle29;
+            this.project_items_list_price.HeaderText = "LIST PRICE";
+            this.project_items_list_price.Name = "project_items_list_price";
             // 
-            // Column7
+            // project_items_unit_price
             // 
-            this.Column7.DataPropertyName = "list_price_per_unit";
-            this.Column7.HeaderText = "LIST PRICE PER UNIT";
-            this.Column7.Name = "Column7";
+            this.project_items_unit_price.DataPropertyName = "unit_price";
+            dataGridViewCellStyle30.NullValue = "0.00";
+            this.project_items_unit_price.DefaultCellStyle = dataGridViewCellStyle30;
+            this.project_items_unit_price.HeaderText = "UNIT PRICE";
+            this.project_items_unit_price.Name = "project_items_unit_price";
             // 
-            // Column8
+            // project_items_multiplier
             // 
-            this.Column8.DataPropertyName = "component_total";
-            this.Column8.HeaderText = "COMPONENT TOTAL";
-            this.Column8.Name = "Column8";
+            this.project_items_multiplier.DataPropertyName = "multiplier";
+            this.project_items_multiplier.DataSource = this.bs_multiplier;
+            this.project_items_multiplier.HeaderText = "MULTIPLIER";
+            this.project_items_multiplier.Name = "project_items_multiplier";
+            this.project_items_multiplier.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+            this.project_items_multiplier.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
             // 
-            // Column9
+            // project_items_discount
             // 
-            this.Column9.DataPropertyName = "notes";
-            this.Column9.HeaderText = "NOTES";
-            this.Column9.Name = "Column9";
+            this.project_items_discount.DataPropertyName = "discount_price";
+            dataGridViewCellStyle31.NullValue = "0.00";
+            this.project_items_discount.DefaultCellStyle = dataGridViewCellStyle31;
+            this.project_items_discount.HeaderText = "DISCOUNT/MARK UP PRICE";
+            this.project_items_discount.Name = "project_items_discount";
+            // 
+            // project_items_line_total
+            // 
+            this.project_items_line_total.DataPropertyName = "component_total";
+            this.project_items_line_total.HeaderText = "LINE TOTAL";
+            this.project_items_line_total.Name = "project_items_line_total";
+            // 
+            // project_items_notes
+            // 
+            this.project_items_notes.DataPropertyName = "notes";
+            this.project_items_notes.HeaderText = "NOTES";
+            this.project_items_notes.Name = "project_items_notes";
             // 
             // bs_project_components
             // 
@@ -1155,7 +1234,7 @@ namespace smpc_sales_system.Pages.Sales
             // 
             this.label58.AutoSize = true;
             this.label58.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label58.Location = new System.Drawing.Point(698, 921);
+            this.label58.Location = new System.Drawing.Point(698, 1021);
             this.label58.Name = "label58";
             this.label58.Size = new System.Drawing.Size(113, 13);
             this.label58.TabIndex = 156;
@@ -1165,7 +1244,7 @@ namespace smpc_sales_system.Pages.Sales
             // 
             this.label57.AutoSize = true;
             this.label57.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label57.Location = new System.Drawing.Point(19, 901);
+            this.label57.Location = new System.Drawing.Point(19, 1001);
             this.label57.Name = "label57";
             this.label57.Size = new System.Drawing.Size(54, 13);
             this.label57.TabIndex = 155;
@@ -1176,100 +1255,70 @@ namespace smpc_sales_system.Pages.Sales
             this.dgv_wiring.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.dgv_wiring.AutoGenerateColumns = false;
-            dataGridViewCellStyle4.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle4.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle4.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle4.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle4.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle4.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle4.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dgv_wiring.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle4;
+            dataGridViewCellStyle34.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle34.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle34.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle34.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle34.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle34.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle34.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dgv_wiring.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle34;
             this.dgv_wiring.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dgv_wiring.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.mATERIALSDataGridViewTextBoxColumn,
-            this.aMPREQDataGridViewTextBoxColumn,
-            this.wIREAMPDataGridViewTextBoxColumn,
-            this.dESCRIPTIONDataGridViewTextBoxColumn,
-            this.oFWIRESSETDataGridViewTextBoxColumn,
-            this.oFQTYSETDataGridViewTextBoxColumn,
+            this.project_wiring_id,
+            this.project_wiring_based_id,
             this.cmb_unit,
-            this.dISTANCETRAVELLEDSETDataGridViewTextBoxColumn,
-            this.aLLOWANCEWIRESETDataGridViewTextBoxColumn,
-            this.qTYDataGridViewTextBoxColumn,
-            this.oFSETSDataGridViewTextBoxColumn,
-            this.tOTALQTYDataGridViewTextBoxColumn,
-            this.cOSTDataGridViewTextBoxColumn,
-            this.tOTALCOSTDataGridViewTextBoxColumn});
+            this.dataGridViewTextBoxColumn21,
+            this.project_wiring_materials,
+            this.project_wiring_amp_req,
+            this.project_wiring_wire_amp,
+            this.project_wiring_description,
+            this.project_wiring_num_of_wires_set,
+            this.project_wiring_num_of_qty_set,
+            this.project_wiring_distance_travelled,
+            this.project_wiring_allowance,
+            this.project_wiring_qty,
+            this.project_wiring_num_of_sets,
+            this.project_wiring_total_qty,
+            this.project_wiring_cost,
+            this.project_wiring_total_cost,
+            this.project_wiring_unit});
             this.dgv_wiring.DataSource = this.bs_project_wiring;
-            dataGridViewCellStyle9.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle9.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle9.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle9.ForeColor = System.Drawing.SystemColors.ControlText;
-            dataGridViewCellStyle9.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle9.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle9.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.dgv_wiring.DefaultCellStyle = dataGridViewCellStyle9;
-            this.dgv_wiring.Location = new System.Drawing.Point(24, 943);
+            dataGridViewCellStyle35.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle35.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle35.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle35.ForeColor = System.Drawing.SystemColors.ControlText;
+            dataGridViewCellStyle35.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle35.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle35.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.dgv_wiring.DefaultCellStyle = dataGridViewCellStyle35;
+            this.dgv_wiring.Location = new System.Drawing.Point(24, 1043);
             this.dgv_wiring.Name = "dgv_wiring";
-            dataGridViewCellStyle10.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle10.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle10.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle10.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle10.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle10.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle10.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dgv_wiring.RowHeadersDefaultCellStyle = dataGridViewCellStyle10;
+            dataGridViewCellStyle36.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle36.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle36.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle36.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle36.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle36.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle36.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dgv_wiring.RowHeadersDefaultCellStyle = dataGridViewCellStyle36;
             this.dgv_wiring.Size = new System.Drawing.Size(1034, 447);
             this.dgv_wiring.TabIndex = 154;
             this.dgv_wiring.CellEndEdit += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgv_wiring_CellEndEdit);
             // 
-            // mATERIALSDataGridViewTextBoxColumn
+            // project_wiring_id
             // 
-            this.mATERIALSDataGridViewTextBoxColumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.mATERIALSDataGridViewTextBoxColumn.DataPropertyName = "MATERIALS";
-            this.mATERIALSDataGridViewTextBoxColumn.HeaderText = "MATERIALS";
-            this.mATERIALSDataGridViewTextBoxColumn.Name = "mATERIALSDataGridViewTextBoxColumn";
+            this.project_wiring_id.DataPropertyName = "id";
+            this.project_wiring_id.HeaderText = "ID";
+            this.project_wiring_id.Name = "project_wiring_id";
+            this.project_wiring_id.Visible = false;
             // 
-            // aMPREQDataGridViewTextBoxColumn
+            // project_wiring_based_id
             // 
-            this.aMPREQDataGridViewTextBoxColumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.aMPREQDataGridViewTextBoxColumn.DataPropertyName = "AMP REQ.";
-            dataGridViewCellStyle5.BackColor = System.Drawing.Color.Silver;
-            this.aMPREQDataGridViewTextBoxColumn.DefaultCellStyle = dataGridViewCellStyle5;
-            this.aMPREQDataGridViewTextBoxColumn.HeaderText = "AMP REQ.";
-            this.aMPREQDataGridViewTextBoxColumn.Name = "aMPREQDataGridViewTextBoxColumn";
-            this.aMPREQDataGridViewTextBoxColumn.ReadOnly = true;
-            // 
-            // wIREAMPDataGridViewTextBoxColumn
-            // 
-            this.wIREAMPDataGridViewTextBoxColumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.wIREAMPDataGridViewTextBoxColumn.DataPropertyName = "WIRE AMP.";
-            dataGridViewCellStyle6.BackColor = System.Drawing.Color.Silver;
-            this.wIREAMPDataGridViewTextBoxColumn.DefaultCellStyle = dataGridViewCellStyle6;
-            this.wIREAMPDataGridViewTextBoxColumn.HeaderText = "WIRE AMP.";
-            this.wIREAMPDataGridViewTextBoxColumn.Name = "wIREAMPDataGridViewTextBoxColumn";
-            this.wIREAMPDataGridViewTextBoxColumn.ReadOnly = true;
-            // 
-            // dESCRIPTIONDataGridViewTextBoxColumn
-            // 
-            this.dESCRIPTIONDataGridViewTextBoxColumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.dESCRIPTIONDataGridViewTextBoxColumn.DataPropertyName = "DESCRIPTION";
-            this.dESCRIPTIONDataGridViewTextBoxColumn.HeaderText = "DESCRIPTION";
-            this.dESCRIPTIONDataGridViewTextBoxColumn.Name = "dESCRIPTIONDataGridViewTextBoxColumn";
-            // 
-            // oFWIRESSETDataGridViewTextBoxColumn
-            // 
-            this.oFWIRESSETDataGridViewTextBoxColumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.oFWIRESSETDataGridViewTextBoxColumn.DataPropertyName = "# OF WIRES / SET";
-            this.oFWIRESSETDataGridViewTextBoxColumn.HeaderText = "# OF WIRES / SET";
-            this.oFWIRESSETDataGridViewTextBoxColumn.Name = "oFWIRESSETDataGridViewTextBoxColumn";
-            // 
-            // oFQTYSETDataGridViewTextBoxColumn
-            // 
-            this.oFQTYSETDataGridViewTextBoxColumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.oFQTYSETDataGridViewTextBoxColumn.DataPropertyName = "# OF QTY / SET";
-            this.oFQTYSETDataGridViewTextBoxColumn.HeaderText = "# OF QTY / SET";
-            this.oFQTYSETDataGridViewTextBoxColumn.Name = "oFQTYSETDataGridViewTextBoxColumn";
+            this.project_wiring_based_id.DataPropertyName = "based_id";
+            this.project_wiring_based_id.HeaderText = "based_id";
+            this.project_wiring_based_id.Name = "project_wiring_based_id";
+            this.project_wiring_based_id.Visible = false;
             // 
             // cmb_unit
             // 
@@ -1280,91 +1329,142 @@ namespace smpc_sales_system.Pages.Sales
             this.cmb_unit.Name = "cmb_unit";
             this.cmb_unit.Resizable = System.Windows.Forms.DataGridViewTriState.True;
             this.cmb_unit.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
+            this.cmb_unit.Visible = false;
             // 
             // bs_units_qty_set
             // 
             this.bs_units_qty_set.DataMember = "tbl_unit_set";
             this.bs_units_qty_set.DataSource = this.ds_project;
             // 
-            // dISTANCETRAVELLEDSETDataGridViewTextBoxColumn
+            // dataGridViewTextBoxColumn21
             // 
-            this.dISTANCETRAVELLEDSETDataGridViewTextBoxColumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.dISTANCETRAVELLEDSETDataGridViewTextBoxColumn.DataPropertyName = "DISTANCE TRAVELLED / SET";
-            this.dISTANCETRAVELLEDSETDataGridViewTextBoxColumn.HeaderText = "DISTANCE TRAVELLED / SET";
-            this.dISTANCETRAVELLEDSETDataGridViewTextBoxColumn.Name = "dISTANCETRAVELLEDSETDataGridViewTextBoxColumn";
+            this.dataGridViewTextBoxColumn21.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.dataGridViewTextBoxColumn21.DataPropertyName = "#";
+            this.dataGridViewTextBoxColumn21.HeaderText = "#";
+            this.dataGridViewTextBoxColumn21.Name = "dataGridViewTextBoxColumn21";
             // 
-            // aLLOWANCEWIRESETDataGridViewTextBoxColumn
+            // project_wiring_materials
             // 
-            this.aLLOWANCEWIRESETDataGridViewTextBoxColumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.aLLOWANCEWIRESETDataGridViewTextBoxColumn.DataPropertyName = "ALLOWANCE / WIRE / SET";
-            this.aLLOWANCEWIRESETDataGridViewTextBoxColumn.HeaderText = "ALLOWANCE / WIRE / SET";
-            this.aLLOWANCEWIRESETDataGridViewTextBoxColumn.Name = "aLLOWANCEWIRESETDataGridViewTextBoxColumn";
+            this.project_wiring_materials.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.project_wiring_materials.DataPropertyName = "MATERIALS";
+            this.project_wiring_materials.HeaderText = "MATERIALS";
+            this.project_wiring_materials.Name = "project_wiring_materials";
             // 
-            // qTYDataGridViewTextBoxColumn
+            // project_wiring_amp_req
             // 
-            this.qTYDataGridViewTextBoxColumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.qTYDataGridViewTextBoxColumn.DataPropertyName = "QTY";
-            this.qTYDataGridViewTextBoxColumn.HeaderText = "QTY";
-            this.qTYDataGridViewTextBoxColumn.Name = "qTYDataGridViewTextBoxColumn";
+            this.project_wiring_amp_req.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.project_wiring_amp_req.DataPropertyName = "AMP REQ.";
+            this.project_wiring_amp_req.HeaderText = "AMP REQ.";
+            this.project_wiring_amp_req.Name = "project_wiring_amp_req";
             // 
-            // oFSETSDataGridViewTextBoxColumn
+            // project_wiring_wire_amp
             // 
-            this.oFSETSDataGridViewTextBoxColumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.oFSETSDataGridViewTextBoxColumn.DataPropertyName = "# OF SETS";
-            this.oFSETSDataGridViewTextBoxColumn.HeaderText = "# OF SETS";
-            this.oFSETSDataGridViewTextBoxColumn.Name = "oFSETSDataGridViewTextBoxColumn";
+            this.project_wiring_wire_amp.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.project_wiring_wire_amp.DataPropertyName = "WIRE AMP.";
+            this.project_wiring_wire_amp.HeaderText = "WIRE AMP.";
+            this.project_wiring_wire_amp.Name = "project_wiring_wire_amp";
             // 
-            // tOTALQTYDataGridViewTextBoxColumn
+            // project_wiring_description
             // 
-            this.tOTALQTYDataGridViewTextBoxColumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.tOTALQTYDataGridViewTextBoxColumn.DataPropertyName = "TOTAL QTY.";
-            this.tOTALQTYDataGridViewTextBoxColumn.HeaderText = "TOTAL QTY.";
-            this.tOTALQTYDataGridViewTextBoxColumn.Name = "tOTALQTYDataGridViewTextBoxColumn";
+            this.project_wiring_description.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.project_wiring_description.DataPropertyName = "DESCRIPTION";
+            this.project_wiring_description.HeaderText = "DESCRIPTION";
+            this.project_wiring_description.Name = "project_wiring_description";
             // 
-            // cOSTDataGridViewTextBoxColumn
+            // project_wiring_num_of_wires_set
             // 
-            this.cOSTDataGridViewTextBoxColumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.cOSTDataGridViewTextBoxColumn.DataPropertyName = "COST";
-            dataGridViewCellStyle7.Format = "C2";
-            dataGridViewCellStyle7.NullValue = null;
-            this.cOSTDataGridViewTextBoxColumn.DefaultCellStyle = dataGridViewCellStyle7;
-            this.cOSTDataGridViewTextBoxColumn.HeaderText = "COST";
-            this.cOSTDataGridViewTextBoxColumn.Name = "cOSTDataGridViewTextBoxColumn";
+            this.project_wiring_num_of_wires_set.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.project_wiring_num_of_wires_set.DataPropertyName = "# OF WIRES / SET";
+            this.project_wiring_num_of_wires_set.HeaderText = "# OF WIRES / SET";
+            this.project_wiring_num_of_wires_set.Name = "project_wiring_num_of_wires_set";
             // 
-            // tOTALCOSTDataGridViewTextBoxColumn
+            // project_wiring_num_of_qty_set
             // 
-            this.tOTALCOSTDataGridViewTextBoxColumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.tOTALCOSTDataGridViewTextBoxColumn.DataPropertyName = "TOTAL COST";
-            dataGridViewCellStyle8.Format = "C2";
-            dataGridViewCellStyle8.NullValue = null;
-            this.tOTALCOSTDataGridViewTextBoxColumn.DefaultCellStyle = dataGridViewCellStyle8;
-            this.tOTALCOSTDataGridViewTextBoxColumn.HeaderText = "TOTAL COST";
-            this.tOTALCOSTDataGridViewTextBoxColumn.Name = "tOTALCOSTDataGridViewTextBoxColumn";
+            this.project_wiring_num_of_qty_set.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.project_wiring_num_of_qty_set.DataPropertyName = "# OF QTY / SET";
+            this.project_wiring_num_of_qty_set.HeaderText = "# OF QTY / SET";
+            this.project_wiring_num_of_qty_set.Name = "project_wiring_num_of_qty_set";
+            // 
+            // project_wiring_distance_travelled
+            // 
+            this.project_wiring_distance_travelled.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.project_wiring_distance_travelled.DataPropertyName = "DISTANCE TRAVELLED / SET";
+            this.project_wiring_distance_travelled.HeaderText = "DISTANCE TRAVELLED / SET";
+            this.project_wiring_distance_travelled.Name = "project_wiring_distance_travelled";
+            // 
+            // project_wiring_allowance
+            // 
+            this.project_wiring_allowance.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.project_wiring_allowance.DataPropertyName = "ALLOWANCE / WIRE / SET";
+            this.project_wiring_allowance.HeaderText = "ALLOWANCE / WIRE / SET";
+            this.project_wiring_allowance.Name = "project_wiring_allowance";
+            // 
+            // project_wiring_qty
+            // 
+            this.project_wiring_qty.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.project_wiring_qty.DataPropertyName = "QTY";
+            this.project_wiring_qty.HeaderText = "QTY";
+            this.project_wiring_qty.Name = "project_wiring_qty";
+            // 
+            // project_wiring_num_of_sets
+            // 
+            this.project_wiring_num_of_sets.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.project_wiring_num_of_sets.DataPropertyName = "# OF SETS";
+            this.project_wiring_num_of_sets.HeaderText = "# OF SETS";
+            this.project_wiring_num_of_sets.Name = "project_wiring_num_of_sets";
+            // 
+            // project_wiring_total_qty
+            // 
+            this.project_wiring_total_qty.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.project_wiring_total_qty.DataPropertyName = "TOTAL QTY.";
+            this.project_wiring_total_qty.HeaderText = "TOTAL QTY.";
+            this.project_wiring_total_qty.Name = "project_wiring_total_qty";
+            // 
+            // project_wiring_cost
+            // 
+            this.project_wiring_cost.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.project_wiring_cost.DataPropertyName = "COST";
+            this.project_wiring_cost.HeaderText = "COST";
+            this.project_wiring_cost.Name = "project_wiring_cost";
+            // 
+            // project_wiring_total_cost
+            // 
+            this.project_wiring_total_cost.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.project_wiring_total_cost.DataPropertyName = "TOTAL COST";
+            this.project_wiring_total_cost.HeaderText = "TOTAL COST";
+            this.project_wiring_total_cost.Name = "project_wiring_total_cost";
+            // 
+            // project_wiring_unit
+            // 
+            this.project_wiring_unit.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.project_wiring_unit.DataPropertyName = "UNIT";
+            this.project_wiring_unit.HeaderText = "UNIT";
+            this.project_wiring_unit.Name = "project_wiring_unit";
             // 
             // bs_project_wiring
             // 
             this.bs_project_wiring.DataMember = "tbl_wiring";
             this.bs_project_wiring.DataSource = this.ds_project;
             // 
-            // timer_push
+            // timer_send_message_conditions
             // 
-            this.timer_push.Interval = 2000;
-            this.timer_push.Tick += new System.EventHandler(this.timer_push_Tick);
+            this.timer_send_message_conditions.Interval = 500;
+            this.timer_send_message_conditions.Tick += new System.EventHandler(this.timer_push_Tick);
             // 
-            // timer_push_content
+            // timer_send_message_content
             // 
-            this.timer_push_content.Interval = 2000;
-            this.timer_push_content.Tick += new System.EventHandler(this.timer_push_content_Tick);
+            this.timer_send_message_content.Interval = 2000;
+            this.timer_send_message_content.Tick += new System.EventHandler(this.timer_push_content_Tick);
             // 
-            // timer_push_cell_project
+            // timer_send_message_cell_items
             // 
-            this.timer_push_cell_project.Interval = 2000;
-            this.timer_push_cell_project.Tick += new System.EventHandler(this.timer_push_cell_project_Tick);
+            this.timer_send_message_cell_items.Interval = 2000;
+            this.timer_send_message_cell_items.Tick += new System.EventHandler(this.timer_push_cell_project_Tick);
             // 
-            // timer_push_cell_wiring
+            // timer_send_message_cell_wiring
             // 
-            this.timer_push_cell_wiring.Interval = 2000;
-            this.timer_push_cell_wiring.Tick += new System.EventHandler(this.timer_push_cell_wiring_Tick);
+            this.timer_send_message_cell_wiring.Interval = 2000;
+            this.timer_send_message_cell_wiring.Tick += new System.EventHandler(this.timer_push_cell_wiring_Tick);
             // 
             // button1
             // 
@@ -1372,68 +1472,18 @@ namespace smpc_sales_system.Pages.Sales
             this.button1.BackgroundImage = global::smpc_sales_system.Properties.Resources.three_dots_vertical_1;
             this.button1.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
             this.button1.FlatAppearance.BorderSize = 0;
-            this.button1.Location = new System.Drawing.Point(326, 363);
+            this.button1.Location = new System.Drawing.Point(326, 464);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(35, 21);
             this.button1.TabIndex = 157;
             this.button1.UseVisualStyleBackColor = false;
             this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
-            // dataGridView1
-            // 
-            this.dataGridView1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            dataGridViewCellStyle11.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle11.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle11.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle11.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle11.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle11.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle11.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dataGridView1.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle11;
-            this.dataGridView1.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dataGridView1.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.Column10,
-            this.Column11});
-            dataGridViewCellStyle12.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle12.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle12.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle12.ForeColor = System.Drawing.SystemColors.ControlText;
-            dataGridViewCellStyle12.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle12.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle12.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.dataGridView1.DefaultCellStyle = dataGridViewCellStyle12;
-            this.dataGridView1.Location = new System.Drawing.Point(18, 817);
-            this.dataGridView1.Name = "dataGridView1";
-            dataGridViewCellStyle13.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle13.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle13.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle13.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle13.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle13.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle13.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dataGridView1.RowHeadersDefaultCellStyle = dataGridViewCellStyle13;
-            this.dataGridView1.Size = new System.Drawing.Size(1034, 75);
-            this.dataGridView1.TabIndex = 158;
-            this.dataGridView1.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridView1_CellContentClick);
-            // 
-            // Column10
-            // 
-            this.Column10.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.Column10.HeaderText = "";
-            this.Column10.Name = "Column10";
-            // 
-            // Column11
-            // 
-            this.Column11.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.Column11.HeaderText = "";
-            this.Column11.Name = "Column11";
-            // 
             // label6
             // 
             this.label6.AutoSize = true;
             this.label6.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label6.Location = new System.Drawing.Point(21, 920);
+            this.label6.Location = new System.Drawing.Point(21, 1020);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(29, 13);
             this.label6.TabIndex = 160;
@@ -1441,7 +1491,7 @@ namespace smpc_sales_system.Pages.Sales
             // 
             // txt_FLA
             // 
-            this.txt_FLA.Location = new System.Drawing.Point(53, 917);
+            this.txt_FLA.Location = new System.Drawing.Point(53, 1017);
             this.txt_FLA.Name = "txt_FLA";
             this.txt_FLA.ReadOnly = true;
             this.txt_FLA.Size = new System.Drawing.Size(66, 20);
@@ -1451,7 +1501,7 @@ namespace smpc_sales_system.Pages.Sales
             // 
             this.label7.AutoSize = true;
             this.label7.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label7.Location = new System.Drawing.Point(126, 920);
+            this.label7.Location = new System.Drawing.Point(126, 1020);
             this.label7.Name = "label7";
             this.label7.Size = new System.Drawing.Size(64, 13);
             this.label7.TabIndex = 162;
@@ -1459,7 +1509,7 @@ namespace smpc_sales_system.Pages.Sales
             // 
             // txt_VOLT
             // 
-            this.txt_VOLT.Location = new System.Drawing.Point(195, 916);
+            this.txt_VOLT.Location = new System.Drawing.Point(195, 1016);
             this.txt_VOLT.Name = "txt_VOLT";
             this.txt_VOLT.ReadOnly = true;
             this.txt_VOLT.Size = new System.Drawing.Size(66, 20);
@@ -1474,24 +1524,33 @@ namespace smpc_sales_system.Pages.Sales
             this.bs_units_qty.DataMember = "tbl_unit_qty";
             this.bs_units_qty.DataSource = this.ds_project;
             // 
-            // textBox8
+            // template_id
             // 
-            this.textBox8.Location = new System.Drawing.Point(377, 363);
-            this.textBox8.Name = "textBox8";
-            this.textBox8.Size = new System.Drawing.Size(35, 20);
-            this.textBox8.TabIndex = 163;
-            this.textBox8.Visible = false;
+            this.template_id.Location = new System.Drawing.Point(377, 463);
+            this.template_id.Name = "template_id";
+            this.template_id.Size = new System.Drawing.Size(35, 20);
+            this.template_id.TabIndex = 163;
+            this.template_id.Visible = false;
+            // 
+            // timer_update_conditions
+            // 
+            this.timer_update_conditions.Interval = 5000;
+            this.timer_update_conditions.Tick += new System.EventHandler(this.timer_update_conditions_Tick);
+            // 
+            // timer_update_content
+            // 
+            this.timer_update_content.Interval = 5000;
+            this.timer_update_content.Tick += new System.EventHandler(this.timer_update_content_Tick);
             // 
             // ItemSetUC
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.Controls.Add(this.textBox8);
+            this.Controls.Add(this.template_id);
             this.Controls.Add(this.label7);
             this.Controls.Add(this.txt_VOLT);
             this.Controls.Add(this.label6);
             this.Controls.Add(this.txt_FLA);
-            this.Controls.Add(this.dataGridView1);
             this.Controls.Add(this.button1);
             this.Controls.Add(this.label58);
             this.Controls.Add(this.label57);
@@ -1521,7 +1580,6 @@ namespace smpc_sales_system.Pages.Sales
             ((System.ComponentModel.ISupportInitialize)(this.dgv_wiring)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.bs_units_qty_set)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.bs_project_wiring)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.errorProvider1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.bs_units_qty)).EndInit();
             this.ResumeLayout(false);
@@ -1532,7 +1590,7 @@ namespace smpc_sales_system.Pages.Sales
         #endregion
         private System.Windows.Forms.Panel pnl_project_content;
         private System.Windows.Forms.Label label5;
-        private System.Windows.Forms.TextBox textBox4;
+        private System.Windows.Forms.TextBox txt_item_designation;
         private System.Windows.Forms.Label label38;
         private System.Windows.Forms.TextBox txt_application;
         private System.Windows.Forms.TextBox txt_flow;
@@ -1551,11 +1609,11 @@ namespace smpc_sales_system.Pages.Sales
         private System.Windows.Forms.TextBox txt_no_of_pump_set;
         private System.Windows.Forms.Label label42;
         private System.Windows.Forms.Label label41;
-        private System.Windows.Forms.TextBox textBox52;
+        private System.Windows.Forms.TextBox txt_size_up_3;
         private System.Windows.Forms.TextBox txt_rpm;
-        private System.Windows.Forms.TextBox textBox53;
+        private System.Windows.Forms.TextBox txt_size_up_2;
         private System.Windows.Forms.TextBox txt_hp;
-        private System.Windows.Forms.TextBox textBox54;
+        private System.Windows.Forms.TextBox txt_size_up_1;
         private System.Windows.Forms.TextBox txt_phase;
         private System.Windows.Forms.TextBox textBox43;
         private System.Windows.Forms.TextBox textBox45;
@@ -1591,12 +1649,12 @@ namespace smpc_sales_system.Pages.Sales
         private System.Data.DataColumn dataColumn25;
         private System.Data.DataColumn dataColumn26;
         private System.Data.DataColumn dataColumn27;
-        private System.Windows.Forms.Timer timer_push;
+        private System.Windows.Forms.Timer timer_send_message_conditions;
         private System.Windows.Forms.TextBox txt_conditions_id;
         private System.Windows.Forms.TextBox txt_content_id;
-        private System.Windows.Forms.Timer timer_push_content;
-        private System.Windows.Forms.Timer timer_push_cell_project;
-        private System.Windows.Forms.Timer timer_push_cell_wiring;
+        private System.Windows.Forms.Timer timer_send_message_content;
+        private System.Windows.Forms.Timer timer_send_message_cell_items;
+        private System.Windows.Forms.Timer timer_send_message_cell_wiring;
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.BindingSource bs_multiplier;
         private System.Data.DataTable dataTable1;
@@ -1604,16 +1662,15 @@ namespace smpc_sales_system.Pages.Sales
         private System.Windows.Forms.ComboBox comboBox2;
         private System.Windows.Forms.ComboBox comboBox1;
         private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.DataGridView dataGridView1;
         private System.Windows.Forms.TextBox textBox6;
         private System.Windows.Forms.TextBox textBox5;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Label label4;
-        private System.Windows.Forms.TextBox textBox1;
-        private System.Windows.Forms.TextBox textBox2;
-        private System.Windows.Forms.TextBox textBox3;
-        private System.Windows.Forms.TextBox textBox7;
+        private System.Windows.Forms.TextBox txt_pressure;
+        private System.Windows.Forms.TextBox txt_driver_type;
+        private System.Windows.Forms.TextBox txt_pump_brand;
+        private System.Windows.Forms.TextBox txt_size_up_4;
         private System.Data.DataTable dataTable2;
         private System.Data.DataColumn dataColumn2;
         private System.Data.DataColumn dataColumn3;
@@ -1630,11 +1687,9 @@ namespace smpc_sales_system.Pages.Sales
         private System.Windows.Forms.BindingSource bs_project_wiring;
         private System.Data.DataColumn dataColumn14;
         private System.Data.DataColumn dataColumn15;
-        private System.Windows.Forms.DataGridViewTextBoxColumn Column10;
-        private System.Windows.Forms.DataGridViewTextBoxColumn Column11;
         private System.Windows.Forms.ComboBox cmb_starting_method;
         private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn1;
-        private System.Windows.Forms.TextBox txt_item_id;
+        private System.Windows.Forms.TextBox txt_item_;
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.TextBox txt_FLA;
         private System.Windows.Forms.Label label7;
@@ -1645,39 +1700,65 @@ namespace smpc_sales_system.Pages.Sales
         private System.Windows.Forms.BindingSource bs_units_qty;
         private System.Data.DataTable dataTable3;
         private System.Data.DataTable dataTable4;
-        private System.Windows.Forms.DataGridViewTextBoxColumn mATERIALSDataGridViewTextBoxColumn;
-        private System.Windows.Forms.DataGridViewTextBoxColumn aMPREQDataGridViewTextBoxColumn;
-        private System.Windows.Forms.DataGridViewTextBoxColumn wIREAMPDataGridViewTextBoxColumn;
-        private System.Windows.Forms.DataGridViewTextBoxColumn dESCRIPTIONDataGridViewTextBoxColumn;
-        private System.Windows.Forms.DataGridViewTextBoxColumn oFWIRESSETDataGridViewTextBoxColumn;
-        private System.Windows.Forms.DataGridViewTextBoxColumn oFQTYSETDataGridViewTextBoxColumn;
+        private System.Windows.Forms.TextBox template_id;
+        private System.Windows.Forms.Label label9;
+        private System.Windows.Forms.TextBox txt_item_set_notes;
+        private System.Windows.Forms.Label label8;
+        private System.Windows.Forms.TextBox txt_item_set_description;
+        private System.Windows.Forms.TextBox txt_size_up_5;
+        private System.Windows.Forms.DataGridViewTextBoxColumn wiring_materials;
+        private System.Windows.Forms.DataGridViewTextBoxColumn wiring_amp_req;
+        private System.Windows.Forms.DataGridViewTextBoxColumn wiring_wire_amp;
+        private System.Windows.Forms.DataGridViewTextBoxColumn wiring_description;
+        private System.Windows.Forms.DataGridViewTextBoxColumn wiring_num_of_wires_set;
+        private System.Windows.Forms.DataGridViewTextBoxColumn wiring_num_of_qty_set;
+        private System.Windows.Forms.DataGridViewTextBoxColumn wiring_distance_travelled;
+        private System.Windows.Forms.DataGridViewTextBoxColumn wiring_allowance;
+        private System.Windows.Forms.DataGridViewTextBoxColumn wiring_qty;
+        private System.Windows.Forms.DataGridViewTextBoxColumn wiring_num_of_sets;
+        private System.Windows.Forms.DataGridViewTextBoxColumn wiring_total_qty;
+        private System.Windows.Forms.DataGridViewTextBoxColumn wiring_cost;
+        private System.Windows.Forms.DataGridViewTextBoxColumn wiring_total_cost;
+        private System.Windows.Forms.DataGridViewTextBoxColumn project_items_id;
+        private System.Windows.Forms.DataGridViewTextBoxColumn project_items_item_id;
+        private System.Windows.Forms.DataGridViewTextBoxColumn project_items_based_id;
+        private System.Windows.Forms.DataGridViewTextBoxColumn project_items_template_id;
+        private System.Windows.Forms.DataGridViewTextBoxColumn project_items_bom_id;
+        private System.Windows.Forms.DataGridViewTextBoxColumn project_items_node_id;
+        private System.Windows.Forms.DataGridViewTextBoxColumn project_items_node_name;
+        private System.Windows.Forms.DataGridViewTextBoxColumn project_items_parent_node_id;
+        private System.Windows.Forms.DataGridViewTextBoxColumn project_items_node_order;
+        private System.Windows.Forms.DataGridViewTextBoxColumn project_items_node_type;
+        private System.Windows.Forms.DataGridViewTextBoxColumn project_items_images;
+        private System.Windows.Forms.DataGridViewTextBoxColumn project_items_components;
+        private System.Windows.Forms.DataGridViewTextBoxColumn project_items_model;
+        private System.Windows.Forms.DataGridViewTextBoxColumn project_items_item_inv_type;
+        private System.Windows.Forms.DataGridViewTextBoxColumn project_items_qty;
+        private System.Windows.Forms.DataGridViewTextBoxColumn project_items_list_price;
+        private System.Windows.Forms.DataGridViewTextBoxColumn project_items_unit_price;
+        private System.Windows.Forms.DataGridViewComboBoxColumn project_items_multiplier;
+        private System.Windows.Forms.DataGridViewTextBoxColumn project_items_discount;
+        private System.Windows.Forms.DataGridViewTextBoxColumn project_items_line_total;
+        private System.Windows.Forms.DataGridViewTextBoxColumn project_items_notes;
+        private System.Windows.Forms.DataGridViewTextBoxColumn project_wiring_id;
+        private System.Windows.Forms.DataGridViewTextBoxColumn project_wiring_based_id;
         private System.Windows.Forms.DataGridViewComboBoxColumn cmb_unit;
-        private System.Windows.Forms.DataGridViewTextBoxColumn dISTANCETRAVELLEDSETDataGridViewTextBoxColumn;
-        private System.Windows.Forms.DataGridViewTextBoxColumn aLLOWANCEWIRESETDataGridViewTextBoxColumn;
-        private System.Windows.Forms.DataGridViewTextBoxColumn qTYDataGridViewTextBoxColumn;
-        private System.Windows.Forms.DataGridViewTextBoxColumn oFSETSDataGridViewTextBoxColumn;
-        private System.Windows.Forms.DataGridViewTextBoxColumn tOTALQTYDataGridViewTextBoxColumn;
-        private System.Windows.Forms.DataGridViewTextBoxColumn cOSTDataGridViewTextBoxColumn;
-        private System.Windows.Forms.DataGridViewTextBoxColumn tOTALCOSTDataGridViewTextBoxColumn;
-        private System.Windows.Forms.DataGridViewTextBoxColumn Column13;
-        private System.Windows.Forms.DataGridViewTextBoxColumn Column1;
-        private System.Windows.Forms.DataGridViewTextBoxColumn Column17;
-        private System.Windows.Forms.DataGridViewTextBoxColumn bom_id;
-        private System.Windows.Forms.DataGridViewTextBoxColumn Column12;
-        private System.Windows.Forms.DataGridViewTextBoxColumn Column14;
-        private System.Windows.Forms.DataGridViewTextBoxColumn Column15;
-        private System.Windows.Forms.DataGridViewTextBoxColumn Column16;
-        private System.Windows.Forms.DataGridViewTextBoxColumn node_type;
-        private System.Windows.Forms.DataGridViewTextBoxColumn Images;
-        private System.Windows.Forms.DataGridViewTextBoxColumn col_components;
-        private System.Windows.Forms.DataGridViewTextBoxColumn Column2;
-        private System.Windows.Forms.DataGridViewTextBoxColumn Column3;
-        private System.Windows.Forms.DataGridViewTextBoxColumn Column4;
-        private System.Windows.Forms.DataGridViewComboBoxColumn Column5;
-        private System.Windows.Forms.DataGridViewTextBoxColumn Column6;
-        private System.Windows.Forms.DataGridViewTextBoxColumn Column7;
-        private System.Windows.Forms.DataGridViewTextBoxColumn Column8;
-        private System.Windows.Forms.DataGridViewTextBoxColumn Column9;
-        private System.Windows.Forms.TextBox textBox8;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn21;
+        private System.Windows.Forms.DataGridViewTextBoxColumn project_wiring_materials;
+        private System.Windows.Forms.DataGridViewTextBoxColumn project_wiring_amp_req;
+        private System.Windows.Forms.DataGridViewTextBoxColumn project_wiring_wire_amp;
+        private System.Windows.Forms.DataGridViewTextBoxColumn project_wiring_description;
+        private System.Windows.Forms.DataGridViewTextBoxColumn project_wiring_num_of_wires_set;
+        private System.Windows.Forms.DataGridViewTextBoxColumn project_wiring_num_of_qty_set;
+        private System.Windows.Forms.DataGridViewTextBoxColumn project_wiring_distance_travelled;
+        private System.Windows.Forms.DataGridViewTextBoxColumn project_wiring_allowance;
+        private System.Windows.Forms.DataGridViewTextBoxColumn project_wiring_qty;
+        private System.Windows.Forms.DataGridViewTextBoxColumn project_wiring_num_of_sets;
+        private System.Windows.Forms.DataGridViewTextBoxColumn project_wiring_total_qty;
+        private System.Windows.Forms.DataGridViewTextBoxColumn project_wiring_cost;
+        private System.Windows.Forms.DataGridViewTextBoxColumn project_wiring_total_cost;
+        private System.Windows.Forms.DataGridViewTextBoxColumn project_wiring_unit;
+        private System.Windows.Forms.Timer timer_update_conditions;
+        private System.Windows.Forms.Timer timer_update_content;
     }
 }

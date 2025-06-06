@@ -15,6 +15,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
+
 namespace smpc_sales_system.Pages.Sales
 {
     public partial class ProjectTest : Form
@@ -26,7 +27,6 @@ namespace smpc_sales_system.Pages.Sales
         public ProjectTest()
         {
              InitializeComponent();
-
             _websocket = new ClientWebSocket();
             _cancelTokenSource = new CancellationTokenSource();
 
@@ -37,7 +37,7 @@ namespace smpc_sales_system.Pages.Sales
         private void fetchData(DataTable tb)
         {
             Panel[] pnls = { pnl_header };
-            //var data = await ProjectService.GetAsDatatable();
+           // var data = await ProjectService.GetAsDatatable();
             projects = tb;
             dataGridView1.DataSource = projects;
 
@@ -101,13 +101,18 @@ namespace smpc_sales_system.Pages.Sales
         private async void ConnectWebSocket()
         {
             //Uri serverUri = new Uri("ws://localhost:3000/api/setup/witem/");
-            Uri serverUri = new Uri("ws://b088-2001-4451-83a9-cd00-d35-514e-7116-c76a.ngrok-free.app/api/ws/setup/project/");
+            Uri serverUri = new Uri("ws://94e9-112-201-111-220.ngrok-free.app/api/ws/purchasing/redboxlist");
             await _websocket.ConnectAsync(serverUri, _cancelTokenSource.Token);
             MessageBox.Show("Connected!!");
             lbl_status.ForeColor = Color.Green;
             lbl_status.Text = "CONNECTED";
             ReceiveDataAsync();
+
         }
+
+
+
+
 
         private async void ReceiveDataAsync()
         {
@@ -131,7 +136,7 @@ namespace smpc_sales_system.Pages.Sales
                         if (result.EndOfMessage)
                         {
                             string completeData = Encoding.UTF8.GetString(messageBuffer.ToArray());
-                            messageBuffer.Clear();        
+                            messageBuffer.Clear();
 
                             var jsonObject = JsonConvert.DeserializeObject<List<Project>>(completeData);
                             DataTable table = JsonHelper.ToDataTable(jsonObject);
@@ -159,28 +164,28 @@ namespace smpc_sales_system.Pages.Sales
             }
 
         }
-        private async Task SendMessageAsync(Dictionary<string, dynamic> data)
-        {
-            if (_websocket.State == WebSocketState.Open)
-            {
-                try
-                {
-                    string jsonString = JsonConvert.SerializeObject(data);
+        //private async Task SendMessageAsync(Dictionary<string, dynamic> data)
+        //{
+        //    if (_websocket.State == WebSocketState.Open)
+        //    {
+        //        try
+        //        {
+        //            string jsonString = JsonConvert.SerializeObject(data);
 
-                    byte[] messageBytes = Encoding.UTF8.GetBytes(jsonString);
-                    ArraySegment<byte> messageSegment = new ArraySegment<byte>(messageBytes);
+        //            byte[] messageBytes = Encoding.UTF8.GetBytes(jsonString);
+        //            ArraySegment<byte> messageSegment = new ArraySegment<byte>(messageBytes);
 
-                    // Send the message
-                    await _websocket.SendAsync(messageSegment, WebSocketMessageType.Text, true, _cancelTokenSource.Token);
+        //            // Send the message
+        //            await _websocket.SendAsync(messageSegment, WebSocketMessageType.Text, true, _cancelTokenSource.Token);
 
-                    MessageBox.Show("Message sent!");
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Error sending message: {ex.Message}");
-                }
-            }
-        }
+        //            MessageBox.Show("Message sent!");
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            MessageBox.Show($"Error sending message: {ex.Message}");
+        //        }
+        //    }
+        //}
 
 
 

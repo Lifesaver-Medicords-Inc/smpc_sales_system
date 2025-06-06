@@ -53,8 +53,27 @@ namespace smpc_sales_app.Services.Helpers
 
             return dataTable;
         }
+        public static DataTable ToDataTableFromJObject(JObject jObject)
+        {
+            DataTable dataTable = new DataTable();
+            dataTable.Columns.Clear();
 
-   
+            foreach (var property in jObject.Properties())
+            {
+                dataTable.Columns.Add(property.Name);
+            }
+
+            var row = dataTable.NewRow();
+            foreach (var property in jObject.Properties())
+            {
+                row[property.Name] = property.Value?.ToString() ?? DBNull.Value.ToString();
+            }
+            dataTable.Rows.Add(row);
+
+            return dataTable;
+        }
+
+
         public static DataTable ToDataTable<T>(List<T> items)
         {
             var dataTable = new DataTable();
