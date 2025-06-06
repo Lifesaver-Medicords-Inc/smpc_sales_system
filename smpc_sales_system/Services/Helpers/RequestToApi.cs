@@ -13,7 +13,7 @@ using System.Windows.Forms;
 
 namespace smpc_inventory_app.Services.Helpers
 {
-    class RequestToApi<T> where T : class
+    internal class RequestToApi<T> where T : class
     {
         //DEV ENV
         static string baseUrl = "http://127.0.0.1:3000/api";

@@ -6,13 +6,13 @@ using System.Threading.Tasks;
 
 namespace smpc_app.Services.Helpers
 {
-    public class ApiResponseModel<T>
+    internal class ApiResponseModel<T>
     {
         public bool Success { get; set; }
         public T Data { get; set; } 
     }
 
-    public class ApiResponseModel
+    internal class ApiResponseModel
     {
         public bool Success { get; set; }
         public string message { get; set; }
