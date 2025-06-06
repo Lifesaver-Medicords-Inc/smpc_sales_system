@@ -17,7 +17,7 @@ using System.Windows.Forms;
 
 namespace smpc_sales_app.Pages
 {
-    public partial class Login : Form
+    internal partial class Login : Form
     {
         public Login()
         {
@@ -53,26 +53,33 @@ namespace smpc_sales_app.Pages
 
         private async void btn_login_Click_1(object sender, EventArgs e)
         {
-
-
-            var data = Helpers.GetControlsValues(pnl_auth);
-            data.Add("motherboard_serial_no", Helpers.GetSerialNumber());
-            data.Add("machine_name", Environment.MachineName);
-            var currentUser = await AuthServices.Login(data);
-
-
-            if (currentUser.Success)
+            try
             {
-                CacheData.CurrentUser = currentUser.Data;
-                CacheData.ShipTypeSetup = await ShipService.GetAsDatatable();
-                CacheData.PaymentTerms = await PaymentTermsServices.GetAsDatatable();
-                CacheData.ApplicationSetup = await ApplicationService.GetAsDatatable();
-                CacheData.UoM = await UnitOfMeasurementServices.GetAsDatatable();
-                this.DialogResult = DialogResult.OK;
+                var data = Helpers.GetControlsValues(pnl_auth);
+                data.Add("motherboard_serial_no", Helpers.GetSerialNumber());
+                data.Add("machine_name", Environment.MachineName);
+                var currentUser = await AuthServices.Login(data);
+
+
+                if (currentUser.Success)
+                {
+                    CacheData.CurrentUser = currentUser.Data;
+                    CacheData.ShipTypeSetup = await ShipService.GetAsDatatable();
+                    CacheData.PaymentTerms = await PaymentTermsServices.GetAsDatatable();
+                    CacheData.ApplicationSetup = await ApplicationService.GetAsDatatable();
+                    CacheData.UoM = await UnitOfMeasurementServices.GetAsDatatable();
+                    this.DialogResult = DialogResult.OK;
+                    string department = "sales";
+                    string endpoint = $"/ api / ws / setup / test ? department={department}";
+                }
+                else
+                {
+                    Helpers.ShowDialogMessage("error", "Invalid Credentials");
+                }
             }
-            else
+            catch (Exception ex)
             {
-                Helpers.ShowDialogMessage("error", "Invalid Credentials");
+
             }
         }
     }

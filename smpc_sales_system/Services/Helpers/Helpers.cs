@@ -16,7 +16,7 @@ using Newtonsoft.Json.Linq;
 
 namespace smpc_app.Services.Helpers
 {
-    public static class Helpers
+    internal static class Helpers
     {
         public static void ResetControls(Panel pnl)
         {

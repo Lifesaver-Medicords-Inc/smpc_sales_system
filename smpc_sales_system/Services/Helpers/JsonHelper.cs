@@ -10,7 +10,7 @@ using smpc_sales_system.Services.Sales.Models;
 
 namespace smpc_sales_app.Services.Helpers
 {
-    class JsonHelper
+    internal class JsonHelper
     {
         public static DataTable ToDataTable(JArray jArray)
         {
