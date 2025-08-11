@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace smpc_inventory_app.Services.Setup
+namespace smpc_sales_app.Services.Setup
 {
     public class PaymentTermsModel
     {
