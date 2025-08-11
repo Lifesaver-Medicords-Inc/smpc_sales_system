@@ -29,28 +29,26 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle16 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle17 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle18 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle19 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle20 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle21 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle22 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle23 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle24 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle25 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle5 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle6 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle7 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle8 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle9 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle10 = new System.Windows.Forms.DataGridViewCellStyle();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Quotation));
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle26 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle27 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle28 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle29 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle30 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle11 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle12 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle13 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle14 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle15 = new System.Windows.Forms.DataGridViewCellStyle();
             this.panel1 = new System.Windows.Forms.Panel();
             this.label1 = new System.Windows.Forms.Label();
             this.panel3 = new System.Windows.Forms.Panel();
             this.pnl_footer = new System.Windows.Forms.Panel();
-            this.btn_sales_order = new System.Windows.Forms.Button();
-            this.btn_finalize = new System.Windows.Forms.Button();
             this.btn_cancel = new System.Windows.Forms.Button();
             this.btn_save = new System.Windows.Forms.Button();
             this.txt_short_description = new System.Windows.Forms.TextBox();
@@ -128,6 +126,10 @@
             this.label22 = new System.Windows.Forms.Label();
             this.label21 = new System.Windows.Forms.Label();
             this.pnl_header = new System.Windows.Forms.Panel();
+            this.txt_sub_version_no = new System.Windows.Forms.TextBox();
+            this.txt_id = new System.Windows.Forms.TextBox();
+            this.btn_sales_order = new System.Windows.Forms.Button();
+            this.btn_finalize = new System.Windows.Forms.Button();
             this.btn_request_for_engr = new System.Windows.Forms.Button();
             this.cmb_payment_terms = new System.Windows.Forms.ComboBox();
             this.bs_payment_terms = new System.Windows.Forms.BindingSource(this.components);
@@ -205,13 +207,17 @@
             this.label2 = new System.Windows.Forms.Label();
             this.toolstrip_quotation = new System.Windows.Forms.ToolStrip();
             this.back = new System.Windows.Forms.ToolStripLabel();
-            this.btn_new = new System.Windows.Forms.ToolStripButton();
-            this.btn_new_version = new System.Windows.Forms.ToolStripButton();
             this.btn_search = new System.Windows.Forms.ToolStripButton();
             this.btn_prev = new System.Windows.Forms.ToolStripButton();
             this.btn_next = new System.Windows.Forms.ToolStripButton();
+            this.btn_new = new System.Windows.Forms.ToolStripButton();
+            this.btn_duplicate = new System.Windows.Forms.ToolStripButton();
+            this.btn_new_version = new System.Windows.Forms.ToolStripButton();
+            this.btn_edit = new System.Windows.Forms.ToolStripButton();
+            this.btn_savee = new System.Windows.Forms.ToolStripButton();
+            this.btn_update = new System.Windows.Forms.ToolStripButton();
+            this.btn_close = new System.Windows.Forms.ToolStripButton();
             this.btn_print = new System.Windows.Forms.ToolStripButton();
-            this.toolStripButton1 = new System.Windows.Forms.ToolStripButton();
             this.bs_quick_quotes_details = new System.Windows.Forms.BindingSource(this.components);
             this.bs_unit = new System.Windows.Forms.BindingSource(this.components);
             this.bs_project_components = new System.Windows.Forms.BindingSource(this.components);
@@ -292,8 +298,6 @@
             // 
             // pnl_footer
             // 
-            this.pnl_footer.Controls.Add(this.btn_sales_order);
-            this.pnl_footer.Controls.Add(this.btn_finalize);
             this.pnl_footer.Controls.Add(this.btn_cancel);
             this.pnl_footer.Controls.Add(this.btn_save);
             this.pnl_footer.Controls.Add(this.txt_short_description);
@@ -321,40 +325,6 @@
             this.pnl_footer.Name = "pnl_footer";
             this.pnl_footer.Size = new System.Drawing.Size(1182, 258);
             this.pnl_footer.TabIndex = 78;
-            // 
-            // btn_sales_order
-            // 
-            this.btn_sales_order.BackColor = System.Drawing.Color.Orange;
-            this.btn_sales_order.FlatAppearance.BorderColor = System.Drawing.Color.White;
-            this.btn_sales_order.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(192)))), ((int)(((byte)(192)))));
-            this.btn_sales_order.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(255)))), ((int)(((byte)(128)))));
-            this.btn_sales_order.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btn_sales_order.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btn_sales_order.ForeColor = System.Drawing.Color.White;
-            this.btn_sales_order.Location = new System.Drawing.Point(163, 222);
-            this.btn_sales_order.Name = "btn_sales_order";
-            this.btn_sales_order.Size = new System.Drawing.Size(120, 22);
-            this.btn_sales_order.TabIndex = 106;
-            this.btn_sales_order.Text = "SALES ORDER";
-            this.btn_sales_order.UseVisualStyleBackColor = false;
-            this.btn_sales_order.Click += new System.EventHandler(this.btn_sales_order_Click);
-            // 
-            // btn_finalize
-            // 
-            this.btn_finalize.BackColor = System.Drawing.Color.LightSeaGreen;
-            this.btn_finalize.FlatAppearance.BorderColor = System.Drawing.Color.White;
-            this.btn_finalize.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(192)))), ((int)(((byte)(192)))));
-            this.btn_finalize.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(255)))), ((int)(((byte)(128)))));
-            this.btn_finalize.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btn_finalize.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btn_finalize.ForeColor = System.Drawing.Color.White;
-            this.btn_finalize.Location = new System.Drawing.Point(30, 222);
-            this.btn_finalize.Name = "btn_finalize";
-            this.btn_finalize.Size = new System.Drawing.Size(115, 22);
-            this.btn_finalize.TabIndex = 105;
-            this.btn_finalize.Text = "FINALIZE";
-            this.btn_finalize.UseVisualStyleBackColor = false;
-            this.btn_finalize.Click += new System.EventHandler(this.btn_finalize_Click);
             // 
             // btn_cancel
             // 
@@ -619,6 +589,7 @@
             this.quick_tab.Padding = new System.Windows.Forms.Padding(3);
             this.quick_tab.Size = new System.Drawing.Size(1174, 2299);
             this.quick_tab.TabIndex = 0;
+            this.quick_tab.Text = "butto";
             this.quick_tab.UseVisualStyleBackColor = true;
             // 
             // dgv_quick_quote_details
@@ -694,9 +665,9 @@
             // quick_item_id
             // 
             this.quick_item_id.DataPropertyName = "item_id";
-            dataGridViewCellStyle16.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
-            dataGridViewCellStyle16.SelectionForeColor = System.Drawing.Color.White;
-            this.quick_item_id.DefaultCellStyle = dataGridViewCellStyle16;
+            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
+            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.Color.White;
+            this.quick_item_id.DefaultCellStyle = dataGridViewCellStyle1;
             this.quick_item_id.HeaderText = "item_id";
             this.quick_item_id.Name = "quick_item_id";
             this.quick_item_id.Visible = false;
@@ -713,10 +684,10 @@
             // 
             this.quick_item_code.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
             this.quick_item_code.DataPropertyName = "components";
-            dataGridViewCellStyle17.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
-            dataGridViewCellStyle17.SelectionForeColor = System.Drawing.Color.Black;
-            this.quick_item_code.DefaultCellStyle = dataGridViewCellStyle17;
-            this.quick_item_code.FillWeight = 70.91645F;
+            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
+            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.Color.Black;
+            this.quick_item_code.DefaultCellStyle = dataGridViewCellStyle2;
+            this.quick_item_code.FillWeight = 70.91644F;
             this.quick_item_code.HeaderText = "COMPONENTS";
             this.quick_item_code.Name = "quick_item_code";
             this.quick_item_code.Resizable = System.Windows.Forms.DataGridViewTriState.True;
@@ -725,10 +696,10 @@
             // 
             this.quick_item_name.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
             this.quick_item_name.DataPropertyName = "model";
-            dataGridViewCellStyle18.BackColor = System.Drawing.Color.LightGray;
-            dataGridViewCellStyle18.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
-            dataGridViewCellStyle18.SelectionForeColor = System.Drawing.Color.Black;
-            this.quick_item_name.DefaultCellStyle = dataGridViewCellStyle18;
+            dataGridViewCellStyle3.BackColor = System.Drawing.Color.LightGray;
+            dataGridViewCellStyle3.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
+            dataGridViewCellStyle3.SelectionForeColor = System.Drawing.Color.Black;
+            this.quick_item_name.DefaultCellStyle = dataGridViewCellStyle3;
             this.quick_item_name.FillWeight = 52.91645F;
             this.quick_item_name.HeaderText = "MODEL";
             this.quick_item_name.Name = "quick_item_name";
@@ -738,11 +709,11 @@
             // 
             this.quick_qty.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
             this.quick_qty.DataPropertyName = "qty";
-            dataGridViewCellStyle19.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle19.NullValue = "0";
-            dataGridViewCellStyle19.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
-            dataGridViewCellStyle19.SelectionForeColor = System.Drawing.Color.Black;
-            this.quick_qty.DefaultCellStyle = dataGridViewCellStyle19;
+            dataGridViewCellStyle4.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle4.NullValue = "0";
+            dataGridViewCellStyle4.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
+            dataGridViewCellStyle4.SelectionForeColor = System.Drawing.Color.Black;
+            this.quick_qty.DefaultCellStyle = dataGridViewCellStyle4;
             this.quick_qty.FillWeight = 20F;
             this.quick_qty.HeaderText = "QTY";
             this.quick_qty.Name = "quick_qty";
@@ -751,10 +722,10 @@
             // 
             this.quick_unit_of_measure.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
             this.quick_unit_of_measure.DataPropertyName = "unit_of_measure";
-            dataGridViewCellStyle20.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle20.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
-            dataGridViewCellStyle20.SelectionForeColor = System.Drawing.Color.Black;
-            this.quick_unit_of_measure.DefaultCellStyle = dataGridViewCellStyle20;
+            dataGridViewCellStyle5.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle5.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
+            dataGridViewCellStyle5.SelectionForeColor = System.Drawing.Color.Black;
+            this.quick_unit_of_measure.DefaultCellStyle = dataGridViewCellStyle5;
             this.quick_unit_of_measure.FillWeight = 20F;
             this.quick_unit_of_measure.HeaderText = "UNIT";
             this.quick_unit_of_measure.Name = "quick_unit_of_measure";
@@ -764,8 +735,8 @@
             // 
             this.quick_list_price.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
             this.quick_list_price.DataPropertyName = "list_price";
-            dataGridViewCellStyle21.Format = "C2";
-            this.quick_list_price.DefaultCellStyle = dataGridViewCellStyle21;
+            dataGridViewCellStyle6.Format = "C2";
+            this.quick_list_price.DefaultCellStyle = dataGridViewCellStyle6;
             this.quick_list_price.FillWeight = 52.91645F;
             this.quick_list_price.HeaderText = "LIST PRICE";
             this.quick_list_price.Name = "quick_list_price";
@@ -774,8 +745,8 @@
             // 
             this.quick_unit_price.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
             this.quick_unit_price.DataPropertyName = "unit_price";
-            dataGridViewCellStyle22.Format = "C2";
-            this.quick_unit_price.DefaultCellStyle = dataGridViewCellStyle22;
+            dataGridViewCellStyle7.Format = "C2";
+            this.quick_unit_price.DefaultCellStyle = dataGridViewCellStyle7;
             this.quick_unit_price.FillWeight = 52.91645F;
             this.quick_unit_price.HeaderText = "UNIT PRICE";
             this.quick_unit_price.Name = "quick_unit_price";
@@ -792,8 +763,8 @@
             // 
             this.quick_net_discount.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
             this.quick_net_discount.DataPropertyName = "net_discount";
-            dataGridViewCellStyle23.Format = "C2";
-            this.quick_net_discount.DefaultCellStyle = dataGridViewCellStyle23;
+            dataGridViewCellStyle8.Format = "C2";
+            this.quick_net_discount.DefaultCellStyle = dataGridViewCellStyle8;
             this.quick_net_discount.FillWeight = 52.91645F;
             this.quick_net_discount.HeaderText = "NET DISCOUNT";
             this.quick_net_discount.Name = "quick_net_discount";
@@ -802,8 +773,8 @@
             // 
             this.quick_net_total.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
             this.quick_net_total.DataPropertyName = "net_total";
-            dataGridViewCellStyle24.Format = "C2";
-            this.quick_net_total.DefaultCellStyle = dataGridViewCellStyle24;
+            dataGridViewCellStyle9.Format = "C2";
+            this.quick_net_total.DefaultCellStyle = dataGridViewCellStyle9;
             this.quick_net_total.FillWeight = 52.91645F;
             this.quick_net_total.HeaderText = "NET TOTAL";
             this.quick_net_total.Name = "quick_net_total";
@@ -812,8 +783,8 @@
             // 
             this.quick_line_total.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
             this.quick_line_total.DataPropertyName = "line_total";
-            dataGridViewCellStyle25.Format = "C2";
-            this.quick_line_total.DefaultCellStyle = dataGridViewCellStyle25;
+            dataGridViewCellStyle10.Format = "C2";
+            this.quick_line_total.DefaultCellStyle = dataGridViewCellStyle10;
             this.quick_line_total.FillWeight = 52.91645F;
             this.quick_line_total.HeaderText = "LINE TOTAL";
             this.quick_line_total.Name = "quick_line_total";
@@ -1078,6 +1049,10 @@
             // 
             // pnl_header
             // 
+            this.pnl_header.Controls.Add(this.txt_sub_version_no);
+            this.pnl_header.Controls.Add(this.txt_id);
+            this.pnl_header.Controls.Add(this.btn_sales_order);
+            this.pnl_header.Controls.Add(this.btn_finalize);
             this.pnl_header.Controls.Add(this.btn_request_for_engr);
             this.pnl_header.Controls.Add(this.cmb_payment_terms);
             this.pnl_header.Controls.Add(this.txt_customer_id);
@@ -1128,6 +1103,62 @@
             this.pnl_header.Name = "pnl_header";
             this.pnl_header.Size = new System.Drawing.Size(1182, 243);
             this.pnl_header.TabIndex = 77;
+            this.pnl_header.Paint += new System.Windows.Forms.PaintEventHandler(this.pnl_header_Paint);
+            // 
+            // txt_sub_version_no
+            // 
+            this.txt_sub_version_no.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txt_sub_version_no.Location = new System.Drawing.Point(943, 38);
+            this.txt_sub_version_no.Name = "txt_sub_version_no";
+            this.txt_sub_version_no.ReadOnly = true;
+            this.txt_sub_version_no.Size = new System.Drawing.Size(80, 20);
+            this.txt_sub_version_no.TabIndex = 117;
+            this.txt_sub_version_no.Text = "0";
+            this.txt_sub_version_no.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            // 
+            // txt_id
+            // 
+            this.txt_id.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
+            this.txt_id.Location = new System.Drawing.Point(322, 44);
+            this.txt_id.Name = "txt_id";
+            this.txt_id.Size = new System.Drawing.Size(37, 20);
+            this.txt_id.TabIndex = 116;
+            // 
+            // btn_sales_order
+            // 
+            this.btn_sales_order.BackColor = System.Drawing.Color.Orange;
+            this.btn_sales_order.FlatAppearance.BorderColor = System.Drawing.Color.White;
+            this.btn_sales_order.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(192)))), ((int)(((byte)(192)))));
+            this.btn_sales_order.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(255)))), ((int)(((byte)(128)))));
+            this.btn_sales_order.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btn_sales_order.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btn_sales_order.ForeColor = System.Drawing.Color.White;
+            this.btn_sales_order.Location = new System.Drawing.Point(655, 200);
+            this.btn_sales_order.Name = "btn_sales_order";
+            this.btn_sales_order.Size = new System.Drawing.Size(122, 22);
+            this.btn_sales_order.TabIndex = 115;
+            this.btn_sales_order.Text = "SALES ORDER";
+            this.btn_sales_order.UseVisualStyleBackColor = false;
+            this.btn_sales_order.Visible = false;
+            this.btn_sales_order.Click += new System.EventHandler(this.btn_sales_order_Click);
+            // 
+            // btn_finalize
+            // 
+            this.btn_finalize.BackColor = System.Drawing.Color.LightSeaGreen;
+            this.btn_finalize.FlatAppearance.BorderColor = System.Drawing.Color.White;
+            this.btn_finalize.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(192)))), ((int)(((byte)(192)))));
+            this.btn_finalize.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(255)))), ((int)(((byte)(128)))));
+            this.btn_finalize.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btn_finalize.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btn_finalize.ForeColor = System.Drawing.Color.White;
+            this.btn_finalize.Location = new System.Drawing.Point(655, 200);
+            this.btn_finalize.Name = "btn_finalize";
+            this.btn_finalize.Size = new System.Drawing.Size(122, 22);
+            this.btn_finalize.TabIndex = 114;
+            this.btn_finalize.Text = "FINALIZE";
+            this.btn_finalize.UseVisualStyleBackColor = false;
+            this.btn_finalize.Visible = false;
+            this.btn_finalize.Click += new System.EventHandler(this.btn_finalize_Click);
             // 
             // btn_request_for_engr
             // 
@@ -1341,7 +1372,7 @@
             this.btn_add_customer.Size = new System.Drawing.Size(30, 23);
             this.btn_add_customer.TabIndex = 108;
             this.btn_add_customer.UseVisualStyleBackColor = false;
-            this.btn_add_customer.Click += new System.EventHandler(this.button1_Click);
+            this.btn_add_customer.Click += new System.EventHandler(this.btn_add_customer_Click);
             // 
             // label60
             // 
@@ -1575,7 +1606,7 @@
             // 
             // txt_created_by
             // 
-            this.txt_created_by.Location = new System.Drawing.Point(854, 80);
+            this.txt_created_by.Location = new System.Drawing.Point(854, 82);
             this.txt_created_by.Name = "txt_created_by";
             this.txt_created_by.Size = new System.Drawing.Size(170, 20);
             this.txt_created_by.TabIndex = 73;
@@ -1583,7 +1614,7 @@
             // label13
             // 
             this.label13.AutoSize = true;
-            this.label13.Location = new System.Drawing.Point(778, 83);
+            this.label13.Location = new System.Drawing.Point(778, 85);
             this.label13.Name = "label13";
             this.label13.Size = new System.Drawing.Size(70, 13);
             this.label13.TabIndex = 72;
@@ -1604,9 +1635,9 @@
             this.txt_version_no.Location = new System.Drawing.Point(854, 38);
             this.txt_version_no.Name = "txt_version_no";
             this.txt_version_no.ReadOnly = true;
-            this.txt_version_no.Size = new System.Drawing.Size(170, 20);
+            this.txt_version_no.Size = new System.Drawing.Size(80, 20);
             this.txt_version_no.TabIndex = 69;
-            this.txt_version_no.Text = "1";
+            this.txt_version_no.Text = "0";
             this.txt_version_no.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.txt_version_no.DoubleClick += new System.EventHandler(this.txt_version_no_DoubleClick);
             // 
@@ -1737,16 +1768,21 @@
             // 
             // toolstrip_quotation
             // 
+            this.toolstrip_quotation.Enabled = false;
             this.toolstrip_quotation.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
             this.toolstrip_quotation.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.back,
-            this.btn_new,
-            this.btn_new_version,
             this.btn_search,
             this.btn_prev,
             this.btn_next,
-            this.btn_print,
-            this.toolStripButton1});
+            this.btn_new,
+            this.btn_duplicate,
+            this.btn_new_version,
+            this.btn_edit,
+            this.btn_savee,
+            this.btn_update,
+            this.btn_close,
+            this.btn_print});
             this.toolstrip_quotation.Location = new System.Drawing.Point(0, 0);
             this.toolstrip_quotation.Name = "toolstrip_quotation";
             this.toolstrip_quotation.RenderMode = System.Windows.Forms.ToolStripRenderMode.Professional;
@@ -1761,24 +1797,6 @@
             this.back.Text = "Back";
             this.back.Visible = false;
             this.back.Click += new System.EventHandler(this.back_Click);
-            // 
-            // btn_new
-            // 
-            this.btn_new.Image = ((System.Drawing.Image)(resources.GetObject("btn_new.Image")));
-            this.btn_new.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.btn_new.Name = "btn_new";
-            this.btn_new.Size = new System.Drawing.Size(87, 22);
-            this.btn_new.Text = "New Quote";
-            this.btn_new.Click += new System.EventHandler(this.btn_new_Click_1);
-            // 
-            // btn_new_version
-            // 
-            this.btn_new_version.Image = ((System.Drawing.Image)(resources.GetObject("btn_new_version.Image")));
-            this.btn_new_version.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.btn_new_version.Name = "btn_new_version";
-            this.btn_new_version.Size = new System.Drawing.Size(92, 22);
-            this.btn_new_version.Text = "New Version";
-            this.btn_new_version.Click += new System.EventHandler(this.btn_new_version_Click);
             // 
             // btn_search
             // 
@@ -1807,6 +1825,71 @@
             this.btn_next.Text = "Next";
             this.btn_next.Click += new System.EventHandler(this.btn_next_Click);
             // 
+            // btn_new
+            // 
+            this.btn_new.Image = ((System.Drawing.Image)(resources.GetObject("btn_new.Image")));
+            this.btn_new.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btn_new.Name = "btn_new";
+            this.btn_new.Size = new System.Drawing.Size(87, 22);
+            this.btn_new.Text = "New Quote";
+            this.btn_new.Click += new System.EventHandler(this.btn_new_Click);
+            // 
+            // btn_duplicate
+            // 
+            this.btn_duplicate.Image = ((System.Drawing.Image)(resources.GetObject("btn_duplicate.Image")));
+            this.btn_duplicate.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btn_duplicate.Name = "btn_duplicate";
+            this.btn_duplicate.Size = new System.Drawing.Size(77, 22);
+            this.btn_duplicate.Text = "Duplicate";
+            this.btn_duplicate.Click += new System.EventHandler(this.btn_duplicate_Click);
+            // 
+            // btn_new_version
+            // 
+            this.btn_new_version.Image = ((System.Drawing.Image)(resources.GetObject("btn_new_version.Image")));
+            this.btn_new_version.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btn_new_version.Name = "btn_new_version";
+            this.btn_new_version.Size = new System.Drawing.Size(92, 22);
+            this.btn_new_version.Text = "New Version";
+            this.btn_new_version.Click += new System.EventHandler(this.btn_new_version_Click);
+            // 
+            // btn_edit
+            // 
+            this.btn_edit.Image = ((System.Drawing.Image)(resources.GetObject("btn_edit.Image")));
+            this.btn_edit.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btn_edit.Name = "btn_edit";
+            this.btn_edit.Size = new System.Drawing.Size(47, 22);
+            this.btn_edit.Text = "Edit";
+            this.btn_edit.Click += new System.EventHandler(this.btn_edit_Click);
+            // 
+            // btn_savee
+            // 
+            this.btn_savee.Image = ((System.Drawing.Image)(resources.GetObject("btn_savee.Image")));
+            this.btn_savee.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btn_savee.Name = "btn_savee";
+            this.btn_savee.Size = new System.Drawing.Size(51, 22);
+            this.btn_savee.Text = "Save";
+            this.btn_savee.Visible = false;
+            this.btn_savee.Click += new System.EventHandler(this.btn_save_Click);
+            // 
+            // btn_update
+            // 
+            this.btn_update.Image = ((System.Drawing.Image)(resources.GetObject("btn_update.Image")));
+            this.btn_update.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btn_update.Name = "btn_update";
+            this.btn_update.Size = new System.Drawing.Size(65, 22);
+            this.btn_update.Text = "Update";
+            this.btn_update.Click += new System.EventHandler(this.btn_update_Click);
+            // 
+            // btn_close
+            // 
+            this.btn_close.Image = ((System.Drawing.Image)(resources.GetObject("btn_close.Image")));
+            this.btn_close.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btn_close.Name = "btn_close";
+            this.btn_close.Size = new System.Drawing.Size(56, 22);
+            this.btn_close.Text = "Close";
+            this.btn_close.Visible = false;
+            this.btn_close.Click += new System.EventHandler(this.btn_close_Click);
+            // 
             // btn_print
             // 
             this.btn_print.Image = ((System.Drawing.Image)(resources.GetObject("btn_print.Image")));
@@ -1815,15 +1898,6 @@
             this.btn_print.Size = new System.Drawing.Size(52, 22);
             this.btn_print.Text = "Print";
             this.btn_print.Click += new System.EventHandler(this.btn_print_Click);
-            // 
-            // toolStripButton1
-            // 
-            this.toolStripButton1.Image = ((System.Drawing.Image)(resources.GetObject("toolStripButton1.Image")));
-            this.toolStripButton1.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.toolStripButton1.Name = "toolStripButton1";
-            this.toolStripButton1.Size = new System.Drawing.Size(51, 22);
-            this.toolStripButton1.Text = "EDIT";
-            this.toolStripButton1.Click += new System.EventHandler(this.toolStripButton1_Click);
             // 
             // bs_quick_quotes_details
             // 
@@ -1855,9 +1929,9 @@
             // 
             this.unit_price.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
             this.unit_price.DataPropertyName = "unit_price";
-            dataGridViewCellStyle26.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
-            dataGridViewCellStyle26.Format = "N2";
-            this.unit_price.DefaultCellStyle = dataGridViewCellStyle26;
+            dataGridViewCellStyle11.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
+            dataGridViewCellStyle11.Format = "N2";
+            this.unit_price.DefaultCellStyle = dataGridViewCellStyle11;
             this.unit_price.HeaderText = "UNIT PRICE";
             this.unit_price.Name = "unit_price";
             // 
@@ -1872,11 +1946,11 @@
             // 
             this.amount_discounted.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
             this.amount_discounted.DataPropertyName = "amount_discounted";
-            dataGridViewCellStyle27.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
-            dataGridViewCellStyle27.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
-            dataGridViewCellStyle27.Format = "N2";
-            dataGridViewCellStyle27.NullValue = "0";
-            this.amount_discounted.DefaultCellStyle = dataGridViewCellStyle27;
+            dataGridViewCellStyle12.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
+            dataGridViewCellStyle12.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
+            dataGridViewCellStyle12.Format = "N2";
+            dataGridViewCellStyle12.NullValue = "0";
+            this.amount_discounted.DefaultCellStyle = dataGridViewCellStyle12;
             this.amount_discounted.HeaderText = "DISCOUNTED AMOUNT";
             this.amount_discounted.Name = "amount_discounted";
             this.amount_discounted.ReadOnly = true;
@@ -1885,11 +1959,11 @@
             // 
             this.net_discount.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
             this.net_discount.DataPropertyName = "net_discount";
-            dataGridViewCellStyle28.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
-            dataGridViewCellStyle28.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
-            dataGridViewCellStyle28.Format = "N2";
-            dataGridViewCellStyle28.NullValue = "0";
-            this.net_discount.DefaultCellStyle = dataGridViewCellStyle28;
+            dataGridViewCellStyle13.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
+            dataGridViewCellStyle13.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
+            dataGridViewCellStyle13.Format = "N2";
+            dataGridViewCellStyle13.NullValue = "0";
+            this.net_discount.DefaultCellStyle = dataGridViewCellStyle13;
             this.net_discount.HeaderText = "NET DISCOUNT";
             this.net_discount.Name = "net_discount";
             this.net_discount.ReadOnly = true;
@@ -1898,11 +1972,11 @@
             // 
             this.net_total.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
             this.net_total.DataPropertyName = "net_total";
-            dataGridViewCellStyle29.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
-            dataGridViewCellStyle29.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
-            dataGridViewCellStyle29.Format = "N2";
-            dataGridViewCellStyle29.NullValue = "0";
-            this.net_total.DefaultCellStyle = dataGridViewCellStyle29;
+            dataGridViewCellStyle14.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
+            dataGridViewCellStyle14.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
+            dataGridViewCellStyle14.Format = "N2";
+            dataGridViewCellStyle14.NullValue = "0";
+            this.net_total.DefaultCellStyle = dataGridViewCellStyle14;
             this.net_total.HeaderText = "NET AMOUNT";
             this.net_total.Name = "net_total";
             this.net_total.ReadOnly = true;
@@ -1911,11 +1985,11 @@
             // 
             this.line_total.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
             this.line_total.DataPropertyName = "line_total";
-            dataGridViewCellStyle30.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
-            dataGridViewCellStyle30.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
-            dataGridViewCellStyle30.Format = "N2";
-            dataGridViewCellStyle30.NullValue = "0";
-            this.line_total.DefaultCellStyle = dataGridViewCellStyle30;
+            dataGridViewCellStyle15.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
+            dataGridViewCellStyle15.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
+            dataGridViewCellStyle15.Format = "N2";
+            dataGridViewCellStyle15.NullValue = "0";
+            this.line_total.DefaultCellStyle = dataGridViewCellStyle15;
             this.line_total.HeaderText = "LINE TOTAL";
             this.line_total.Name = "line_total";
             this.line_total.ReadOnly = true;
@@ -2138,11 +2212,17 @@
         private System.Windows.Forms.Label label36;
         private System.Windows.Forms.FlowLayoutPanel flowLayoutPanel2;
         private System.Windows.Forms.Timer timer1;
-        private System.Windows.Forms.ToolStripButton toolStripButton1;
+        private System.Windows.Forms.ToolStripButton btn_update;
         private System.Windows.Forms.Button btn_request_for_engr;
+        private System.Windows.Forms.ToolStripLabel back;
+        private System.Windows.Forms.ToolStripButton btn_edit;
+        private System.Windows.Forms.ToolStripButton btn_close;
+        private System.Windows.Forms.ToolStripButton btn_savee;
         private System.Windows.Forms.Button btn_sales_order;
         private System.Windows.Forms.Button btn_finalize;
-        private System.Windows.Forms.ToolStripLabel back;
+        private System.Windows.Forms.ToolStripButton btn_duplicate;
+        private System.Windows.Forms.TextBox txt_id;
+        private System.Windows.Forms.TextBox txt_sub_version_no;
         private System.Windows.Forms.DataGridViewTextBoxColumn quick_id;
         private System.Windows.Forms.DataGridViewTextBoxColumn quick_bom_id;
         private System.Windows.Forms.DataGridViewCheckBoxColumn quick_ischild;

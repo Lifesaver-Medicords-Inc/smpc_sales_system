@@ -44,6 +44,7 @@ namespace smpc_sales_app.Pages
             treeNode9,
             treeNode10,
             treeNode11});
+            System.Windows.Forms.TreeNode treeNode13 = new System.Windows.Forms.TreeNode("Item Entry");
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Layout));
             this.tabContainer = new System.Windows.Forms.TabControl();
             this.panel3 = new System.Windows.Forms.Panel();
@@ -123,6 +124,8 @@ namespace smpc_sales_app.Pages
             treeNode11.Text = "Template Setup";
             treeNode12.Name = "parent";
             treeNode12.Text = "Setup";
+            treeNode13.Name = "Item Entry";
+            treeNode13.Text = "Item Entry";
             this.Sidebar.Nodes.AddRange(new System.Windows.Forms.TreeNode[] {
             treeNode1,
             treeNode2,
@@ -132,7 +135,8 @@ namespace smpc_sales_app.Pages
             treeNode6,
             treeNode7,
             treeNode8,
-            treeNode12});
+            treeNode12,
+            treeNode13});
             this.Sidebar.Size = new System.Drawing.Size(200, 428);
             this.Sidebar.TabIndex = 0;
             this.Sidebar.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.Sidebar_AfterSelect);

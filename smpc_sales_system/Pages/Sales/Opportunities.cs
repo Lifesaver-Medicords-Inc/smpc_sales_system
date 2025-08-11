@@ -88,12 +88,13 @@ namespace smpc_sales_system.Pages.Sales
                 {
                     string documentNo = dgv_sales_opportunities.Rows[e.RowIndex].Cells["document_no"].Value.ToString();
                     string versionNo = dgv_sales_opportunities.Rows[e.RowIndex].Cells["version_no"].Value.ToString();
+                    string subVersionNo = dgv_sales_opportunities.Rows[e.RowIndex].Cells["sub_version_no"].Value.ToString();
 
                     if (documentNo.StartsWith("Q#"))
                     {
                         documentNo = documentNo.Substring(2);
                     }
-                    Quotation quotationPage = new Quotation(documentNo, versionNo, true);
+                    Quotation quotationPage = new Quotation(documentNo, versionNo, subVersionNo, true);
                     this.Parent.Controls.Add(quotationPage);
                     this.Hide();
                 }

@@ -37,27 +37,26 @@ namespace smpc_sales_system.Pages.Sales
         private async void fetchBpiSuppliers()
         {
             var data = await ProjectService.GetSuppliers();
-            var view_data = await ProjectService.GetCanvasView();
-
-            //var canvas_data = await ProjectService.Get;
+            var canvas_data = await ProjectService.GetSuppliers();
             List<BpiSuppliers> suppliersList = data.BpiSuppliers;
-            List<SalesCanvasView> viewList = view_data.sales_canvas_sheet_view;
 
-            //if (viewList == null || !viewList.Any())
-            //{
-            var filteredData = suppliersList
-                .Where(s => s.item_id.ToString() == this.items_id)
-                .Select(s => new 
-                {
-                    supplier_code = s.supplier_code
-                })
-                .ToList();
-            dataGridView1.DataSource = filteredData;
-            //    
-            //}
+            //var view_data = await ProjectService.GetCanvasView();
+            //List<SalesCanvasView> viewList = view_data.sales_canvas_sheet_view;
+
+            if (suppliersList == null || !suppliersList.Any())
+            {
+                var filteredData = suppliersList
+                    .Where(s => s.item_id.ToString() == this.items_id)
+                    .Select(s => new
+                    {
+                        supplier_code = s.supplier_code
+                    })
+                    .ToList();
+                dataGridView1.DataSource = filteredData;
+            }
         }
 
-        private void dataGridView1_CellEndEdit(object sender, DataGridViewCellEventArgs e)
+            private void dataGridView1_CellEndEdit(object sender, DataGridViewCellEventArgs e)
         {
             computeLoop(e.RowIndex);
         }
@@ -82,8 +81,6 @@ namespace smpc_sales_system.Pages.Sales
             {
                 discount = discount / 100;
                 unit_price = net_price * (1 - discount);
-
-                   
                 row.Cells["UnitPrice"].Value = unit_price;
             }
             else
@@ -130,8 +127,7 @@ namespace smpc_sales_system.Pages.Sales
             return data;
         }
 
-
-        private async void button1_Click(object sender, EventArgs e)
+        private async void btn_save_Click(object sender, EventArgs e)
         {
             var response = await ProjectService.InsertCanvas(GetDGVData());
 
@@ -139,6 +135,12 @@ namespace smpc_sales_system.Pages.Sales
             {
                 MessageBox.Show("Success");
             }
+        }
+
+        private void btn_add_bpi_Click(object sender, EventArgs e)
+        {
+            smpc_inventory_app.Pages.canvasForm canvas = new smpc_inventory_app.Pages.canvasForm();
+            canvas.Show();
         }
     }
 }

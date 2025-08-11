@@ -1,5 +1,5 @@
 ﻿using smpc_app.Services.Helpers;
-using smpc_inventory_app.Services.Helpers;
+using smpc_sales_app.Services.Helpers;
 using smpc_sales_system.Models;
 using System;
 using System.Collections.Generic;

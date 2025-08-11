@@ -16,7 +16,7 @@ namespace smpc_sales_system.Services.Sales
 {
     class OpportunityService
     {
-        static string url = "/sales/opportunity"; 
+        static string url = "/sales/opportunity";
 
         // GET - Returns data as DataTable
         public static async Task<DataTable> GetAsDatatable()

@@ -71,5 +71,13 @@ namespace smpc_sales_app.Services.Sales
             var response = await RequestToApi<ApiResponseModel>.Post(url, data);
             return response;
         }
+
+        // PUT: quotation
+        public static async Task<ApiResponseModel> Update(Dictionary<string, dynamic> data)
+        {
+            var response = await RequestToApi<ApiResponseModel>.Put(url, data);
+            return response;
+        }
+
     }
 }

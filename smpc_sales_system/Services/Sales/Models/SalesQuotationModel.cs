@@ -36,6 +36,7 @@ namespace smpc_sales_system.Services.Sales.Models
         public string final_ref_no { get; set; }
         public bool is_finalized { get; set; }
         public string version_no { get; set; }
+        public string sub_version_no { get; set; }
         public string version_description { get; set; }
         public string version_remarks { get; set; }
         public string created_by { get; set; }

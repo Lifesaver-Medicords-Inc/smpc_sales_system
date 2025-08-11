@@ -43,7 +43,7 @@ namespace smpc_sales_app.Pages
         {
             txt_employee_id.Text = "IT-WD-1";
             txt_password.Text = "IT-WD-1";
-            btn_login_Click_1(sender, e);
+            //btn_login_Click_1(sender, e);
         }
 
         private void txt_password_TextChanged(object sender, EventArgs e)
@@ -59,12 +59,16 @@ namespace smpc_sales_app.Pages
                 data.Add("motherboard_serial_no", Helpers.GetSerialNumber());
                 data.Add("machine_name", Environment.MachineName);
                 var currentUser = await AuthServices.Login(data);
+               
+                //var currentUserInventory = await smpc_inventory_app.Services.Auth.AuthServices.Login(data);
 
 
                 if (currentUser.Success)
                 {
                     CacheData.CurrentUser = currentUser.Data;
-                    CacheData.ShipTypeSetup = await ShipService.GetAsDatatable();
+
+                    smpc_inventory_app.Pages.Login inventory_login = new smpc_inventory_app.Pages.Login();
+                    inventory_login.LoginFromSales(data);
                     CacheData.PaymentTerms = await PaymentTermsServices.GetAsDatatable();
                     CacheData.ApplicationSetup = await ApplicationService.GetAsDatatable();
                     CacheData.UoM = await UnitOfMeasurementServices.GetAsDatatable();
@@ -79,7 +83,7 @@ namespace smpc_sales_app.Pages
             }
             catch (Exception ex)
             {
-
+                MessageBox.Show("" + ex);
             }
         }
     }

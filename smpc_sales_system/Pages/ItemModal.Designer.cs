@@ -31,7 +31,7 @@ namespace smpc_sales_app.Pages
         {
             this.pnl_title = new System.Windows.Forms.Panel();
             this.label2 = new System.Windows.Forms.Label();
-            this.button2 = new System.Windows.Forms.Button();
+            this.btn_search = new System.Windows.Forms.Button();
             this.txt_specs = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
             this.pnl_dgv = new System.Windows.Forms.Panel();
@@ -46,7 +46,7 @@ namespace smpc_sales_app.Pages
             // pnl_title
             // 
             this.pnl_title.Controls.Add(this.label2);
-            this.pnl_title.Controls.Add(this.button2);
+            this.pnl_title.Controls.Add(this.btn_search);
             this.pnl_title.Controls.Add(this.txt_specs);
             this.pnl_title.Controls.Add(this.label1);
             this.pnl_title.Dock = System.Windows.Forms.DockStyle.Top;
@@ -64,15 +64,15 @@ namespace smpc_sales_app.Pages
             this.label2.TabIndex = 5;
             this.label2.Text = "Search:";
             // 
-            // button2
+            // btn_search
             // 
-            this.button2.Location = new System.Drawing.Point(450, 20);
-            this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(75, 23);
-            this.button2.TabIndex = 4;
-            this.button2.Text = "search";
-            this.button2.UseVisualStyleBackColor = true;
-            this.button2.Click += new System.EventHandler(this.button2_Click);
+            this.btn_search.Location = new System.Drawing.Point(450, 20);
+            this.btn_search.Name = "btn_search";
+            this.btn_search.Size = new System.Drawing.Size(75, 23);
+            this.btn_search.TabIndex = 4;
+            this.btn_search.Text = "search";
+            this.btn_search.UseVisualStyleBackColor = true;
+            this.btn_search.Click += new System.EventHandler(this.btn_search_Click);
             // 
             // txt_specs
             // 
@@ -142,7 +142,7 @@ namespace smpc_sales_app.Pages
         private System.Windows.Forms.Panel pnl_dgv;
         private System.Windows.Forms.DataGridView dgv_itemList;
         private System.Data.DataSet ds_item_list;
-        private System.Windows.Forms.Button button2;
+        private System.Windows.Forms.Button btn_search;
         private System.Windows.Forms.TextBox txt_specs;
         private System.Windows.Forms.Label label2;
     }

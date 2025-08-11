@@ -42,6 +42,11 @@ namespace smpc_sales_app.Services
             { "Ship Type Setup", new ShipTypeSetup() },
             { "Template Setup", new TemplateSelectionModal() },
 
+
+            //inventory
+
+            { "Item Entry", new Inventory_SMPC.Pages.Item.frm_Item_Entry() },
+
         };
 
         private string _selectedRoute;
