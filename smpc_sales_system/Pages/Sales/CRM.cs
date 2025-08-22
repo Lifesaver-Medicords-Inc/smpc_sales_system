@@ -1,4 +1,5 @@
 ﻿using smpc_app.Services.Helpers;
+using smpc_sales_app.Data;
 using smpc_sales_app.Pages;
 using smpc_sales_system.Services.Sales;
 using System;
@@ -25,18 +26,42 @@ namespace smpc_sales_system.Pages.Sales
         //FETCHERS AND BINDER
         private async Task fetchCRM()
         {
+            int firstDisplayedRowIndex = dgv_branch.FirstDisplayedScrollingRowIndex;
+            int selectedRowIndex = dgv_branch.CurrentRow?.Index ?? -1;
             crm = await CRMService.GetAsDatatable();
             crmtable = await CRMService.GetCRM();
             if (crm != null)
             {
                 bindQuotation(true);
+
+                // Restore scroll position
+                if (firstDisplayedRowIndex >= 0 && firstDisplayedRowIndex < dgv_branch.RowCount)
+                    dgv_branch.FirstDisplayedScrollingRowIndex = firstDisplayedRowIndex;
+
+                // Restore selected row
+                if (selectedRowIndex >= 0 && selectedRowIndex < dgv_branch.Rows.Count)
+                {
+                    dgv_branch.ClearSelection();
+                    dgv_branch.Rows[selectedRowIndex].Selected = true;
+                    dgv_branch.CurrentCell = dgv_branch.Rows[selectedRowIndex].Cells[0]; // or any valid cell
+                }
             }
         }
         private void bindQuotation(bool isBind = false)
         {
             if (isBind)
             {
-                dgv_branch.DataSource = crm;
+                string id = CacheData.CurrentUser.employee_id;
+                DataTable filteredTable = crm.Clone();
+
+                // Import rows that match the filter
+                foreach (DataRow row in crm.Select($"sales_id = '{id}'"))
+                {
+                    filteredTable.ImportRow(row);
+                }
+
+                // Set as DataSource
+                dgv_branch.DataSource = filteredTable;
             }
         }
 
@@ -121,7 +146,7 @@ namespace smpc_sales_system.Pages.Sales
                         data["based_id"] = null; // Or handle the case where the value is invalid
                     }
                 }
-
+                
                 // Check and process crm_id
                 if (editedItem.Table.Columns.Contains("crm_id"))
                 {
@@ -145,45 +170,64 @@ namespace smpc_sales_system.Pages.Sales
                 }
 
                 // Get the value of the 'date' column
-                string dateValue = editedItem["date"].ToString();
-                string currentDate = DateTime.Now.ToString("dd-MM-yyyy");
+                string dateValue = editedItem["date"]?.ToString();
+                string currentDateTime = DateTime.Now.ToString("dd-MM-yyyy HH-mm-ss");
 
                 if (string.IsNullOrWhiteSpace(dateValue))
                 {
-                    editedItem["date"] = currentDate;
+                    // Set current date and time if blank
+                    editedItem["date"] = currentDateTime;
                 }
                 else
                 {
-                    if (dateValue != currentDate)
+                    if (DateTime.TryParseExact(dateValue, "dd-MM-yyyy HH-mm-ss", null, System.Globalization.DateTimeStyles.None, out DateTime parsedDate))
                     {
-                        editedItem["date"] = currentDate;
+                        // Check if last save was more than 3 minutes ago
+                        if ((DateTime.Now - parsedDate).TotalMinutes > 3)
+                        {
+                            isInsert = true;
+                        }
+                        else
+                        {
+                            isInsert = false;
+                        }
+
+                        // Always update the date to now
+                        editedItem["date"] = currentDateTime;
+                    }
+                    else
+                    {
+                        // Fallback if parsing fails — treat as new insert
+                        editedItem["date"] = currentDateTime;
                         isInsert = true;
                     }
                 }
 
+                // Check ID
                 var crmId = data.ContainsKey("crm_id") ? data["crm_id"]?.ToString().Trim() : null;
 
+                // Decide between insert/update
                 if (crmId == "0" || isInsert)
                 {
                     data["crm_id"] = 0;
-                    data["date"] = DateTime.Now.ToString("dd-MM-yyyy");
+                    data["date"] = currentDateTime;
                     response = await CRMService.Insert(data);
+
                     if (response != null && response.Success)
                     {
-                        MessageBox.Show("Edit Successfully saved");
                         fetchCRM();
                     }
                     else
                     {
-                        MessageBox.Show("Failed to save quotation. Please try againsadsa.");
+                        MessageBox.Show("Failed to save quotation. Please try again.");
                     }
                 }
                 else
                 {
+                    data["date"] = currentDateTime;
                     response = await CRMService.Update(data);
                     if (response != null && response.Success)
                     {
-                        MessageBox.Show("Edit Successfully updated");
                         fetchCRM();
                     }
                     else
@@ -191,6 +235,7 @@ namespace smpc_sales_system.Pages.Sales
                         MessageBox.Show("Failed to update quotation. Please try again.");
                     }
                 }
+
 
             }
             catch (Exception ex)
@@ -210,6 +255,34 @@ namespace smpc_sales_system.Pages.Sales
             else
             {
                 dgv_branch.DataSource = data;
+            }
+        }
+
+        private void dgv_branch_CellToolTipTextNeeded(object sender, DataGridViewCellToolTipTextNeededEventArgs e)
+        {
+            if (e.RowIndex == -1 && dgv_branch.Columns[e.ColumnIndex].Name == "date")
+            {
+                e.ToolTipText = "After 3 minutes to insert new history.";
+            }
+        }
+
+        private void dgv_branch_CellPainting(object sender, DataGridViewCellPaintingEventArgs e)
+        {
+            if (e.RowIndex == -1 && e.ColumnIndex >= 0 && dgv_branch.Columns[e.ColumnIndex].Name == "date")
+            {
+                e.PaintBackground(e.CellBounds, true);
+                e.PaintContent(e.CellBounds);
+
+                Image icon = SystemIcons.Question.ToBitmap();
+                int iconSize = 16;
+                int padding = 4;
+
+                // Position: Right side, vertically centered
+                var iconX = e.CellBounds.Right - iconSize - padding;
+                var iconY = e.CellBounds.Top + (e.CellBounds.Height - iconSize) / 2;
+
+                e.Graphics.DrawImage(icon, new Rectangle(iconX, iconY, iconSize, iconSize));
+                e.Handled = true;
             }
         }
     }

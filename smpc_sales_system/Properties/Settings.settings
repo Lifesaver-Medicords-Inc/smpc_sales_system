@@ -8,5 +8,8 @@
     <Setting Name="AFTERSALESPATH" Type="System.String" Scope="Application">
       <Value Profile="(Default)">C:\Users\Public\Documents\SMPC\AFTERSALES</Value>
     </Setting>
+    <Setting Name="REPORTPATH" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">C:\Users\SMPC\source\repos\smpc_sales_system\smpc_sales_system2\smpc_sales_system\Reports</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

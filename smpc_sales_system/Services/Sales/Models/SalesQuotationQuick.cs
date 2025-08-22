@@ -10,6 +10,7 @@ namespace smpc_sales_system.Services.Sales.Models
     {
         public bool is_child { get; set; }
         public bool is_parent { get; set; }
+
         public int based_id { get; set; }
         public int bom_id { get; set; }
         public int item_id { get; set; }

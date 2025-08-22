@@ -40,10 +40,10 @@ namespace smpc_sales_system.Pages.Sales
             this.panel2 = new System.Windows.Forms.Panel();
             this.dgv_branch = new System.Windows.Forms.DataGridView();
             this.panel1 = new System.Windows.Forms.Panel();
-            this.label1 = new System.Windows.Forms.Label();
             this.panel3 = new System.Windows.Forms.Panel();
             this.txt_search = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
+            this.label1 = new System.Windows.Forms.Label();
             this.based_id = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.tag = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.branch_name = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -53,6 +53,7 @@ namespace smpc_sales_system.Pages.Sales
             this.date = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.remark = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.crm_id = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.sales_id = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.panel2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgv_branch)).BeginInit();
             this.panel1.SuspendLayout();
@@ -75,11 +76,13 @@ namespace smpc_sales_system.Pages.Sales
             dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
             this.dgv_branch.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle1;
             this.dgv_branch.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
+            this.dgv_branch.AutoSizeRowsMode = System.Windows.Forms.DataGridViewAutoSizeRowsMode.AllCells;
             this.dgv_branch.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.Single;
-            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
             dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             dataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle2.Padding = new System.Windows.Forms.Padding(15, 0, 0, 0);
             dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight;
             dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
             dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
@@ -94,23 +97,25 @@ namespace smpc_sales_system.Pages.Sales
             this.email,
             this.date,
             this.remark,
-            this.crm_id});
+            this.crm_id,
+            this.sales_id});
             dataGridViewCellStyle8.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
             dataGridViewCellStyle8.BackColor = System.Drawing.SystemColors.Window;
             dataGridViewCellStyle8.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             dataGridViewCellStyle8.ForeColor = System.Drawing.SystemColors.ControlText;
             dataGridViewCellStyle8.SelectionBackColor = System.Drawing.SystemColors.Highlight;
             dataGridViewCellStyle8.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle8.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            dataGridViewCellStyle8.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
             this.dgv_branch.DefaultCellStyle = dataGridViewCellStyle8;
             this.dgv_branch.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dgv_branch.Location = new System.Drawing.Point(0, 0);
             this.dgv_branch.Name = "dgv_branch";
-            this.dgv_branch.RowHeadersVisible = false;
             this.dgv_branch.Size = new System.Drawing.Size(1050, 499);
             this.dgv_branch.TabIndex = 0;
             this.dgv_branch.CellContentDoubleClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgv_branch_CellContentDoubleClick);
             this.dgv_branch.CellEndEdit += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgv_branch_CellEndEdit);
+            this.dgv_branch.CellPainting += new System.Windows.Forms.DataGridViewCellPaintingEventHandler(this.dgv_branch_CellPainting);
+            this.dgv_branch.CellToolTipTextNeeded += new System.Windows.Forms.DataGridViewCellToolTipTextNeededEventHandler(this.dgv_branch_CellToolTipTextNeeded);
             // 
             // panel1
             // 
@@ -121,16 +126,6 @@ namespace smpc_sales_system.Pages.Sales
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(1050, 64);
             this.panel1.TabIndex = 2;
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label1.Location = new System.Drawing.Point(3, 34);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(479, 25);
-            this.label1.TabIndex = 1;
-            this.label1.Text = "CUSTOMER RELATIONSHIP MANAGEMENT";
             // 
             // panel3
             // 
@@ -158,6 +153,16 @@ namespace smpc_sales_system.Pages.Sales
             this.label2.Size = new System.Drawing.Size(41, 13);
             this.label2.TabIndex = 3;
             this.label2.Text = "Search";
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label1.Location = new System.Drawing.Point(3, 34);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(479, 25);
+            this.label1.TabIndex = 1;
+            this.label1.Text = "CUSTOMER RELATIONSHIP MANAGEMENT";
             // 
             // based_id
             // 
@@ -230,6 +235,7 @@ namespace smpc_sales_system.Pages.Sales
             this.remark.FillWeight = 114.466F;
             this.remark.HeaderText = "REMARKS";
             this.remark.Name = "remark";
+            this.remark.ToolTipText = "Every 3 minutes update";
             // 
             // crm_id
             // 
@@ -237,6 +243,13 @@ namespace smpc_sales_system.Pages.Sales
             this.crm_id.HeaderText = "crm_id";
             this.crm_id.Name = "crm_id";
             this.crm_id.Visible = false;
+            // 
+            // sales_id
+            // 
+            this.sales_id.DataPropertyName = "sales_id";
+            this.sales_id.HeaderText = "sales_id";
+            this.sales_id.Name = "sales_id";
+            this.sales_id.Visible = false;
             // 
             // CRM
             // 
@@ -274,5 +287,6 @@ namespace smpc_sales_system.Pages.Sales
         private System.Windows.Forms.DataGridViewTextBoxColumn date;
         private System.Windows.Forms.DataGridViewTextBoxColumn remark;
         private System.Windows.Forms.DataGridViewTextBoxColumn crm_id;
+        private System.Windows.Forms.DataGridViewTextBoxColumn sales_id;
     }
 }

@@ -387,11 +387,9 @@
     <EmbeddedResource Include="Pages\Sales\Opportunities.resx">
       <DependentUpon>Opportunities.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Pages\Sales\OrderReport.rdlc" />
     <EmbeddedResource Include="Pages\Sales\Orders.resx">
       <DependentUpon>Orders.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Pages\Sales\ProjectReport.rdlc" />
     <EmbeddedResource Include="Pages\Sales\ProjectTest.resx">
       <DependentUpon>ProjectTest.cs</DependentUpon>
     </EmbeddedResource>
@@ -401,7 +399,6 @@
     <EmbeddedResource Include="Pages\Sales\Quotation.resx">
       <DependentUpon>Quotation.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Pages\Sales\QuotationReport.rdlc" />
     <EmbeddedResource Include="Pages\Sales\SalesPrintModal.resx">
       <DependentUpon>SalesPrintModal.cs</DependentUpon>
     </EmbeddedResource>
@@ -436,8 +433,9 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
-    <EmbeddedResource Include="Reports\Quotation\Quotation.rdlc" />
-    <EmbeddedResource Include="Reports\Report1.rdlc" />
+    <EmbeddedResource Include="Reports\OrderReport.rdlc" />
+    <EmbeddedResource Include="Reports\ProjectReport.rdlc" />
+    <EmbeddedResource Include="Reports\QuotationReport.rdlc" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>

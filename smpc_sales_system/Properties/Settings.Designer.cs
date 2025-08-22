@@ -40,5 +40,15 @@ namespace smpc_sales_system.Properties {
                 return ((string)(this["AFTERSALESPATH"]));
             }
         }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("C:\\Users\\SMPC\\source\\repos\\smpc_sales_system\\smpc_sales_system2\\smpc_sales_system" +
+            "\\Reports")]
+        public string REPORTPATH {
+            get {
+                return ((string)(this["REPORTPATH"]));
+            }
+        }
     }
 }
