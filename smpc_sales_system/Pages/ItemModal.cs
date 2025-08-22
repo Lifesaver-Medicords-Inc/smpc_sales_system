@@ -33,16 +33,16 @@ namespace smpc_sales_app.Pages
 
 
 
-        public ItemModal(DataTable dgv)
+        public ItemModal(DataTable Item)
         {
             InitializeComponent();
-            this.dt = dgv;
+            this.dt = Item;
         }
 
-        public ItemModal(DataTable dgv, DataTable BomHead, DataTable BomDetails)
+        public ItemModal(DataTable Item, DataTable BomHead, DataTable BomDetails)
         {
             InitializeComponent();
-            this.dt = dgv;
+            this.dt = Item;
             this.bomHead = BomHead;
             this.bomDetails = BomDetails;
         }
@@ -132,13 +132,10 @@ namespace smpc_sales_app.Pages
             fetchData();
         }
 
-
-        private async void button2_Click(object sender, EventArgs e)
+        private void btn_search_Click(object sender, EventArgs e)
         {
             Panel[] pnl_list = { pnl_title };
             var data = Helpers.GetControlsValues(pnl_list);
-            
         }
-
     }
 }

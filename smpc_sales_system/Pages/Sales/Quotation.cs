@@ -33,21 +33,24 @@ namespace smpc_sales_app.Pages.Sales
 
         private int SelectedRow = 0;
         private string documentNo;
-        private string version_no;
-        private bool is_finalized;
+        private string versionNo;
+        private string subVersionNo;
+        private bool isFinalized;
+        private bool isNewRecord;
 
         private ClientWebSocket _websocket;
         private CancellationTokenSource _cancelTokenSource;
 
-        public Quotation(string documentNo = null, string version_no = null, bool is_finalized = false)
+        public Quotation(string documentNo = null, string version_no = null, string sub_version_no = null, bool is_finalized = false)
         {
             InitializeComponent();
 
             cmb_warranty.Text = "1 year";
             //KRIS: NEED ITONG DALAWA KAPAG MAY VERSION_NO NA PERO GINAGAMIT KO NA RIN GANYAN
             this.documentNo = documentNo;
-            this.version_no = version_no;
-            this.is_finalized = is_finalized;
+            this.versionNo = version_no;
+            this.versionNo = sub_version_no;
+            this.isFinalized = is_finalized;
 
             // websocket related 
             _websocket = new ClientWebSocket();
@@ -70,7 +73,6 @@ namespace smpc_sales_app.Pages.Sales
                     {
                         MessageBox.Show(isSuccess.message);
                     }
-
                 }
             }
         }
@@ -265,14 +267,12 @@ namespace smpc_sales_app.Pages.Sales
                             else
                                 MessageBox.Show(insertResult.message);
 
-                            
+
                         }
                     }
                 }
             }
         }
-
-
 
         private async void Cell_ClickedUC(object sender, EventArgs e)
         {
@@ -283,8 +283,6 @@ namespace smpc_sales_app.Pages.Sales
                 HandleItemSelectionClick(insertionIndex, currentControl.DgvProjectItems);
             }
         }
-
-
         private async void Cell_EditedUC(object sender, EventArgs e)
         {
             decimal gross = 0, vat = 0, net = 0, percent = 0, cash_disc = 0, net_amount = 0, total_amount = 0;
@@ -306,17 +304,14 @@ namespace smpc_sales_app.Pages.Sales
                 }
             }
 
- 
-            txt_gross_sales.Text      =  Helpers.MoneyFormatDecimal(gross);
-            txt_vat_amount.Text       =  Helpers.MoneyFormatDecimal(vat);
-            txt_net_sales.Text        =  Helpers.MoneyFormatDecimal(net);
-            txt_percent_discount.Text =  Helpers.MoneyFormatDecimal(percent);
-            txt_cash_discount.Text    =  Helpers.MoneyFormatDecimal(cash_disc);
-            txt_net_amount_due.Text   =  Helpers.MoneyFormatDecimal(net_amount);
-            txt_total_amount_due.Text =  Helpers.MoneyFormatDecimal(total_amount);
+            txt_gross_sales.Text = Helpers.MoneyFormatDecimal(gross);
+            txt_vat_amount.Text = Helpers.MoneyFormatDecimal(vat);
+            txt_net_sales.Text = Helpers.MoneyFormatDecimal(net);
+            txt_percent_discount.Text = Helpers.MoneyFormatDecimal(percent);
+            txt_cash_discount.Text = Helpers.MoneyFormatDecimal(cash_disc);
+            txt_net_amount_due.Text = Helpers.MoneyFormatDecimal(net_amount);
+            txt_total_amount_due.Text = Helpers.MoneyFormatDecimal(total_amount);
         }
-
-
         private async void Button_ClickedUC(object sender, EventArgs e)
         {
             var dt = await ProjectTemplatesService.GetProjectTemplates();
@@ -354,7 +349,6 @@ namespace smpc_sales_app.Pages.Sales
             CacheProjectData();
             ReceiveDataAsync();
         }
-
         private void CacheProjectData()
         {
             if (tabControl2.SelectedTab.Controls[0] is ItemSetUC currentControl)
@@ -363,8 +357,6 @@ namespace smpc_sales_app.Pages.Sales
                 CacheData.Cached_Content_Data = currentControl.GetProjectContentsData();
             }
         }
-
-
         private async void ReceiveDataAsync()
         {
             byte[] buffer = new byte[100 * 1024 * 1024];
@@ -389,7 +381,7 @@ namespace smpc_sales_app.Pages.Sales
                             Console.WriteLine($"Payload size: {messageBuffer.Count} bytes");
                             messageBuffer.Clear();
 
-                           
+
                             IsEdit = false;
 
                             var json = JToken.Parse(completeData);
@@ -414,14 +406,10 @@ namespace smpc_sales_app.Pages.Sales
             }
 
         }
-
         private void setAdvancedConditionsData()
         {
 
         }
-
-
-
         private async Task SendMessageAsync(Dictionary<string, dynamic> data)
         {
             if (_websocket.State == WebSocketState.Open)
@@ -444,27 +432,14 @@ namespace smpc_sales_app.Pages.Sales
                 }
             }
         }
-
-
-
-
-
-
-
-
-
-
-
-
         private void tabControl_SelectedIndexChanged(object sender, EventArgs e)
         {
             string activeTab = tabControl.SelectedTab.Text;
             if (activeTab == "quick_tab")
             {
-                quick_tab.Height = 307;
+                quick_tab.Height = 507;
             }
         }
-
         private void btn_quick_quote_Click(object sender, EventArgs e)
         {
             //1028, 2354
@@ -477,11 +452,13 @@ namespace smpc_sales_app.Pages.Sales
             isProject = false;
             IsEdit = false;
         }
-
         private void btn_project_Click(object sender, EventArgs e)
         {
 
-            _websocket = new ClientWebSocket();
+            if (_websocket != null && _websocket.State == WebSocketState.Open)
+{
+    _websocket.Dispose();
+}
             _cancelTokenSource = new CancellationTokenSource();
 
 
@@ -492,6 +469,8 @@ namespace smpc_sales_app.Pages.Sales
             this.tabControl.SelectedIndex = 1;
             this.tabControl.Height = 600;
             this.Size = new Size(1386 - 80, 2354);
+
+            // set state 
             isProject = true;
 
             UC_History h = new UC_History();
@@ -505,7 +484,6 @@ namespace smpc_sales_app.Pages.Sales
 
             fetchSalesProject();
         }
-
         private void setProjectMultiplier()
         {
             DataTable dt = new DataTable();
@@ -538,7 +516,7 @@ namespace smpc_sales_app.Pages.Sales
         public DataTable BomHead { get; set; } = new DataTable();
         public DataTable BomDetails { get; set; } = new DataTable();
 
-        private async void fetchItemData()
+        private async Task fetchItemData()
         {
             var itemData = await ItemService.GetItem();
             var bomData = await ProjectService.GetBom();
@@ -548,7 +526,7 @@ namespace smpc_sales_app.Pages.Sales
             BomDetails = JsonHelper.ToDataTable(bomData.bom_details);
         }
 
-        private async void fetchBpiData()
+        private async Task fetchBpiData()
         {
             Bpi_Class bpi_data = await QuotationService.GetBpiCustomers();
 
@@ -559,68 +537,53 @@ namespace smpc_sales_app.Pages.Sales
             bpi_contacts = JsonHelper.ToDataTable(bpi_data.contacts);
             bpi_items = JsonHelper.ToDataTable(bpi_data.items);
         }
-
-        private async void fetchQuotationDetails()
+        SalesQuotationList data;
+        private async Task fetchQuotationDetails()
         {
-           
-            pnl_header.Enabled = false;
-            pnl_footer.Enabled = false;
+            Panel[] panels = { pnl_header, pnl_footer };
+            Helpers.ReadOnlyControls(panels);
+
+            //pnl_header.Enabled = false;
+            //pnl_footer.Enabled = false;
             toolstrip_quotation.Enabled = false;
             dgv_quick_quote_details.Enabled = false;
 
-            var result = await Task.Run(async () =>
+            data = await QuotationService.GetQuotations();
+
+            if (data != null && data.SalesQuotation != null && data.SalesQuotation.Any())
             {
-              
-                SalesQuotationList data = await QuotationService.GetQuotations();
+                // Get latest quotation by version and subversion
+                var latestQuotations = data.SalesQuotation
+                    .GroupBy(q => q.document_no)
+                    .Select(group => group
+                    .OrderByDescending(q => q.version_no)
+                    .ThenByDescending(q => q.sub_version_no)
+                    .First())
+                    .ToList();
 
-                if (data != null && data.SalesQuotation != null && data.SalesQuotation.Any())
-                {
-                   
-                    var latestQuotations = data.SalesQuotation
-                        .GroupBy(q => q.document_no)
-                        .Select(group => group.OrderByDescending(q => q.version_no).First())
-                        .ToList();
-
-                    return new
-                    {
-                        Data = data,
-                        Latest = JsonHelper.ToDataTable(latestQuotations),
-                        All = JsonHelper.ToDataTable(data.SalesQuotation),
-                        Quick = JsonHelper.ToDataTable(data.SalesQuotationQuick)
-                    };
-                }
-
-                return null;
-            });
-
-            
-            if (result != null)
-            {
-                transactionList = result.Latest;
-                allTransactionList = result.All;
-                childList = result.Quick;
-
-                pnl_header.Enabled = true;
-                pnl_footer.Enabled = true;
+                transactionList = JsonHelper.ToDataTable(latestQuotations);
+                allTransactionList = JsonHelper.ToDataTable(data.SalesQuotation);
+                childList = JsonHelper.ToDataTable(data.SalesQuotationQuick);
 
                 dgv_quick_quote_details.ReadOnly = true;
                 dgv_quick_quote_details.Enabled = true;
-                toolstrip_quotation.Enabled = true;
 
-                await Task.Delay(2000); 
+                await Task.Delay(2000); // optional wait
                 bind(true);
             }
             else
             {
                 MessageBox.Show("Please create a new data!");
-                pnl_header.Enabled = true;
-                pnl_footer.Enabled = true;
 
-                Panel[] panels = { pnl_header };
+                Helpers.ResetReadOnlyControls(panels);
+                //pnl_header.Enabled = true;
+                //pnl_footer.Enabled = true;
+
                 Helpers.ResetReadOnlyControls(panels);
             }
-        }
 
+            toolstrip_quotation.Enabled = true;
+        }
 
 
         public DataTable dt_multiplier { get; set; }
@@ -666,7 +629,7 @@ namespace smpc_sales_app.Pages.Sales
 
                 UC.CellChangedProject += Cell_DataChanged;
                 UC.CellClicked += Cell_ClickedUC;
-                
+
                 // Add the UserControl to the new tab
                 newTab.Controls.Add(UC);
 
@@ -676,13 +639,13 @@ namespace smpc_sales_app.Pages.Sales
                 // Select the newly added tab
                 this.tabControl2.SelectedIndex = lastIndex;
 
-                return; 
+                return;
             }
 
 
             List<SalesProjectItemSet> fetchedTabs = data.sales_project_item_set;
-            
-            
+
+
             dt_multiplier = JsonHelper.ToDataTable(data.sales_project_multiplier);
             dt_content = JsonHelper.ToDataTable(data.sales_project_content);
             dt_advanced_conditions = JsonHelper.ToDataTable(data.sales_project_content_advanced_condition);
@@ -690,28 +653,28 @@ namespace smpc_sales_app.Pages.Sales
             dt_wiring = JsonHelper.ToDataTable(data.sales_project_wiring);
 
             //Helpers.BindControls(pnls, dt2, selectedProject);s
-            
+
             string selectedSalesQuotationId = project_quote.Rows[0]["id"].ToString();
             this.selectedProjectID = selectedSalesQuotationId;
             txt_project_name.Text = project_quote.Rows[0]["project_name"].ToString();
 
-            //ataView dataview = new DataView(dt_multiplier);
+            //DataView dataview = new DataView(dt_multiplier);
             //dataview.RowFilter = "based_id = '" + this.allTransactionList.Rows[this.selectedProject]["id"].ToString() + "'";
             //dgv_project_multiplier.DataSource = dataview;
-            
+
             tabControl2.TabPages.Clear();
-            
+
             var filteredtabs = fetchedTabs.Where(tab => tab.based_id.ToString() == selectedSalesQuotationId).ToList();
             foreach (var tab in filteredtabs)
             {
                 TabPage newTab = new TabPage(tab.tab_number);
-                 
+
                 ItemSetUC UC = new ItemSetUC
                 {
                     Dock = DockStyle.Fill
                 };
 
-               
+
                 //UC.DataChangedConditions += ItemSet_DataChanged;
                 //UC.DataChangedContent += Content_DataChanged;
                 //UC.CellChangedProject += Cell_DataChanged;
@@ -723,7 +686,7 @@ namespace smpc_sales_app.Pages.Sales
                 UC.CellChangedWiring += Cell_WiringChanged;
                 UC.CellClicked += Cell_ClickedUC;
                 UC.CellEdited += Cell_EditedUC;
-                
+
                 //UC.ItemChanged += ItemChanged;
                 UC.FinalTxtBoxClicked += FinalTxtBoxClicked;
                 UC.SetUnitsOfMeasure(CacheData.UoM, CacheData.UoM);
@@ -735,15 +698,15 @@ namespace smpc_sales_app.Pages.Sales
 
                 DataView contentView = new DataView(dt_content);
                 contentView.RowFilter = $"based_id = '{tab.itemset_id}'";
-                
+
                 DataView conditionsView = new DataView(dt_advanced_conditions);
                 conditionsView.RowFilter = $"based_id = '{tab.itemset_id}'";
-                
+
                 DataView itemView = new DataView(dt_items);
                 itemView.RowFilter = $"based_id = '{tab.itemset_id}'";
 
                 DataView wiringView = new DataView(dt_wiring);
-                wiringView.RowFilter = $"based_id = '{tab.itemset_id}'"; 
+                wiringView.RowFilter = $"based_id = '{tab.itemset_id}'";
 
                 CurrentProjectItemBasedID = tab.itemset_id;
 
@@ -751,8 +714,8 @@ namespace smpc_sales_app.Pages.Sales
                 UC.SetContentsPanelData(contentView.ToTable());
                 UC.SetFetchedItemData(itemView.ToTable());
                 UC.SetProjectWiring(wiringView.ToTable());
-               
-            
+
+
                 newTab.Controls.Add(UC);
                 tabControl2.TabPages.Add(newTab);
             }
@@ -761,7 +724,7 @@ namespace smpc_sales_app.Pages.Sales
             tabControl2.TabPages.Add(addNewTab);
 
             fetchProjectMultipliers();
-            ConnectToWebSocket("Sales", selectedSalesQuotationId);
+            //ConnectToWebSocket("Sales", selectedSalesQuotationId);
         }
 
 
@@ -809,7 +772,7 @@ namespace smpc_sales_app.Pages.Sales
         }
 
         private void LoadMultipliers(DataTable dt)
-        { 
+        {
             dgv_project_multiplier.DataSource = dt;
         }
 
@@ -822,7 +785,7 @@ namespace smpc_sales_app.Pages.Sales
             // Check if data is valid
             if (data == null || string.IsNullOrEmpty(documentNo))
             {
-                return;  
+                return;
             }
             // Filter the SalesQuotation and SalesQuotationQuick based on the converted documentNo
             var filteredSalesQuotation = data.SalesQuotation
@@ -842,8 +805,11 @@ namespace smpc_sales_app.Pages.Sales
                 childList = JsonHelper.ToDataTable(filteredSalesQuotationQuick);
 
                 // Enable the panels and controls as needed
-                pnl_header.Enabled = true;
-                pnl_footer.Enabled = true;
+
+                Panel[] panels = { pnl_header, pnl_footer };
+                Helpers.ResetReadOnlyControls(panels);
+                //pnl_header.Enabled = true;
+                //pnl_footer.Enabled = true;
                 toolstrip_quotation.Enabled = false;
                 dgv_quick_quote_details.Enabled = true;
 
@@ -868,7 +834,7 @@ namespace smpc_sales_app.Pages.Sales
             }
         }
 
-
+        // For creating new quotation or version
         private void DocumentIncrementer()
         {
             string docNum;
@@ -882,7 +848,7 @@ namespace smpc_sales_app.Pages.Sales
                 {
                     if (int.TryParse(latestRow["document_no"].ToString(), out int documentNumber))
                     {
-                        docNum = (documentNumber + 1).ToString().PadLeft(4, '0'); 
+                        docNum = (documentNumber + 1).ToString().PadLeft(4, '0');
                     }
                     else
                     {
@@ -891,7 +857,7 @@ namespace smpc_sales_app.Pages.Sales
                 }
                 else
                 {
-                    docNum = "0001"; 
+                    docNum = "0001";
                 }
             }
             else
@@ -901,7 +867,7 @@ namespace smpc_sales_app.Pages.Sales
             txt_document_no.Text = "Q#" + docNum;
         }
 
-        private async void btn_save_Click(object sender, EventArgs e)
+        private void btn_save_Click(object sender, EventArgs e)
         {
             if (!isProject)
             {
@@ -1014,10 +980,10 @@ namespace smpc_sales_app.Pages.Sales
             // Make sure to handle the removal from the bottom to avoid index shifting issues
             for (int i = dgv_quick_quote_details.Rows.Count - 1; i >= 0; i--)
             {
-               
+
                 if (!dgv_quick_quote_details.Rows[i].IsNewRow)
                 {
-                        var cellValue = dgv_quick_quote_details.Rows[i].Cells["quick_item_id"].Value;
+                    var cellValue = dgv_quick_quote_details.Rows[i].Cells["quick_item_id"].Value;
 
                     if (cellValue != null && int.TryParse(cellValue.ToString(), out int itemId) && itemId == 0)
                     {
@@ -1036,8 +1002,17 @@ namespace smpc_sales_app.Pages.Sales
                 Panel[] pnl_list = { pnl_header, pnl_footer };
                 var parentData = Helpers.GetControlsValues(pnl_list);
                 //var childData = Helpers.GetControlsValues(pnl_list);
-                var bill_to_id = int.Parse(cmb_bill_to.SelectedValue.ToString()) ;
+                int id;
+                bool isParsed = int.TryParse(txt_id.Text, out id);
+                var bill_to_id = int.Parse(cmb_bill_to.SelectedValue.ToString());
                 var ship_to_id = int.Parse(cmb_ship_to.SelectedValue.ToString());
+
+                parentData["id"] = id;
+
+                if (isNewRecord || isSubVersion)
+                {
+                    parentData.Remove("id");
+                }
 
                 parentData["bill_to_id"] = bill_to_id;
                 parentData["ship_to_id"] = ship_to_id;
@@ -1102,23 +1077,30 @@ namespace smpc_sales_app.Pages.Sales
                         return;
                     }
 
-                  
+
                     parentData["sales_quotation_quick"] = childCollection;
 
                     if (parentData.ContainsKey("sales_quotation_quick"))
                     {
-                        await QuotationService.Insert(parentData);
+                        var isSuccess = await QuotationService.Insert(parentData);
 
-                        //// this should await a response in the future if the response is success proceed to create if not notify the user
-                        Helpers.ResetControls(pnl_header);
-                        Helpers.ResetControls(pnl_footer);
-                        //dgv_quick_quote_details.DataSource = this.childList.Clone();
-                        //dgv_quick_quotes_show.Visible = true;
-                        //dgv_quick_quotes_show.Enabled = false;
-                        toolstrip_quotation.Enabled = true;
+                        if (isSuccess.Success)
+                        {
+                            //// this should await a response in the future if the response is success proceed to create if not notify the user
+                            Helpers.ResetControls(pnl_header);
+                            Helpers.ResetControls(pnl_footer);
+                            //dgv_quick_quote_details.DataSource = this.childList.Clone();
+                            //dgv_quick_quotes_show.Visible = true;
+                            //dgv_quick_quotes_show.Enabled = false;
+                            //toolstrip_quotation.Enabled = true;
 
-                        MessageBox.Show("Quotation Successfully saved");
-                        fetchQuotationDetails();
+                            // IF SUCCESS
+
+                            MessageBox.Show("Quotation Successfully saved");
+                            await fetchQuotationDetails();
+
+                            SetNewFormMode(false);
+                        }
                     }
                 }
             }
@@ -1133,7 +1115,7 @@ namespace smpc_sales_app.Pages.Sales
             var matchingItem = ItemList.AsEnumerable()
                 .FirstOrDefault(item => item["id"].ToString() == id.ToString());
 
-           
+
 
 
             if (matchingItem != null)
@@ -1151,28 +1133,33 @@ namespace smpc_sales_app.Pages.Sales
 
         private void dgv_quick_quote_details_CellClick(object sender, DataGridViewCellEventArgs e)
         {
+            // Skip header clicks
+            if (e.RowIndex < 0 || e.ColumnIndex < 0)
+                return;
+
             if (dgv_quick_quote_details.Rows[e.RowIndex].Cells["quick_item_name"].Value != null &&
                 !string.IsNullOrEmpty(dgv_quick_quote_details.Rows[e.RowIndex].Cells["quick_item_name"].Value.ToString()))
             {
                 var itemID = int.Parse(dgv_quick_quote_details.Rows[e.RowIndex].Cells["quick_item_id"].Value.ToString());
                 getItemShortDescription(itemID);
-                return;
+
             }
 
-
+            // Components Column
             if (e.ColumnIndex == 7)
             {
                 HandleItemSelectionClick(e.RowIndex, dgv_quick_quote_details);
             }
+            // Canvass Sheet Column
+            if (e.ColumnIndex == 8)
+            {
+                string id = dgv_quick_quote_details.Rows[e.RowIndex].Cells[5].Value.ToString();
+                HandleCanvasSelectionClick(e.RowIndex, id);
+            }
 
-            //if (e.ColumnIndex == 8)
-            //{
-            //    string id = dgv_quick_quote_details.Rows[e.RowIndex].Cells[2].Value.ToString();
-            //    HandleCanvasSelectionClick(e.RowIndex, id);
-            //}
         }
 
-        
+        // Selected item from item list
         private void HandleItemSelectionClick(int rowIndex, DataGridView dgv)
         {
             ItemModal itemModal = new ItemModal(ItemList, BomHead, BomDetails);
@@ -1196,8 +1183,6 @@ namespace smpc_sales_app.Pages.Sales
             }
         }
 
-
-
         private void GetBomData(int rowIndex, int bomID, int itemid, DataGridView dgv)
         {
             int selectedIndex = bomID;
@@ -1207,7 +1192,7 @@ namespace smpc_sales_app.Pages.Sales
             {
                 //DataRow selectedItem = BomHead.Rows[selectedIndex];
                 DataTable bom_parent = Helpers.FilterExactDataTable(BomHead, selectedIndex.ToString(), "id");
-                DataTable bom_child  =  Helpers.FilterDataTable(BomDetails, selectedIndex.ToString(), "item_bom_id");
+                DataTable bom_child = Helpers.FilterDataTable(BomDetails, selectedIndex.ToString(), "item_bom_id");
                 DataTable items_unit = Helpers.FilterExactDataTable(ItemList, selectedItem.ToString(), "id");
 
                 DataTable dataSource = dgv.DataSource as DataTable;
@@ -1215,7 +1200,7 @@ namespace smpc_sales_app.Pages.Sales
                 {
                     if (dataSource == null) return;
                 }
-             
+
 
                 string bom_parent_id = "";
                 string bom_parent_item_id = "";
@@ -1270,7 +1255,7 @@ namespace smpc_sales_app.Pages.Sales
 
                         dataSource.Rows.Add(newRow);
                     }
-                   
+
                 }
 
                 // Child Bom
@@ -1347,7 +1332,7 @@ namespace smpc_sales_app.Pages.Sales
                 {
                     if (dataSource == null) return;
                 }
-               
+
                 foreach (DataRow row in itemList.Rows)
                 {
                     if (isProject)
@@ -1377,7 +1362,7 @@ namespace smpc_sales_app.Pages.Sales
                         //newRow["unit_price"] = Helpers.FormatAsCurrency(row["unit_price"]);
                         dataSource.Rows.Add(newRow);
                     }
-                   
+
                 }
             }
             else
@@ -1389,20 +1374,29 @@ namespace smpc_sales_app.Pages.Sales
         private void HandleCanvasSelectionClick(int rowIndex, string item_id)
         {
             frm_canvas_modal canvas = new frm_canvas_modal(item_id, bpi_general, bpi_items);
-            //DialogResult r = canvas.ShowDialog();
 
-            //if (r == DialogResult.OK)
-            //{
+            DialogResult r = canvas.ShowDialog();
 
-            //}
+            if (r == DialogResult.OK)
+            {
+
+            }
         }
-
+        private decimal? TryParseDecimal(object value)
+        {
+            decimal result;
+            if (decimal.TryParse(value?.ToString(), out result))
+                return result;
+            return null;
+        }
         private void ComputeDgv(DataGridViewCellEventArgs e)
         {
+
             try
-            { 
+            {
+
                 var isChildCell = dgv_quick_quote_details.Rows[e.RowIndex].Cells["quick_ischild"];
-               
+
                 bool isChild = false;
                 if (isChildCell is DataGridViewCheckBoxCell checkBoxCell)
                 {
@@ -1418,13 +1412,26 @@ namespace smpc_sales_app.Pages.Sales
                 var qtyCell = dgv_quick_quote_details.Rows[e.RowIndex].Cells["quick_qty"].Value;
                 var listPriceCell = dgv_quick_quote_details.Rows[e.RowIndex].Cells["quick_list_price"].Value;
                 var unitPriceCell = dgv_quick_quote_details.Rows[e.RowIndex].Cells["quick_unit_price"].Value;
+                //decimal listPriceCell = TryParseDecimal(dgv_quick_quote_details.Rows[e.RowIndex].Cells["quick_list_price"].Value) ?? 0;
+                //decimal unitPriceCell = TryParseDecimal(dgv_quick_quote_details.Rows[e.RowIndex].Cells["quick_unit_price"].Value) ?? 0;
                 var discountCell = dgv_quick_quote_details.Rows[e.RowIndex].Cells["quick_discount"].Value ?? "0";
 
 
-                this.dgv_quick_quote_details.Rows[e.RowIndex].Cells["quick_list_price"].Value = Helpers.FormatAsCurrency(listPriceCell);
-                this.dgv_quick_quote_details.Rows[e.RowIndex].Cells["quick_unit_price"].Value = Helpers.FormatAsCurrency(unitPriceCell);
 
-                if (qtyCell != null && unitPriceCell != null)
+                //this.dgv_quick_quote_details.Rows[e.RowIndex].Cells["quick_list_price"].Value = Helpers.FormatAsCurrency(listPriceCell);
+                //this.dgv_quick_quote_details.Rows[e.RowIndex].Cells["quick_unit_price"].Value = Helpers.FormatAsCurrency(unitPriceCell);
+
+                dgv_quick_quote_details.Columns["quick_list_price"].DefaultCellStyle.Format = "C2";
+                dgv_quick_quote_details.Columns["quick_unit_price"].DefaultCellStyle.Format = "C2";
+
+                //MessageBox.Show(unitPriceCell.GetType().ToString());
+
+                //decimal.TryParse(dgv_quick_quote_details.Rows[e.RowIndex].Cells["quick_list_price"].Value?.ToString(), out decimal listPriceCell);
+                //decimal.TryParse(dgv_quick_quote_details.Rows[e.RowIndex].Cells["quick_unit_price"].Value?.ToString(), out decimal unitPriceCell);
+                //this.dgv_quick_quote_details.Rows[e.RowIndex].Cells["quick_unit_price"].Value = unitPriceCell;
+                //this.dgv_quick_quote_details.Rows[e.RowIndex].Cells["quick_list_price"].Value = listPriceCell;
+
+                if ((qtyCell != null) && unitPriceCell != null)
                 {
                     int qty = int.Parse(qtyCell.ToString());
                     decimal unitPrice;
@@ -1435,9 +1442,13 @@ namespace smpc_sales_app.Pages.Sales
                         DGVComputation dgvComputation = new DGVComputation(qty, unitPrice, discountPercent);
                         dgvComputation.ComputeQuickQuote();
 
-                        dgv_quick_quote_details.Rows[e.RowIndex].Cells["quick_net_total"].Value = dgvComputation.NetAmount.ToString("C2"); ;
-                        dgv_quick_quote_details.Rows[e.RowIndex].Cells["quick_net_discount"].Value = dgvComputation.NetDiscount.ToString("C2"); ;
-                        dgv_quick_quote_details.Rows[e.RowIndex].Cells["quick_line_total"].Value = dgvComputation.LineTotal.ToString("C2"); ;
+                        dgv_quick_quote_details.Rows[e.RowIndex].Cells["quick_net_total"].Value = dgvComputation.NetAmount.ToString("C2");
+                        dgv_quick_quote_details.Rows[e.RowIndex].Cells["quick_net_discount"].Value = dgvComputation.NetDiscount.ToString("C2");
+                        dgv_quick_quote_details.Rows[e.RowIndex].Cells["quick_line_total"].Value = dgvComputation.LineTotal.ToString("C2");
+
+                        //dgv_quick_quote_details.Rows[e.RowIndex].Cells["quick_net_total"].Value = dgvComputation.NetAmount;
+                        //dgv_quick_quote_details.Rows[e.RowIndex].Cells["quick_net_discount"].Value = dgvComputation.NetDiscount;
+                        //dgv_quick_quote_details.Rows[e.RowIndex].Cells["quick_line_total"].Value = dgvComputation.LineTotal;
 
                         computationLoop();
                     }
@@ -1502,8 +1513,8 @@ namespace smpc_sales_app.Pages.Sales
             txt_gross_sales.Text = Helpers.MoneyFormat(gross_sales);
             txt_vat_amount.Text = Helpers.MoneyFormat(vat_amount);
             txt_net_sales.Text = Helpers.MoneyFormat(net_sales);
-           
-            txt_percent_discount.Text = percent_discount.ToString("N2") + " %";
+
+            txt_percent_discount.Text = percent_discount.ToString("N2") /*+ " %"*/;
             txt_cash_discount.Text = Helpers.MoneyFormat(cash_discount);
             txt_net_amount_due.Text = Helpers.MoneyFormat(net_amount_due);
             txt_total_amount_due.Text = Helpers.MoneyFormat(total_amount_due);
@@ -1513,7 +1524,21 @@ namespace smpc_sales_app.Pages.Sales
 
         private void dgv_quick_quote_details_CellEndEdit(object sender, DataGridViewCellEventArgs e)
         {
-            ComputeDgv(e);
+            var value = dgv_quick_quote_details.Rows[e.RowIndex].Cells["quick_qty"].Value;
+
+            if (int.TryParse(value?.ToString(), out int qty) && qty != 0)
+            {
+                ComputeDgv(e);
+            }
+            else
+            {
+                MessageBox.Show("Quantity is required.");
+                this.BeginInvoke(new Action(() =>
+                {
+                    dgv_quick_quote_details.CurrentCell = dgv_quick_quote_details.Rows[e.RowIndex].Cells["quick_qty"];
+                    dgv_quick_quote_details.BeginEdit(true);
+                }));
+            }
         }
 
 
@@ -1521,9 +1546,24 @@ namespace smpc_sales_app.Pages.Sales
         DataTable stockQuickDataTable = new DataTable();
         private async void Quotation_Load(object sender, EventArgs e)
         {
+            int dgvWidth = dgv_quick_quote_details.Width;
+            int dgvHeight = dgv_quick_quote_details.Height;
+
+            MessageBox.Show($"DataGridView Size: {dgvWidth} x {dgvHeight}");
+
+            Panel[] panels = { pnl_header, pnl_footer };
+            Helpers.ReadOnlyControls(panels);
+
+            SetNewFormMode(false);
+
+            await LoadExistingRecord();
+
+        }
+        private async Task LoadExistingRecord()
+        {
             stockQuickDataTable = Helpers.GetDataTableFromUnboundGrid(dgv_quick_quote_details);
-            fetchItemData();
-            fetchBpiData();
+            await fetchItemData();
+            await fetchBpiData();
             tabControl2.DrawMode = TabDrawMode.OwnerDrawFixed;
             tabControl2.DrawItem += tabControl2_DrawItem;
             dtp_date.Format = DateTimePickerFormat.Custom;
@@ -1531,50 +1571,64 @@ namespace smpc_sales_app.Pages.Sales
             dtp_valid_until.Format = DateTimePickerFormat.Custom;
             dtp_valid_until.CustomFormat = "MMM dd yyyy";
 
-
+            // if quotation comes from opportunities or other sources
             if (!string.IsNullOrEmpty(documentNo))
             {
                 back.Visible = true;
-                if (is_finalized)
+                if (isFinalized)
                 {
                     Panel[] panels = { pnl_header, pnl_footer };
                     Helpers.ReadOnlyControls(panels);
                     dgv_quick_quote_details.ReadOnly = true;
                 }
+
+                // button state if is Quick Quote
                 this.btn_quick_quote.BackColor = Color.FromArgb(255, 128, 128);
                 this.btn_project.BackColor = Color.White;
 
+                //set height if is Quick Quote
                 this.tabControl.SelectedIndex = 0;
                 this.tabControl.Height = 600;
                 this.Size = new Size(1386 - 80, 900);
 
                 this.tabControl.ItemSize = new Size(0, 0);
 
-                fetchQuotationDetailsByDocumentNo(documentNo, version_no);
+                // overload, added version
+                FetchQuotationDetailsByDocumentNo(documentNo, versionNo, subVersionNo);
                 bs_unit.DataSource = CacheData.UoM;
             }
             else
             {
+                // button state if is Project
                 this.btn_quick_quote.BackColor = Color.FromArgb(255, 128, 128);
                 this.btn_project.BackColor = Color.White;
 
+                //set height if is Project
                 this.tabControl.SelectedIndex = 0;
                 this.tabControl.Height = 600;  // Set the desired width and height for the form
                 this.Size = new Size(1386 - 80, 900);  // Set the desired width and height for the form
 
                 this.tabControl.ItemSize = new Size(0, 0);
 
-                cmb_application.DataSource = CacheData.ApplicationSetup;
-                cmb_application.DisplayMember = "code";
-                cmb_application.ValueMember = "id";
+                // LEM
+                LoadApplicationSetup();
+                LoadPurposeSetup();
+                LoadShipTypeSetup();
+                // ----
 
-                cmb_purpose.DataSource = STATIC_QUOTATION_PURPOSE.LIST();
-                cmb_purpose.DisplayMember = "code";
-                cmb_purpose.ValueMember = "title";
+                //cmb_application.DataSource = CacheData.ApplicationSetup;
+                //cmb_application.DisplayMember = "code";
+                //cmb_application.ValueMember = "id";
 
-                //cmb_unit_code.DataSource = STATIC_SHIPPED_TYPE.LIST();
-                //cmb_unit_code.DisplayMember = "title";
-                //cmb_unit_code.ValueMember = "value";
+                //cmb_purpose.DataSource = STATIC_QUOTATION_PURPOSE.LIST();
+                //cmb_purpose.DisplayMember = "code";
+                //cmb_purpose.ValueMember = "title";
+
+                //cmb_ship_type.DataSource = CacheData.ShipTypeSetup;
+                //cmb_ship_type.DisplayMember = "ship_name";
+                //cmb_ship_type.ValueMember = "id";
+
+
 
                 //DataTable dtQuotationDetails = ds_quick_quote.Tables["quotation_details"];
 
@@ -1599,12 +1653,17 @@ namespace smpc_sales_app.Pages.Sales
                 //combobox.DataSource = CacheData.UoM;
                 //combobox.DisplayMember = "name";
                 //combobox.ValueMember = "id";
-                
-                fetchQuotationDetails();
-                
-            }
-        }
 
+                await fetchQuotationDetails();
+            }
+
+        }
+  
+
+        private void GetCMBValues()
+        {
+           
+        }
 
         //
         // REFACTOR SOON, TOO LONG AND REDUNDANT.
@@ -1613,19 +1672,20 @@ namespace smpc_sales_app.Pages.Sales
         {
             if (isBind)
             {
+                
                 Panel[] pnlList = { pnl_header, pnl_footer };
                 DataTable HeaderList = this.transactionList.Clone();
                 HeaderList.Columns.Add("branch_name", typeof(string));
                 HeaderList.Columns.Add("customer_code", typeof(string));
                 HeaderList.Columns.Add("number", typeof(string));
-              
-                bs_ship_to.DataSource = bpi_address;
-                bs_bill_to.DataSource = bpi_address;
-  
+
+                //bs_ship_to.DataSource = bpi_address;
+                //bs_bill_to.DataSource = bpi_address;
+
+
                 foreach (DataRow parentRow in this.transactionList.Rows)
                 {
                     DataRow newRow = HeaderList.NewRow();
-                    //DataRow newRow = HeaderList.NewRow();
                     foreach (DataColumn col in this.transactionList.Columns)
                     {
                         newRow[col.ColumnName] = parentRow[col.ColumnName];
@@ -1653,9 +1713,63 @@ namespace smpc_sales_app.Pages.Sales
                     HeaderList.Rows.Add(newRow);
                 }
 
+                
+                int sId = Convert.ToInt32(HeaderList.Rows[SelectedRow]["id"]);
+                int cId = Convert.ToInt32(HeaderList.Rows[SelectedRow]["customer_id"]);
+                int appId = Convert.ToInt32(HeaderList.Rows[SelectedRow]["application_id"]);
+                int billId = Convert.ToInt32(HeaderList.Rows[SelectedRow]["bill_to_id"]);
+                int shipId = Convert.ToInt32(HeaderList.Rows[SelectedRow]["ship_to_id"]);
+
+
+                LoadApplicationSetup();
+                LoadCustomerBillAddress(cId.ToString());
+                LoadCustomerShipAddress(cId.ToString());
+                
+                cmb_application.SelectedItem = appId;
+                cmb_application.SelectedValue = appId;
+
+                cmb_bill_to.SelectedItem = billId;
+                cmb_bill_to.SelectedValue = billId;
+
+                cmb_ship_to.SelectedItem = shipId;
+                cmb_ship_to.SelectedValue = shipId;
+
+                GetCMBValues();
                 Helpers.BindControls(pnlList, HeaderList, SelectedRow);
 
-     
+                
+
+                // LEM - Button visibility condition
+                isFinalized = Convert.ToBoolean(HeaderList.Rows[SelectedRow]["is_finalized"]);
+                btn_finalize.Enabled = !isFinalized || string.IsNullOrEmpty(txt_id.Text);
+                btn_sales_order.Enabled = isFinalized;
+
+                btn_new_version.Visible = !isFinalized;
+                btn_duplicate.Visible = !isFinalized;
+
+                // Label DocNumber
+                foreach (var pnl in pnlList)
+                {
+                    foreach (Control control in pnl.Controls)
+                    {
+                        if (control is TextBox textBox && textBox.Name.Contains("txt_document_no"))
+                        {
+                            string docNo = textBox.Text;
+
+                            if (!docNo.StartsWith("Q#") && !docNo.StartsWith("FQ#"))
+                            {
+                                textBox.Text = isFinalized ? $"FQ#{docNo}" : $"Q#{docNo}";
+                            }
+                            else if (docNo.StartsWith("Q#") && isFinalized)
+                            {
+                                // Replace "Q#" with "FQ#"
+                                textBox.Text = "FQ#" + docNo.Substring(2);
+                            }
+                        }
+                    }
+                }
+
+
                 // Create filtered view
                 DataView dataview = new DataView(childList);
                 dataview.RowFilter = "based_id = '" + this.transactionList.Rows[this.SelectedRow]["id"].ToString() + "'";
@@ -1671,7 +1785,7 @@ namespace smpc_sales_app.Pages.Sales
         private void ValidUntilDate()
         {
             var date = dtp_date.Value;
-            var noOfDays = txt_days.Text;
+            var noOfDays = txt_validays.Text;
 
             if (string.IsNullOrEmpty(noOfDays))
             {
@@ -1684,8 +1798,8 @@ namespace smpc_sales_app.Pages.Sales
             }
             else
             {
-                txt_days.Text = "30";
-                dtp_valid_until.Value = date.AddDays(30); 
+                txt_validays.Text = "30";
+                dtp_valid_until.Value = date.AddDays(30);
             }
         }
 
@@ -1695,7 +1809,7 @@ namespace smpc_sales_app.Pages.Sales
             ValidUntilDate();
         }
 
-        public  DataTable customerList { get; set; } = new DataTable();
+        public DataTable customerList { get; set; } = new DataTable();
         private DataTable bpi_dt = new DataTable();
 
         private DataTable bpi_general = new DataTable();
@@ -1704,20 +1818,25 @@ namespace smpc_sales_app.Pages.Sales
         private DataTable bpi_contacts = new DataTable();
         private DataTable bpi_items = new DataTable();
 
-        private async void btn_new_Click_1(object sender, EventArgs e)
+        private async void btn_new_Click(object sender, EventArgs e)
         {
+            GetLatestDate();
+            SetNewFormMode(true);
+            isNewRecord = true;
+
+            // New Quick Quote
             if (!isProject)
             {
                 Helpers.ResetControls(pnl_header);
                 Helpers.ResetControls(pnl_footer);
-                
+
                 // resets the datasource so that only customers would specific address would be seen.
-                
+
                 bs_bill_to.DataSource = null;
                 bs_ship_to.DataSource = null;
                 bs_unit.DataSource = CacheData.UoM;
                 Panel[] pnls = { pnl_header, pnl_footer };
-                //Helpers.ReadOnlyControls(pnls);
+                Helpers.ReadOnlyControls(pnls);
                 dgv_quick_quote_details.ReadOnly = false;
                 txt_cash_discount.ReadOnly = false;
 
@@ -1731,24 +1850,31 @@ namespace smpc_sales_app.Pages.Sales
                     }
                 }
 
-                toolstrip_quotation.Enabled = false;
-                dgv_quick_quote_details.Enabled = true;
-                
+                //toolstrip_quotation.Enabled = false;
+                //dgv_quick_quote_details.Enabled = true;
+
                 dgv_quick_quote_details.DataSource = stockQuickDataTable.Clone();
-               
+
 
                 bind(false);
                 DocumentIncrementer();
+                
                 txt_created_by.Text = CacheData.CurrentUser.first_name + " " + CacheData.CurrentUser.last_name;
                 txt_vat_percent.Text = "12";
                 txt_vat_percent.ReadOnly = true;
                 btn_add_customer.Enabled = true;
-                pnl_header.Enabled = true;
-                pnl_footer.Enabled = true;
                 btn_save.Enabled = true;
+
+                Panel[] panels = { pnl_header, pnl_footer };
+                Helpers.ResetReadOnlyControls(panels);
+
+
+                //pnl_header.Enabled = true;
+                //pnl_footer.Enabled = true;
 
                 //DataTable dt = (DataTable)bs_quick_quotes_details.DataSource;
             }
+            // New Project
             else
             {
                 DocumentIncrementer();
@@ -1807,7 +1933,7 @@ namespace smpc_sales_app.Pages.Sales
         private async void FinalTxtBoxClicked(object sender, EventArgs e)
         {
             DataTable pumps = new DataTable();
-            
+
 
             var data = await ProjectService.GetPumpsViewList();
 
@@ -1855,42 +1981,81 @@ namespace smpc_sales_app.Pages.Sales
         }
 
 
-
         private void btn_new_version_Click(object sender, EventArgs e)
         {
-            pnl_header.Enabled = true;
-            pnl_footer.Enabled = true;
+            GetLatestDate();
+            SetNewFormMode(true);
+            isNewRecord = true;
+
+
+            Panel[] panels = { pnl_header, pnl_footer };
+            Helpers.ResetReadOnlyControls(panels);
+
+            //pnl_header.Enabled = true;
+            //pnl_footer.Enabled = true;
             Panel[] pnl_list = { pnl_header, pnl_footer };
             Helpers.ResetReadOnlyControls(pnl_list);
 
-            toolstrip_quotation.Enabled = false;
+            //toolstrip_quotation.Enabled = false;
             dgv_quick_quote_details.Enabled = true;
 
-            string documentNo = txt_document_no.Text;
-
-            var latestVer = allTransactionList.AsEnumerable()
-                     .Where(row => row["document_no"].ToString() == documentNo)
-                     .GroupBy(row => row["document_no"])
-                     .Select(group => group.OrderByDescending(row => row["version_no"])
-                     .First()) 
-                     .ToList();
-
-
-            if (latestVer.Any())
-            {
-                int latestVersionNo = Convert.ToInt32(latestVer.First()["version_no"]);
-                txt_version_no.Text = (latestVersionNo + 1).ToString();
-            }
-            else
-            {
-                txt_version_no.Text = "1"; 
-            }
+            txt_version_no.Text = GetNextVersionNo(allTransactionList, txt_document_no.Text);
         }
+        private string GetNextVersionNo(DataTable allTransactions, string rawDocNo)
+        {
+            // Remove "Q#" prefix if present
+            string documentNo = rawDocNo.StartsWith("Q#")
+                ? rawDocNo.Substring(2)
+                : rawDocNo;
+
+            // Get the latest matching row by version_no
+            var latestRow = allTransactions.AsEnumerable()
+                .Where(row => row["document_no"].ToString() == documentNo)
+                .OrderByDescending(row => Convert.ToInt32(row["version_no"]))
+                .FirstOrDefault();
+
+            if (latestRow != null && int.TryParse(latestRow["version_no"].ToString(), out int latestVersion))
+            {
+                return (latestVersion + 1).ToString();
+            }
+
+            return "1";
+        }
+
+        private string GetNextSubVersionNo(DataTable allTransactions, string rawDocNo, string rawVersionNo)
+        {
+            string versionNo = rawVersionNo;
+
+            // Remove "Q#" prefix if present
+            string documentNo = rawDocNo.StartsWith("Q#")
+              ? rawDocNo.Substring(2)
+              : rawDocNo;
+
+            // Filter by both document_no and version_no
+            var latestRow = allTransactions.AsEnumerable()
+                .Where(row => row["document_no"].ToString() == documentNo &&
+                              row["version_no"].ToString() == rawVersionNo)
+                .OrderByDescending(row => Convert.ToInt32(row["sub_version_no"]))
+                .FirstOrDefault();
+
+            if (latestRow != null && int.TryParse(latestRow["sub_version_no"].ToString(), out int latestSubVersion))
+            {
+                return (latestSubVersion + 1).ToString();
+            }
+
+            return "0";
+        }
+
+
 
         private void btn_cancel_Click(object sender, EventArgs e)
         {
-            pnl_header.Enabled = false;
-            pnl_footer.Enabled = false;
+
+            Panel[] panels = { pnl_header, pnl_footer };
+            Helpers.ReadOnlyControls(panels);
+
+            //pnl_header.Enabled = false;
+            //pnl_footer.Enabled = false;
 
             toolstrip_quotation.Enabled = true;
         }
@@ -1943,7 +2108,7 @@ namespace smpc_sales_app.Pages.Sales
 
 
         DataTable PerCustomerAddressList = new DataTable();
-        private async void button1_Click(object sender, EventArgs e)
+        private  void btn_add_customer_Click(object sender, EventArgs e)
         {
             List<int> t1 = new List<int>();
             List<string> s1 = new List<string>();
@@ -1969,28 +2134,29 @@ namespace smpc_sales_app.Pages.Sales
                     var BillAddress = Helpers.FilterDataTable(bpi_address, id, "address_based_id");
                     var ShipAddress = Helpers.FilterDataTable(bpi_address, id, "address_based_id");
 
-                    //bs_bill_to.DataSource = BillAddress;
-                    //bs_ship_to.DataSource = ShipAddress;
+                    //cmb_ship_to.DataSource = ShipAddress;
+                    //cmb_ship_to.DisplayMember = "location";
+                    //cmb_ship_to.ValueMember = "address_ids";
 
-                    cmb_ship_to.DataSource = ShipAddress;
-                    cmb_ship_to.DisplayMember = "location";
-                    cmb_ship_to.ValueMember = "address_ids";
+                    //cmb_bill_to.DataSource = BillAddress;
+                    //cmb_bill_to.DisplayMember = "location";
+                    //cmb_bill_to.ValueMember = "address_ids";
 
-
-                    cmb_bill_to.DataSource = BillAddress;
-                    cmb_bill_to.DisplayMember = "location";
-                    cmb_bill_to.ValueMember = "address_ids";
+                    LoadCustomerShipAddress(id);
+                    LoadCustomerBillAddress(id);
 
                     Helpers.BindControls(pnl_list, GeneralBpi);
                     Helpers.ResetReadOnlyControls(pnl_list);
                     txt_version_no.Text = "1";
+                    txt_sub_version_no.Text = "0"; 
                     txt_version_no.ReadOnly = true;
+                    txt_sub_version_no.ReadOnly = true;
                     txt_document_no.ReadOnly = true;
                 }
             }
         }
 
-        private void btn_search_Click(object sender, EventArgs e)
+        private async void btn_search_Click(object sender, EventArgs e)
         {
             string Title = "Quotation List";
             SetupModal setup = new SetupModal(Title, transactionList);
@@ -2003,8 +2169,7 @@ namespace smpc_sales_app.Pages.Sales
                 if (result != -1)
                 {
                     SelectedRow = result;
-                    fetchQuotationDetails();
-                    //fetchQuotationDetails();
+                    await fetchQuotationDetails();
                 }
             }
         }
@@ -2305,6 +2470,7 @@ namespace smpc_sales_app.Pages.Sales
         }
 
         public bool IsEdit { get; private set; }
+        public bool isSubVersion { get; private set; }
         private async void timer1_Tick(object sender, EventArgs e)
         {
             timer1.Stop();
@@ -2327,8 +2493,7 @@ namespace smpc_sales_app.Pages.Sales
 
         private void toolStripButton1_Click(object sender, EventArgs e)
         {
-            IsEdit = true;
-            MessageBox.Show("EDIT MODE ON");
+           
         }
 
       
@@ -2354,13 +2519,43 @@ namespace smpc_sales_app.Pages.Sales
                 currentControl.setMultiplier(multiply);
             }
         }
-
-
         private void btn_finalize_Click(object sender, EventArgs e)
         {
-
+            if (MessageBox.Show("Are you sure you want to finalize?", "Confirm", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+            {
+                FinalizeQuickQuotation();
+            }
         }
-        //=====================================KRIS ADDED===============================================
+        private async void FinalizeQuickQuotation()
+        {
+            try
+            {
+                int quotationId = Convert.ToInt32(txt_id.Text);
+
+                var finalizeData = new Dictionary<string, dynamic>
+                {
+                    ["id"] = quotationId,
+                    ["is_finalized"] = true
+                };
+
+                await QuotationService.Update(finalizeData);
+
+                Helpers.ResetControls(pnl_header);
+                Helpers.ResetControls(pnl_footer);
+
+                MessageBox.Show("Quotation successfully finalized.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                await fetchQuotationDetails();
+                SetFormEditMode("Close");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+
+
         private void btn_sales_order_Click(object sender, EventArgs e)
         {
             string documentNo = txt_document_no.Text.Trim();  // Assuming you have a document_no textbox in Quotation
@@ -2399,19 +2594,22 @@ namespace smpc_sales_app.Pages.Sales
                 printPage.ShowDialog();
             }
         }
-        private async void fetchQuotationDetailsByDocumentNo(string documentNo, string version_no = null)
+        private async void FetchQuotationDetailsByDocumentNo(string documentNo, string version_no = null, string sub_version_no = null)
         {
             SalesQuotationList data = await QuotationService.GetQuotations();
             var itemData = await ItemService.GetItem();
             ItemList = JsonHelper.ToDataTable(itemData.items);
+
             if (data == null || string.IsNullOrEmpty(documentNo))
             {
                 return;
             }
+
             var filteredSalesQuotation = data.SalesQuotation
-            .Where(q => q.document_no == documentNo &&
-                        (q.version_no == version_no || version_no == null))
-            .ToList();
+                .Where(q => q.document_no == documentNo &&
+                           (version_no == null || q.version_no == version_no) &&
+                           (sub_version_no == null || q.sub_version_no == sub_version_no))
+                .ToList();
 
             var quotationId = filteredSalesQuotation.FirstOrDefault()?.id;
 
@@ -2424,8 +2622,12 @@ namespace smpc_sales_app.Pages.Sales
                 transactionList = JsonHelper.ToDataTable(filteredSalesQuotation);
                 childList = JsonHelper.ToDataTable(filteredSalesQuotationQuick);
 
-                pnl_header.Enabled = true;
-                pnl_footer.Enabled = true;
+
+                Panel[] panels = { pnl_header, pnl_footer };
+                Helpers.ResetReadOnlyControls(panels);
+
+                //pnl_header.Enabled = true;
+                //pnl_footer.Enabled = true;
                 toolstrip_quotation.Enabled = false;
                 dgv_quick_quote_details.Enabled = true;
 
@@ -2445,6 +2647,7 @@ namespace smpc_sales_app.Pages.Sales
             }
         }
 
+
         private void back_Click(object sender, EventArgs e)
         {
             Opportunities OpportunitiesPage = new Opportunities();
@@ -2462,6 +2665,182 @@ namespace smpc_sales_app.Pages.Sales
         {
             ProjectTest pt = new ProjectTest();
             pt.Show();
+
+        }
+        private void btn_update_Click(object sender, EventArgs e)
+        {
+            IsEdit = true;
+            MessageBox.Show("EDIT MODE ON");
+        }
+
+        private void LoadApplicationSetup()
+        {
+            cmb_application.DataSource = CacheData.ApplicationSetup;
+            cmb_application.DisplayMember = "code";
+            cmb_application.ValueMember = "id";
+        }
+        private void LoadPurposeSetup()
+        {
+            cmb_purpose.DataSource = STATIC_QUOTATION_PURPOSE.LIST();
+            cmb_purpose.DisplayMember = "code";
+            cmb_purpose.ValueMember = "title";
+        }
+        private void LoadShipTypeSetup()
+        {
+            cmb_ship_type.DataSource = CacheData.ShipTypeSetup;
+            cmb_ship_type.DisplayMember = "ship_name";
+            cmb_ship_type.ValueMember = "id";
+        }
+        private void LoadCustomerBillAddress(string id)
+        {
+            var BillAddress = Helpers.FilterDataTable(bpi_address, id, "address_based_id");
+
+            cmb_bill_to.DataSource = BillAddress;
+            cmb_bill_to.DisplayMember = "location";
+            cmb_bill_to.ValueMember = "address_ids";
+        }
+        private void LoadCustomerShipAddress(string id)
+        {
+            var ShipAddress = Helpers.FilterDataTable(bpi_address, id, "address_based_id");
+
+            cmb_ship_to.DataSource = ShipAddress;
+            cmb_ship_to.DisplayMember = "location";
+            cmb_ship_to.ValueMember = "address_ids";
+
+        }
+        private void btn_edit_Click(object sender, EventArgs e)
+        {
+            string customerId = txt_customer_id.Text;
+
+            GetLatestDate();
+            LoadCustomerBillAddress(customerId);
+            LoadCustomerShipAddress(customerId);
+
+            string docNo = txt_document_no.Text;
+            
+            if (string.IsNullOrEmpty(docNo))
+            {
+                MessageBox.Show("Document No is empty.");
+                return;
+            }
+
+            isSubVersion = true;
+            SetFormEditMode(docNo.StartsWith("Q#")? "Finalize":"Order");
+
+            
+            txt_sub_version_no.Text = GetNextSubVersionNo(allTransactionList, txt_document_no.Text, txt_version_no.Text);
+        }
+        private void GetLatestDate()
+        {
+            dtp_date.Value = DateTime.Now;
+        }
+        private void ChangeDocumentType()
+        {
+
+        }
+        private void SetNewFormMode(bool isTrue)
+        {
+            // Hide action buttons
+            btn_new.Visible = !isTrue;
+            btn_duplicate.Visible = !isTrue;
+            btn_new_version.Visible = !isTrue;
+            btn_search.Visible = !isTrue;
+            btn_prev.Visible = !isTrue;
+            btn_next.Visible = !isTrue;
+            btn_edit.Visible = !isTrue;
+            btn_update.Visible = !isTrue;
+            btn_print.Visible = !isTrue;
+            btn_finalize.Enabled = !isTrue;
+            
+            // Show action button
+            btn_savee.Visible = isTrue;
+            btn_close.Visible = isTrue;
+            dgv_quick_quote_details.Enabled = isTrue;
+            
+        }
+
+        private void SetFormEditMode(string mode)
+        {
+            // Hide all action buttons by default
+            btn_new.Visible = false;
+            btn_duplicate.Visible = false;
+            btn_new_version.Visible = false;
+            btn_search.Visible = false;
+            btn_prev.Visible = false;
+            btn_next.Visible = false;
+            btn_edit.Visible = false;
+            btn_update.Visible = false;
+            btn_print.Visible = false;
+
+            // Enable editing controls
+            btn_savee.Visible = true;
+            btn_close.Visible = true;
+
+            Panel[] panels = { pnl_header, pnl_footer };
+            Helpers.ResetReadOnlyControls(panels);
+
+            //pnl_header.Enabled = true;
+            //pnl_footer.Enabled = true;
+            dgv_quick_quote_details.Enabled = true;
+            dgv_quick_quote_details.ReadOnly = false;
+
+            // Mode-specific logic
+            if (mode == "Finalize")
+            {
+                btn_finalize.Enabled = false;
+            }
+            else if (mode == "Order")
+            {
+                btn_sales_order.Enabled = true;
+            }
+            else // Default mode: view-only
+            {
+                btn_new.Visible = true;
+                btn_duplicate.Visible = true;
+                btn_new_version.Visible = true;
+                btn_search.Visible = true;
+                btn_prev.Visible = true;
+                btn_next.Visible = true;
+                btn_edit.Visible = true;
+                btn_update.Visible = true;
+                btn_print.Visible = true;
+
+                btn_savee.Visible = false;
+                btn_close.Visible = false;
+                Helpers.ReadOnlyControls(panels);
+                //pnl_header.Enabled = false;
+                //pnl_footer.Enabled = false;
+                dgv_quick_quote_details.Enabled = false;
+                dgv_quick_quote_details.ReadOnly = true;
+            }
+        }
+        private async void btn_close_Click(object sender, EventArgs e)
+        {
+            SetNewFormMode(false);
+            SetFormEditMode("Close");
+            await LoadExistingRecord();
+
+            Panel[] panels = { pnl_header, pnl_footer };
+            Helpers.ReadOnlyControls(panels);
+            //pnl_header.Enabled = false;
+            //pnl_footer.Enabled = false;
+
+            toolstrip_quotation.Enabled = true;
+        }
+
+        private void label28_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void btn_duplicate_Click(object sender, EventArgs e)
+        {
+            GetLatestDate();
+            isNewRecord = true;
+        }
+
+        private void dgv_quick_quote_details_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
 
         }
     }

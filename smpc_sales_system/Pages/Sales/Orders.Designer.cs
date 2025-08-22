@@ -147,6 +147,7 @@ namespace smpc_sales_app.Pages.Sales
             this.statusproject = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.bs_project_items = new System.Windows.Forms.BindingSource(this.components);
             this.pnl_header = new System.Windows.Forms.Panel();
+            this.button1 = new System.Windows.Forms.Button();
             this.label26 = new System.Windows.Forms.Label();
             this.txt_project_name = new System.Windows.Forms.TextBox();
             this.txt_contact_no = new System.Windows.Forms.TextBox();
@@ -1066,6 +1067,16 @@ namespace smpc_sales_app.Pages.Sales
             this.pnl_header.Size = new System.Drawing.Size(1229, 168);
             this.pnl_header.TabIndex = 10;
             // 
+            // button1
+            // 
+            this.button1.Location = new System.Drawing.Point(578, 72);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(75, 23);
+            this.button1.TabIndex = 268;
+            this.button1.Text = "button1";
+            this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.button1_Click);
+            // 
             // label26
             // 
             this.label26.AutoSize = true;
@@ -1246,6 +1257,7 @@ namespace smpc_sales_app.Pages.Sales
             // 
             // dtp_date
             // 
+            this.dtp_date.Cursor = System.Windows.Forms.Cursors.Default;
             this.dtp_date.Format = System.Windows.Forms.DateTimePickerFormat.Short;
             this.dtp_date.Location = new System.Drawing.Point(146, 33);
             this.dtp_date.Name = "dtp_date";
@@ -1542,7 +1554,7 @@ namespace smpc_sales_app.Pages.Sales
             this.btn_next.Image = ((System.Drawing.Image)(resources.GetObject("btn_next.Image")));
             this.btn_next.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.btn_next.Name = "btn_next";
-            this.btn_next.Size = new System.Drawing.Size(52, 22);
+            this.btn_next.Size = new System.Drawing.Size(51, 22);
             this.btn_next.Text = "Next";
             this.btn_next.Click += new System.EventHandler(this.btn_next_Click);
             // 
@@ -1980,24 +1992,24 @@ namespace smpc_sales_app.Pages.Sales
             this.toActiveToolStripMenuItem,
             this.renameFileToolStripMenuItem});
             this.contextMenu_Sales.Name = "contextMenu_Sales";
-            this.contextMenu_Sales.Size = new System.Drawing.Size(145, 70);
+            this.contextMenu_Sales.Size = new System.Drawing.Size(146, 70);
             // 
             // toBenchedToolStripMenuItem
             // 
             this.toBenchedToolStripMenuItem.Name = "toBenchedToolStripMenuItem";
-            this.toBenchedToolStripMenuItem.Size = new System.Drawing.Size(144, 22);
+            this.toBenchedToolStripMenuItem.Size = new System.Drawing.Size(145, 22);
             this.toBenchedToolStripMenuItem.Text = "To Benched...";
             // 
             // toActiveToolStripMenuItem
             // 
             this.toActiveToolStripMenuItem.Name = "toActiveToolStripMenuItem";
-            this.toActiveToolStripMenuItem.Size = new System.Drawing.Size(144, 22);
+            this.toActiveToolStripMenuItem.Size = new System.Drawing.Size(145, 22);
             this.toActiveToolStripMenuItem.Text = "To Active...";
             // 
             // renameFileToolStripMenuItem
             // 
             this.renameFileToolStripMenuItem.Name = "renameFileToolStripMenuItem";
-            this.renameFileToolStripMenuItem.Size = new System.Drawing.Size(144, 22);
+            this.renameFileToolStripMenuItem.Size = new System.Drawing.Size(145, 22);
             this.renameFileToolStripMenuItem.Text = "Rename...";
             // 
             // panel7

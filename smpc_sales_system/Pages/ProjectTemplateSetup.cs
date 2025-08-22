@@ -324,18 +324,6 @@ namespace smpc_sales_system.Pages
             }
 
 
-            //dgv_bom.DataSource = parentCopy;
-
-
-            //foreach (DataGridViewColumn column in dgv_bom.Columns)
-            //{
-            //    if (column.Name != "item_name" && column.Name != "id")
-            //    {
-            //        column.Visible = false;
-            //    }
-            //}
-
-
             this.childData = childCopy;
         }
 
@@ -362,96 +350,7 @@ namespace smpc_sales_system.Pages
             }
         }
 
-        //private async void button6_Click(object sender, EventArgs e)
-        //{
-        //    var data = await ProjectTemplatesService.GetProjectTemplates();
-
-        //    var dt1 = data.SalesProjectTemplate; 
-        //    var dt2 = data.sales_project_template_child; 
-
-        //    if (dt1 == null || dt2 == null || dt1.Count == 0)
-        //    {
-        //        MessageBox.Show("No project templates found.");
-        //        return;
-        //    }
-
-        //    dataGridView1.Rows.Clear();
-        //    dataGridView1.Columns.Clear();
-        //    dataGridView1.Columns.Add("NodeName", "Node Name");
-        //    dataGridView1.Columns.Add("ParentName", "Parent"); 
-
-        //    Font boldFont = new Font(dataGridView1.DefaultCellStyle.Font, FontStyle.Bold);
-        //    Font normalFont = new Font(dataGridView1.DefaultCellStyle.Font, FontStyle.Regular);
-
-        //    int selectedTemplateId = 3;
-
-           
-        //    var filteredNodes = dt2.Where(n => n.based_id == selectedTemplateId).ToList();
-
-            
-        //    Dictionary<int, ProjectTemplateChildModel> nodeLookup = filteredNodes.ToDictionary(n => n.node_id);
-
-           
-        //    var rootNodes = filteredNodes.Where(n => n.parent_node_id == 0)
-        //                                 .OrderBy(n => n.node_order)
-        //                                 .ToList();
-
-         
-        //    foreach (var rootNode in rootNodes)
-        //    {
-               
-        //        int parentRowIndex = dataGridView1.Rows.Add("▶ " + rootNode.node_name, "ROOT");
-        //        dataGridView1.Rows[parentRowIndex].DefaultCellStyle.BackColor = Color.LightCoral;
-        //        dataGridView1.Rows[parentRowIndex].DefaultCellStyle.Font = boldFont;
-
-        //        AddChildNodesFromDb(rootNode.node_id, filteredNodes, nodeLookup, 1);
-        //    }
-
-        //    dataGridView1.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-        //}
-
-      
-        //private void AddChildNodesFromDb(int parentId, List<ProjectTemplateChildModel> allNodes,
-        //                                Dictionary<int, ProjectTemplateChildModel> nodeLookup, int level)
-        //{
-          
-        //    var childNodes = allNodes.Where(n => n.parent_node_id == parentId)
-        //                             .OrderBy(n => n.node_order)
-        //                             .ToList();
-
-          
-        //    Font boldFont = new Font(dataGridView1.DefaultCellStyle.Font, FontStyle.Bold);
-        //    Font normalFont = new Font(dataGridView1.DefaultCellStyle.Font, FontStyle.Regular);
-
-          
-        //    foreach (var childNode in childNodes)
-        //    {
-              
-        //        string indent = new string(' ', level * 4) + "└▶ ";
-
-               
-        //        string parentName = nodeLookup.ContainsKey(childNode.parent_node_id)
-        //                           ? nodeLookup[childNode.parent_node_id].node_name
-        //                           : "Unknown";
-
-        //        int rowIndex = dataGridView1.Rows.Add(indent + childNode.node_name, parentName);
-
-              
-        //        if (childNode.node_type == "Parent")
-        //        {
-        //            dataGridView1.Rows[rowIndex].DefaultCellStyle.BackColor = Color.LightGreen;
-        //            dataGridView1.Rows[rowIndex].DefaultCellStyle.Font = boldFont;
-        //        }
-        //        else
-        //        {
-                   
-        //            dataGridView1.Rows[rowIndex].DefaultCellStyle.BackColor = Color.LightYellow;
-        //            dataGridView1.Rows[rowIndex].DefaultCellStyle.Font = normalFont;
-        //        }
-
-        //        AddChildNodesFromDb(childNode.node_id, allNodes, nodeLookup, level + 1);
-        //    }
-        //}
+     
 
 
     }

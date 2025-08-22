@@ -29,11 +29,12 @@ namespace smpc_sales_system.Pages.Sales
         /// </summary>
         private void InitializeComponent()
         {
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle5 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle6 = new System.Windows.Forms.DataGridViewCellStyle();
             this.panel1 = new System.Windows.Forms.Panel();
-            this.button1 = new System.Windows.Forms.Button();
+            this.btn_add_bpi = new System.Windows.Forms.Button();
+            this.btn_save = new System.Windows.Forms.Button();
             this.panel3 = new System.Windows.Forms.Panel();
             this.label1 = new System.Windows.Forms.Label();
             this.panel2 = new System.Windows.Forms.Panel();
@@ -53,7 +54,8 @@ namespace smpc_sales_system.Pages.Sales
             // 
             // panel1
             // 
-            this.panel1.Controls.Add(this.button1);
+            this.panel1.Controls.Add(this.btn_add_bpi);
+            this.panel1.Controls.Add(this.btn_save);
             this.panel1.Controls.Add(this.panel3);
             this.panel1.Controls.Add(this.panel2);
             this.panel1.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -62,20 +64,35 @@ namespace smpc_sales_system.Pages.Sales
             this.panel1.Size = new System.Drawing.Size(766, 445);
             this.panel1.TabIndex = 0;
             // 
-            // button1
+            // btn_add_bpi
             // 
-            this.button1.BackColor = System.Drawing.Color.LimeGreen;
-            this.button1.FlatAppearance.BorderSize = 0;
-            this.button1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.button1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.button1.ForeColor = System.Drawing.SystemColors.ControlLightLight;
-            this.button1.Location = new System.Drawing.Point(665, 417);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(89, 23);
-            this.button1.TabIndex = 1;
-            this.button1.Text = "SAVE";
-            this.button1.UseVisualStyleBackColor = false;
-            this.button1.Click += new System.EventHandler(this.button1_Click);
+            this.btn_add_bpi.BackColor = System.Drawing.Color.Khaki;
+            this.btn_add_bpi.FlatAppearance.BorderSize = 0;
+            this.btn_add_bpi.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btn_add_bpi.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btn_add_bpi.ForeColor = System.Drawing.SystemColors.ControlLightLight;
+            this.btn_add_bpi.Location = new System.Drawing.Point(12, 416);
+            this.btn_add_bpi.Name = "btn_add_bpi";
+            this.btn_add_bpi.Size = new System.Drawing.Size(171, 23);
+            this.btn_add_bpi.TabIndex = 3;
+            this.btn_add_bpi.Text = "ADD SUPPLIER";
+            this.btn_add_bpi.UseVisualStyleBackColor = false;
+            this.btn_add_bpi.Click += new System.EventHandler(this.btn_add_bpi_Click);
+            // 
+            // btn_save
+            // 
+            this.btn_save.BackColor = System.Drawing.Color.LimeGreen;
+            this.btn_save.FlatAppearance.BorderSize = 0;
+            this.btn_save.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btn_save.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btn_save.ForeColor = System.Drawing.SystemColors.ControlLightLight;
+            this.btn_save.Location = new System.Drawing.Point(665, 416);
+            this.btn_save.Name = "btn_save";
+            this.btn_save.Size = new System.Drawing.Size(89, 23);
+            this.btn_save.TabIndex = 1;
+            this.btn_save.Text = "SAVE";
+            this.btn_save.UseVisualStyleBackColor = false;
+            this.btn_save.Click += new System.EventHandler(this.btn_save_Click);
             // 
             // panel3
             // 
@@ -140,25 +157,25 @@ namespace smpc_sales_system.Pages.Sales
             // 
             // NetPrice
             // 
-            dataGridViewCellStyle1.Format = "C2";
-            dataGridViewCellStyle1.NullValue = "0";
-            this.NetPrice.DefaultCellStyle = dataGridViewCellStyle1;
+            dataGridViewCellStyle4.Format = "C2";
+            dataGridViewCellStyle4.NullValue = "0";
+            this.NetPrice.DefaultCellStyle = dataGridViewCellStyle4;
             this.NetPrice.HeaderText = "NET PRICE";
             this.NetPrice.Name = "NetPrice";
             // 
             // Discount
             // 
-            dataGridViewCellStyle2.NullValue = "0";
-            this.Discount.DefaultCellStyle = dataGridViewCellStyle2;
+            dataGridViewCellStyle5.NullValue = "0";
+            this.Discount.DefaultCellStyle = dataGridViewCellStyle5;
             this.Discount.HeaderText = "DISC, %";
             this.Discount.Name = "Discount";
             // 
             // UnitPrice
             // 
-            dataGridViewCellStyle3.BackColor = System.Drawing.Color.Silver;
-            dataGridViewCellStyle3.Format = "C2";
-            dataGridViewCellStyle3.NullValue = null;
-            this.UnitPrice.DefaultCellStyle = dataGridViewCellStyle3;
+            dataGridViewCellStyle6.BackColor = System.Drawing.Color.Silver;
+            dataGridViewCellStyle6.Format = "C2";
+            dataGridViewCellStyle6.NullValue = null;
+            this.UnitPrice.DefaultCellStyle = dataGridViewCellStyle6;
             this.UnitPrice.HeaderText = "UNIT PRICE";
             this.UnitPrice.Name = "UnitPrice";
             this.UnitPrice.ReadOnly = true;
@@ -200,7 +217,7 @@ namespace smpc_sales_system.Pages.Sales
         private System.Windows.Forms.DataGridView dataGridView1;
         private System.Windows.Forms.Panel panel3;
         private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Button btn_save;
         private System.Windows.Forms.DataGridViewTextBoxColumn Column2;
         private System.Windows.Forms.DataGridViewTextBoxColumn Column1;
         private System.Windows.Forms.DataGridViewTextBoxColumn NetPrice;
@@ -209,5 +226,6 @@ namespace smpc_sales_system.Pages.Sales
         private System.Windows.Forms.DataGridViewTextBoxColumn validity_col;
         private System.Windows.Forms.DataGridViewTextBoxColumn LeadTime;
         private System.Windows.Forms.DataGridViewTextBoxColumn supplier_id;
+        private System.Windows.Forms.Button btn_add_bpi;
     }
 }

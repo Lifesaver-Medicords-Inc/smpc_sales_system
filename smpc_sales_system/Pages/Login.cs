@@ -59,15 +59,20 @@ namespace smpc_sales_app.Pages
                 data.Add("motherboard_serial_no", Helpers.GetSerialNumber());
                 data.Add("machine_name", Environment.MachineName);
                 var currentUser = await AuthServices.Login(data);
+               
+                //var currentUserInventory = await smpc_inventory_app.Services.Auth.AuthServices.Login(data);
 
 
                 if (currentUser.Success)
                 {
                     CacheData.CurrentUser = currentUser.Data;
-                    CacheData.ShipTypeSetup = await ShipService.GetAsDatatable();
+
+                    smpc_inventory_app.Pages.Login inventory_login = new smpc_inventory_app.Pages.Login();
+                    inventory_login.LoginFromSales(data);
                     CacheData.PaymentTerms = await PaymentTermsServices.GetAsDatatable();
                     CacheData.ApplicationSetup = await ApplicationService.GetAsDatatable();
                     CacheData.UoM = await UnitOfMeasurementServices.GetAsDatatable();
+                    CacheData.ShipTypeSetup = await ShipService.GetAsDatatable();
                     this.DialogResult = DialogResult.OK;
                     string department = "sales";
                     string endpoint = $"/ api / ws / setup / test ? department={department}";
@@ -79,7 +84,7 @@ namespace smpc_sales_app.Pages
             }
             catch (Exception ex)
             {
-
+                MessageBox.Show("" + ex);
             }
         }
     }

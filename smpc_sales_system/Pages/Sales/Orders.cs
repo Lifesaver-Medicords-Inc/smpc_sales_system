@@ -68,7 +68,7 @@ namespace smpc_sales_app.Pages.Sales
         public DataTable bom { get; set; } = new DataTable();
         public DataTable bomdetail { get; set; } = new DataTable();
         //FETCH METHODS
-        private async Task FetchData(bool isReload)
+        private async Task FetchSalesOrder(bool isReload)
         {
             OrderList data = await OrderService.GetOrders();
             if (data == null || data.order == null || !data.order.Any())
@@ -86,13 +86,13 @@ namespace smpc_sales_app.Pages.Sales
                 CalculateTotalPrice();
             }
         }
-        private async Task fetchItemData()
+        private async Task FetchItemData()
         {
             var itemData = await ItemService.GetItem();
             ItemList = JsonHelper.ToDataTable(itemData.items);
             ItemSpecs = JsonHelper.ToDataTable(itemData.additionalspecs);
         }
-        private async Task fetchBpiData()
+        private async Task FetchBpiData()
         {
             Bpi_Class bpi_data = await QuotationService.GetBpiCustomers();
             bpi_dt = JsonHelper.ToDataTable(bpi_data.bpi);
@@ -100,13 +100,13 @@ namespace smpc_sales_app.Pages.Sales
             bpi_address = JsonHelper.ToDataTable(bpi_data.address);
             bpi_contacts = JsonHelper.ToDataTable(bpi_data.contacts);
         }
-        private async Task fetchQuotationDetails()
+        private async Task FetchQuotationDetails()
         {
             SalesQuotationList data = await QuotationService.GetQuotations();
             transactionList = JsonHelper.ToDataTable(data.SalesQuotation);
             childList = JsonHelper.ToDataTable(data.SalesQuotationQuick);
         }
-        private async Task fetchProject()
+        private async Task FetchProject()
         {
             SalesProjectList data = await ProjectService.GetProjects();
             ItemSets = JsonHelper.ToDataTable(data.sales_project_item_set);
@@ -458,11 +458,11 @@ namespace smpc_sales_app.Pages.Sales
             AddFoldertoolStripMenuItem.Click += addFolderToolStripMenuItem_Click;
             renameFolderToolStripMenuItem.Click += renameFolderToolStripMenuItem_Click;
             this.Width = 1380;
-            await fetchQuotationDetails();
-            await fetchProject();
-            await fetchBpiData();
-            await fetchItemData();
-            await FetchData(false);
+            await FetchQuotationDetails();
+            await FetchProject();
+            await FetchBpiData();
+            await FetchItemData();
+            await FetchSalesOrder(false);
             
 
             if (!string.IsNullOrEmpty(documentNo))
@@ -490,7 +490,7 @@ namespace smpc_sales_app.Pages.Sales
                 else if (documentNo == "0")
                 {
                     BindControlsForNewOrderORexisting();
-                    await FetchData(false);
+                    await FetchSalesOrder(false);
                     CalculateTotalPrice();
                     SOIncrementer();
                 }
@@ -529,7 +529,7 @@ namespace smpc_sales_app.Pages.Sales
         }
         private void Save_Click(object sender, EventArgs e)
         {
-            saving();
+            SaveSalesOrder();
         }
         private async void btn_check_Click(object sender, EventArgs e)
         {
@@ -553,7 +553,7 @@ namespace smpc_sales_app.Pages.Sales
                         };
                     await OrderService.Update(parentDataHeader);
                     MessageBox.Show("Order status updated to ACTIVE.");
-                    FetchData(false);
+                    FetchSalesOrder(false);
                     CheckStatus();
                 }
                 else
@@ -593,7 +593,7 @@ namespace smpc_sales_app.Pages.Sales
                             };
                         await OrderService.Update(parentDataHeader);
                         MessageBox.Show("Order status updated to CANCELLED.");
-                        FetchData(false);
+                        FetchSalesOrder(false);
                         CheckStatus();
                     }
                     else
@@ -619,7 +619,7 @@ namespace smpc_sales_app.Pages.Sales
                 SelectedRow++;
                 Helpers.ResetControls(pnl_header);
                 Helpers.ResetControls(pnl_footer);
-                await FetchData(false);
+                await FetchSalesOrder(false);
                 LoadDirectory(AFTERSALES_TV, AfterSalesPath);
                 LoadDirectory(SALES_TV, SalesPath);
                 sales_preview.Visible = true;
@@ -633,7 +633,7 @@ namespace smpc_sales_app.Pages.Sales
                 SelectedRow--;
                 Helpers.ResetControls(pnl_header);
                 Helpers.ResetControls(pnl_footer);
-                await FetchData(false);
+                await FetchSalesOrder(false);
                 LoadDirectory(AFTERSALES_TV, AfterSalesPath);
                 LoadDirectory(SALES_TV, SalesPath);
                 sales_preview.Visible = true;
@@ -648,7 +648,7 @@ namespace smpc_sales_app.Pages.Sales
         }
         private void btn_save_Click_1(object sender, EventArgs e)
         {
-            saving();
+            SaveSalesOrder();
         }
         private void btn_print_Click(object sender, EventArgs e)
         {
@@ -1401,7 +1401,7 @@ namespace smpc_sales_app.Pages.Sales
                 column.ReadOnly = isStatusCancelled;
             }
         }
-        private async void saving()
+        private async void SaveSalesOrder()
         {
             try
             {
@@ -1412,6 +1412,7 @@ namespace smpc_sales_app.Pages.Sales
                 if (string.IsNullOrWhiteSpace(txt_contact_no.Text)) missingFields.Add("Contact Number");
                 if (string.IsNullOrWhiteSpace(txt_ref_po.Text)) missingFields.Add("Reference PO");
                 txt_status.Text = SetDefaultIfEmpty(txt_status.Text);
+
                 if (missingFields.Count > 0)
                 {
                     MessageBox.Show("Please fill in the following fields: " + string.Join(", ", missingFields), "Missing Information", MessageBoxButtons.OK);
@@ -1550,7 +1551,7 @@ namespace smpc_sales_app.Pages.Sales
                         {
                             await OrderService.Update(parentData);
                             MessageBox.Show("Data updated successfully");
-                            await FetchData(true);
+                            await FetchSalesOrder(true);
                             bindOrderByDocNo(docno, true);
                             CheckStatus();
                         }
@@ -1558,7 +1559,7 @@ namespace smpc_sales_app.Pages.Sales
                         {
                             await OrderService.Insert(parentData);
                             MessageBox.Show("Data added successfully");
-                            await FetchData(true);
+                            await FetchSalesOrder(true);
                             CheckStatus();
                         }
                         TV1_preview.Visible = false;

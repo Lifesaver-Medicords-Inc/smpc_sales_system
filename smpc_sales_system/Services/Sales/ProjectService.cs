@@ -20,7 +20,7 @@ namespace smpc_sales_system.Services.Sales
         static string url_content = "/sales/project_contents";
         static string url_items = "/sales/project_items";
         static string url_bom = "/setup/bom";
-        static string url_suppliers = "/BpiSuppliers";
+        static string url_suppliers = "/bpi_suppliers";
         static string url_canvas = "/sales/salescanvas";
         static string url_pumps = "/sales/projects_pumps";
         static string url_wiring = "/sales/project_wiring";

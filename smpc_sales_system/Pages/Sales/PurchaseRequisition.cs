@@ -34,12 +34,12 @@ namespace smpc_sales_system.Pages.Sales
         public DataTable ItemName { get; set; } = new DataTable();
         public DataTable UOM { get; set; } = new DataTable();
         //FETCHERS METHODS
-        private async Task fetchItemData()
+        private async Task FetchItemData()
         {
             var itemData = await ItemService.GetItem();
             ItemList = JsonHelper.ToDataTable(itemData.items);
         }
-        private async void fetchPR()
+        private async void FetchExistingPurchaseRequisitions()
         {
             PurchaseRequisitionList data = await PurchaseRequisitionService.GetPRs();
             PRList = JsonHelper.ToDataTable(data.purchase_requisition);
@@ -50,13 +50,13 @@ namespace smpc_sales_system.Pages.Sales
                 CheckStatus();
             }
         }
-        private async void fetchItemThings()
+        private async void FetchItemName()
         {
             ItemNameModel[] itemNameModels = await ItemNameServices.GetName();
             JArray itemNameJsonArray = JArray.FromObject(itemNameModels);
             ItemName = JsonHelper.ToDataTable(itemNameJsonArray);
         }
-        private async void fetchUOM()
+        private async void FetchUOM()
         {
             var UOM_data = await UnitOfMeasurementServices.GetAsDatatable();
             UOM = UOM_data;
@@ -115,10 +115,10 @@ namespace smpc_sales_system.Pages.Sales
         }
         private async void PurchaseRequisition_Load(object sender, EventArgs e)
         {
-            await fetchItemData();
-            fetchItemThings();
-            fetchUOM();
-            fetchPR();
+            await FetchItemData();
+            FetchItemName();
+            FetchUOM();
+            FetchExistingPurchaseRequisitions();
         }
         //CLICK METHODS (BUTTONS)
         private void btn_prev_Click(object sender, EventArgs e)
@@ -126,7 +126,7 @@ namespace smpc_sales_system.Pages.Sales
             if (SelectedRow >= 1)
             {
                 SelectedRow--;
-                fetchPR();
+                FetchExistingPurchaseRequisitions();
                 Helpers.ResetControls(pnl_header);
                 Helpers.ResetControls(pnl_body);
                 Helpers.ResetControls(pnl_footer);
@@ -141,7 +141,7 @@ namespace smpc_sales_system.Pages.Sales
             if (SelectedRow < rowCount - 1)
             {
                 SelectedRow++;
-                fetchPR();
+                FetchExistingPurchaseRequisitions();
                 Helpers.ResetControls(pnl_header);
                 Helpers.ResetControls(pnl_body);
                 Helpers.ResetControls(pnl_footer);
@@ -172,7 +172,7 @@ namespace smpc_sales_system.Pages.Sales
                         };
                         await PurchaseRequisitionService.Update(parentDataHeader);
                         MessageBox.Show("Purchase Requisition status updated to APPROVED.");
-                        fetchPR();
+                        FetchExistingPurchaseRequisitions();
                         CheckStatus();
                     }
                     else
@@ -213,7 +213,11 @@ namespace smpc_sales_system.Pages.Sales
             bs_purchase_requisition.DataSource = PROrderList.Clone();
             bindPR(false);
         }
-        private async void btn_save_Click(object sender, EventArgs e)
+        private void btn_save_Click(object sender, EventArgs e)
+        {
+            SavePurchaseRequisition();
+        }
+        private async void SavePurchaseRequisition()
         {
             try
             {
@@ -278,7 +282,7 @@ namespace smpc_sales_system.Pages.Sales
                     {
                         existingbasedid = int.Parse(dataSource.Rows[0]["basediddgv"].ToString());
                     }
-                  
+
                     if (string.IsNullOrEmpty(item["qtydgv"].ToString()) || int.Parse(item["qtydgv"].ToString()) <= 0)
                     {
                         MessageBox.Show("Quantity must have a valid value greater than 0.", "Input Required", MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -344,6 +348,7 @@ namespace smpc_sales_system.Pages.Sales
                 MessageBox.Show("Error: " + ex.Message + "\n\n" + "Stack Trace: " + ex.StackTrace);
             }
         }
+
         private void btn_edit_Click(object sender, EventArgs e)
         {
             Panel[] pnls = { pnl_header, pnl_footer, pnl_body, pnl_footer_2 };

@@ -128,6 +128,8 @@
             this.label22 = new System.Windows.Forms.Label();
             this.label21 = new System.Windows.Forms.Label();
             this.pnl_header = new System.Windows.Forms.Panel();
+            this.txt_sub_version_no = new System.Windows.Forms.TextBox();
+            this.txt_id = new System.Windows.Forms.TextBox();
             this.btn_request_for_engr = new System.Windows.Forms.Button();
             this.cmb_payment_terms = new System.Windows.Forms.ComboBox();
             this.bs_payment_terms = new System.Windows.Forms.BindingSource(this.components);
@@ -173,8 +175,8 @@
             this.dtp_date = new System.Windows.Forms.DateTimePicker();
             this.cmb_application = new System.Windows.Forms.ComboBox();
             this.cmb_purpose = new System.Windows.Forms.ComboBox();
-            this.txt_contact_no_2 = new System.Windows.Forms.TextBox();
-            this.txt_contact_no_1 = new System.Windows.Forms.TextBox();
+            this.txt_contact_2 = new System.Windows.Forms.TextBox();
+            this.txt_contact_1 = new System.Windows.Forms.TextBox();
             this.label19 = new System.Windows.Forms.Label();
             this.btn_quick_quote = new System.Windows.Forms.Button();
             this.label20 = new System.Windows.Forms.Label();
@@ -192,7 +194,7 @@
             this.txt_document_no = new System.Windows.Forms.TextBox();
             this.label10 = new System.Windows.Forms.Label();
             this.label11 = new System.Windows.Forms.Label();
-            this.txt_days = new System.Windows.Forms.TextBox();
+            this.txt_validays = new System.Windows.Forms.TextBox();
             this.label6 = new System.Windows.Forms.Label();
             this.label7 = new System.Windows.Forms.Label();
             this.label8 = new System.Windows.Forms.Label();
@@ -205,13 +207,17 @@
             this.label2 = new System.Windows.Forms.Label();
             this.toolstrip_quotation = new System.Windows.Forms.ToolStrip();
             this.back = new System.Windows.Forms.ToolStripLabel();
-            this.btn_new = new System.Windows.Forms.ToolStripButton();
-            this.btn_new_version = new System.Windows.Forms.ToolStripButton();
             this.btn_search = new System.Windows.Forms.ToolStripButton();
             this.btn_prev = new System.Windows.Forms.ToolStripButton();
             this.btn_next = new System.Windows.Forms.ToolStripButton();
+            this.btn_new = new System.Windows.Forms.ToolStripButton();
+            this.btn_duplicate = new System.Windows.Forms.ToolStripButton();
+            this.btn_new_version = new System.Windows.Forms.ToolStripButton();
+            this.btn_edit = new System.Windows.Forms.ToolStripButton();
+            this.btn_savee = new System.Windows.Forms.ToolStripButton();
+            this.btn_update = new System.Windows.Forms.ToolStripButton();
+            this.btn_close = new System.Windows.Forms.ToolStripButton();
             this.btn_print = new System.Windows.Forms.ToolStripButton();
-            this.toolStripButton1 = new System.Windows.Forms.ToolStripButton();
             this.bs_quick_quotes_details = new System.Windows.Forms.BindingSource(this.components);
             this.bs_unit = new System.Windows.Forms.BindingSource(this.components);
             this.bs_project_components = new System.Windows.Forms.BindingSource(this.components);
@@ -223,6 +229,7 @@
             this.net_total = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.line_total = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.timer1 = new System.Windows.Forms.Timer(this.components);
+            this.process1 = new System.Diagnostics.Process();
             this.panel1.SuspendLayout();
             this.panel3.SuspendLayout();
             this.pnl_footer.SuspendLayout();
@@ -263,7 +270,7 @@
             this.panel1.Dock = System.Windows.Forms.DockStyle.Top;
             this.panel1.Location = new System.Drawing.Point(0, 0);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(1182, 47);
+            this.panel1.Size = new System.Drawing.Size(1165, 47);
             this.panel1.TabIndex = 0;
             // 
             // label1
@@ -287,7 +294,7 @@
             this.panel3.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panel3.Location = new System.Drawing.Point(0, 47);
             this.panel3.Name = "panel3";
-            this.panel3.Size = new System.Drawing.Size(1182, 2608);
+            this.panel3.Size = new System.Drawing.Size(1165, 2591);
             this.panel3.TabIndex = 2;
             // 
             // pnl_footer
@@ -316,10 +323,9 @@
             this.pnl_footer.Controls.Add(this.label24);
             this.pnl_footer.Controls.Add(this.label25);
             this.pnl_footer.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.pnl_footer.Enabled = false;
-            this.pnl_footer.Location = new System.Drawing.Point(0, 2350);
+            this.pnl_footer.Location = new System.Drawing.Point(0, 2333);
             this.pnl_footer.Name = "pnl_footer";
-            this.pnl_footer.Size = new System.Drawing.Size(1182, 258);
+            this.pnl_footer.Size = new System.Drawing.Size(1165, 258);
             this.pnl_footer.TabIndex = 78;
             // 
             // btn_sales_order
@@ -331,10 +337,10 @@
             this.btn_sales_order.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btn_sales_order.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btn_sales_order.ForeColor = System.Drawing.Color.White;
-            this.btn_sales_order.Location = new System.Drawing.Point(163, 222);
+            this.btn_sales_order.Location = new System.Drawing.Point(637, 226);
             this.btn_sales_order.Name = "btn_sales_order";
-            this.btn_sales_order.Size = new System.Drawing.Size(120, 22);
-            this.btn_sales_order.TabIndex = 106;
+            this.btn_sales_order.Size = new System.Drawing.Size(122, 22);
+            this.btn_sales_order.TabIndex = 117;
             this.btn_sales_order.Text = "SALES ORDER";
             this.btn_sales_order.UseVisualStyleBackColor = false;
             this.btn_sales_order.Click += new System.EventHandler(this.btn_sales_order_Click);
@@ -348,10 +354,10 @@
             this.btn_finalize.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btn_finalize.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btn_finalize.ForeColor = System.Drawing.Color.White;
-            this.btn_finalize.Location = new System.Drawing.Point(30, 222);
+            this.btn_finalize.Location = new System.Drawing.Point(509, 226);
             this.btn_finalize.Name = "btn_finalize";
-            this.btn_finalize.Size = new System.Drawing.Size(115, 22);
-            this.btn_finalize.TabIndex = 105;
+            this.btn_finalize.Size = new System.Drawing.Size(122, 22);
+            this.btn_finalize.TabIndex = 116;
             this.btn_finalize.Text = "FINALIZE";
             this.btn_finalize.UseVisualStyleBackColor = false;
             this.btn_finalize.Click += new System.EventHandler(this.btn_finalize_Click);
@@ -365,12 +371,13 @@
             this.btn_cancel.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btn_cancel.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btn_cancel.ForeColor = System.Drawing.Color.White;
-            this.btn_cancel.Location = new System.Drawing.Point(519, 222);
+            this.btn_cancel.Location = new System.Drawing.Point(843, 212);
             this.btn_cancel.Name = "btn_cancel";
             this.btn_cancel.Size = new System.Drawing.Size(73, 22);
             this.btn_cancel.TabIndex = 103;
             this.btn_cancel.Text = "CANCEL";
             this.btn_cancel.UseVisualStyleBackColor = false;
+            this.btn_cancel.Visible = false;
             this.btn_cancel.Click += new System.EventHandler(this.btn_cancel_Click);
             // 
             // btn_save
@@ -382,12 +389,13 @@
             this.btn_save.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btn_save.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btn_save.ForeColor = System.Drawing.Color.White;
-            this.btn_save.Location = new System.Drawing.Point(590, 222);
+            this.btn_save.Location = new System.Drawing.Point(914, 212);
             this.btn_save.Name = "btn_save";
             this.btn_save.Size = new System.Drawing.Size(73, 22);
             this.btn_save.TabIndex = 104;
             this.btn_save.Text = "SAVE";
             this.btn_save.UseVisualStyleBackColor = false;
+            this.btn_save.Visible = false;
             this.btn_save.Click += new System.EventHandler(this.btn_save_Click);
             // 
             // txt_short_description
@@ -601,7 +609,6 @@
             // 
             this.tabControl.Controls.Add(this.quick_tab);
             this.tabControl.Controls.Add(this.project_tab);
-            this.tabControl.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tabControl.ItemSize = new System.Drawing.Size(1, 33);
             this.tabControl.Location = new System.Drawing.Point(0, 268);
             this.tabControl.Name = "tabControl";
@@ -619,11 +626,11 @@
             this.quick_tab.Padding = new System.Windows.Forms.Padding(3);
             this.quick_tab.Size = new System.Drawing.Size(1174, 2299);
             this.quick_tab.TabIndex = 0;
+            this.quick_tab.Text = "butto";
             this.quick_tab.UseVisualStyleBackColor = true;
             // 
             // dgv_quick_quote_details
             // 
-            this.dgv_quick_quote_details.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
             this.dgv_quick_quote_details.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dgv_quick_quote_details.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.quick_id,
@@ -643,13 +650,14 @@
             this.quick_net_discount,
             this.quick_net_total,
             this.quick_line_total});
-            this.dgv_quick_quote_details.Dock = System.Windows.Forms.DockStyle.Top;
+            this.dgv_quick_quote_details.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dgv_quick_quote_details.Enabled = false;
             this.dgv_quick_quote_details.Location = new System.Drawing.Point(3, 3);
             this.dgv_quick_quote_details.Name = "dgv_quick_quote_details";
-            this.dgv_quick_quote_details.Size = new System.Drawing.Size(1168, 2046);
+            this.dgv_quick_quote_details.Size = new System.Drawing.Size(1168, 2293);
             this.dgv_quick_quote_details.TabIndex = 0;
             this.dgv_quick_quote_details.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgv_quick_quote_details_CellClick);
+            this.dgv_quick_quote_details.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgv_quick_quote_details_CellContentClick);
             this.dgv_quick_quote_details.CellEndEdit += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgv_quick_quote_details_CellEndEdit);
             // 
             // quick_id
@@ -716,7 +724,7 @@
             dataGridViewCellStyle17.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
             dataGridViewCellStyle17.SelectionForeColor = System.Drawing.Color.Black;
             this.quick_item_code.DefaultCellStyle = dataGridViewCellStyle17;
-            this.quick_item_code.FillWeight = 70.91645F;
+            this.quick_item_code.FillWeight = 70.91644F;
             this.quick_item_code.HeaderText = "COMPONENTS";
             this.quick_item_code.Name = "quick_item_code";
             this.quick_item_code.Resizable = System.Windows.Forms.DataGridViewTriState.True;
@@ -825,7 +833,7 @@
             this.project_tab.Location = new System.Drawing.Point(4, 37);
             this.project_tab.Name = "project_tab";
             this.project_tab.Padding = new System.Windows.Forms.Padding(3);
-            this.project_tab.Size = new System.Drawing.Size(1174, 2299);
+            this.project_tab.Size = new System.Drawing.Size(1121, 2299);
             this.project_tab.TabIndex = 1;
             this.project_tab.UseVisualStyleBackColor = true;
             // 
@@ -836,7 +844,7 @@
             this.tabControl2.Location = new System.Drawing.Point(3, 236);
             this.tabControl2.Name = "tabControl2";
             this.tabControl2.SelectedIndex = 0;
-            this.tabControl2.Size = new System.Drawing.Size(1168, 1482);
+            this.tabControl2.Size = new System.Drawing.Size(1115, 1482);
             this.tabControl2.TabIndex = 0;
             this.tabControl2.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.tabControl2_MouseDoubleClick);
             this.tabControl2.MouseDown += new System.Windows.Forms.MouseEventHandler(this.tabControl2_MouseDown);
@@ -846,7 +854,7 @@
             this.tabPage1.Location = new System.Drawing.Point(4, 22);
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage1.Size = new System.Drawing.Size(1160, 1456);
+            this.tabPage1.Size = new System.Drawing.Size(1107, 1456);
             this.tabPage1.TabIndex = 1;
             this.tabPage1.Text = "+";
             this.tabPage1.UseVisualStyleBackColor = true;
@@ -860,7 +868,7 @@
             this.pnl_project_name.Dock = System.Windows.Forms.DockStyle.Top;
             this.pnl_project_name.Location = new System.Drawing.Point(3, 3);
             this.pnl_project_name.Name = "pnl_project_name";
-            this.pnl_project_name.Size = new System.Drawing.Size(1168, 233);
+            this.pnl_project_name.Size = new System.Drawing.Size(1115, 233);
             this.pnl_project_name.TabIndex = 84;
             // 
             // panel2
@@ -872,7 +880,7 @@
             this.panel2.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.panel2.Location = new System.Drawing.Point(0, 38);
             this.panel2.Name = "panel2";
-            this.panel2.Size = new System.Drawing.Size(1168, 195);
+            this.panel2.Size = new System.Drawing.Size(1115, 195);
             this.panel2.TabIndex = 85;
             // 
             // dgv_project_multiplier
@@ -1078,6 +1086,8 @@
             // 
             // pnl_header
             // 
+            this.pnl_header.Controls.Add(this.txt_sub_version_no);
+            this.pnl_header.Controls.Add(this.txt_id);
             this.pnl_header.Controls.Add(this.btn_request_for_engr);
             this.pnl_header.Controls.Add(this.cmb_payment_terms);
             this.pnl_header.Controls.Add(this.txt_customer_id);
@@ -1092,8 +1102,8 @@
             this.pnl_header.Controls.Add(this.dtp_date);
             this.pnl_header.Controls.Add(this.cmb_application);
             this.pnl_header.Controls.Add(this.cmb_purpose);
-            this.pnl_header.Controls.Add(this.txt_contact_no_2);
-            this.pnl_header.Controls.Add(this.txt_contact_no_1);
+            this.pnl_header.Controls.Add(this.txt_contact_2);
+            this.pnl_header.Controls.Add(this.txt_contact_1);
             this.pnl_header.Controls.Add(this.label19);
             this.pnl_header.Controls.Add(this.btn_quick_quote);
             this.pnl_header.Controls.Add(this.label20);
@@ -1111,7 +1121,7 @@
             this.pnl_header.Controls.Add(this.txt_document_no);
             this.pnl_header.Controls.Add(this.label10);
             this.pnl_header.Controls.Add(this.label11);
-            this.pnl_header.Controls.Add(this.txt_days);
+            this.pnl_header.Controls.Add(this.txt_validays);
             this.pnl_header.Controls.Add(this.label6);
             this.pnl_header.Controls.Add(this.label7);
             this.pnl_header.Controls.Add(this.label8);
@@ -1123,11 +1133,29 @@
             this.pnl_header.Controls.Add(this.label3);
             this.pnl_header.Controls.Add(this.label2);
             this.pnl_header.Dock = System.Windows.Forms.DockStyle.Top;
-            this.pnl_header.Enabled = false;
             this.pnl_header.Location = new System.Drawing.Point(0, 25);
             this.pnl_header.Name = "pnl_header";
-            this.pnl_header.Size = new System.Drawing.Size(1182, 243);
+            this.pnl_header.Size = new System.Drawing.Size(1165, 243);
             this.pnl_header.TabIndex = 77;
+            // 
+            // txt_sub_version_no
+            // 
+            this.txt_sub_version_no.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txt_sub_version_no.Location = new System.Drawing.Point(943, 38);
+            this.txt_sub_version_no.Name = "txt_sub_version_no";
+            this.txt_sub_version_no.ReadOnly = true;
+            this.txt_sub_version_no.Size = new System.Drawing.Size(80, 20);
+            this.txt_sub_version_no.TabIndex = 117;
+            this.txt_sub_version_no.Text = "0";
+            this.txt_sub_version_no.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            // 
+            // txt_id
+            // 
+            this.txt_id.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
+            this.txt_id.Location = new System.Drawing.Point(322, 44);
+            this.txt_id.Name = "txt_id";
+            this.txt_id.Size = new System.Drawing.Size(37, 20);
+            this.txt_id.TabIndex = 116;
             // 
             // btn_request_for_engr
             // 
@@ -1341,7 +1369,7 @@
             this.btn_add_customer.Size = new System.Drawing.Size(30, 23);
             this.btn_add_customer.TabIndex = 108;
             this.btn_add_customer.UseVisualStyleBackColor = false;
-            this.btn_add_customer.Click += new System.EventHandler(this.button1_Click);
+            this.btn_add_customer.Click += new System.EventHandler(this.btn_add_customer_Click);
             // 
             // label60
             // 
@@ -1465,19 +1493,19 @@
             this.cmb_purpose.TabIndex = 88;
             this.cmb_purpose.Tag = "";
             // 
-            // txt_contact_no_2
+            // txt_contact_2
             // 
-            this.txt_contact_no_2.Location = new System.Drawing.Point(854, 143);
-            this.txt_contact_no_2.Name = "txt_contact_no_2";
-            this.txt_contact_no_2.Size = new System.Drawing.Size(170, 20);
-            this.txt_contact_no_2.TabIndex = 87;
+            this.txt_contact_2.Location = new System.Drawing.Point(854, 143);
+            this.txt_contact_2.Name = "txt_contact_2";
+            this.txt_contact_2.Size = new System.Drawing.Size(170, 20);
+            this.txt_contact_2.TabIndex = 87;
             // 
-            // txt_contact_no_1
+            // txt_contact_1
             // 
-            this.txt_contact_no_1.Location = new System.Drawing.Point(854, 122);
-            this.txt_contact_no_1.Name = "txt_contact_no_1";
-            this.txt_contact_no_1.Size = new System.Drawing.Size(170, 20);
-            this.txt_contact_no_1.TabIndex = 86;
+            this.txt_contact_1.Location = new System.Drawing.Point(854, 122);
+            this.txt_contact_1.Name = "txt_contact_1";
+            this.txt_contact_1.Size = new System.Drawing.Size(170, 20);
+            this.txt_contact_1.TabIndex = 86;
             // 
             // label19
             // 
@@ -1575,7 +1603,7 @@
             // 
             // txt_created_by
             // 
-            this.txt_created_by.Location = new System.Drawing.Point(854, 80);
+            this.txt_created_by.Location = new System.Drawing.Point(854, 82);
             this.txt_created_by.Name = "txt_created_by";
             this.txt_created_by.Size = new System.Drawing.Size(170, 20);
             this.txt_created_by.TabIndex = 73;
@@ -1583,7 +1611,7 @@
             // label13
             // 
             this.label13.AutoSize = true;
-            this.label13.Location = new System.Drawing.Point(778, 83);
+            this.label13.Location = new System.Drawing.Point(778, 85);
             this.label13.Name = "label13";
             this.label13.Size = new System.Drawing.Size(70, 13);
             this.label13.TabIndex = 72;
@@ -1604,9 +1632,9 @@
             this.txt_version_no.Location = new System.Drawing.Point(854, 38);
             this.txt_version_no.Name = "txt_version_no";
             this.txt_version_no.ReadOnly = true;
-            this.txt_version_no.Size = new System.Drawing.Size(170, 20);
+            this.txt_version_no.Size = new System.Drawing.Size(80, 20);
             this.txt_version_no.TabIndex = 69;
-            this.txt_version_no.Text = "1";
+            this.txt_version_no.Text = "0";
             this.txt_version_no.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.txt_version_no.DoubleClick += new System.EventHandler(this.txt_version_no_DoubleClick);
             // 
@@ -1639,14 +1667,14 @@
             this.label11.TabIndex = 66;
             this.label11.Text = "DOC NO.";
             // 
-            // txt_days
+            // txt_validays
             // 
-            this.txt_days.Location = new System.Drawing.Point(471, 37);
-            this.txt_days.Name = "txt_days";
-            this.txt_days.Size = new System.Drawing.Size(103, 20);
-            this.txt_days.TabIndex = 63;
-            this.txt_days.Text = "30";
-            this.txt_days.TextChanged += new System.EventHandler(this.txt_days_TextChanged);
+            this.txt_validays.Location = new System.Drawing.Point(471, 37);
+            this.txt_validays.Name = "txt_validays";
+            this.txt_validays.Size = new System.Drawing.Size(103, 20);
+            this.txt_validays.TabIndex = 63;
+            this.txt_validays.Text = "30";
+            this.txt_validays.TextChanged += new System.EventHandler(this.txt_days_TextChanged);
             // 
             // label6
             // 
@@ -1737,20 +1765,25 @@
             // 
             // toolstrip_quotation
             // 
+            this.toolstrip_quotation.Enabled = false;
             this.toolstrip_quotation.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
             this.toolstrip_quotation.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.back,
-            this.btn_new,
-            this.btn_new_version,
             this.btn_search,
             this.btn_prev,
             this.btn_next,
-            this.btn_print,
-            this.toolStripButton1});
+            this.btn_new,
+            this.btn_duplicate,
+            this.btn_new_version,
+            this.btn_edit,
+            this.btn_savee,
+            this.btn_update,
+            this.btn_close,
+            this.btn_print});
             this.toolstrip_quotation.Location = new System.Drawing.Point(0, 0);
             this.toolstrip_quotation.Name = "toolstrip_quotation";
             this.toolstrip_quotation.RenderMode = System.Windows.Forms.ToolStripRenderMode.Professional;
-            this.toolstrip_quotation.Size = new System.Drawing.Size(1182, 25);
+            this.toolstrip_quotation.Size = new System.Drawing.Size(1165, 25);
             this.toolstrip_quotation.TabIndex = 1;
             this.toolstrip_quotation.Text = "toolStrip1";
             // 
@@ -1761,24 +1794,6 @@
             this.back.Text = "Back";
             this.back.Visible = false;
             this.back.Click += new System.EventHandler(this.back_Click);
-            // 
-            // btn_new
-            // 
-            this.btn_new.Image = ((System.Drawing.Image)(resources.GetObject("btn_new.Image")));
-            this.btn_new.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.btn_new.Name = "btn_new";
-            this.btn_new.Size = new System.Drawing.Size(87, 22);
-            this.btn_new.Text = "New Quote";
-            this.btn_new.Click += new System.EventHandler(this.btn_new_Click_1);
-            // 
-            // btn_new_version
-            // 
-            this.btn_new_version.Image = ((System.Drawing.Image)(resources.GetObject("btn_new_version.Image")));
-            this.btn_new_version.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.btn_new_version.Name = "btn_new_version";
-            this.btn_new_version.Size = new System.Drawing.Size(92, 22);
-            this.btn_new_version.Text = "New Version";
-            this.btn_new_version.Click += new System.EventHandler(this.btn_new_version_Click);
             // 
             // btn_search
             // 
@@ -1803,9 +1818,74 @@
             this.btn_next.Image = ((System.Drawing.Image)(resources.GetObject("btn_next.Image")));
             this.btn_next.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.btn_next.Name = "btn_next";
-            this.btn_next.Size = new System.Drawing.Size(51, 22);
+            this.btn_next.Size = new System.Drawing.Size(52, 22);
             this.btn_next.Text = "Next";
             this.btn_next.Click += new System.EventHandler(this.btn_next_Click);
+            // 
+            // btn_new
+            // 
+            this.btn_new.Image = ((System.Drawing.Image)(resources.GetObject("btn_new.Image")));
+            this.btn_new.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btn_new.Name = "btn_new";
+            this.btn_new.Size = new System.Drawing.Size(87, 22);
+            this.btn_new.Text = "New Quote";
+            this.btn_new.Click += new System.EventHandler(this.btn_new_Click);
+            // 
+            // btn_duplicate
+            // 
+            this.btn_duplicate.Image = ((System.Drawing.Image)(resources.GetObject("btn_duplicate.Image")));
+            this.btn_duplicate.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btn_duplicate.Name = "btn_duplicate";
+            this.btn_duplicate.Size = new System.Drawing.Size(77, 22);
+            this.btn_duplicate.Text = "Duplicate";
+            this.btn_duplicate.Click += new System.EventHandler(this.btn_duplicate_Click);
+            // 
+            // btn_new_version
+            // 
+            this.btn_new_version.Image = ((System.Drawing.Image)(resources.GetObject("btn_new_version.Image")));
+            this.btn_new_version.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btn_new_version.Name = "btn_new_version";
+            this.btn_new_version.Size = new System.Drawing.Size(92, 22);
+            this.btn_new_version.Text = "New Version";
+            this.btn_new_version.Click += new System.EventHandler(this.btn_new_version_Click);
+            // 
+            // btn_edit
+            // 
+            this.btn_edit.Image = ((System.Drawing.Image)(resources.GetObject("btn_edit.Image")));
+            this.btn_edit.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btn_edit.Name = "btn_edit";
+            this.btn_edit.Size = new System.Drawing.Size(47, 22);
+            this.btn_edit.Text = "Edit";
+            this.btn_edit.Click += new System.EventHandler(this.btn_edit_Click);
+            // 
+            // btn_savee
+            // 
+            this.btn_savee.Image = ((System.Drawing.Image)(resources.GetObject("btn_savee.Image")));
+            this.btn_savee.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btn_savee.Name = "btn_savee";
+            this.btn_savee.Size = new System.Drawing.Size(51, 22);
+            this.btn_savee.Text = "Save";
+            this.btn_savee.Visible = false;
+            this.btn_savee.Click += new System.EventHandler(this.btn_save_Click);
+            // 
+            // btn_update
+            // 
+            this.btn_update.Image = ((System.Drawing.Image)(resources.GetObject("btn_update.Image")));
+            this.btn_update.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btn_update.Name = "btn_update";
+            this.btn_update.Size = new System.Drawing.Size(65, 22);
+            this.btn_update.Text = "Update";
+            this.btn_update.Click += new System.EventHandler(this.btn_update_Click);
+            // 
+            // btn_close
+            // 
+            this.btn_close.Image = ((System.Drawing.Image)(resources.GetObject("btn_close.Image")));
+            this.btn_close.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btn_close.Name = "btn_close";
+            this.btn_close.Size = new System.Drawing.Size(56, 22);
+            this.btn_close.Text = "Close";
+            this.btn_close.Visible = false;
+            this.btn_close.Click += new System.EventHandler(this.btn_close_Click);
             // 
             // btn_print
             // 
@@ -1815,15 +1895,6 @@
             this.btn_print.Size = new System.Drawing.Size(52, 22);
             this.btn_print.Text = "Print";
             this.btn_print.Click += new System.EventHandler(this.btn_print_Click);
-            // 
-            // toolStripButton1
-            // 
-            this.toolStripButton1.Image = ((System.Drawing.Image)(resources.GetObject("toolStripButton1.Image")));
-            this.toolStripButton1.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.toolStripButton1.Name = "toolStripButton1";
-            this.toolStripButton1.Size = new System.Drawing.Size(51, 22);
-            this.toolStripButton1.Text = "EDIT";
-            this.toolStripButton1.Click += new System.EventHandler(this.toolStripButton1_Click);
             // 
             // bs_quick_quotes_details
             // 
@@ -1925,6 +1996,16 @@
             this.timer1.Interval = 5000;
             this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
             // 
+            // process1
+            // 
+            this.process1.StartInfo.Domain = "";
+            this.process1.StartInfo.LoadUserProfile = false;
+            this.process1.StartInfo.Password = null;
+            this.process1.StartInfo.StandardErrorEncoding = null;
+            this.process1.StartInfo.StandardOutputEncoding = null;
+            this.process1.StartInfo.UserName = "";
+            this.process1.SynchronizingObject = this;
+            // 
             // Quotation
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -1934,7 +2015,7 @@
             this.Controls.Add(this.panel3);
             this.Controls.Add(this.panel1);
             this.Name = "Quotation";
-            this.Size = new System.Drawing.Size(1182, 2655);
+            this.Size = new System.Drawing.Size(1165, 2638);
             this.Load += new System.EventHandler(this.Quotation_Load);
             this.panel1.ResumeLayout(false);
             this.panel1.PerformLayout();
@@ -1989,31 +2070,9 @@
         private System.Windows.Forms.TabControl tabControl;
         private System.Windows.Forms.TabPage project_tab;
         private System.Windows.Forms.Panel pnl_header;
-        private System.Windows.Forms.Panel pnl_footer;
-        private System.Windows.Forms.TextBox txt_short_description;
-        private System.Windows.Forms.Label label34;
-        private System.Windows.Forms.TextBox txt_long_description;
-        private System.Windows.Forms.Label label33;
-        private System.Windows.Forms.TextBox txt_vat_percent;
-        private System.Windows.Forms.TextBox txt_total_amount_due;
-        private System.Windows.Forms.TextBox txt_net_amount_due;
-        private System.Windows.Forms.TextBox txt_cash_discount;
-        private System.Windows.Forms.Label label29;
-        private System.Windows.Forms.Label label30;
-        private System.Windows.Forms.Label label31;
-        private System.Windows.Forms.TextBox txt_percent_discount;
-        private System.Windows.Forms.Label label27;
-        private System.Windows.Forms.TextBox txt_net_sales;
-        private System.Windows.Forms.TextBox txt_vat_amount;
-        private System.Windows.Forms.TextBox txt_gross_sales;
-        private System.Windows.Forms.Label label23;
-        private System.Windows.Forms.Label label24;
-        private System.Windows.Forms.Label label25;
         private System.Windows.Forms.Panel pnl_project_name;
         private System.Windows.Forms.Label label35;
         private System.Windows.Forms.TextBox txt_project_name;
-        private System.Windows.Forms.Button btn_cancel;
-        private System.Windows.Forms.Button btn_save;
         private System.Windows.Forms.Label label60;
         private System.Windows.Forms.ComboBox cmb_warranty;
         private System.Windows.Forms.DateTimePicker dtp_valid_until;
@@ -2023,8 +2082,8 @@
         private System.Windows.Forms.DateTimePicker dtp_date;
         private System.Windows.Forms.ComboBox cmb_application;
         private System.Windows.Forms.ComboBox cmb_purpose;
-        private System.Windows.Forms.TextBox txt_contact_no_2;
-        private System.Windows.Forms.TextBox txt_contact_no_1;
+        private System.Windows.Forms.TextBox txt_contact_2;
+        private System.Windows.Forms.TextBox txt_contact_1;
         private System.Windows.Forms.Label label19;
         private System.Windows.Forms.Button btn_quick_quote;
         private System.Windows.Forms.Label label20;
@@ -2043,7 +2102,7 @@
         private System.Windows.Forms.TextBox txt_document_no;
         private System.Windows.Forms.Label label10;
         private System.Windows.Forms.Label label11;
-        private System.Windows.Forms.TextBox txt_days;
+        private System.Windows.Forms.TextBox txt_validays;
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.Label label8;
@@ -2062,8 +2121,6 @@
         private System.Windows.Forms.ToolStripButton btn_next;
         private System.Windows.Forms.ToolStripButton btn_print;
         private System.Windows.Forms.BindingSource bs_quick_quotes_details;
-        private System.Windows.Forms.TabPage quick_tab;
-        private System.Windows.Forms.DataGridView dgv_quick_quote_details;
         private System.Data.DataSet ds_quick_quote;
         private System.Data.DataTable dataTable1;
         private System.Data.DataColumn based_id;
@@ -2138,11 +2195,39 @@
         private System.Windows.Forms.Label label36;
         private System.Windows.Forms.FlowLayoutPanel flowLayoutPanel2;
         private System.Windows.Forms.Timer timer1;
-        private System.Windows.Forms.ToolStripButton toolStripButton1;
+        private System.Windows.Forms.ToolStripButton btn_update;
         private System.Windows.Forms.Button btn_request_for_engr;
-        private System.Windows.Forms.Button btn_sales_order;
-        private System.Windows.Forms.Button btn_finalize;
         private System.Windows.Forms.ToolStripLabel back;
+        private System.Windows.Forms.ToolStripButton btn_edit;
+        private System.Windows.Forms.ToolStripButton btn_close;
+        private System.Windows.Forms.ToolStripButton btn_savee;
+        private System.Windows.Forms.ToolStripButton btn_duplicate;
+        private System.Windows.Forms.TextBox txt_id;
+        private System.Windows.Forms.TextBox txt_sub_version_no;
+        private System.Windows.Forms.Panel pnl_footer;
+        private System.Windows.Forms.Button btn_cancel;
+        private System.Windows.Forms.Button btn_save;
+        private System.Windows.Forms.TextBox txt_short_description;
+        private System.Windows.Forms.Label label34;
+        private System.Windows.Forms.TextBox txt_long_description;
+        private System.Windows.Forms.Label label33;
+        private System.Windows.Forms.TextBox txt_vat_percent;
+        private System.Windows.Forms.TextBox txt_total_amount_due;
+        private System.Windows.Forms.TextBox txt_net_amount_due;
+        private System.Windows.Forms.TextBox txt_cash_discount;
+        private System.Windows.Forms.Label label29;
+        private System.Windows.Forms.Label label30;
+        private System.Windows.Forms.Label label31;
+        private System.Windows.Forms.TextBox txt_percent_discount;
+        private System.Windows.Forms.Label label27;
+        private System.Windows.Forms.TextBox txt_net_sales;
+        private System.Windows.Forms.TextBox txt_vat_amount;
+        private System.Windows.Forms.TextBox txt_gross_sales;
+        private System.Windows.Forms.Label label23;
+        private System.Windows.Forms.Label label24;
+        private System.Windows.Forms.Label label25;
+        private System.Windows.Forms.TabPage quick_tab;
+        private System.Windows.Forms.DataGridView dgv_quick_quote_details;
         private System.Windows.Forms.DataGridViewTextBoxColumn quick_id;
         private System.Windows.Forms.DataGridViewTextBoxColumn quick_bom_id;
         private System.Windows.Forms.DataGridViewCheckBoxColumn quick_ischild;
@@ -2160,5 +2245,8 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn quick_net_discount;
         private System.Windows.Forms.DataGridViewTextBoxColumn quick_net_total;
         private System.Windows.Forms.DataGridViewTextBoxColumn quick_line_total;
+        private System.Windows.Forms.Button btn_sales_order;
+        private System.Windows.Forms.Button btn_finalize;
+        private System.Diagnostics.Process process1;
     }
 }
