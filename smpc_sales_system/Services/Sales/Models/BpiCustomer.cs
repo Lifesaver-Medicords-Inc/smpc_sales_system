@@ -6,15 +6,14 @@ using System.Threading.Tasks;
 
 namespace smpc_sales_system.Services.Sales.Models
 {
-    class BpiCustomer
+    class BpiCustomerModel
     {
-        public int bpi_id { get; set; }
-        //public int general_based_id { get; set; }
+        public int general_based_id { get; set; }
         public string branch_name { get; set; }
         public string customer_code { get; set; }
-        //public int contact_based_id { get; set; }
-        //public string contact_number { get; set; }
-        //public int address_based_id { get; set; }
-        //public string location { get; set; }
+    }
+    class BpiCustomer
+    {
+        public List<BpiCustomerModel> bpi { get; set; }
     }
 }

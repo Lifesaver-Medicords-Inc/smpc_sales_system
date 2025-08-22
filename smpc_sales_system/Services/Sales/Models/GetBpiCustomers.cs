@@ -6,8 +6,5 @@ using System.Threading.Tasks;
 
 namespace smpc_sales_system.Services.Sales.Models
 {
-    class GetBpiList
-    {
-        public List<BpiCustomer> GetBpiCustomer { get; set; }
-    }
+ 
 }

@@ -72,6 +72,7 @@ namespace smpc_sales_app.Pages
                     CacheData.PaymentTerms = await PaymentTermsServices.GetAsDatatable();
                     CacheData.ApplicationSetup = await ApplicationService.GetAsDatatable();
                     CacheData.UoM = await UnitOfMeasurementServices.GetAsDatatable();
+                    CacheData.ShipTypeSetup = await ShipService.GetAsDatatable();
                     this.DialogResult = DialogResult.OK;
                     string department = "sales";
                     string endpoint = $"/ api / ws / setup / test ? department={department}";

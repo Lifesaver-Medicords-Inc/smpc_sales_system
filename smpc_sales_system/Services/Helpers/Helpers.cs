@@ -40,15 +40,15 @@ namespace smpc_app.Services.Helpers
                     {
                         ((TextBox)ctrl).ReadOnly = true;
                     }
-                    if (ctrl is Button)
-                    {
-                        ((Button)ctrl).Enabled = false;
-                    }
-                    //if (ctrl is ComboBox)
+                    //if (ctrl is Button)
                     //{
-                    //    ((ComboBox)ctrl).DropDownStyle = ComboBoxStyle.Simple;
-                    //    ((ComboBox)ctrl).Enabled = false;
+                    //    ((Button)ctrl).Enabled = false;
                     //}
+                    if (ctrl is ComboBox)
+                    {
+                        ((ComboBox)ctrl).DropDownStyle = ComboBoxStyle.Simple;
+                        ((ComboBox)ctrl).Enabled = false;
+                    }
                     if (ctrl is DateTimePicker)
                     {
                         ((DateTimePicker)ctrl).Enabled = false;
@@ -67,10 +67,10 @@ namespace smpc_app.Services.Helpers
                     {
                         ((TextBox)ctrl).ReadOnly = false;
                     }
-                    if (ctrl is Button)
-                    {
-                        ((Button)ctrl).Enabled = true;
-                    }
+                    //if (ctrl is Button)
+                    //{
+                    //    ((Button)ctrl).Enabled = true;
+                    //}
                     if (ctrl is ComboBox)
                     {
                         ((ComboBox)ctrl).DropDownStyle = ComboBoxStyle.DropDownList;
@@ -375,15 +375,26 @@ namespace smpc_app.Services.Helpers
                             {
                                 string key = dateTimePicker.Name.Replace("dtp_", "");
                                 string val = String.Format("'{0}'", dateTimePicker.Value);
-                                object valueFromDataTable = dt.Rows[selectedIndex][column_name]; 
+                                object valueFromDataTable = dt.Rows[selectedIndex][column_name];
 
-                                if (valueFromDataTable != DBNull.Value && valueFromDataTable is DateTime dateTimeValue)
+                                if (valueFromDataTable != DBNull.Value)
                                 {
-                                    dateTimePicker.Value = dateTimeValue;
+                                    if (valueFromDataTable is DateTime dateTimeValue)
+                                    {
+                                        dateTimePicker.Value = dateTimeValue;
+                                    }
+                                    else if (DateTime.TryParse(valueFromDataTable.ToString(), out DateTime parsedDate))
+                                    {
+                                        dateTimePicker.Value = parsedDate;
+                                    }
+                                    else
+                                    {
+                                        dateTimePicker.Value = DateTime.Now;
+                                    }
                                 }
                                 else
-                                { 
-                                    dateTimePicker.Value = DateTime.Now;  
+                                {
+                                    dateTimePicker.Value = DateTime.Now;
                                 }
 
                             }
@@ -448,16 +459,6 @@ namespace smpc_app.Services.Helpers
 
             return dt;
         }
-
-
-
-
-
-
-
-
-
-
         public static string GetSerialNumber()
         {
             try
@@ -533,9 +534,6 @@ namespace smpc_app.Services.Helpers
 
             return dataTable;
         }
-
-
-
         public static string MoneyFormat(double money)
         {
             return String.Format("{0:N2}", money);

@@ -22,7 +22,7 @@ namespace smpc_inventory_app.Pages
         public SetupSelectionModal(string title, string api, DataTable dt, List<int> currentValues, List<string> currentGridValues, int recordIndex=0)
         {
             InitializeComponent();
-       
+        
             lbl_title.Text = title;
             this.Text = title;
             this.EndPoint = api;
@@ -36,8 +36,11 @@ namespace smpc_inventory_app.Pages
         private void SelectionModal_Load(object sender, EventArgs e)
 
         {
+            // Front End Customer Filtering: to be refactored
+            DataView filteredCustomer = new DataView(this.Dt);
+            filteredCustomer.RowFilter = "customer_code IS NOT NULL AND customer_code <> '' AND customer_code LIKE 'C#%'";
 
-            dg_general.DataSource = this.Dt;
+            dg_general.DataSource = filteredCustomer;
             foreach (DataGridViewColumn column in dg_general.Columns)
             {
                 if (column.Name != "cust_code" && column.Name != "cust_name")

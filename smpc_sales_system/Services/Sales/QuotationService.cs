@@ -16,21 +16,29 @@ using System.Threading.Tasks;
 
 namespace smpc_sales_app.Services.Sales
 {
-     class QuotationService
+    class QuotationService
     {
         static string url = "/sales/quotation";
+        static string latest_url = "/sales/quotation/latest";
         static string url_customer = "/bpi/";
+        static string url_customer_only = "/sales/quotation/customers";
         static string url_search = "/bpi/";
 
 
-        // GET: quotations list
+        // GET: quotation list
         public static async Task<SalesQuotationList> GetQuotations()
         {
             var response = await RequestToApi<ApiResponseModel<SalesQuotationList>>.Get(url);
             SalesQuotationList quotationData = response.Data;
             return quotationData;
         }
-
+        // GET: latest quotation list
+        public static async Task<SalesQuotationList> GetLatestQuotations()
+        {
+            var response = await RequestToApi<ApiResponseModel<SalesQuotationList>>.Get(latest_url);
+            SalesQuotationList quotationData = response.Data;
+            return quotationData;
+        }
         //public static async Task
 
         public static async Task<Items> GetItems()
@@ -52,7 +60,15 @@ namespace smpc_sales_app.Services.Sales
         public static async Task<Bpi_Class> GetBpiCustomers()
         {
             var response = await RequestToApi<ApiResponseModel<Bpi_Class>>.Get(url_customer);
-            Bpi_Class  customerData = response.Data;
+            Bpi_Class customerData = response.Data;
+            return customerData;
+        }
+
+        // GET: BPI Customer only
+        public static async Task<BpiCustomer> GetBpiCustomersDetails()
+        {
+            var response = await RequestToApi<ApiResponseModel<BpiCustomer>>.Get(url_customer_only);
+            BpiCustomer customerData = response.Data;
             return customerData;
         }
 
