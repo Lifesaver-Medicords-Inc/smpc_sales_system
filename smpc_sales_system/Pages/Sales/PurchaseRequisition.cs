@@ -448,7 +448,7 @@ namespace smpc_sales_system.Pages.Sales
         {
             if (e.ColumnIndex == 0)
             {
-                ItemModal itemModal = new ItemModal(ItemList);
+                SalesItemModal itemModal = new SalesItemModal(ItemList);
                 DialogResult r = itemModal.ShowDialog();
 
                 if (r == DialogResult.OK)

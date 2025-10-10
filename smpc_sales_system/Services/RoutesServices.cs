@@ -45,7 +45,7 @@ namespace smpc_sales_app.Services
 
             //inventory
 
-            { "Item Entry", new Inventory_SMPC.Pages.Item.frm_Item_Entry() },
+            { "Item Entry", new smpc_inventory_app.Pages.Item.frm_Item_Entry() },
 
         };
 

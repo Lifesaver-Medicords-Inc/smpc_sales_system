@@ -60,7 +60,8 @@
     <Reference Include="Serilog, Version=4.3.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
       <HintPath>..\packages\Serilog.4.3.0\lib\net471\Serilog.dll</HintPath>
     </Reference>
-    <Reference Include="smpc_inventory_app">
+    <Reference Include="smpc_inventory_app, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\smpc_inventory_system\smpc_inventory_app\bin\Debug\smpc_inventory_app.exe</HintPath>
     </Reference>
     <Reference Include="System" />
@@ -122,10 +123,13 @@
     <Compile Include="Models\ItemParent.cs" />
     <Compile Include="Models\ItemPumpsView.cs" />
     <Compile Include="Models\PaymentTermsModel.cs" />
+    <Compile Include="Models\PositionAccessModel.cs" />
+    <Compile Include="Models\PositionModel.cs" />
     <Compile Include="Models\ProjectTemplateModel.cs" />
     <Compile Include="Models\SalesCanvasModel.cs" />
     <Compile Include="Models\SalesProject.cs" />
     <Compile Include="Models\SalesWiringModel.cs" />
+    <Compile Include="Models\UserPermissionModel.cs" />
     <Compile Include="Pages\CRMModal.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -174,6 +178,18 @@
     <Compile Include="Pages\Sales\ItemImageModal.Designer.cs">
       <DependentUpon>ItemImageModal.cs</DependentUpon>
     </Compile>
+    <Compile Include="Pages\Sales\ItemImagesModal.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Pages\Sales\ItemImagesModal.Designer.cs">
+      <DependentUpon>ItemImagesModal.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\Sales\ItemImageUC.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Pages\Sales\ItemImageUC.Designer.cs">
+      <DependentUpon>ItemImageUC.cs</DependentUpon>
+    </Compile>
     <Compile Include="Pages\Sales\itemsetModal.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -185,6 +201,12 @@
     </Compile>
     <Compile Include="Pages\Sales\ItemSetUC.Designer.cs">
       <DependentUpon>ItemSetUC.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\ModelModal.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Pages\ModelModal.Designer.cs">
+      <DependentUpon>ModelModal.cs</DependentUpon>
     </Compile>
     <Compile Include="Pages\Sales\ProjectTest.cs">
       <SubType>Form</SubType>
@@ -378,11 +400,20 @@
     <EmbeddedResource Include="Pages\Sales\ItemImageModal.resx">
       <DependentUpon>ItemImageModal.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Pages\Sales\ItemImagesModal.resx">
+      <DependentUpon>ItemImagesModal.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Pages\Sales\ItemImageUC.resx">
+      <DependentUpon>ItemImageUC.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Pages\Sales\itemsetModal.resx">
       <DependentUpon>itemsetModal.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Pages\Sales\ItemSetUC.resx">
       <DependentUpon>ItemSetUC.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Pages\ModelModal.resx">
+      <DependentUpon>ModelModal.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Pages\Sales\Opportunities.resx">
       <DependentUpon>Opportunities.cs</DependentUpon>
@@ -467,6 +498,8 @@
     <None Include="Resources\FolderIcon.png" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Resources\NoImage.bmp" />
+    <None Include="Resources\no-pictures.png" />
     <Content Include="SqlServerTypes\readme.htm" />
     <Content Include="SqlServerTypes\x64\msvcr120.dll" />
     <Content Include="SqlServerTypes\x64\SqlServerSpatial140.dll" />

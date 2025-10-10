@@ -11,6 +11,7 @@ namespace smpc_sales_system.Services.Sales.Models
         public int id { get; set; }
         public int based_id { get; set; }
         public string image { get; set; }
+        public string filename { get; set; }
     }
     class ItemImage
     {

@@ -139,8 +139,8 @@ namespace smpc_sales_system.Pages.Sales
 
         private void btn_add_bpi_Click(object sender, EventArgs e)
         {
-            smpc_inventory_app.Pages.canvasForm canvas = new smpc_inventory_app.Pages.canvasForm();
-            canvas.Show();
+            //smpc_inventory_app.Pages.canvasForm canvas = new smpc_inventory_app.Pages.canvasForm();
+            //canvas.Show();
         }
     }
 }

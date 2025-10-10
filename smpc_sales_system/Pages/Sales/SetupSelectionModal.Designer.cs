@@ -56,7 +56,7 @@ namespace smpc_inventory_app.Pages
             this.panel_header.Dock = System.Windows.Forms.DockStyle.Top;
             this.panel_header.Location = new System.Drawing.Point(0, 0);
             this.panel_header.Name = "panel_header";
-            this.panel_header.Size = new System.Drawing.Size(400, 47);
+            this.panel_header.Size = new System.Drawing.Size(409, 47);
             this.panel_header.TabIndex = 5;
             // 
             // panel1
@@ -65,7 +65,7 @@ namespace smpc_inventory_app.Pages
             this.panel1.Dock = System.Windows.Forms.DockStyle.Top;
             this.panel1.Location = new System.Drawing.Point(0, 0);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(400, 47);
+            this.panel1.Size = new System.Drawing.Size(409, 47);
             this.panel1.TabIndex = 6;
             // 
             // lbl_title
@@ -93,15 +93,15 @@ namespace smpc_inventory_app.Pages
             this.panel_search.Dock = System.Windows.Forms.DockStyle.Top;
             this.panel_search.Location = new System.Drawing.Point(0, 47);
             this.panel_search.Name = "panel_search";
-            this.panel_search.Size = new System.Drawing.Size(400, 47);
+            this.panel_search.Size = new System.Drawing.Size(409, 47);
             this.panel_search.TabIndex = 6;
             // 
             // panel2
             // 
             this.panel2.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.panel2.Location = new System.Drawing.Point(0, 459);
+            this.panel2.Location = new System.Drawing.Point(0, 478);
             this.panel2.Name = "panel2";
-            this.panel2.Size = new System.Drawing.Size(400, 47);
+            this.panel2.Size = new System.Drawing.Size(409, 47);
             this.panel2.TabIndex = 7;
             // 
             // panel3
@@ -110,7 +110,7 @@ namespace smpc_inventory_app.Pages
             this.panel3.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panel3.Location = new System.Drawing.Point(0, 94);
             this.panel3.Name = "panel3";
-            this.panel3.Size = new System.Drawing.Size(400, 365);
+            this.panel3.Size = new System.Drawing.Size(409, 384);
             this.panel3.TabIndex = 8;
             // 
             // dg_general
@@ -153,7 +153,7 @@ namespace smpc_inventory_app.Pages
             this.dg_general.RowHeadersDefaultCellStyle = dataGridViewCellStyle3;
             this.dg_general.RowHeadersVisible = false;
             this.dg_general.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.dg_general.Size = new System.Drawing.Size(400, 365);
+            this.dg_general.Size = new System.Drawing.Size(409, 384);
             this.dg_general.TabIndex = 0;
             this.dg_general.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dg_general_CellClick);
             // 
@@ -182,7 +182,7 @@ namespace smpc_inventory_app.Pages
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(400, 506);
+            this.ClientSize = new System.Drawing.Size(409, 525);
             this.Controls.Add(this.panel3);
             this.Controls.Add(this.panel2);
             this.Controls.Add(this.panel_search);

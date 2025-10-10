@@ -24,7 +24,8 @@ namespace smpc_sales_system.Pages.Sales
 
         private void GetItemData()
         {
-            dataGridView1.DataSource = items;
+            //dataGridView1.DataSource = items;
+            dataGridView1.DataSource = images;
         }
 
         private void ItemImageModal_Load(object sender, EventArgs e)
@@ -34,32 +35,23 @@ namespace smpc_sales_system.Pages.Sales
         private int selectedProject = 0;
         private void dataGridView1_CellClick(object sender, DataGridViewCellEventArgs e)
         {
-           
+
             if (e.RowIndex >= 0)
             {
-               
-                string selectedSalesQuotationId = this.items.Rows[this.selectedProject]["id"].ToString();
-
-              
-                DataView dataView = new DataView(images);
-                string itemName = this.items.Rows[e.RowIndex]["item_name"].ToString();
-                label2.Text = itemName.ToString();
-
-                dataView.RowFilter = "based_id = '" + this.items.Rows[e.RowIndex]["id"].ToString() + "'";
-
-                
-                if (dataView.Count > 0)
-                {
-                 
-                    string imagePath = dataView[0]["image"].ToString();
-                    pictureBox1.ImageLocation = "http://" + imagePath;
-                  
-                }
-                else
-                {
-                    
-                }
+                LoadItemImage(e.RowIndex);
             }
+        }
+
+        private void LoadItemImage(int rowIndex)
+        {
+            string imagePath = images.Rows[rowIndex]["image"].ToString();
+            string imageUrl = Properties.Settings.Default.imagePath + imagePath;
+
+            pictureBox1.SizeMode = PictureBoxSizeMode.Zoom;
+            pictureBox1.ImageLocation = imageUrl;
+
+            // optional: show info
+            label2.Text = $"Image {rowIndex + 1} of {images.Rows.Count}";
         }
     }
 }

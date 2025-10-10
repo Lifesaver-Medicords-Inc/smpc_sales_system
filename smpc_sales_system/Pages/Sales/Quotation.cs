@@ -32,6 +32,7 @@ namespace smpc_sales_app.Pages.Sales
         private ItemService itemService = new ItemService();
 
         private int SelectedRow = 0;
+        private string quotation_quick_id;
         private string documentNo;
         private string versionNo;
         private string subVersionNo;
@@ -456,9 +457,9 @@ namespace smpc_sales_app.Pages.Sales
         {
 
             if (_websocket != null && _websocket.State == WebSocketState.Open)
-{
-    _websocket.Dispose();
-}
+            {
+                _websocket.Dispose();
+            }
             _cancelTokenSource = new CancellationTokenSource();
 
 
@@ -511,7 +512,9 @@ namespace smpc_sales_app.Pages.Sales
         public DataTable allTransactionList { get; set; } = new DataTable();
         public DataTable transactionList { get; set; } = new DataTable();
         public DataTable childList { get; set; } = new DataTable();
+        public DataTable selectedImageList { get; set; } = new DataTable();
         public DataTable ItemList { get; set; } = new DataTable();
+        public DataTable ItemAdditionalSpecs { get; set; } = new DataTable();
         public DataTable ImageList { get; set; } = new DataTable();
         public DataTable BomHead { get; set; } = new DataTable();
         public DataTable BomDetails { get; set; } = new DataTable();
@@ -521,6 +524,7 @@ namespace smpc_sales_app.Pages.Sales
             var itemData = await ItemService.GetItem();
             var bomData = await ProjectService.GetBom();
             ItemList = JsonHelper.ToDataTable(itemData.items);
+            ItemAdditionalSpecs = JsonHelper.ToDataTable(itemData.additionalspecs);
             ImageList = JsonHelper.ToDataTable(itemData.ItemImages);
             BomHead = JsonHelper.ToDataTable(bomData.bom_head);
             BomDetails = JsonHelper.ToDataTable(bomData.bom_details);
@@ -564,6 +568,7 @@ namespace smpc_sales_app.Pages.Sales
                 transactionList = JsonHelper.ToDataTable(latestQuotations);
                 allTransactionList = JsonHelper.ToDataTable(data.SalesQuotation);
                 childList = JsonHelper.ToDataTable(data.SalesQuotationQuick);
+                selectedImageList = JsonHelper.ToDataTable(data.SalesQuotationSelectedImages);
 
                 dgv_quick_quote_details.ReadOnly = true;
                 dgv_quick_quote_details.Enabled = true;
@@ -584,8 +589,6 @@ namespace smpc_sales_app.Pages.Sales
 
             toolstrip_quotation.Enabled = true;
         }
-
-
         public DataTable dt_multiplier { get; set; }
         public DataTable dt_content { get; set; }
         public DataTable dt_advanced_conditions { get; set; }
@@ -726,9 +729,7 @@ namespace smpc_sales_app.Pages.Sales
             fetchProjectMultipliers();
             //ConnectToWebSocket("Sales", selectedSalesQuotationId);
         }
-
-
-        private async void fetchSalesProjectRT(JToken data)
+        private void fetchSalesProjectRT(JToken data)
         {
             if (tabControl2.SelectedTab.Controls[0] is ItemSetUC currentControl)
             {
@@ -775,7 +776,6 @@ namespace smpc_sales_app.Pages.Sales
         {
             dgv_project_multiplier.DataSource = dt;
         }
-
         private async void fetchQuotationDetailsByDocumentNo(string documentNo)
         {
             // Get all the quotations from the service
@@ -803,6 +803,7 @@ namespace smpc_sales_app.Pages.Sales
                 // Convert the filtered lists to DataTables (using your helper method)
                 transactionList = JsonHelper.ToDataTable(filteredSalesQuotation);
                 childList = JsonHelper.ToDataTable(filteredSalesQuotationQuick);
+                selectedImageList = JsonHelper.ToDataTable(filteredSalesQuotationQuick);
 
                 // Enable the panels and controls as needed
 
@@ -869,16 +870,24 @@ namespace smpc_sales_app.Pages.Sales
 
         private void btn_save_Click(object sender, EventArgs e)
         {
-            if (!isProject)
+
+            if (!IsEdit)
             {
-                IsQuickQuote();
+                if (!isProject)
+                {
+                    IsQuickQuote();
+                }
+                else
+                {
+                    IsProject();
+                }
             }
             else
             {
-                IsProject();
-            }
-        }
 
+            }
+
+        }
         public SalesProjectItemSet GetProjectItemSet()
         {
             TabPage selectedTab = this.tabControl2.SelectedTab;
@@ -891,9 +900,6 @@ namespace smpc_sales_app.Pages.Sales
             }
             return new SalesProjectItemSet();
         }
-
-
-
         private async void IsProject()
         {
             Panel[] pnl_list = { pnl_header, pnl_footer, pnl_project_name };
@@ -971,10 +977,6 @@ namespace smpc_sales_app.Pages.Sales
                 }
             }
         }
-
-
-
-
         private void removeColumn()
         {
             // Make sure to handle the removal from the bottom to avoid index shifting issues
@@ -992,9 +994,6 @@ namespace smpc_sales_app.Pages.Sales
                 }
             }
         }
-
-
-
         private async void IsQuickQuote()
         {
             try
@@ -1032,8 +1031,9 @@ namespace smpc_sales_app.Pages.Sales
                         continue;
 
                     Dictionary<string, object> data = new Dictionary<string, object>();
-                    data.Add("is_child", bool.TryParse(item["quick_ischild"]?.ToString(), out bool isChild) ? isChild : false);
-                    data.Add("is_parent", bool.TryParse(item["quick_is_parent"]?.ToString(), out bool isParent) ? isParent : false);
+                    //data.Add("is_child", bool.TryParse(item["quick_ischild"]?.ToString(), out bool isChild) ? isChild : false);
+                    //data.Add("is_parent", bool.TryParse(item["quick_is_parent"]?.ToString(), out bool isParent) ? isParent : false);
+                    //data.Add("reference_code", bool.TryParse(item["reference_code"]?.ToString(), out bool isParent) ? isParent : false);
                     data.Add("item_id", itemId);
                     data.Add("bom_id", int.TryParse(item["quick_bom_id"].ToString(), out int bomid) ? bomid : 0);
                     data.Add("components", item["quick_item_code"]);
@@ -1057,7 +1057,16 @@ namespace smpc_sales_app.Pages.Sales
                     // loops thru the items
                     foreach (var childData in quickQuoteList)
                     {
-                        childCollection.Add(childData);
+                        //childCollection.Add(childData);
+
+                        // ensure it's a dictionary (clone or cast if necessary)
+                        var dict = new Dictionary<string, dynamic>(childData);
+
+                        // attach quick_selected_image here
+                        dict["quick_selected_image"] = SelectedImages;
+
+                        childCollection.Add(dict);
+
                     }
 
                     // trims the Q# from the input
@@ -1077,11 +1086,12 @@ namespace smpc_sales_app.Pages.Sales
                         return;
                     }
 
-
                     parentData["sales_quotation_quick"] = childCollection;
+
 
                     if (parentData.ContainsKey("sales_quotation_quick"))
                     {
+
                         var isSuccess = await QuotationService.Insert(parentData);
 
                         if (isSuccess.Success)
@@ -1112,15 +1122,12 @@ namespace smpc_sales_app.Pages.Sales
 
         private void getItemShortDescription(int id)
         {
-            var matchingItem = ItemList.AsEnumerable()
+            var matchingItem = ItemAdditionalSpecs.AsEnumerable()
                 .FirstOrDefault(item => item["id"].ToString() == id.ToString());
-
-
-
 
             if (matchingItem != null)
             {
-                txt_short_description.Text = matchingItem["short_desc"].ToString();
+                txt_long_description.Text = matchingItem["long_description"].ToString();
 
             }
             else
@@ -1128,62 +1135,180 @@ namespace smpc_sales_app.Pages.Sales
                 Console.WriteLine("Item not found.");
             }
         }
-
         private int selectedItem;
 
         private void dgv_quick_quote_details_CellClick(object sender, DataGridViewCellEventArgs e)
         {
+
+            try
+            {
+                // Skip header clicks
+                if (e.RowIndex < 0 || e.ColumnIndex < 0)
+                    return;
+
+
+                // Display long and short description
+                if (dgv_quick_quote_details.Rows[e.RowIndex].Cells["quick_item_name"].Value != null &&
+                    !string.IsNullOrEmpty(dgv_quick_quote_details.Rows[e.RowIndex].Cells["quick_item_name"].Value.ToString()))
+                {
+                    var itemID = int.Parse(dgv_quick_quote_details.Rows[e.RowIndex].Cells["quick_item_id"].Value.ToString());
+                    getItemShortDescription(itemID);
+                }
+                // Image Column
+                if (dgv_quick_quote_details.Columns[e.ColumnIndex].Name == "quick_images")
+                {
+                    var row = dgv_quick_quote_details.Rows[e.RowIndex];
+                    var cellQuickId = row.Cells["quick_id"].Value?.ToString();
+                    var cellItemId = row.Cells["quick_item_id"].Value?.ToString();
+
+
+                    if (int.TryParse(cellQuickId, out int quickId) &&
+                        int.TryParse(cellItemId, out int itemId))
+                    {
+                        HandleItemImageSelectionClick(quickId, itemId);
+                    }
+                }
+                // Components Column
+                if (dgv_quick_quote_details.Columns[e.ColumnIndex].Name == "quick_item_code")
+                {
+                    HandleItemSelectionClick(e.RowIndex, dgv_quick_quote_details);
+                }
+                // Canvass Sheet Column
+                if (dgv_quick_quote_details.Columns[e.ColumnIndex].Name == "quick_unit_price")
+                {
+                    string id = dgv_quick_quote_details.Rows[e.RowIndex].Cells[5].Value.ToString();
+                    HandleCanvasSelectionClick(e.RowIndex, id);
+                }
+                //Model Column
+                if (dgv_quick_quote_details.Columns[e.ColumnIndex].Name == "quick_item_name" && e.RowIndex >= 0)
+                {
+                    if (dgv_quick_quote_details.Rows[e.RowIndex].IsNewRow)
+                        return;
+
+
+                    string id = dgv_quick_quote_details.Rows[e.RowIndex].Cells["quick_item_id"].Value.ToString();
+                    HandleModelSelectionClick(e.RowIndex, id);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error: " + ex.Message);
+            }
+        }
+
+        private void HandleModelSelectionClick(int RowIndex, string Id)
+        {
+            ModelModal createModal = new ModelModal(ItemList, Id);
+            DialogResult result = createModal.ShowDialog();
+
+            if (result == DialogResult.OK)
+            {
+                int itemId = int.Parse(createModal.GetItemId());
+                int bomId = int.Parse(createModal.GetBomId());
+
+                DataTable dataSource = dgv_quick_quote_details.DataSource as DataTable;
+                if (dataSource == null) return;
+
+                 int? checkData = BomHead.AsEnumerable()
+                        .Where(row => row.Field<int>("item_id") == itemId)
+                        .Select(row => row.Field<int>("id"))
+                        .FirstOrDefault();
+                if(checkData != null)
+                {
+                    GetBomDataRecursiveModel(RowIndex, bomId, itemId, dgv_quick_quote_details);
+                }
+                else
+                {
+                    GetItemData(RowIndex, itemId, dgv_quick_quote_details);
+                }
+            }
+        }
+
+        private void dgv_quick_quote_details_CellContentDoubleClick(object sender, DataGridViewCellEventArgs e)
+        {
             // Skip header clicks
-            if (e.RowIndex < 0 || e.ColumnIndex < 0)
-                return;
-
-            if (dgv_quick_quote_details.Rows[e.RowIndex].Cells["quick_item_name"].Value != null &&
-                !string.IsNullOrEmpty(dgv_quick_quote_details.Rows[e.RowIndex].Cells["quick_item_name"].Value.ToString()))
-            {
-                var itemID = int.Parse(dgv_quick_quote_details.Rows[e.RowIndex].Cells["quick_item_id"].Value.ToString());
-                getItemShortDescription(itemID);
-
-            }
-
-            // Components Column
-            if (e.ColumnIndex == 7)
-            {
-                HandleItemSelectionClick(e.RowIndex, dgv_quick_quote_details);
-            }
-            // Canvass Sheet Column
-            if (e.ColumnIndex == 8)
-            {
-                string id = dgv_quick_quote_details.Rows[e.RowIndex].Cells[5].Value.ToString();
-                HandleCanvasSelectionClick(e.RowIndex, id);
-            }
-
+            //if (e.RowIndex < 0 || e.ColumnIndex < 0)
+            //    return;
+            //// Components Column
+            //if (e.ColumnIndex == 7)
+            //{
+            //    HandleItemSelectionClick(e.RowIndex, dgv_quick_quote_details);
+            //}
+            //// Canvass Sheet Column
+            //if (e.ColumnIndex == 8)
+            //{
+            //    string id = dgv_quick_quote_details.Rows[e.RowIndex].Cells[5].Value.ToString();
+            //    HandleCanvasSelectionClick(e.RowIndex, id);
+            //}
         }
 
         // Selected item from item list
         private void HandleItemSelectionClick(int rowIndex, DataGridView dgv)
         {
-            ItemModal itemModal = new ItemModal(ItemList, BomHead, BomDetails);
+            SalesItemModal itemModal = new SalesItemModal(ItemList, BomHead, BomDetails);
             DialogResult r = itemModal.ShowDialog();
 
             if (r == DialogResult.OK)
             {
+                int itemid = itemModal.GetParentItemId();
+
                 if (itemModal.isBom)
                 {
                     int bomID = itemModal.GetBomResult();
-                    int itemid = itemModal.GetParentItemId();
-                    GetBomData(rowIndex, bomID, itemid, dgv);
-                }
+                    GetBomDataRecursive(rowIndex, bomID, itemid, dgv);
 
-                if (itemModal.isItem)
-                {
-                    int itemID = itemModal.GetResult();
-                    int itemid = itemModal.GetParentItemId();
-                    GetItemData(rowIndex, itemID, dgv);
                 }
+                else if (itemModal.isItem)
+                {
+                    GetItemData(rowIndex, itemid, dgv);
+
+                }
+                else
+                {
+                    // Invalid/unmatched case
+                    MessageBox.Show("Invalid selection. The chosen item could not be matched to an Item or BOM.",
+                                    "Invalid Selection",
+                                    MessageBoxButtons.OK,
+                                    MessageBoxIcon.Error);
+                }
+                counterParent++;
             }
         }
+        public List<Dictionary<string, object>> SelectedImages { get; private set; }
+        private void HandleItemImageSelectionClick(int quickId, int itemId)
+        {
+            DataView dvItems = new DataView(ItemList);
+            DataTable filteredItems = dvItems.ToTable();
 
-        private void GetBomData(int rowIndex, int bomID, int itemid, DataGridView dgv)
+            if (filteredItems.Rows.Count == 0)
+            {
+                MessageBox.Show("Item not found.");
+                return;
+            }
+
+            string itemName = filteredItems.Rows[0]["item_name"].ToString();
+
+            DataView dvImages = new DataView(ImageList);
+            dvImages.RowFilter = $"based_id = {itemId}";
+            DataTable filteredImages = dvImages.ToTable();
+
+
+            DataView dvSelectedImages = new DataView(selectedImageList);
+            dvSelectedImages.RowFilter = $"quotation_quick_id = {quickId}";
+            DataTable filteredSelectedImages = dvSelectedImages.ToTable();
+
+            ItemImagesModal itemImageModal = new ItemImagesModal(itemName, filteredItems, filteredImages, filteredSelectedImages);
+            DialogResult r = itemImageModal.ShowDialog();
+
+            if (r == DialogResult.OK)
+            {
+                SelectedImages = itemImageModal.SelectedImages;
+                int selectedImageCount = SelectedImages.Count();
+                MessageBox.Show($"{selectedImageCount} images selected.");
+            }
+
+        }
+        private void GetBomData1(int rowIndex, int bomID, int itemid, DataGridView dgv)
         {
             int selectedIndex = bomID;
             int selectedItem = itemid;
@@ -1226,11 +1351,9 @@ namespace smpc_sales_app.Pages.Sales
                     {
                         DataRow newRow = dataSource.NewRow();
                         newRow["bom_id"] = row["id"];
-
-
                         newRow["item_id"] = row["item_id"];
 
-                        newRow["unit_price"] = Helpers.FormatAsCurrency(row["production_cost"]);
+                        newRow["unit_price"] = row["production_cost"];
 
                         newRow["qty"] = row["production_qty"];
 
@@ -1295,7 +1418,7 @@ namespace smpc_sales_app.Pages.Sales
                             newRow["unit_of_measure"] = DBNull.Value;
                         }
 
-                        newRow["unit_price"] = Helpers.FormatAsCurrency(row["unit_price"]);
+                        newRow["unit_price"] = row["unit_price"];
                         newRow["is_child"] = true;
 
 
@@ -1316,12 +1439,307 @@ namespace smpc_sales_app.Pages.Sales
                 removeColumn();
             }
         }
+        private void GetBomData(int rowIndex, int bomID, int itemid, DataGridView dgv)
+        {
+            DataTable bom_parent = Helpers.FilterExactDataTable(BomHead, bomID.ToString(), "id");
+            DataTable bom_child = Helpers.FilterDataTable(BomDetails, bomID.ToString(), "item_bom_id");
+            DataTable items_unit = Helpers.FilterExactDataTable(ItemList, itemid.ToString(), "id");
 
+            if (bom_parent.Rows.Count == 0)
+            {
+                MessageBox.Show("Invalid selection. BOM not found.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
 
-        private void GetItemData(int rowIndex, int itemID, DataGridView dgv)
+            DataTable dataSource = dgv.DataSource as DataTable;
+            if (!isProject && dataSource == null) return;
+
+            // Parent BOM
+            foreach (DataRow row in bom_parent.Rows)
+            {
+                DataRow newRow = dataSource.NewRow();
+                newRow["bom_id"] = row["id"];
+                newRow["item_id"] = row["item_id"];
+                newRow["unit_price"] = row["production_cost"];
+                newRow["qty"] = row["production_qty"];
+                newRow["components"] = row["general_name"];
+                newRow["model"] = row["item_model"];
+                newRow["is_parent"] = true;
+
+                var matchingUnit = ItemList.AsEnumerable()
+                    .FirstOrDefault(item => item["id"].ToString() == row["item_id"].ToString());
+                newRow["unit_of_measure"] = matchingUnit != null ? matchingUnit["unit_of_measure"] : DBNull.Value;
+
+                dataSource.Rows.Add(newRow);
+
+                // 🎨 Style as Parent
+                int addedRowIndex = dataSource.Rows.Count - 1;
+                Helpers.SalesItemRowStyler.ApplyStyle(dgv, addedRowIndex, "parent");
+            }
+
+            // Child BOM
+            foreach (DataRow row in bom_child.Rows)
+            {
+                DataRow newRow = dataSource.NewRow();
+                newRow["bom_id"] = row["item_bom_id"];
+                newRow["item_id"] = row["item_id"];
+                newRow["components"] = row["item_name"];
+                newRow["model"] = row["size"];
+                newRow["qty"] = row["bom_qty"];
+
+                var matchingUnit = ItemList.AsEnumerable()
+                    .FirstOrDefault(item => item["id"].ToString() == row["item_id"].ToString());
+                newRow["unit_of_measure"] = matchingUnit != null ? matchingUnit["unit_of_measure"] : DBNull.Value;
+
+                newRow["unit_price"] = row["unit_price"];
+                newRow["is_child"] = true;
+
+                dataSource.Rows.Add(newRow);
+
+                // 🎨 Style as Child
+                int addedRowIndex = dataSource.Rows.Count - 1;
+                Helpers.SalesItemRowStyler.ApplyStyle(dgv, addedRowIndex, "child");
+            }
+
+            removeColumn();
+        }
+
+        int counterParent = 1;
+        int counterParentReset = 1; // use for sub parent
+
+        private decimal GetBomDataRecursive(int rowIndex, int bomID, int itemID, DataGridView dgv, int level = 0, HashSet<int> visited = null, string additionalReference = null)
+        {
+            Dictionary<int, DataRow> bomHeadDict = new Dictionary<int, DataRow>();
+            Dictionary<int, List<DataRow>> bomChildDict = new Dictionary<int, List<DataRow>>();
+
+            if (BomHead != null && BomHead.Rows.Count > 0)
+            {
+                bomHeadDict = BomHead.AsEnumerable()
+                    .ToDictionary(r => r.Field<int>("id"));
+            }
+
+            if (BomDetails != null && BomDetails.Rows.Count > 0)
+            {
+                bomChildDict = BomDetails.AsEnumerable()
+                    .GroupBy(r => r.Field<int>("item_bom_id"))
+                    .ToDictionary(g => g.Key, g => g.ToList());
+            }
+
+            // --- Initialize ---
+            if (visited == null)
+                visited = new HashSet<int>();
+
+            if (visited.Contains(bomID))
+                return 0;
+            visited.Add(bomID);
+
+            if (string.IsNullOrEmpty(additionalReference))
+                additionalReference = counterParentReset.ToString();
+
+            DataTable dataSource = dgv.DataSource as DataTable;
+            if (dataSource == null)
+                return 0;
+
+            if (!bomHeadDict.TryGetValue(bomID, out DataRow parentRow))
+                return 0;
+
+            // --- Compute parent labor cost ---
+            decimal manDays = Convert.ToDecimal(parentRow["man_days"]);
+            decimal laborRate = Convert.ToDecimal(parentRow["labor_rate"]);
+            decimal laborCost = manDays * laborRate;
+
+            // --- Initial total cost for this parent (production + labor) ---
+            decimal totalCost = laborCost;
+
+            // --- Add parent row ---
+            DataRow newParent = dataSource.NewRow();
+            newParent["reference_code"] = additionalReference;
+            newParent["bom_id"] = parentRow["id"];
+            newParent["item_id"] = parentRow["item_id"];
+            newParent["components"] = new string('▶', level) + " " + parentRow["general_name"];
+            newParent["model"] = parentRow["item_model"];
+            newParent["qty"] = parentRow["production_qty"];
+            newParent["man_days"] = parentRow["man_days"];
+            newParent["labor_rate"] = parentRow["labor_rate"];
+            newParent["unit_price"] = Convert.ToDecimal(parentRow["production_cost"]);
+
+            dataSource.Rows.Add(newParent);
+            int addedRowIndex = dataSource.Rows.Count - 1;
+            Helpers.SalesItemRowStyler.ApplyStyle(dgv, addedRowIndex, "parent");
+
+            // --- Process children ---
+            if (bomChildDict.TryGetValue(bomID, out List<DataRow> childRows))
+            {
+                int counterSub = 1;
+                foreach (DataRow child in childRows)
+                {
+                    int childItemId = Convert.ToInt32(child["item_id"]);
+
+                    // Check if child item is also a BOM
+                    DataRow subBomRow = bomHeadDict.Values.FirstOrDefault(r => r.Field<int>("item_id") == childItemId);
+
+                    if (subBomRow != null)
+                    {
+                        int subBomId = Convert.ToInt32(subBomRow["id"]);
+
+                        decimal subTotal = GetBomDataRecursive(rowIndex + 1 ,subBomId ,childItemId,dgv ,level + 1, visited, $"{additionalReference}.{counterSub}");
+
+                        totalCost += subTotal;
+                    }
+                    else
+                    {
+                        decimal unitPrice = Convert.ToDecimal(child["unit_price"]);
+                        decimal qty = Convert.ToDecimal(child["bom_qty"]);
+                        decimal lineTotal = unitPrice * qty;
+                        totalCost += lineTotal;
+
+                        // Leaf item
+                        DataRow newChild = dataSource.NewRow();
+                        newChild["bom_id"] = child["item_bom_id"];
+                        newChild["item_id"] = childItemId;
+                        newChild["components"] = new string(' ', level * 4) + child["item_name"];
+                        newChild["model"] = child["size"];
+                        newChild["qty"] = qty;
+                        newChild["unit_price"] = unitPrice;
+                        newChild["reference_code"] = $"{additionalReference}.{counterSub}";
+
+                        dataSource.Rows.Add(newChild);
+                        int addedChildIndex = dataSource.Rows.Count - 1;
+                        Helpers.SalesItemRowStyler.ApplyStyle(dgv, addedChildIndex, "child");
+                    }
+
+                    counterSub++;
+                }
+            }
+
+            // Update the parent unit_price to total of all its descendants
+            dataSource.Rows[addedRowIndex]["unit_price"] = totalCost;
+
+            counterParentReset++;
+            return totalCost;
+        }
+
+        private decimal GetBomDataRecursiveModel(int rowIndex, int bomID, int itemID, DataGridView dgv, int level = 0, HashSet<int> visited = null, string additionalReference = null)
+        {
+            Dictionary<int, DataRow> bomHeadDict = new Dictionary<int, DataRow>();
+            Dictionary<int, List<DataRow>> bomChildDict = new Dictionary<int, List<DataRow>>();
+
+            if (BomHead != null && BomHead.Rows.Count > 0)
+            {
+                bomHeadDict = BomHead.AsEnumerable()
+                    .ToDictionary(r => r.Field<int>("id"));
+            }
+
+            if (BomDetails != null && BomDetails.Rows.Count > 0)
+            {
+                bomChildDict = BomDetails.AsEnumerable()
+                    .GroupBy(r => r.Field<int>("item_bom_id"))
+                    .ToDictionary(g => g.Key, g => g.ToList());
+            }
+
+            // --- Initialize ---
+            if (visited == null)
+                visited = new HashSet<int>();
+
+            if (visited.Contains(bomID))
+                return 0;
+            visited.Add(bomID);
+
+            if (string.IsNullOrEmpty(additionalReference))
+                additionalReference = counterParentReset.ToString();
+
+            DataTable dataSource = dgv.DataSource as DataTable;
+            if (dataSource == null)
+                return 0;
+
+            if (!bomHeadDict.TryGetValue(bomID, out DataRow parentRow))
+                return 0;
+
+            // --- Compute parent labor cost ---
+            decimal manDays = Convert.ToDecimal(parentRow["man_days"]);
+            decimal laborRate = Convert.ToDecimal(parentRow["labor_rate"]);
+            decimal laborCost = manDays * laborRate;
+
+            // --- Initial total cost for this parent (production + labor) ---
+            decimal totalCost = laborCost;
+
+            // --- Add parent row ---
+            DataRow newParent = dataSource.NewRow();
+            newParent["reference_code"] = additionalReference;
+            newParent["bom_id"] = parentRow["id"];
+            newParent["item_id"] = parentRow["item_id"];
+            newParent["components"] = new string('▶', level) + " " + parentRow["general_name"];
+            newParent["model"] = parentRow["item_model"];
+            newParent["qty"] = parentRow["production_qty"];
+            newParent["man_days"] = parentRow["man_days"];
+            newParent["labor_rate"] = parentRow["labor_rate"];
+            newParent["unit_price"] = Convert.ToDecimal(parentRow["production_cost"]);
+
+            dataSource.Rows.InsertAt(newParent, rowIndex);
+            int addedRowIndex = dataSource.Rows.Count - 1;
+            Helpers.SalesItemRowStyler.ApplyStyle(dgv, addedRowIndex, "parent");
+
+            // --- Process children ---
+            if (bomChildDict.TryGetValue(bomID, out List<DataRow> childRows))
+            {
+                int counterSub = 1;
+                foreach (DataRow child in childRows)
+                {
+                    int childItemId = Convert.ToInt32(child["item_id"]);
+
+                    // Check if child item is also a BOM
+                    DataRow subBomRow = bomHeadDict.Values.FirstOrDefault(r => r.Field<int>("item_id") == childItemId);
+
+                    if (subBomRow != null)
+                    {
+                        int subBomId = Convert.ToInt32(subBomRow["id"]);
+
+                        decimal subTotal = GetBomDataRecursiveModel(rowIndex + 1, subBomId, childItemId, dgv,
+                            level + 1,
+                            visited,
+                            $"{additionalReference}.{counterSub}"
+                        );
+
+                        totalCost += subTotal;
+                    }
+                    else
+                    {
+                        decimal unitPrice = Convert.ToDecimal(child["unit_price"]);
+                        decimal qty = Convert.ToDecimal(child["bom_qty"]);
+                        decimal lineTotal = unitPrice * qty;
+                        totalCost += lineTotal;
+
+                        // Leaf item
+                        DataRow newChild = dataSource.NewRow();
+                        newChild["bom_id"] = child["item_bom_id"];
+                        newChild["item_id"] = childItemId;
+                        newChild["components"] = new string(' ', level * 4) + child["item_name"];
+                        newChild["model"] = child["size"];
+                        newChild["qty"] = qty;
+                        newChild["unit_price"] = unitPrice;
+                        newChild["reference_code"] = $"{additionalReference}.{counterSub}";
+
+                        dataSource.Rows.InsertAt(newChild, rowIndex + level + 1);
+                        int addedChildIndex = dataSource.Rows.Count - 1;
+                        Helpers.SalesItemRowStyler.ApplyStyle(dgv, addedChildIndex, "child");
+                    }
+
+                    counterSub++;
+                }
+            }
+
+            // Update the parent unit_price to total of all its descendants
+            dataSource.Rows[addedRowIndex]["unit_price"] = totalCost;
+
+            counterParentReset++;
+            return totalCost;
+
+        }
+
+        private void GetItemData1(int rowIndex, int itemID, DataGridView dgv)
         {
             int selectedIndex = itemID;
-
+            MessageBox.Show("ITEM ID: " + itemID);
             if (selectedIndex >= 0 && selectedIndex < ItemList.Rows.Count)
             {
                 DataTable itemList = Helpers.FilterExactDataTable(ItemList, selectedIndex.ToString(), "id");
@@ -1370,7 +1788,53 @@ namespace smpc_sales_app.Pages.Sales
                 MessageBox.Show("Invalid selection", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+        private void GetItemData(int rowIndex, int itemID, DataGridView dgv)
+        {
+            DataTable itemList = Helpers.FilterExactDataTable(ItemList, itemID.ToString(), "id");
 
+            if (itemList.Rows.Count == 0)
+            {
+                MessageBox.Show("Invalid selection. Item not found.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            DataTable dataSource = dgv.DataSource as DataTable;
+            if (!isProject && dataSource == null) return;
+
+            foreach (DataRow row in itemList.Rows)
+            {
+                if (isProject)
+                {
+                    if (tabControl2.SelectedTab.Controls[0] is ItemSetUC currentControl)
+                    {
+                        string item_id = row["id"].ToString();
+                        string item_name = row["item_name"].ToString();
+                        string bomid = "0";
+                        string itemcode = row["item_code"].ToString();
+                        string size = null;
+
+                        currentControl.SetComponentData(rowIndex, item_id, item_name, itemcode, size, bomid);
+                    }
+                }
+                else
+                {
+                    DataRow newRow = dataSource.NewRow();
+                    if (dataSource.Columns.Contains("unit_of_measure"))
+                        newRow["unit_of_measure"] = row["unit_of_measure"];
+
+                    newRow["item_id"] = row["id"];
+                    newRow["model"] = row["item_code"];
+                    newRow["components"] = row["item_name"];
+                    newRow["reference_code"] = counterParent;
+
+                    dataSource.Rows.Add(newRow);
+
+                    // 🎨 Style as Single Item
+                    int addedRowIndex = dataSource.Rows.Count - 1;
+                    Helpers.SalesItemRowStyler.ApplyStyle(dgv, addedRowIndex, "single");
+                }
+            }
+        }
         private void HandleCanvasSelectionClick(int rowIndex, string item_id)
         {
             frm_canvas_modal canvas = new frm_canvas_modal(item_id, bpi_general, bpi_items);
@@ -1459,16 +1923,11 @@ namespace smpc_sales_app.Pages.Sales
                 MessageBox.Show("Error: " + ex.Message);
             }
         }
-
-
-
         public decimal GetCashDiscount()
         {
             decimal cash_disc = Convert.ToDecimal(txt_cash_discount.Text.ToString());
             return cash_disc;
         }
-
-
         private void computationLoop()
         {
             double gross_sales = 0, vat_amount = 0, net_sales = 0;
@@ -1519,37 +1978,30 @@ namespace smpc_sales_app.Pages.Sales
             txt_net_amount_due.Text = Helpers.MoneyFormat(net_amount_due);
             txt_total_amount_due.Text = Helpers.MoneyFormat(total_amount_due);
         }
-
-
-
         private void dgv_quick_quote_details_CellEndEdit(object sender, DataGridViewCellEventArgs e)
         {
-            var value = dgv_quick_quote_details.Rows[e.RowIndex].Cells["quick_qty"].Value;
+            //var value = dgv_quick_quote_details.Rows[e.RowIndex].Cells["quick_qty"].Value;
 
-            if (int.TryParse(value?.ToString(), out int qty) && qty != 0)
-            {
-                ComputeDgv(e);
-            }
-            else
-            {
-                MessageBox.Show("Quantity is required.");
-                this.BeginInvoke(new Action(() =>
-                {
-                    dgv_quick_quote_details.CurrentCell = dgv_quick_quote_details.Rows[e.RowIndex].Cells["quick_qty"];
-                    dgv_quick_quote_details.BeginEdit(true);
-                }));
-            }
+            //if (int.TryParse(value?.ToString(), out int qty) && qty != 0)
+            //{
+            //    ComputeDgv(e);
+            //}
+            //else
+            //{
+            //    MessageBox.Show("Quantity is required.");
+            //    this.BeginInvoke(new Action(() =>
+            //    {
+            //        dgv_quick_quote_details.CurrentCell = dgv_quick_quote_details.Rows[e.RowIndex].Cells["quick_qty"];
+            //        dgv_quick_quote_details.BeginEdit(true);
+            //    }));
+            //}
+
         }
-
-
-
         DataTable stockQuickDataTable = new DataTable();
         private async void Quotation_Load(object sender, EventArgs e)
         {
             int dgvWidth = dgv_quick_quote_details.Width;
             int dgvHeight = dgv_quick_quote_details.Height;
-
-            MessageBox.Show($"DataGridView Size: {dgvWidth} x {dgvHeight}");
 
             Panel[] panels = { pnl_header, pnl_footer };
             Helpers.ReadOnlyControls(panels);
@@ -1606,7 +2058,7 @@ namespace smpc_sales_app.Pages.Sales
                 //set height if is Project
                 this.tabControl.SelectedIndex = 0;
                 this.tabControl.Height = 600;  // Set the desired width and height for the form
-                this.Size = new Size(1386 - 80, 900);  // Set the desired width and height for the form
+                this.Size = new Size(1386 - 80, 950);  // Set the desired width and height for the form
 
                 this.tabControl.ItemSize = new Size(0, 0);
 
@@ -1658,13 +2110,10 @@ namespace smpc_sales_app.Pages.Sales
             }
 
         }
-  
-
         private void GetCMBValues()
         {
-           
-        }
 
+        }
         //
         // REFACTOR SOON, TOO LONG AND REDUNDANT.
         //
@@ -1672,7 +2121,7 @@ namespace smpc_sales_app.Pages.Sales
         {
             if (isBind)
             {
-                
+
                 Panel[] pnlList = { pnl_header, pnl_footer };
                 DataTable HeaderList = this.transactionList.Clone();
                 HeaderList.Columns.Add("branch_name", typeof(string));
@@ -1713,7 +2162,7 @@ namespace smpc_sales_app.Pages.Sales
                     HeaderList.Rows.Add(newRow);
                 }
 
-                
+
                 int sId = Convert.ToInt32(HeaderList.Rows[SelectedRow]["id"]);
                 int cId = Convert.ToInt32(HeaderList.Rows[SelectedRow]["customer_id"]);
                 int appId = Convert.ToInt32(HeaderList.Rows[SelectedRow]["application_id"]);
@@ -1724,7 +2173,7 @@ namespace smpc_sales_app.Pages.Sales
                 LoadApplicationSetup();
                 LoadCustomerBillAddress(cId.ToString());
                 LoadCustomerShipAddress(cId.ToString());
-                
+
                 cmb_application.SelectedItem = appId;
                 cmb_application.SelectedValue = appId;
 
@@ -1737,7 +2186,7 @@ namespace smpc_sales_app.Pages.Sales
                 GetCMBValues();
                 Helpers.BindControls(pnlList, HeaderList, SelectedRow);
 
-                
+
 
                 // LEM - Button visibility condition
                 isFinalized = Convert.ToBoolean(HeaderList.Rows[SelectedRow]["is_finalized"]);
@@ -1769,19 +2218,49 @@ namespace smpc_sales_app.Pages.Sales
                     }
                 }
 
-
                 // Create filtered view
                 DataView dataview = new DataView(childList);
-                dataview.RowFilter = "based_id = '" + this.transactionList.Rows[this.SelectedRow]["id"].ToString() + "'";
+                dataview.RowFilter = $"based_id = " + this.transactionList.Rows[this.SelectedRow]["id"].ToString();
                 dgv_quick_quote_details.DataSource = dataview;
+
+                LoadQuickImageCounts();
             }
         }
+        private void LoadQuickImageCounts()
+        {
+            // Ensure quick_images column exists
+            if (!dgv_quick_quote_details.Columns.Contains("quick_images"))
+            {
+                // TO BE CHANGED/FIND INSIDE DGV COLUMN INSTEAD OF CREATING
+                var col = new DataGridViewTextBoxColumn();
+                col.Name = "quick_images";
+                col.HeaderText = "IMAGES";
 
+                if (dgv_quick_quote_details.Columns.Count > 6)
+                    dgv_quick_quote_details.Columns.Insert(6, col);
+                else
+                    dgv_quick_quote_details.Columns.Add(col);
+            }
+
+            // Loop through each row in the DataGridView
+            foreach (DataGridViewRow row in dgv_quick_quote_details.Rows)
+            {
+                if (row.Cells["quick_id"].Value == null) continue;
+
+                int quickId = Convert.ToInt32(row.Cells["quick_id"].Value);
+
+                // Count how many images are linked to this quickId
+                int count = selectedImageList.AsEnumerable()
+                    .Count(r => Convert.ToInt32(r["quotation_quick_id"]) == quickId);
+
+                // Put the count in quick_images column
+                row.Cells["quick_images"].Value = $"SELECTED: {count}";
+            }
+        }
         private void txt_days_TextChanged(object sender, EventArgs e)
         {
             ValidUntilDate();
         }
-
         private void ValidUntilDate()
         {
             var date = dtp_date.Value;
@@ -1802,8 +2281,6 @@ namespace smpc_sales_app.Pages.Sales
                 dtp_valid_until.Value = date.AddDays(30);
             }
         }
-
-
         private void dtp_date_ValueChanged(object sender, EventArgs e)
         {
             ValidUntilDate();
@@ -1811,14 +2288,14 @@ namespace smpc_sales_app.Pages.Sales
 
         public DataTable customerList { get; set; } = new DataTable();
         private DataTable bpi_dt = new DataTable();
-
         private DataTable bpi_general = new DataTable();
         private DataTable bpi_address = new DataTable();
         private DataTable bpi_address2 = new DataTable();
         private DataTable bpi_contacts = new DataTable();
         private DataTable bpi_items = new DataTable();
+        private object previousDataSource;
 
-        private async void btn_new_Click(object sender, EventArgs e)
+        private void btn_new_Click(object sender, EventArgs e)
         {
             GetLatestDate();
             SetNewFormMode(true);
@@ -1852,13 +2329,29 @@ namespace smpc_sales_app.Pages.Sales
 
                 //toolstrip_quotation.Enabled = false;
                 //dgv_quick_quote_details.Enabled = true;
+                //previousDataSource = dgv_quick_quote_details.DataSource;
+                //((DataView)dgv_quick_quote_details.DataSource).Table.Clear();
+
+                if (dgv_quick_quote_details.DataSource is DataTable dt)
+                {
+                    dt.Rows.Clear();
+                }
+                else if (dgv_quick_quote_details.DataSource is DataView dv)
+                {
+                    dv.Table.Clear(); // clear the underlying DataTable
+                }
+                else
+                {
+                    dgv_quick_quote_details.Rows.Clear(); // fallback for unbound
+                }
 
                 dgv_quick_quote_details.DataSource = stockQuickDataTable.Clone();
 
 
+
                 bind(false);
                 DocumentIncrementer();
-                
+
                 txt_created_by.Text = CacheData.CurrentUser.first_name + " " + CacheData.CurrentUser.last_name;
                 txt_vat_percent.Text = "12";
                 txt_vat_percent.ReadOnly = true;
@@ -1928,8 +2421,11 @@ namespace smpc_sales_app.Pages.Sales
                 setProjectMultiplier();
                 return;
             }
-        }
 
+            //for new quatations always 30 days
+            txt_validays.Text = "30";
+            counterParent = 1;
+        }
         private async void FinalTxtBoxClicked(object sender, EventArgs e)
         {
             DataTable pumps = new DataTable();
@@ -1946,7 +2442,7 @@ namespace smpc_sales_app.Pages.Sales
 
             pumps = JsonHelper.ToDataTable(data.ItemPumpsView);
 
-            ItemModal im = new ItemModal(pumps);
+            SalesItemModal im = new SalesItemModal(pumps);
             DialogResult r = im.ShowDialog();
 
             if (r == DialogResult.OK)
@@ -1979,8 +2475,6 @@ namespace smpc_sales_app.Pages.Sales
                 }
             }
         }
-
-
         private void btn_new_version_Click(object sender, EventArgs e)
         {
             GetLatestDate();
@@ -2021,7 +2515,6 @@ namespace smpc_sales_app.Pages.Sales
 
             return "1";
         }
-
         private string GetNextSubVersionNo(DataTable allTransactions, string rawDocNo, string rawVersionNo)
         {
             string versionNo = rawVersionNo;
@@ -2045,9 +2538,6 @@ namespace smpc_sales_app.Pages.Sales
 
             return "0";
         }
-
-
-
         private void btn_cancel_Click(object sender, EventArgs e)
         {
 
@@ -2059,8 +2549,6 @@ namespace smpc_sales_app.Pages.Sales
 
             toolstrip_quotation.Enabled = true;
         }
-
-
         private bool isProject = false;
         private void btn_next_Click(object sender, EventArgs e)
         {
@@ -2084,8 +2572,6 @@ namespace smpc_sales_app.Pages.Sales
                 }
             }
         }
-
-
         private void btn_prev_Click(object sender, EventArgs e)
         {
             if (!isProject)
@@ -2103,12 +2589,12 @@ namespace smpc_sales_app.Pages.Sales
                     selectedProject--;
                     fetchSalesProject();
                 }
-            }  
+            }
         }
 
 
         DataTable PerCustomerAddressList = new DataTable();
-        private  void btn_add_customer_Click(object sender, EventArgs e)
+        private void btn_add_customer_Click(object sender, EventArgs e)
         {
             List<int> t1 = new List<int>();
             List<string> s1 = new List<string>();
@@ -2130,7 +2616,7 @@ namespace smpc_sales_app.Pages.Sales
                     Panel[] pnl_list = { pnl_header };
                     txt_customer_id.Text = id.ToString();
 
-                    var GeneralBpi =  Helpers.FilterDataTable(bpi_general, id, "general_based_id");
+                    var GeneralBpi = Helpers.FilterDataTable(bpi_general, id, "general_based_id");
                     var BillAddress = Helpers.FilterDataTable(bpi_address, id, "address_based_id");
                     var ShipAddress = Helpers.FilterDataTable(bpi_address, id, "address_based_id");
 
@@ -2148,12 +2634,13 @@ namespace smpc_sales_app.Pages.Sales
                     Helpers.BindControls(pnl_list, GeneralBpi);
                     Helpers.ResetReadOnlyControls(pnl_list);
                     txt_version_no.Text = "1";
-                    txt_sub_version_no.Text = "0"; 
+                    txt_sub_version_no.Text = "0";
                     txt_version_no.ReadOnly = true;
                     txt_sub_version_no.ReadOnly = true;
                     txt_document_no.ReadOnly = true;
                 }
             }
+            counterParent = 1;
         }
 
         private async void btn_search_Click(object sender, EventArgs e)
@@ -2334,13 +2821,11 @@ namespace smpc_sales_app.Pages.Sales
             ProjectTemplateSetup s = new ProjectTemplateSetup(ItemList);
             s.Show();
         }
-
         private void txt_cash_discount_TextChanged(object sender, EventArgs e)
         {
-           // add the discount here soon
-           
-        }
+            // add the discount here soon
 
+        }
         private void txt_cash_discount_DoubleClick(object sender, EventArgs e)
         {
             computationLoop();
@@ -2375,7 +2860,7 @@ namespace smpc_sales_app.Pages.Sales
         }
         private void tabControl2_MouseDown(object sender, MouseEventArgs e)
         {
-            if (tabControl2.TabPages.Count == 0) return; 
+            if (tabControl2.TabPages.Count == 0) return;
 
 
             if (e.Button == MouseButtons.Right)
@@ -2397,7 +2882,7 @@ namespace smpc_sales_app.Pages.Sales
                             tabControl2.TabPages[i].Tag = Color.Red;
                         }
 
-                        
+
                         tabControl2.Invalidate();
                         break;
                     }
@@ -2412,7 +2897,7 @@ namespace smpc_sales_app.Pages.Sales
                 string tabs = string.Empty;
                 ItemSetModal modal = new ItemSetModal();
                 DialogResult r = modal.ShowDialog();
-               
+
 
                 if (r == DialogResult.OK)
                 {
@@ -2431,7 +2916,7 @@ namespace smpc_sales_app.Pages.Sales
                 ItemSetUC myControl = new ItemSetUC
                 {
                     Dock = DockStyle.Fill,
-                    BackColor = Color.White  
+                    BackColor = Color.White
 
                 };
 
@@ -2446,29 +2931,24 @@ namespace smpc_sales_app.Pages.Sales
             }
 
         }
-
         private void tabControl2_MouseDoubleClick(object sender, MouseEventArgs e)
         {
 
 
         }
-
-
-
         private void button2_Click(object sender, EventArgs e)
         {
             if (panel2.Visible == true)
             {
                 panel2.Visible = false;
                 pnl_project_name.Height = 34;
-            } 
+            }
             else
             {
                 panel2.Visible = true;
                 pnl_project_name.Height = 225;
             }
         }
-
         public bool IsEdit { get; private set; }
         public bool isSubVersion { get; private set; }
         private async void timer1_Tick(object sender, EventArgs e)
@@ -2477,39 +2957,28 @@ namespace smpc_sales_app.Pages.Sales
 
             if (tabControl2.SelectedTab.Controls[0] is ItemSetUC currentControl)
             {
-           
-           
+
+
                 Dictionary<string, dynamic> data = new Dictionary<string, dynamic>();
                 var updatedContentsData = currentControl.GetProjectContentsData();
                 data["Branch"] = "Sales";
                 data["ProjectId"] = this.selectedProjectID;
                 data["sales_project_content"] = updatedContentsData;
-                
+
 
                 await SendMessageAsync(data);
-               
+
             }
         }
-
-        private void toolStripButton1_Click(object sender, EventArgs e)
-        {
-           
-        }
-
-      
-
         private void button3_Click(object sender, EventArgs e)
         {
             TemplateSelectionModal sm = new TemplateSelectionModal();
             sm.Show();
         }
-
         private void dgv_project_multiplier_CellEndEdit(object sender, DataGridViewCellEventArgs e)
         {
             fetchProjectMultipliers();
         }
-
-
         private void fetchProjectMultipliers()
         {
             List<string> multiply = fetchMultiplierData();
@@ -2553,9 +3022,6 @@ namespace smpc_sales_app.Pages.Sales
                 MessageBox.Show("Error: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
-
-
-
         private void btn_sales_order_Click(object sender, EventArgs e)
         {
             string documentNo = txt_document_no.Text.Trim();  // Assuming you have a document_no textbox in Quotation
@@ -2572,7 +3038,6 @@ namespace smpc_sales_app.Pages.Sales
             this.Parent.Controls.Add(ordersPage);
             this.Hide();
         }
-
         private void btn_print_Click(object sender, EventArgs e)
         {
             string documentNo = txt_document_no.Text.Trim();
@@ -2646,8 +3111,6 @@ namespace smpc_sales_app.Pages.Sales
                 MessageBox.Show("No SalesQuotation found for the provided document number.");
             }
         }
-
-
         private void back_Click(object sender, EventArgs e)
         {
             Opportunities OpportunitiesPage = new Opportunities();
@@ -2655,12 +3118,6 @@ namespace smpc_sales_app.Pages.Sales
             this.Parent.Controls.Add(OpportunitiesPage);
             this.Dispose();
         }
-
-        private void btn_new_setup_2_Click(object sender, EventArgs e)
-        {
-
-        }
-
         private void btn_request_for_engr_Click(object sender, EventArgs e)
         {
             ProjectTest pt = new ProjectTest();
@@ -2672,7 +3129,6 @@ namespace smpc_sales_app.Pages.Sales
             IsEdit = true;
             MessageBox.Show("EDIT MODE ON");
         }
-
         private void LoadApplicationSetup()
         {
             cmb_application.DataSource = CacheData.ApplicationSetup;
@@ -2708,6 +3164,7 @@ namespace smpc_sales_app.Pages.Sales
             cmb_ship_to.ValueMember = "address_ids";
 
         }
+
         private void btn_edit_Click(object sender, EventArgs e)
         {
             string customerId = txt_customer_id.Text;
@@ -2717,7 +3174,7 @@ namespace smpc_sales_app.Pages.Sales
             LoadCustomerShipAddress(customerId);
 
             string docNo = txt_document_no.Text;
-            
+
             if (string.IsNullOrEmpty(docNo))
             {
                 MessageBox.Show("Document No is empty.");
@@ -2725,10 +3182,53 @@ namespace smpc_sales_app.Pages.Sales
             }
 
             isSubVersion = true;
-            SetFormEditMode(docNo.StartsWith("Q#")? "Finalize":"Order");
+            SetFormEditMode(docNo.StartsWith("Q#") ? "Finalize" : "Order");
 
-            
+
             txt_sub_version_no.Text = GetNextSubVersionNo(allTransactionList, txt_document_no.Text, txt_version_no.Text);
+
+            // New Quick Quote
+            if (!isProject)
+            {
+
+                // resets the datasource so that only customers would specific address would be seen.
+
+                bs_bill_to.DataSource = null;
+                bs_ship_to.DataSource = null;
+                bs_unit.DataSource = CacheData.UoM;
+                Panel[] pnls = { pnl_header, pnl_footer };
+                Helpers.ReadOnlyControls(pnls);
+                dgv_quick_quote_details.ReadOnly = false;
+                txt_cash_discount.ReadOnly = false;
+
+
+                foreach (Control ctrl in pnl_footer.Controls)
+                {
+                    if (ctrl is TextBox)
+                    {
+                        TextBox txtBox = (TextBox)ctrl;
+                        txtBox.Text = "0";
+                    }
+                }
+
+                //To retain the value from viewing to editing
+                DataTable dgvCopy = Helpers.GetDataTableFromUnboundGrid(dgv_quick_quote_details);
+
+                dgv_quick_quote_details.DataSource = dgvCopy;
+
+
+                DocumentIncrementer();
+
+                txt_created_by.Text = CacheData.CurrentUser.first_name + " " + CacheData.CurrentUser.last_name;
+                txt_vat_percent.Text = "12";
+                txt_vat_percent.ReadOnly = true;
+                btn_add_customer.Enabled = false;
+                btn_save.Enabled = true;
+
+            }
+
+            counterParent = 1;
+
         }
         private void GetLatestDate()
         {
@@ -2751,14 +3251,13 @@ namespace smpc_sales_app.Pages.Sales
             btn_update.Visible = !isTrue;
             btn_print.Visible = !isTrue;
             btn_finalize.Enabled = !isTrue;
-            
+
             // Show action button
             btn_savee.Visible = isTrue;
             btn_close.Visible = isTrue;
             dgv_quick_quote_details.Enabled = isTrue;
-            
-        }
 
+        }
         private void SetFormEditMode(string mode)
         {
             // Hide all action buttons by default
@@ -2818,6 +3317,7 @@ namespace smpc_sales_app.Pages.Sales
         {
             SetNewFormMode(false);
             SetFormEditMode("Close");
+
             await LoadExistingRecord();
 
             Panel[] panels = { pnl_header, pnl_footer };
@@ -2826,22 +3326,53 @@ namespace smpc_sales_app.Pages.Sales
             //pnl_footer.Enabled = false;
 
             toolstrip_quotation.Enabled = true;
-        }
-
-        private void label28_Click(object sender, EventArgs e)
-        {
 
         }
-
         private void btn_duplicate_Click(object sender, EventArgs e)
         {
             GetLatestDate();
             isNewRecord = true;
         }
-
-        private void dgv_quick_quote_details_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        private void ComputeQuickQuoteTotal()
         {
 
+
+
+        }
+
+        // Pseudocode:
+        // - Create a method DeleteRowsByReferenceCode(string referenceCode, DataGridView dgv)
+        // - Get the DataTable from dgv.DataSource
+        // - Find all rows where "reference_code" starts with the given referenceCode (e.g., "2." matches "2.1", "2.2", etc.)
+        // - Remove those rows from the DataTable
+        // - Refresh the DataGridView
+
+        private void DeleteRowsByReferenceCode(string referenceCode, DataGridView dgv)
+        {
+            if (dgv.DataSource is DataTable dataSource)
+            {
+                // Collect rows to delete (avoid modifying collection while iterating)
+                var rowsToDelete = new List<DataRow>();
+                foreach (DataRow row in dataSource.Rows)
+                {
+                    var refCode = row.Table.Columns.Contains("reference_code") ? row["reference_code"]?.ToString() : null;
+                    if (!string.IsNullOrEmpty(refCode) &&
+                        (refCode == referenceCode || refCode.StartsWith(referenceCode + ".")))
+                    {
+                        rowsToDelete.Add(row);
+                    }
+                }
+
+                // Remove rows
+                foreach (var row in rowsToDelete)
+                {
+                    dataSource.Rows.Remove(row);
+                }
+
+                // Optionally refresh DataGridView
+                //dgv.Refresh();
+            }
         }
     }
+
 }

@@ -56,7 +56,6 @@ namespace smpc_sales_system.Models
         public string phase { get; set; }
         public string no_of_sets { get; set; }
         public string no_of_pump_set { get; set; }
-        public string item_set_description { get; set; }
         public string item_set_notes { get; set; }
     }
 

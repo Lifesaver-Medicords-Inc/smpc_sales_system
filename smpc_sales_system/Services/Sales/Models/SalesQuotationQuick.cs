@@ -6,14 +6,13 @@ using System.Threading.Tasks;
 
 namespace smpc_sales_system.Services.Sales.Models
 {
-    class SalesQuotationQuicks
+    class SalesQuotationQuicksModel
     {
-        public bool is_child { get; set; }
-        public bool is_parent { get; set; }
-
+        public int id { get; set; }
         public int based_id { get; set; }
         public int bom_id { get; set; }
         public int item_id { get; set; }
+        public string reference_code { get; set; }
         public string components { get; set; }
         public string model { get; set; }
         public int qty { get; set; }
@@ -24,5 +23,14 @@ namespace smpc_sales_system.Services.Sales.Models
         public decimal net_discount { get; set; }
         public decimal net_total { get; set; }
         public decimal line_total { get; set; }
+    }
+
+    class SalesQuotationSelectedImageModel
+    {
+        public int id { get; set; }
+        public int quotation_quick_id { get; set; }
+        public int image_id { get; set; }
+        public bool is_selected { get; set; }
+
     }
 }

@@ -17,7 +17,8 @@ namespace smpc_sales_system.Services.Sales.Models
             public int production_qty { get; set; }
             public string production_type { get; set; }
             public decimal production_cost { get; set; }
-            public string labor { get; set; }
+            public int man_days { get; set; }
+            public decimal labor_rate { get; set; }
         }
 
    

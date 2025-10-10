@@ -1,7 +1,7 @@
 ﻿
 namespace smpc_sales_app.Pages
 {
-    partial class ItemModal
+    partial class SalesItemModal
     {
         /// <summary>
         /// Required designer variable.
@@ -30,7 +30,6 @@ namespace smpc_sales_app.Pages
         private void InitializeComponent()
         {
             this.pnl_title = new System.Windows.Forms.Panel();
-            this.label2 = new System.Windows.Forms.Label();
             this.btn_search = new System.Windows.Forms.Button();
             this.txt_specs = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
@@ -45,7 +44,6 @@ namespace smpc_sales_app.Pages
             // 
             // pnl_title
             // 
-            this.pnl_title.Controls.Add(this.label2);
             this.pnl_title.Controls.Add(this.btn_search);
             this.pnl_title.Controls.Add(this.txt_specs);
             this.pnl_title.Controls.Add(this.label1);
@@ -55,28 +53,19 @@ namespace smpc_sales_app.Pages
             this.pnl_title.Size = new System.Drawing.Size(537, 62);
             this.pnl_title.TabIndex = 0;
             // 
-            // label2
-            // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(253, 23);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(44, 13);
-            this.label2.TabIndex = 5;
-            this.label2.Text = "Search:";
-            // 
             // btn_search
             // 
             this.btn_search.Location = new System.Drawing.Point(450, 20);
             this.btn_search.Name = "btn_search";
             this.btn_search.Size = new System.Drawing.Size(75, 23);
             this.btn_search.TabIndex = 4;
-            this.btn_search.Text = "search";
+            this.btn_search.Text = "SEARCH";
             this.btn_search.UseVisualStyleBackColor = true;
             this.btn_search.Click += new System.EventHandler(this.btn_search_Click);
             // 
             // txt_specs
             // 
-            this.txt_specs.Location = new System.Drawing.Point(303, 20);
+            this.txt_specs.Location = new System.Drawing.Point(307, 22);
             this.txt_specs.Name = "txt_specs";
             this.txt_specs.Size = new System.Drawing.Size(141, 20);
             this.txt_specs.TabIndex = 2;
@@ -84,11 +73,12 @@ namespace smpc_sales_app.Pages
             // label1
             // 
             this.label1.AutoSize = true;
+            this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label1.Location = new System.Drawing.Point(12, 25);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(46, 13);
+            this.label1.Size = new System.Drawing.Size(80, 16);
             this.label1.TabIndex = 0;
-            this.label1.Text = "Item List";
+            this.label1.Text = "ITEM LIST";
             // 
             // pnl_dgv
             // 
@@ -101,6 +91,7 @@ namespace smpc_sales_app.Pages
             // 
             // dgv_itemList
             // 
+            this.dgv_itemList.AllowUserToAddRows = false;
             this.dgv_itemList.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dgv_itemList.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dgv_itemList.Location = new System.Drawing.Point(0, 0);
@@ -111,19 +102,21 @@ namespace smpc_sales_app.Pages
             this.dgv_itemList.Size = new System.Drawing.Size(537, 382);
             this.dgv_itemList.TabIndex = 0;
             this.dgv_itemList.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgv_itemList_CellClick);
+            this.dgv_itemList.CellFormatting += new System.Windows.Forms.DataGridViewCellFormattingEventHandler(this.dgv_itemList_CellFormatting);
             // 
             // ds_item_list
             // 
             this.ds_item_list.DataSetName = "ds_item_list";
             // 
-            // ItemModal
+            // SalesItemModal
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(537, 450);
             this.Controls.Add(this.pnl_dgv);
             this.Controls.Add(this.pnl_title);
-            this.Name = "ItemModal";
+            this.Name = "SalesItemModal";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "ItemModal";
             this.Load += new System.EventHandler(this.ItemModal_Load);
             this.pnl_title.ResumeLayout(false);
@@ -144,6 +137,5 @@ namespace smpc_sales_app.Pages
         private System.Data.DataSet ds_item_list;
         private System.Windows.Forms.Button btn_search;
         private System.Windows.Forms.TextBox txt_specs;
-        private System.Windows.Forms.Label label2;
     }
 }

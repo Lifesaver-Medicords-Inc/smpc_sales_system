@@ -867,7 +867,7 @@ namespace smpc_sales_system.Pages.Sales
                     DataRow newRow = dt.NewRow();
                     newRow["item_id"] = itemid;
                     newRow["components"] = itemName;
-                    newRow["model"] = size;
+                    newRow["model"] = model;
                     newRow["bom_id"] = bomid; 
                     
                     dt.Rows.InsertAt(newRow, index);
@@ -900,7 +900,7 @@ namespace smpc_sales_system.Pages.Sales
 
             newRow.Cells["project_items_item_id"].Value = itemid;
             newRow.Cells["project_items_components"].Value = itemName;
-            newRow.Cells["project_items_model"].Value = size;
+            newRow.Cells["project_items_model"].Value = model;
 
 
             DataGridViewCellStyle cellStyle = new DataGridViewCellStyle

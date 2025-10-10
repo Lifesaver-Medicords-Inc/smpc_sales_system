@@ -50,5 +50,14 @@ namespace smpc_sales_system.Properties {
                 return ((string)(this["REPORTPATH"]));
             }
         }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("http://localhost:3000/api/vfile/")]
+        public string imagePath {
+            get {
+                return ((string)(this["imagePath"]));
+            }
+        }
     }
 }

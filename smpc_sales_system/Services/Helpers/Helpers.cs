@@ -440,7 +440,8 @@ namespace smpc_app.Services.Helpers
             foreach (DataGridViewColumn col in dgv.Columns)
             {
                 string columnName = string.IsNullOrWhiteSpace(col.DataPropertyName) ? col.Name : col.DataPropertyName;
-                dt.Columns.Add(columnName, typeof(string)); // Adjust the type as needed
+                Type columnType = col.ValueType ?? typeof(string);
+                dt.Columns.Add(columnName, columnType); 
             }
 
             // Add rows
@@ -787,6 +788,38 @@ namespace smpc_app.Services.Helpers
             }
 
             return changedEntries;
+        }
+        public static class SalesItemRowStyler
+        {
+            public static void ApplyStyle(DataGridView dgv, int rowIndex, string type)
+            {
+                if (rowIndex < 0 || rowIndex >= dgv.Rows.Count) return;
+
+                DataGridViewRow row = dgv.Rows[rowIndex];
+
+                switch (type.ToLower())
+                {
+                    case "parent":
+                        row.DefaultCellStyle.BackColor = Color.LightBlue;
+                        row.DefaultCellStyle.Font = new Font(dgv.Font, FontStyle.Bold);
+                        if (row.Cells["quick_item_code"].Value != null)
+                            row.Cells["quick_item_code"].Value = "▶ " + row.Cells["quick_item_code"].Value.ToString();
+                        break;
+
+                    case "child":
+                        row.DefaultCellStyle.BackColor = Color.LightGray;
+                        row.DefaultCellStyle.Font = new Font(dgv.Font, FontStyle.Italic);
+                        if (row.Cells["quick_item_code"].Value != null)
+                            row.Cells["quick_item_code"].Value = "   ↳ " + row.Cells["quick_item_code"].Value.ToString();
+                        break;
+
+                    case "single":
+                        row.DefaultCellStyle.BackColor = Color.White;
+                        row.DefaultCellStyle.Font = new Font(dgv.Font, FontStyle.Regular);
+                        // No arrow for single items
+                        break;
+                }
+            }
         }
 
     }

@@ -15,7 +15,8 @@ namespace smpc_sales_system.Services.Sales.Models
 
 
         // CHILD
-        public List<SalesQuotationQuicks> SalesQuotationQuick { get; set; }
+        public List<SalesQuotationQuicksModel> SalesQuotationQuick { get; set; }
+        public List<SalesQuotationSelectedImageModel> SalesQuotationSelectedImages { get; set; }
 
     }
 }
