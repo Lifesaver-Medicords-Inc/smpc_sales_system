@@ -67,6 +67,8 @@ namespace smpc_sales_app.Pages
                 {
                     CacheData.CurrentUser = currentUser.Data;
 
+                    smpc_inventory_app.Pages.Login login = new smpc_inventory_app.Pages.Login();
+                    login.LoginFromSales(data);
                     CacheData.PaymentTerms = await PaymentTermsServices.GetAsDatatable();
                     CacheData.ApplicationSetup = await ApplicationService.GetAsDatatable();
                     CacheData.UoM = await UnitOfMeasurementServices.GetAsDatatable();

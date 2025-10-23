@@ -68,10 +68,12 @@ namespace smpc_sales_system.Pages.Sales
             // 
             // DataGridViewModel
             // 
+            this.DataGridViewModel.AllowUserToAddRows = false;
             this.DataGridViewModel.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
             this.DataGridViewModel.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.DataGridViewModel.Dock = System.Windows.Forms.DockStyle.Fill;
             this.DataGridViewModel.Location = new System.Drawing.Point(0, 0);
+            this.DataGridViewModel.MultiSelect = false;
             this.DataGridViewModel.Name = "DataGridViewModel";
             this.DataGridViewModel.ReadOnly = true;
             this.DataGridViewModel.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;

@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Linq;
 using smpc_app.Data;
 using smpc_app.Services.Helpers;
 using smpc_inventory_app.Pages;
@@ -18,12 +19,13 @@ using System.Collections.Generic;
 using System.Data;
 using System.Drawing;
 using System.Linq;
-using Newtonsoft.Json.Linq;
 using System.Net.WebSockets;
+using System.Reflection.Emit;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using WebSocketSharp;
 
 namespace smpc_sales_app.Pages.Sales
 {
@@ -281,7 +283,7 @@ namespace smpc_sales_app.Pages.Sales
             {
                 int index = currentControl.GetIndex();
                 int insertionIndex = index + 1;
-                HandleItemSelectionClick(insertionIndex, currentControl.DgvProjectItems);
+                //HandleItemSelectionClick(insertionIndex, currentControl.DgvProjectItems);
             }
         }
         private async void Cell_EditedUC(object sender, EventArgs e)
@@ -341,7 +343,12 @@ namespace smpc_sales_app.Pages.Sales
             }
         }
 
-        // WEBSOCKET CONNECTION
+        // Fix ambiguous reference to WebSocketState by fully qualifying the type
+
+        // In all places where you use "_websocket.State == WebSocketState.Open", 
+        // change to "_websocket.State == System.Net.WebSockets.WebSocketState.Open"
+
+        // Example fix for the first occurrence:
         public async void ConnectToWebSocket(string branch, string projectid)
         {
             Uri serverUri = new Uri($"ws://localhost:3000/api/ws/setup/test?branch={branch}&projectid={projectid}");
@@ -362,7 +369,7 @@ namespace smpc_sales_app.Pages.Sales
         {
             byte[] buffer = new byte[100 * 1024 * 1024];
             List<byte> messageBuffer = new List<byte>();
-            while (_websocket.State == WebSocketState.Open)
+            while (_websocket.State == System.Net.WebSockets.WebSocketState.Open)
             {
                 try
                 {
@@ -413,7 +420,7 @@ namespace smpc_sales_app.Pages.Sales
         }
         private async Task SendMessageAsync(Dictionary<string, dynamic> data)
         {
-            if (_websocket.State == WebSocketState.Open)
+            if (_websocket.State == System.Net.WebSockets.WebSocketState.Open)
             {
                 try
                 {
@@ -456,7 +463,7 @@ namespace smpc_sales_app.Pages.Sales
         private void btn_project_Click(object sender, EventArgs e)
         {
 
-            if (_websocket != null && _websocket.State == WebSocketState.Open)
+            if (_websocket != null && _websocket.State == System.Net.WebSockets.WebSocketState.Open)
             {
                 _websocket.Dispose();
             }
@@ -657,7 +664,7 @@ namespace smpc_sales_app.Pages.Sales
 
             //Helpers.BindControls(pnls, dt2, selectedProject);s
 
-            string selectedSalesQuotationId = project_quote.Rows[0]["id"].ToString();
+            string selectedSalesQuotationId = null;// project_quote.Rows[0]["id"].ToString();
             this.selectedProjectID = selectedSalesQuotationId;
             txt_project_name.Text = project_quote.Rows[0]["project_name"].ToString();
 
@@ -1045,6 +1052,9 @@ namespace smpc_sales_app.Pages.Sales
                     data.Add("net_discount", decimal.Parse(Helpers.GetCleanedPriceValue(item["quick_net_discount"].ToString())));
                     data.Add("net_total", decimal.Parse(Helpers.GetCleanedPriceValue(item["quick_net_total"].ToString())));
                     data.Add("line_total", decimal.Parse(Helpers.GetCleanedPriceValue(item["quick_line_total"].ToString())));
+                    data.Add("reference_code", item["reference_code"].ToString());
+                    data.Add("short_description", item["short_description"].ToString());
+                    data.Add("long_description", item["long_description"].ToString());
 
                     quickQuoteList.Add(data);
                 }
@@ -1146,14 +1156,13 @@ namespace smpc_sales_app.Pages.Sales
                 if (e.RowIndex < 0 || e.ColumnIndex < 0)
                     return;
 
-
                 // Display long and short description
-                if (dgv_quick_quote_details.Rows[e.RowIndex].Cells["quick_item_name"].Value != null &&
-                    !string.IsNullOrEmpty(dgv_quick_quote_details.Rows[e.RowIndex].Cells["quick_item_name"].Value.ToString()))
-                {
-                    var itemID = int.Parse(dgv_quick_quote_details.Rows[e.RowIndex].Cells["quick_item_id"].Value.ToString());
-                    getItemShortDescription(itemID);
-                }
+                //if (dgv_quick_quote_details.Rows[e.RowIndex].Cells["quick_item_name"].Value != null &&
+                //    !string.IsNullOrEmpty(dgv_quick_quote_details.Rows[e.RowIndex].Cells["quick_item_name"].Value.ToString()))
+                //{
+                //    var itemID = int.Parse(dgv_quick_quote_details.Rows[e.RowIndex].Cells["quick_item_id"].Value.ToString());
+                //    getItemShortDescription(itemID);
+                //}
                 // Image Column
                 if (dgv_quick_quote_details.Columns[e.ColumnIndex].Name == "quick_images")
                 {
@@ -1173,22 +1182,23 @@ namespace smpc_sales_app.Pages.Sales
                 {
                     HandleItemSelectionClick(e.RowIndex, dgv_quick_quote_details);
                 }
-                // Canvass Sheet Column
-                if (dgv_quick_quote_details.Columns[e.ColumnIndex].Name == "quick_unit_price")
-                {
-                    string id = dgv_quick_quote_details.Rows[e.RowIndex].Cells[5].Value.ToString();
-                    HandleCanvasSelectionClick(e.RowIndex, id);
-                }
+
                 //Model Column
                 if (dgv_quick_quote_details.Columns[e.ColumnIndex].Name == "quick_item_name" && e.RowIndex >= 0)
                 {
                     if (dgv_quick_quote_details.Rows[e.RowIndex].IsNewRow)
                         return;
-
+                    if (dgv_quick_quote_details.Rows[e.RowIndex].Cells["quick_item_name"].Value == null || string.IsNullOrWhiteSpace(dgv_quick_quote_details.Rows[e.RowIndex].Cells["quick_item_name"].Value.ToString())
+                        || dgv_quick_quote_details.Rows[e.RowIndex].Cells["quick_item_id"].Value == null || string.IsNullOrWhiteSpace(dgv_quick_quote_details.Rows[e.RowIndex].Cells["quick_item_id"].Value.ToString()))
+                        return;
 
                     string id = dgv_quick_quote_details.Rows[e.RowIndex].Cells["quick_item_id"].Value.ToString();
                     HandleModelSelectionClick(e.RowIndex, id);
                 }
+
+                ConnectGridviewToDescriptionText(e.RowIndex, dgv_quick_quote_details);
+                ComputeByReferenceHierarchy();
+
             }
             catch (Exception ex)
             {
@@ -1196,31 +1206,246 @@ namespace smpc_sales_app.Pages.Sales
             }
         }
 
+        private void ComputeByReferenceHierarchy()
+        {
+
+            DataTable dataSourceQuickQuote = dgv_quick_quote_details.DataSource as DataTable;
+
+            if (dataSourceQuickQuote == null) return;
+
+            var parentReferenceCodes = dataSourceQuickQuote.AsEnumerable()
+                .Select(row => GetParentReferenceCode(dataSourceQuickQuote, row.Field<string>("reference_code")))
+                .Where(parentCode => !string.IsNullOrEmpty(parentCode))
+                .Distinct()
+                .ToList();
+
+            foreach (var parentReferenceCode in parentReferenceCodes)
+            {
+                // Calculate the total unit_price for the given parent and its descendants
+                decimal totalUnitPrice = GetTotalUnitPriceForChildren(dataSourceQuickQuote, parentReferenceCode);
+
+                // Output the total unit_price for this parent reference_code
+                Console.WriteLine($"Total unit_price for children of '{parentReferenceCode}' and its descendants: {totalUnitPrice:C}");
+
+                // Update the DataGridView cell for the parent reference_code
+                foreach (DataGridViewRow row in dgv_quick_quote_details.Rows)
+                {
+                    if (row.Cells["reference_code"].Value?.ToString() == parentReferenceCode)
+                    {
+                        row.Cells["quick_unit_price"].Value = Helpers.FormatAsCurrency(totalUnitPrice.ToString());
+                        break;
+
+                        //if (decimal.TryParse(Helpers.GetCleanedPriceValue(row.Cells["quick_discount"].Value.ToString()), out decimal qty))
+                        //{
+                        //    row.Cells["quick_net_total"].Value = Helpers.FormatAsCurrency(double.Parse(totalUnitPrice.ToString()));
+
+                        //}              
+
+                    }
+                }
+            }
+        }
+
+        private string GetParentReferenceCode(DataTable dt, string v)
+        {
+            if (string.IsNullOrWhiteSpace(v))
+                return null;
+
+            int lastDot = v.LastIndexOf('.');
+            if (lastDot > 0)
+                return v.Substring(0, lastDot);
+
+            // No parent (top-level)
+            return null;
+        }
+
+        private decimal GetTotalUnitPriceForChildren(DataTable dt, string parentReferenceCode)
+        {
+
+            var ParentRow = dt.AsEnumerable()
+                .FirstOrDefault(row => row.Field<string>("reference_code") == parentReferenceCode);
+
+            // Find all direct children of the parent reference_code
+            if (dt == null)
+                return 0;
+
+            var children = dt.AsEnumerable()
+                .Where(row =>
+                {
+                    var refCode = row.Field<string>("reference_code");
+
+                    if (refCode == null) return false;
+
+                    if (refCode == parentReferenceCode) return false;
+
+                    // must start with parentReferenceCode + "."
+                    if (!refCode.StartsWith(parentReferenceCode + ".")) return false;
+
+                    // remove parent prefix and check if there's another dot — means it's a grandchild
+                    var remainder = refCode.Substring(parentReferenceCode.Length + 1);
+                    return !remainder.Contains(".");
+                })
+                .ToList();
+
+            // If no children found, return 0
+            if (!children.Any())
+                return 0;
+
+            decimal totalLaborCost = 0m;
+
+            if (ParentRow != null)
+            {
+                decimal manDays = decimal.TryParse(ParentRow.Field<string>("man_days"), out decimal manDaysParsed) ? manDaysParsed : 0;
+                decimal laborRate = decimal.TryParse(ParentRow.Field<string>("labor_rate"), out decimal laborRateParsed) ? laborRateParsed : 0;
+
+                totalLaborCost = manDays * laborRate;
+
+                //Console.WriteLine($"Adding labor cost for parent '{parentReferenceCode}': {manDays} * {laborRate} = {totalLaborCost:C}");
+            }
+
+            decimal AllChildTotal = 0;
+
+            // For each child, recursively sum their descendants' unit_prices
+            foreach (var child in children)
+            {
+                string childReferenceCode = child.Field<string>("reference_code");
+
+                // Recursively find the total for this child's descendants
+                decimal ChildTotal = GetTotalUnitPriceForChildren(dt, childReferenceCode);
+                AllChildTotal = ChildTotal;
+                //Console.WriteLine($"Adding total from child '{childReferenceCode}': 'Child Total:' {ChildTotal}': 'Total Amount:' {AllChildTotal:C}");
+            }
+
+            // Sum the unit_price for the current direct children
+            decimal totalUnitPrice = children.Sum(row =>
+            {
+                string value = Helpers.GetCleanedPriceValue(row["unit_price"]?.ToString());
+                string qty = Helpers.GetCleanedPriceValue(row["qty"]?.ToString());
+                decimal NewUnitPrice = (decimal.TryParse(value, out decimal parsed) ? parsed : 0) * (decimal.TryParse(qty, out decimal qtyParsed) ? qtyParsed : 0);
+
+                //Console.WriteLine($"sum all the child  unit_price for '{row.Field<string>("reference_code")} ': {value} ' * ' {qty} ' = ' {NewUnitPrice:C}");
+
+                return NewUnitPrice;
+            });
+
+            decimal TotalAmount = (totalLaborCost + totalUnitPrice) * 1.186m;
+            //decimal TotalAmount = (totalLaborCost + totalUnitPrice);
+
+            return TotalAmount;
+        }
+
+        public static decimal CalculateDiscountMultiplier(string discountString)
+        {
+            if (string.IsNullOrWhiteSpace(discountString))
+                return 1m;
+
+            try
+            {
+                // Replace all spaces for safety
+                discountString = discountString.Replace(" ", "");
+
+                // Split by '*' while keeping '/' info
+                var parts = discountString.Split(new[] { '*' }, StringSplitOptions.RemoveEmptyEntries);
+
+                decimal result = 1m;
+
+                foreach (var part in parts)
+                {
+                    if (part.StartsWith("/"))
+                    {
+                        // Handle division case like "/.7"
+                        var value = decimal.Parse(part.Substring(1));
+                        result *= (1m / value);
+                    }
+                    else
+                    {
+                        // Normal multiplier
+                        var value = decimal.Parse(part);
+                        result *= value;
+                    }
+                }
+
+                return result;
+            }
+            catch
+            {
+                throw new ArgumentException("Invalid discount string format.");
+            }
+        }
+
+        int SelectedRowIndex = 0;
+
+        private void ConnectGridviewToDescriptionText(int RowIndex, DataGridView dgv)
+        {
+
+            DataTable dataSource = dgv_quick_quote_details.DataSource as DataTable;
+            if (dataSource == null)
+                return;
+
+            SelectedRowIndex = RowIndex;
+
+            if (dgv.Rows[RowIndex].Cells["reference_code"].Value == null || string.IsNullOrEmpty(dgv.Rows[RowIndex].Cells["reference_code"].Value.ToString()))
+                return;
+
+
+            //extract the reference code and turn to array string to count how many level happen in reference code
+            string reference = dgv.Rows[RowIndex].Cells["reference_code"].Value.ToString();
+            string[] arrayReference = reference.Split('.');
+            int referenceCount = arrayReference.Length;
+
+            //check if the row is parent using the reference_code if only get level 1
+            if (referenceCount == 1)
+            {
+                EnableDescription(true);
+                int item_id_parent = int.Parse(dgv.Rows[RowIndex].Cells["quick_item_id"].Value.ToString());
+                getItemShortDescription(item_id_parent);
+                txt_short_description.Text = (dgv.Rows[RowIndex].Cells["short_description"].Value.ToString() == "" ? txt_long_description.Text : dgv.Rows[RowIndex].Cells["short_description"].Value.ToString());
+            }
+            else
+            {
+                txt_short_description.Text = "";
+                txt_long_description.Text = "";
+                EnableDescription(false);
+            }
+        }
+
+        private void EnableDescription(bool Enable)
+        {
+            txt_short_description.Enabled = Enable;
+            txt_long_description.Enabled = Enable;
+        }
+
+        string temp_refence_code = null;
+
         private void HandleModelSelectionClick(int RowIndex, string Id)
         {
-            ModelModal createModal = new ModelModal(ItemList, Id);
+            ModelModal createModal = new ModelModal(ItemList, BomHead, BomDetails, Id);
             DialogResult result = createModal.ShowDialog();
+
+            string referenceCode = dgv_quick_quote_details.Rows[RowIndex].Cells["reference_code"].Value.ToString();
+
 
             if (result == DialogResult.OK)
             {
-                int itemId = int.Parse(createModal.GetItemId());
-                int bomId = int.Parse(createModal.GetBomId());
+                int itemId = createModal.GetItemId();
+                int bomId = createModal.GetBomId();
 
                 DataTable dataSource = dgv_quick_quote_details.DataSource as DataTable;
                 if (dataSource == null) return;
 
-                 int? checkData = BomHead.AsEnumerable()
-                        .Where(row => row.Field<int>("item_id") == itemId)
-                        .Select(row => row.Field<int>("id"))
-                        .FirstOrDefault();
-                if(checkData != null)
+                temp_refence_code = dgv_quick_quote_details.Rows[RowIndex].Cells["reference_code"].Value.ToString();
+                DeleteRowsByReferenceCode(RowIndex, dgv_quick_quote_details);
+
+                if (bomId != 0)
                 {
-                    GetBomDataRecursiveModel(RowIndex, bomId, itemId, dgv_quick_quote_details);
+                    GetBomDataRecursive(RowIndex, bomId, itemId, dgv_quick_quote_details, referenceCode);
+                    counterParent = 1;
                 }
                 else
                 {
-                    GetItemData(RowIndex, itemId, dgv_quick_quote_details);
+                    GetItemData(RowIndex, itemId, dgv_quick_quote_details, referenceCode);
                 }
+
             }
         }
 
@@ -1245,6 +1470,7 @@ namespace smpc_sales_app.Pages.Sales
         // Selected item from item list
         private void HandleItemSelectionClick(int rowIndex, DataGridView dgv)
         {
+            counterReference++;
             SalesItemModal itemModal = new SalesItemModal(ItemList, BomHead, BomDetails);
             DialogResult r = itemModal.ShowDialog();
 
@@ -1256,12 +1482,11 @@ namespace smpc_sales_app.Pages.Sales
                 {
                     int bomID = itemModal.GetBomResult();
                     GetBomDataRecursive(rowIndex, bomID, itemid, dgv);
-
+                    counterParent = 1;
                 }
                 else if (itemModal.isItem)
                 {
-                    GetItemData(rowIndex, itemid, dgv);
-
+                    GetItemData(rowIndex, itemid, dgv, null);
                 }
                 else
                 {
@@ -1271,9 +1496,15 @@ namespace smpc_sales_app.Pages.Sales
                                     MessageBoxButtons.OK,
                                     MessageBoxIcon.Error);
                 }
-                counterParent++;
             }
         }
+
+        private void computeDgv()
+        {
+
+
+        }
+
         public List<Dictionary<string, object>> SelectedImages { get; private set; }
         private void HandleItemImageSelectionClick(int quickId, int itemId)
         {
@@ -1504,10 +1735,10 @@ namespace smpc_sales_app.Pages.Sales
             removeColumn();
         }
 
+        int counterReference = 0;
         int counterParent = 1;
-        int counterParentReset = 1; // use for sub parent
 
-        private decimal GetBomDataRecursive(int rowIndex, int bomID, int itemID, DataGridView dgv, int level = 0, HashSet<int> visited = null, string additionalReference = null)
+        private decimal GetBomDataRecursive(int rowIndex, int bomID, int itemID, DataGridView dgv, string additionalReference = null, int level = 0, HashSet<int> visited = null)
         {
             Dictionary<int, DataRow> bomHeadDict = new Dictionary<int, DataRow>();
             Dictionary<int, List<DataRow>> bomChildDict = new Dictionary<int, List<DataRow>>();
@@ -1533,8 +1764,24 @@ namespace smpc_sales_app.Pages.Sales
                 return 0;
             visited.Add(bomID);
 
+            if (counterParent == 1)
+            {
+                counterParent = counterReference;
+            }
+
+            string ParentLevel = null;
+
             if (string.IsNullOrEmpty(additionalReference))
-                additionalReference = counterParentReset.ToString();
+                additionalReference = counterParent.ToString();
+
+            if (level == 0)
+            {
+                string[] arrayReference = additionalReference.Split('.');
+                int referenceCount = arrayReference.Length - 1;
+                level = referenceCount;
+            }
+
+            ParentLevel = new string(' ', level * 4);
 
             DataTable dataSource = dgv.DataSource as DataTable;
             if (dataSource == null)
@@ -1556,119 +1803,7 @@ namespace smpc_sales_app.Pages.Sales
             newParent["reference_code"] = additionalReference;
             newParent["bom_id"] = parentRow["id"];
             newParent["item_id"] = parentRow["item_id"];
-            newParent["components"] = new string('▶', level) + " " + parentRow["general_name"];
-            newParent["model"] = parentRow["item_model"];
-            newParent["qty"] = parentRow["production_qty"];
-            newParent["man_days"] = parentRow["man_days"];
-            newParent["labor_rate"] = parentRow["labor_rate"];
-            newParent["unit_price"] = Convert.ToDecimal(parentRow["production_cost"]);
-
-            dataSource.Rows.Add(newParent);
-            int addedRowIndex = dataSource.Rows.Count - 1;
-            Helpers.SalesItemRowStyler.ApplyStyle(dgv, addedRowIndex, "parent");
-
-            // --- Process children ---
-            if (bomChildDict.TryGetValue(bomID, out List<DataRow> childRows))
-            {
-                int counterSub = 1;
-                foreach (DataRow child in childRows)
-                {
-                    int childItemId = Convert.ToInt32(child["item_id"]);
-
-                    // Check if child item is also a BOM
-                    DataRow subBomRow = bomHeadDict.Values.FirstOrDefault(r => r.Field<int>("item_id") == childItemId);
-
-                    if (subBomRow != null)
-                    {
-                        int subBomId = Convert.ToInt32(subBomRow["id"]);
-
-                        decimal subTotal = GetBomDataRecursive(rowIndex + 1 ,subBomId ,childItemId,dgv ,level + 1, visited, $"{additionalReference}.{counterSub}");
-
-                        totalCost += subTotal;
-                    }
-                    else
-                    {
-                        decimal unitPrice = Convert.ToDecimal(child["unit_price"]);
-                        decimal qty = Convert.ToDecimal(child["bom_qty"]);
-                        decimal lineTotal = unitPrice * qty;
-                        totalCost += lineTotal;
-
-                        // Leaf item
-                        DataRow newChild = dataSource.NewRow();
-                        newChild["bom_id"] = child["item_bom_id"];
-                        newChild["item_id"] = childItemId;
-                        newChild["components"] = new string(' ', level * 4) + child["item_name"];
-                        newChild["model"] = child["size"];
-                        newChild["qty"] = qty;
-                        newChild["unit_price"] = unitPrice;
-                        newChild["reference_code"] = $"{additionalReference}.{counterSub}";
-
-                        dataSource.Rows.Add(newChild);
-                        int addedChildIndex = dataSource.Rows.Count - 1;
-                        Helpers.SalesItemRowStyler.ApplyStyle(dgv, addedChildIndex, "child");
-                    }
-
-                    counterSub++;
-                }
-            }
-
-            // Update the parent unit_price to total of all its descendants
-            dataSource.Rows[addedRowIndex]["unit_price"] = totalCost;
-
-            counterParentReset++;
-            return totalCost;
-        }
-
-        private decimal GetBomDataRecursiveModel(int rowIndex, int bomID, int itemID, DataGridView dgv, int level = 0, HashSet<int> visited = null, string additionalReference = null)
-        {
-            Dictionary<int, DataRow> bomHeadDict = new Dictionary<int, DataRow>();
-            Dictionary<int, List<DataRow>> bomChildDict = new Dictionary<int, List<DataRow>>();
-
-            if (BomHead != null && BomHead.Rows.Count > 0)
-            {
-                bomHeadDict = BomHead.AsEnumerable()
-                    .ToDictionary(r => r.Field<int>("id"));
-            }
-
-            if (BomDetails != null && BomDetails.Rows.Count > 0)
-            {
-                bomChildDict = BomDetails.AsEnumerable()
-                    .GroupBy(r => r.Field<int>("item_bom_id"))
-                    .ToDictionary(g => g.Key, g => g.ToList());
-            }
-
-            // --- Initialize ---
-            if (visited == null)
-                visited = new HashSet<int>();
-
-            if (visited.Contains(bomID))
-                return 0;
-            visited.Add(bomID);
-
-            if (string.IsNullOrEmpty(additionalReference))
-                additionalReference = counterParentReset.ToString();
-
-            DataTable dataSource = dgv.DataSource as DataTable;
-            if (dataSource == null)
-                return 0;
-
-            if (!bomHeadDict.TryGetValue(bomID, out DataRow parentRow))
-                return 0;
-
-            // --- Compute parent labor cost ---
-            decimal manDays = Convert.ToDecimal(parentRow["man_days"]);
-            decimal laborRate = Convert.ToDecimal(parentRow["labor_rate"]);
-            decimal laborCost = manDays * laborRate;
-
-            // --- Initial total cost for this parent (production + labor) ---
-            decimal totalCost = laborCost;
-
-            // --- Add parent row ---
-            DataRow newParent = dataSource.NewRow();
-            newParent["reference_code"] = additionalReference;
-            newParent["bom_id"] = parentRow["id"];
-            newParent["item_id"] = parentRow["item_id"];
-            newParent["components"] = new string('▶', level) + " " + parentRow["general_name"];
+            newParent["components"] = ParentLevel + parentRow["general_name"];
             newParent["model"] = parentRow["item_model"];
             newParent["qty"] = parentRow["production_qty"];
             newParent["man_days"] = parentRow["man_days"];
@@ -1676,64 +1811,96 @@ namespace smpc_sales_app.Pages.Sales
             newParent["unit_price"] = Convert.ToDecimal(parentRow["production_cost"]);
 
             dataSource.Rows.InsertAt(newParent, rowIndex);
-            int addedRowIndex = dataSource.Rows.Count - 1;
-            Helpers.SalesItemRowStyler.ApplyStyle(dgv, addedRowIndex, "parent");
+
+            int item_id_parent = Convert.ToInt32(parentRow["item_id"]);
+
+            //Helpers.SalesItemRowStyler.ApplyStyle(dgv, rowIndex, "parent");
+
+            int insertIndex = rowIndex + 1; // Start inserting children after parent
+
+            level++; // Increase level for children
 
             // --- Process children ---
-            if (bomChildDict.TryGetValue(bomID, out List<DataRow> childRows))
+            if (!bomChildDict.TryGetValue(bomID, out List<DataRow> childRows))
             {
-                int counterSub = 1;
-                foreach (DataRow child in childRows)
-                {
-                    int childItemId = Convert.ToInt32(child["item_id"]);
-
-                    // Check if child item is also a BOM
-                    DataRow subBomRow = bomHeadDict.Values.FirstOrDefault(r => r.Field<int>("item_id") == childItemId);
-
-                    if (subBomRow != null)
-                    {
-                        int subBomId = Convert.ToInt32(subBomRow["id"]);
-
-                        decimal subTotal = GetBomDataRecursiveModel(rowIndex + 1, subBomId, childItemId, dgv,
-                            level + 1,
-                            visited,
-                            $"{additionalReference}.{counterSub}"
-                        );
-
-                        totalCost += subTotal;
-                    }
-                    else
-                    {
-                        decimal unitPrice = Convert.ToDecimal(child["unit_price"]);
-                        decimal qty = Convert.ToDecimal(child["bom_qty"]);
-                        decimal lineTotal = unitPrice * qty;
-                        totalCost += lineTotal;
-
-                        // Leaf item
-                        DataRow newChild = dataSource.NewRow();
-                        newChild["bom_id"] = child["item_bom_id"];
-                        newChild["item_id"] = childItemId;
-                        newChild["components"] = new string(' ', level * 4) + child["item_name"];
-                        newChild["model"] = child["size"];
-                        newChild["qty"] = qty;
-                        newChild["unit_price"] = unitPrice;
-                        newChild["reference_code"] = $"{additionalReference}.{counterSub}";
-
-                        dataSource.Rows.InsertAt(newChild, rowIndex + level + 1);
-                        int addedChildIndex = dataSource.Rows.Count - 1;
-                        Helpers.SalesItemRowStyler.ApplyStyle(dgv, addedChildIndex, "child");
-                    }
-
-                    counterSub++;
-                }
+                return 0;
             }
 
-            // Update the parent unit_price to total of all its descendants
-            dataSource.Rows[addedRowIndex]["unit_price"] = totalCost;
+            int counterSub = 1;
+            foreach (DataRow child in childRows)
+            {
+                int childItemId = Convert.ToInt32(child["item_id"]);
 
-            counterParentReset++;
+                // Check if child item is also a BOM
+                DataRow subBomRow = bomHeadDict.Values.FirstOrDefault(r => r.Field<int>("item_id") == childItemId);
+
+
+                // Recursive case: child is a BOM if not then it's a leaf item
+                if (subBomRow != null)
+                {
+                    int subBomId = Convert.ToInt32(subBomRow["id"]);
+
+                    decimal subTotal = GetBomDataRecursive(insertIndex, subBomId, childItemId, dgv, $"{additionalReference}.{counterSub}", level, visited);
+
+                    totalCost += subTotal;
+
+                    // After recursion, update insertIndex to point after the last inserted child subtree
+                    // Count how many rows were inserted for this subtree
+                    int subtreeRows = CountRowsByReference(dataSource, $"{additionalReference}.{counterSub}");
+                    insertIndex += subtreeRows;
+                }
+                else
+                {
+                    decimal unitPrice = Convert.ToDecimal(child["unit_price"]);
+                    decimal qty = Convert.ToDecimal(child["bom_qty"]);
+                    decimal lineTotal = unitPrice * qty;
+                    totalCost += lineTotal;
+
+                    // Leaf item
+                    DataRow newChild = dataSource.NewRow();
+                    newChild["bom_id"] = child["item_bom_id"];
+                    newChild["item_id"] = childItemId;
+                    newChild["components"] = new string(' ', level * 4) + child["item_name"];
+                    newChild["model"] = child["size"];
+                    newChild["qty"] = qty;
+                    newChild["unit_price"] = Helpers.FormatAsCurrency(double.Parse(unitPrice.ToString()));
+                    newChild["reference_code"] = $"{additionalReference}.{counterSub}";
+
+                    int addedChildIndex = rowIndex + 1;
+
+                    dataSource.Rows.InsertAt(newChild, insertIndex);
+                    dgv.Rows[insertIndex].ReadOnly = true;
+                    //Helpers.SalesItemRowStyler.ApplyStyle(dgv, insertIndex, "child");
+                    insertIndex++; // Move to next position for next child
+                }
+
+                counterSub++;
+            }
+
+
+            // Update the parent unit_price to total of all its descendants
+            //1.186 is for 18% VAT
+            dataSource.Rows[rowIndex]["unit_price"] = Helpers.FormatAsCurrency(double.Parse(totalCost.ToString()) * 1.186); ;
+
+
+
+
+            counterParent++;
             return totalCost;
 
+        }
+
+        // Helper to count rows by reference code prefix
+        private int CountRowsByReference(DataTable dt, string referencePrefix)
+        {
+            int count = 0;
+            foreach (DataRow row in dt.Rows)
+            {
+                var refCode = row.Table.Columns.Contains("reference_code") ? row["reference_code"]?.ToString() : null;
+                if (!string.IsNullOrEmpty(refCode) && refCode.StartsWith(referencePrefix))
+                    count++;
+            }
+            return count;
         }
 
         private void GetItemData1(int rowIndex, int itemID, DataGridView dgv)
@@ -1788,9 +1955,20 @@ namespace smpc_sales_app.Pages.Sales
                 MessageBox.Show("Invalid selection", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
-        private void GetItemData(int rowIndex, int itemID, DataGridView dgv)
+
+        private void GetItemData(int rowIndex, int itemID, DataGridView dgv, string reference, string counter = null)
         {
             DataTable itemList = Helpers.FilterExactDataTable(ItemList, itemID.ToString(), "id");
+
+            int level = 0;
+
+            if (reference != null)
+            {
+                string[] arrayReference = reference.Split('.');
+                int referenceCount = arrayReference.Length - 1;
+                level = referenceCount;
+            }
+
 
             if (itemList.Rows.Count == 0)
             {
@@ -1822,19 +2000,25 @@ namespace smpc_sales_app.Pages.Sales
                     if (dataSource.Columns.Contains("unit_of_measure"))
                         newRow["unit_of_measure"] = row["unit_of_measure"];
 
-                    newRow["item_id"] = row["id"];
-                    newRow["model"] = row["item_code"];
-                    newRow["components"] = row["item_name"];
-                    newRow["reference_code"] = counterParent;
+                    reference = (reference != null) ? reference : (counter != null) ? counter : counterReference.ToString();
 
-                    dataSource.Rows.Add(newRow);
+                    newRow["item_id"] = row["id"];
+                    newRow["model"] = row["item_model"];
+                    newRow["components"] = new string(' ', level * 4) + row["item_name"];
+                    newRow["reference_code"] = reference;
+
+                    dataSource.Rows.InsertAt(newRow, rowIndex);
 
                     // 🎨 Style as Single Item
                     int addedRowIndex = dataSource.Rows.Count - 1;
                     Helpers.SalesItemRowStyler.ApplyStyle(dgv, addedRowIndex, "single");
                 }
             }
+
         }
+
+
+
         private void HandleCanvasSelectionClick(int rowIndex, string item_id)
         {
             frm_canvas_modal canvas = new frm_canvas_modal(item_id, bpi_general, bpi_items);
@@ -1853,76 +2037,7 @@ namespace smpc_sales_app.Pages.Sales
                 return result;
             return null;
         }
-        private void ComputeDgv(DataGridViewCellEventArgs e)
-        {
 
-            try
-            {
-
-                var isChildCell = dgv_quick_quote_details.Rows[e.RowIndex].Cells["quick_ischild"];
-
-                bool isChild = false;
-                if (isChildCell is DataGridViewCheckBoxCell checkBoxCell)
-                {
-                    var cellValue = checkBoxCell.Value;
-                    if (cellValue != null && bool.TryParse(cellValue.ToString(), out bool result))
-                    {
-                        isChild = result;
-                    }
-                }
-
-                if (isChild) return; // Skip computation if not a child
-
-                var qtyCell = dgv_quick_quote_details.Rows[e.RowIndex].Cells["quick_qty"].Value;
-                var listPriceCell = dgv_quick_quote_details.Rows[e.RowIndex].Cells["quick_list_price"].Value;
-                var unitPriceCell = dgv_quick_quote_details.Rows[e.RowIndex].Cells["quick_unit_price"].Value;
-                //decimal listPriceCell = TryParseDecimal(dgv_quick_quote_details.Rows[e.RowIndex].Cells["quick_list_price"].Value) ?? 0;
-                //decimal unitPriceCell = TryParseDecimal(dgv_quick_quote_details.Rows[e.RowIndex].Cells["quick_unit_price"].Value) ?? 0;
-                var discountCell = dgv_quick_quote_details.Rows[e.RowIndex].Cells["quick_discount"].Value ?? "0";
-
-
-
-                //this.dgv_quick_quote_details.Rows[e.RowIndex].Cells["quick_list_price"].Value = Helpers.FormatAsCurrency(listPriceCell);
-                //this.dgv_quick_quote_details.Rows[e.RowIndex].Cells["quick_unit_price"].Value = Helpers.FormatAsCurrency(unitPriceCell);
-
-                dgv_quick_quote_details.Columns["quick_list_price"].DefaultCellStyle.Format = "C2";
-                dgv_quick_quote_details.Columns["quick_unit_price"].DefaultCellStyle.Format = "C2";
-
-                //MessageBox.Show(unitPriceCell.GetType().ToString());
-
-                //decimal.TryParse(dgv_quick_quote_details.Rows[e.RowIndex].Cells["quick_list_price"].Value?.ToString(), out decimal listPriceCell);
-                //decimal.TryParse(dgv_quick_quote_details.Rows[e.RowIndex].Cells["quick_unit_price"].Value?.ToString(), out decimal unitPriceCell);
-                //this.dgv_quick_quote_details.Rows[e.RowIndex].Cells["quick_unit_price"].Value = unitPriceCell;
-                //this.dgv_quick_quote_details.Rows[e.RowIndex].Cells["quick_list_price"].Value = listPriceCell;
-
-                if ((qtyCell != null) && unitPriceCell != null)
-                {
-                    int qty = int.Parse(qtyCell.ToString());
-                    decimal unitPrice;
-                    if (decimal.TryParse(Helpers.GetCleanedPriceValue(unitPriceCell.ToString()), out unitPrice))
-                    {
-                        string discountPercent = discountCell.ToString();
-
-                        DGVComputation dgvComputation = new DGVComputation(qty, unitPrice, discountPercent);
-                        dgvComputation.ComputeQuickQuote();
-
-                        dgv_quick_quote_details.Rows[e.RowIndex].Cells["quick_net_total"].Value = dgvComputation.NetAmount.ToString("C2");
-                        dgv_quick_quote_details.Rows[e.RowIndex].Cells["quick_net_discount"].Value = dgvComputation.NetDiscount.ToString("C2");
-                        dgv_quick_quote_details.Rows[e.RowIndex].Cells["quick_line_total"].Value = dgvComputation.LineTotal.ToString("C2");
-
-                        //dgv_quick_quote_details.Rows[e.RowIndex].Cells["quick_net_total"].Value = dgvComputation.NetAmount;
-                        //dgv_quick_quote_details.Rows[e.RowIndex].Cells["quick_net_discount"].Value = dgvComputation.NetDiscount;
-                        //dgv_quick_quote_details.Rows[e.RowIndex].Cells["quick_line_total"].Value = dgvComputation.LineTotal;
-
-                        computationLoop();
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Error: " + ex.Message);
-            }
-        }
         public decimal GetCashDiscount()
         {
             decimal cash_disc = Convert.ToDecimal(txt_cash_discount.Text.ToString());
@@ -1935,6 +2050,8 @@ namespace smpc_sales_app.Pages.Sales
             double net_amount_due = 0, total_amount_due = 0;
             double cash_discount = double.Parse(txt_cash_discount.Text);
             const double VAT_RATE = 0.12; // 12% VAT
+
+
 
             // First pass: Calculate gross sales and total discounts
             foreach (DataGridViewRow row in this.dgv_quick_quote_details.Rows)
@@ -2424,7 +2541,8 @@ namespace smpc_sales_app.Pages.Sales
 
             //for new quatations always 30 days
             txt_validays.Text = "30";
-            counterParent = 1;
+            counterReference = 0;
+            SelectedRowIndex = 0;
         }
         private async void FinalTxtBoxClicked(object sender, EventArgs e)
         {
@@ -2548,6 +2666,7 @@ namespace smpc_sales_app.Pages.Sales
             //pnl_footer.Enabled = false;
 
             toolstrip_quotation.Enabled = true;
+            SelectedRowIndex = 0;
         }
         private bool isProject = false;
         private void btn_next_Click(object sender, EventArgs e)
@@ -2640,7 +2759,6 @@ namespace smpc_sales_app.Pages.Sales
                     txt_document_no.ReadOnly = true;
                 }
             }
-            counterParent = 1;
         }
 
         private async void btn_search_Click(object sender, EventArgs e)
@@ -3227,7 +3345,8 @@ namespace smpc_sales_app.Pages.Sales
 
             }
 
-            counterParent = 1;
+            counterReference = 0;
+            SelectedRowIndex = 0;
 
         }
         private void GetLatestDate()
@@ -3340,17 +3459,15 @@ namespace smpc_sales_app.Pages.Sales
 
         }
 
-        // Pseudocode:
-        // - Create a method DeleteRowsByReferenceCode(string referenceCode, DataGridView dgv)
-        // - Get the DataTable from dgv.DataSource
-        // - Find all rows where "reference_code" starts with the given referenceCode (e.g., "2." matches "2.1", "2.2", etc.)
-        // - Remove those rows from the DataTable
-        // - Refresh the DataGridView
-
-        private void DeleteRowsByReferenceCode(string referenceCode, DataGridView dgv)
+        private void DeleteRowsByReferenceCode(int RowIndex, DataGridView dgv)
         {
+
+            string referenceCode = dgv.Rows[RowIndex].Cells["reference_code"].Value.ToString();
+
             if (dgv.DataSource is DataTable dataSource)
             {
+
+
                 // Collect rows to delete (avoid modifying collection while iterating)
                 var rowsToDelete = new List<DataRow>();
                 foreach (DataRow row in dataSource.Rows)
@@ -3372,6 +3489,283 @@ namespace smpc_sales_app.Pages.Sales
                 // Optionally refresh DataGridView
                 //dgv.Refresh();
             }
+        }
+
+        private void txt_short_description_TextChanged(object sender, EventArgs e)
+        {
+            UpdateTextDescription();
+        }
+
+        private void UpdateTextDescription()
+        {
+            dgv_quick_quote_details.Rows[SelectedRowIndex].Cells["short_description"].Value = txt_short_description.Text;
+        }
+
+        private void ComputeDgvHierarchy()
+        {
+            // (Move the entire "hierarchy" ComputeDgv implementation here)
+            try
+            {
+                var dgv = dgv_quick_quote_details;
+
+                // Helper to get cell by preferred names
+                Func<DataGridViewRow, string[], object> GetCell = (row, names) =>
+                {
+                    foreach (var name in names)
+                    {
+                        if (dgv.Columns.Contains(name))
+                            return row.Cells[name].Value;
+                    }
+                    return null;
+                };
+
+                // Build list of rows that have a reference_code
+                var rows = new List<(DataGridViewRow Row, string Ref, int Depth, int Index)>();
+                for (int i = 0; i < dgv.Rows.Count; i++)
+                {
+                    var row = dgv.Rows[i];
+                    if (row.IsNewRow) continue;
+
+                    var refObj = GetCell(row, new[] { "reference_code", "quick_reference_code", "ref" });
+                    string reference = refObj?.ToString();
+                    if (string.IsNullOrWhiteSpace(reference))
+                        continue;
+
+                    int depth = reference.Count(countRow => countRow == '.') + 1;
+                    rows.Add((row, reference, depth, i));
+                }
+
+                if (!rows.Any())
+                    return;
+
+                // Sort by depth descending so we compute leaves first
+                var sorted = rows.OrderByDescending(row => row.Depth).ThenBy(row => row.Ref).ToList();
+
+                // Will store computed unit price per reference (as unit price PER UNIT)
+                var computedUnitPrice = new Dictionary<string, decimal>();
+                var computedQty = new Dictionary<string, decimal>(); // helpful for parents if needed
+
+                // Pre-fill computedQty from the rows
+                foreach (var t in sorted)
+                {
+                    var qtyObj = GetCell(t.Row, new[] { "quick_qty", "qty" });
+                    decimal qty = 1;
+                    if (qtyObj != null && decimal.TryParse(qtyObj.ToString(), out decimal qv))
+                        qty = qv;
+                    computedQty[t.Ref] = qty;
+                }
+
+                // Process deepest first
+                foreach (var entry in sorted)
+                {
+                    var row = entry.Row;
+                    string reference = entry.Ref;
+                    int depth = entry.Depth;
+
+                    // Find immediate children (depth + 1)
+                    var immediateChildren = sorted
+                        .Where(r => r.Ref.StartsWith(reference + ".") && r.Depth == depth + 1)
+                        .ToList();
+
+                    // Get man_days and labor_rate (if present)
+                    decimal manDays = 0, laborRate = 0;
+                    var manDaysObj = GetCell(row, new[] { "man_days" });
+                    var laborRateObj = GetCell(row, new[] { "labor_rate" });
+                    if (manDaysObj != null) decimal.TryParse(manDaysObj.ToString(), out manDays);
+                    if (laborRateObj != null) decimal.TryParse(laborRateObj.ToString(), out laborRate);
+
+                    decimal laborCost = manDays * laborRate;
+
+                    // Sum immediate children cost (childUnitPrice * childQty) using previously computed child unit prices
+                    decimal childrenSum = 0;
+                    foreach (var child in immediateChildren)
+                    {
+                        if (computedUnitPrice.TryGetValue(child.Ref, out decimal childUnit))
+                        {
+                            decimal childQty = computedQty.ContainsKey(child.Ref) ? computedQty[child.Ref] : 1m;
+                            childrenSum += childUnit * childQty;
+                        }
+                        else
+                        {
+                            // fallback: attempt to read child's unit price cell
+                            var childUnitObj = GetCell(child.Row, new[] { "quick_unit_price", "unit_price" });
+                            if (childUnitObj != null && decimal.TryParse(Helpers.GetCleanedPriceValue(childUnitObj.ToString()), out decimal cu))
+                            {
+                                decimal childQty = computedQty.ContainsKey(child.Ref) ? computedQty[child.Ref] : 1m;
+                                childrenSum += cu * childQty;
+                            }
+                        }
+                    }
+
+                    // Determine base unit price for this row
+                    // Priority:
+                    // 1) If row is a parent (has children or has man_days/labor_rate) -> base = childrenSum + laborCost (if none, laborCost may be zero)
+                    // 2) else if quick_list_price exists -> use it
+                    // 3) else if quick_unit_price exists -> use it
+                    // 4) else try unit_price (bound column)
+                    decimal baseUnit = 0m;
+                    bool isParent = immediateChildren.Any() || (manDays > 0 && laborRate > 0);
+
+                    if (isParent)
+                    {
+                        baseUnit = childrenSum + laborCost;
+                    }
+                    else
+                    {
+                        // try quick_list_price
+                        var listPriceObj = GetCell(row, new[] { "quick_list_price", "list_price" });
+                        if (listPriceObj != null && decimal.TryParse(Helpers.GetCleanedPriceValue(listPriceObj.ToString()), out decimal lp))
+                        {
+                            baseUnit = lp;
+                        }
+                        else
+                        {
+                            var unitPriceObj = GetCell(row, new[] { "quick_unit_price", "unit_price" });
+                            if (unitPriceObj != null && decimal.TryParse(Helpers.GetCleanedPriceValue(unitPriceObj.ToString()), out decimal upv))
+                            {
+                                baseUnit = upv;
+                            }
+                        }
+                    }
+
+                    // Apply VAT multiplier for parents (as per sample): 1.186
+                    decimal finalUnitPrice = baseUnit;
+                    if (isParent)
+                        finalUnitPrice = baseUnit * 1.186m;
+
+                    // Save computed unit price for parent aggregation
+                    computedUnitPrice[reference] = finalUnitPrice;
+
+                    // Write back unit price to grid cell
+                    if (dgv.Columns.Contains("quick_unit_price"))
+                        row.Cells["quick_unit_price"].Value = finalUnitPrice.ToString("C2");
+                    else if (dgv.Columns.Contains("unit_price"))
+                        row.Cells["unit_price"].Value = finalUnitPrice.ToString("C2");
+
+                    // Now compute line values using DGVComputation
+                    var qtyObjRow = GetCell(row, new[] { "quick_qty", "qty" });
+                    int qtyInt = 0;
+                    if (qtyObjRow != null && int.TryParse(qtyObjRow.ToString(), out int qint))
+                        qtyInt = qint;
+                    else
+                        qtyInt = 1;
+
+                    var discountObj = GetCell(row, new[] { "quick_discount", "percent_discount", "discount" });
+                    string discountStr = discountObj?.ToString() ?? "0";
+
+                    // Use unit price (numeric) for computation
+                    DGVComputation dgvComputation = new DGVComputation(qtyInt, finalUnitPrice, discountStr);
+                    dgvComputation.ComputeQuickQuote();
+
+                    // Write computed fields
+                    if (dgv.Columns.Contains("quick_net_total"))
+                        row.Cells["quick_net_total"].Value = dgvComputation.NetAmount.ToString("C2");
+                    if (dgv.Columns.Contains("quick_net_discount"))
+                        row.Cells["quick_net_discount"].Value = dgvComputation.NetDiscount.ToString("C2");
+                    if (dgv.Columns.Contains("quick_line_total"))
+                        row.Cells["quick_line_total"].Value = dgvComputation.LineTotal.ToString("C2");
+                }
+
+                // After recomputing hierarchy, update overall totals
+                computationLoop();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error: " + ex.Message);
+            }
+        }
+
+        private void dgv_quick_quote_details_CellValueChanged(object sender, DataGridViewCellEventArgs e)
+        {
+            ComputeByReferenceHierarchy();
+            ComputeReferenceNonHierarchy();
+            ComputeFooterTotals();
+
+
+        }
+
+        private void ComputeReferenceNonHierarchy()
+        {
+
+            foreach (DataGridViewRow row in dgv_quick_quote_details.Rows)
+            {
+                if (row.IsNewRow) continue;
+
+                var referenceCode = row.Cells["reference_code"].Value?.ToString();
+                if (string.IsNullOrWhiteSpace(referenceCode) || referenceCode.Contains("."))
+                    continue;
+
+                if (row.Cells["quick_qty"].Value == null || string.IsNullOrEmpty(row.Cells["quick_qty"].Value.ToString()) ||
+                    row.Cells["quick_unit_price"].Value == null || string.IsNullOrEmpty(row.Cells["quick_unit_price"].Value.ToString()))
+                    continue;
+
+                decimal unitPrice = Convert.ToDecimal(Helpers.GetCleanedPriceValue(row.Cells["quick_unit_price"].Value.ToString()));
+                decimal discount = CalculateDiscountMultiplier(row.Cells["quick_discount"].Value?.ToString());
+                decimal qty = Convert.ToDecimal(row.Cells["quick_qty"].Value);
+                decimal TotalUnitPrice = unitPrice * qty;
+                decimal discounted = TotalUnitPrice * discount;
+                decimal netDiscount = discounted - TotalUnitPrice;
+                decimal netTotal = TotalUnitPrice;
+
+                row.Cells["quick_line_total"].Value = Helpers.FormatAsCurrency(discounted);
+                row.Cells["quick_net_total"].Value = Helpers.FormatAsCurrency(netTotal);
+            }
+        }
+
+        private void ComputeFooterTotals()
+        {
+            decimal grossSalesTotal = 0m;
+            decimal netSalesTotal = 0m;
+            foreach (DataGridViewRow row in dgv_quick_quote_details.Rows)
+            {
+                if (row.IsNewRow) continue;
+
+                var referenceCode = row.Cells["reference_code"].Value?.ToString();
+                if (!string.IsNullOrWhiteSpace(referenceCode) && !referenceCode.Contains("."))
+                {
+                    grossSalesTotal += decimal.Parse(Helpers.GetCleanedPriceValue(row.Cells["quick_line_total"].Value.ToString()));
+                    netSalesTotal += decimal.Parse(Helpers.GetCleanedPriceValue(row.Cells["quick_net_total"].Value.ToString()));
+
+                }
+
+            }
+
+
+            if (grossSalesTotal != 0)
+            {
+                decimal percentDiscount = ((grossSalesTotal - netSalesTotal) / grossSalesTotal) * 1.00m;
+
+                txt_percent_discount.Text = String.Format("{0:P2}.", percentDiscount);
+            }
+
+
+
+            txt_gross_sales.Text = Helpers.FormatAsCurrency(grossSalesTotal);
+            txt_net_sales.Text = Helpers.FormatAsCurrency(netSalesTotal);
+
+        }
+
+        private void canvasToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // Canvass Sheet Column
+            string id = dgv_quick_quote_details.Rows[SelectedRowIndex].Cells[5].Value.ToString();
+            HandleCanvasSelectionClick(SelectedRowIndex, id);
+        }
+
+        private void btn_quotation_terms_Click(object sender, EventArgs e)
+        {
+            quotationTermsVisible();
+        }
+
+        bool isVisibleQuotationTerms = false; // declare at class level
+
+        private void quotationTermsVisible()
+        {
+            // Flip the state
+            isVisibleQuotationTerms = !isVisibleQuotationTerms;
+
+            // Example: toggle visibility of a panel
+            FlowLayoutPanel1.Visible = isVisibleQuotationTerms;
         }
     }
 
