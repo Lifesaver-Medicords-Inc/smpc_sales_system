@@ -29,22 +29,22 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle5 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle16 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle17 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle18 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle19 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle20 = new System.Windows.Forms.DataGridViewCellStyle();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Quotation));
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle6 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle7 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle8 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle9 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle10 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle11 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle21 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle22 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle23 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle24 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle25 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle26 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle27 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle12 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle13 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle14 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle15 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle28 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle29 = new System.Windows.Forms.DataGridViewCellStyle();
             this.bs_project_multipliers = new System.Windows.Forms.BindingSource(this.components);
             this.ds_project = new System.Data.DataSet();
             this.dataTable8 = new System.Data.DataTable();
@@ -167,13 +167,15 @@
             this.txt_id = new System.Windows.Forms.TextBox();
             this.tabControl = new System.Windows.Forms.TabControl();
             this.quick_tab = new System.Windows.Forms.TabPage();
+            this.tabControl1 = new System.Windows.Forms.TabControl();
+            this.Orders = new System.Windows.Forms.TabPage();
             this.dgv_quick_quote_details = new System.Windows.Forms.DataGridView();
             this.quick_id = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.quick_bom_id = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.quick_based_id = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.quick_images = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.reference_code = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.quick_item_id = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.quick_images = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.quick_item_code = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.quick_item_name = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.quick_qty = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -189,6 +191,14 @@
             this.quick_net_total = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.quick_line_total = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.short_description = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Quote_Terms = new System.Windows.Forms.TabPage();
+            this.QuotationTermsPanel = new System.Windows.Forms.Panel();
+            this.TermAndConditionsRichTextBox = new System.Windows.Forms.RichTextBox();
+            this.label32 = new System.Windows.Forms.Label();
+            this.ExclusionsRichTextBox = new System.Windows.Forms.RichTextBox();
+            this.label22 = new System.Windows.Forms.Label();
+            this.label21 = new System.Windows.Forms.Label();
+            this.InclusionsRichTextBox = new System.Windows.Forms.RichTextBox();
             this.project_tab = new System.Windows.Forms.TabPage();
             this.tabControl2 = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
@@ -208,31 +218,34 @@
             this.txt_sub_version_no = new System.Windows.Forms.TextBox();
             this.pnl_header = new System.Windows.Forms.Panel();
             this.panel3 = new System.Windows.Forms.Panel();
-            this.btn_quotation_terms = new System.Windows.Forms.Button();
             this.pnl_footer = new System.Windows.Forms.Panel();
-            this.label25 = new System.Windows.Forms.Label();
-            this.label24 = new System.Windows.Forms.Label();
-            this.label23 = new System.Windows.Forms.Label();
-            this.txt_gross_sales = new System.Windows.Forms.TextBox();
-            this.txt_vat_amount = new System.Windows.Forms.TextBox();
-            this.txt_net_sales = new System.Windows.Forms.TextBox();
-            this.label27 = new System.Windows.Forms.Label();
-            this.txt_percent_discount = new System.Windows.Forms.TextBox();
-            this.label31 = new System.Windows.Forms.Label();
-            this.label30 = new System.Windows.Forms.Label();
-            this.label29 = new System.Windows.Forms.Label();
-            this.txt_cash_discount = new System.Windows.Forms.TextBox();
-            this.txt_net_amount_due = new System.Windows.Forms.TextBox();
-            this.txt_total_amount_due = new System.Windows.Forms.TextBox();
-            this.txt_vat_percent = new System.Windows.Forms.TextBox();
-            this.label33 = new System.Windows.Forms.Label();
-            this.txt_long_description = new System.Windows.Forms.TextBox();
-            this.label34 = new System.Windows.Forms.Label();
-            this.txt_short_description = new System.Windows.Forms.TextBox();
-            this.btn_save = new System.Windows.Forms.Button();
-            this.btn_cancel = new System.Windows.Forms.Button();
-            this.btn_finalize = new System.Windows.Forms.Button();
+            this.label38 = new System.Windows.Forms.Label();
+            this.label37 = new System.Windows.Forms.Label();
+            this.txt_additional_discount = new System.Windows.Forms.TextBox();
+            this.label28 = new System.Windows.Forms.Label();
             this.btn_sales_order = new System.Windows.Forms.Button();
+            this.btn_finalize = new System.Windows.Forms.Button();
+            this.btn_cancel = new System.Windows.Forms.Button();
+            this.btn_save = new System.Windows.Forms.Button();
+            this.txt_short_description = new System.Windows.Forms.TextBox();
+            this.label34 = new System.Windows.Forms.Label();
+            this.txt_long_description = new System.Windows.Forms.TextBox();
+            this.label33 = new System.Windows.Forms.Label();
+            this.txt_vat_percent = new System.Windows.Forms.TextBox();
+            this.txt_total_amount_due = new System.Windows.Forms.TextBox();
+            this.txt_net_amount_due = new System.Windows.Forms.TextBox();
+            this.txt_cash_discount = new System.Windows.Forms.TextBox();
+            this.label29 = new System.Windows.Forms.Label();
+            this.label30 = new System.Windows.Forms.Label();
+            this.label31 = new System.Windows.Forms.Label();
+            this.txt_percent_discount = new System.Windows.Forms.TextBox();
+            this.label27 = new System.Windows.Forms.Label();
+            this.txt_net_sales = new System.Windows.Forms.TextBox();
+            this.txt_vat_amount = new System.Windows.Forms.TextBox();
+            this.txt_gross_sales = new System.Windows.Forms.TextBox();
+            this.label23 = new System.Windows.Forms.Label();
+            this.label24 = new System.Windows.Forms.Label();
+            this.label25 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.bs_project_multipliers)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.ds_project)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dataTable8)).BeginInit();
@@ -256,8 +269,12 @@
             this.toolstrip_quotation.SuspendLayout();
             this.tabControl.SuspendLayout();
             this.quick_tab.SuspendLayout();
+            this.tabControl1.SuspendLayout();
+            this.Orders.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgv_quick_quote_details)).BeginInit();
             this.UnitPriceColumnContextMenuStrip.SuspendLayout();
+            this.Quote_Terms.SuspendLayout();
+            this.QuotationTermsPanel.SuspendLayout();
             this.project_tab.SuspendLayout();
             this.tabControl2.SuspendLayout();
             this.pnl_project_name.SuspendLayout();
@@ -547,9 +564,9 @@
             // 
             this.unit_price.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
             this.unit_price.DataPropertyName = "unit_price";
-            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
-            dataGridViewCellStyle1.Format = "N2";
-            this.unit_price.DefaultCellStyle = dataGridViewCellStyle1;
+            dataGridViewCellStyle16.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
+            dataGridViewCellStyle16.Format = "N2";
+            this.unit_price.DefaultCellStyle = dataGridViewCellStyle16;
             this.unit_price.HeaderText = "UNIT PRICE";
             this.unit_price.Name = "unit_price";
             // 
@@ -564,11 +581,11 @@
             // 
             this.amount_discounted.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
             this.amount_discounted.DataPropertyName = "amount_discounted";
-            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
-            dataGridViewCellStyle2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
-            dataGridViewCellStyle2.Format = "N2";
-            dataGridViewCellStyle2.NullValue = "0";
-            this.amount_discounted.DefaultCellStyle = dataGridViewCellStyle2;
+            dataGridViewCellStyle17.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
+            dataGridViewCellStyle17.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
+            dataGridViewCellStyle17.Format = "N2";
+            dataGridViewCellStyle17.NullValue = "0";
+            this.amount_discounted.DefaultCellStyle = dataGridViewCellStyle17;
             this.amount_discounted.HeaderText = "DISCOUNTED AMOUNT";
             this.amount_discounted.Name = "amount_discounted";
             this.amount_discounted.ReadOnly = true;
@@ -577,11 +594,11 @@
             // 
             this.net_discount.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
             this.net_discount.DataPropertyName = "net_discount";
-            dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
-            dataGridViewCellStyle3.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
-            dataGridViewCellStyle3.Format = "N2";
-            dataGridViewCellStyle3.NullValue = "0";
-            this.net_discount.DefaultCellStyle = dataGridViewCellStyle3;
+            dataGridViewCellStyle18.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
+            dataGridViewCellStyle18.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
+            dataGridViewCellStyle18.Format = "N2";
+            dataGridViewCellStyle18.NullValue = "0";
+            this.net_discount.DefaultCellStyle = dataGridViewCellStyle18;
             this.net_discount.HeaderText = "NET DISCOUNT";
             this.net_discount.Name = "net_discount";
             this.net_discount.ReadOnly = true;
@@ -590,11 +607,11 @@
             // 
             this.net_total.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
             this.net_total.DataPropertyName = "net_total";
-            dataGridViewCellStyle4.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
-            dataGridViewCellStyle4.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
-            dataGridViewCellStyle4.Format = "N2";
-            dataGridViewCellStyle4.NullValue = "0";
-            this.net_total.DefaultCellStyle = dataGridViewCellStyle4;
+            dataGridViewCellStyle19.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
+            dataGridViewCellStyle19.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
+            dataGridViewCellStyle19.Format = "N2";
+            dataGridViewCellStyle19.NullValue = "0";
+            this.net_total.DefaultCellStyle = dataGridViewCellStyle19;
             this.net_total.HeaderText = "NET AMOUNT";
             this.net_total.Name = "net_total";
             this.net_total.ReadOnly = true;
@@ -603,11 +620,11 @@
             // 
             this.line_total.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
             this.line_total.DataPropertyName = "line_total";
-            dataGridViewCellStyle5.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
-            dataGridViewCellStyle5.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
-            dataGridViewCellStyle5.Format = "N2";
-            dataGridViewCellStyle5.NullValue = "0";
-            this.line_total.DefaultCellStyle = dataGridViewCellStyle5;
+            dataGridViewCellStyle20.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
+            dataGridViewCellStyle20.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
+            dataGridViewCellStyle20.Format = "N2";
+            dataGridViewCellStyle20.NullValue = "0";
+            this.line_total.DefaultCellStyle = dataGridViewCellStyle20;
             this.line_total.HeaderText = "LINE TOTAL";
             this.line_total.Name = "line_total";
             this.line_total.ReadOnly = true;
@@ -1240,21 +1257,42 @@
             this.tabControl.Location = new System.Drawing.Point(0, 0);
             this.tabControl.Name = "tabControl";
             this.tabControl.SelectedIndex = 0;
-            this.tabControl.Size = new System.Drawing.Size(1188, 2034);
+            this.tabControl.Size = new System.Drawing.Size(1188, 2011);
             this.tabControl.SizeMode = System.Windows.Forms.TabSizeMode.Fixed;
             this.tabControl.TabIndex = 50;
             this.tabControl.SelectedIndexChanged += new System.EventHandler(this.tabControl_SelectedIndexChanged);
             // 
             // quick_tab
             // 
-            this.quick_tab.Controls.Add(this.dgv_quick_quote_details);
+            this.quick_tab.Controls.Add(this.tabControl1);
             this.quick_tab.Location = new System.Drawing.Point(4, 37);
             this.quick_tab.Name = "quick_tab";
             this.quick_tab.Padding = new System.Windows.Forms.Padding(3);
-            this.quick_tab.Size = new System.Drawing.Size(1180, 1993);
+            this.quick_tab.Size = new System.Drawing.Size(1180, 1970);
             this.quick_tab.TabIndex = 0;
-            this.quick_tab.Text = "butto";
             this.quick_tab.UseVisualStyleBackColor = true;
+            // 
+            // tabControl1
+            // 
+            this.tabControl1.Controls.Add(this.Orders);
+            this.tabControl1.Controls.Add(this.Quote_Terms);
+            this.tabControl1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tabControl1.Location = new System.Drawing.Point(3, 3);
+            this.tabControl1.Name = "tabControl1";
+            this.tabControl1.SelectedIndex = 0;
+            this.tabControl1.Size = new System.Drawing.Size(1174, 1964);
+            this.tabControl1.TabIndex = 0;
+            // 
+            // Orders
+            // 
+            this.Orders.Controls.Add(this.dgv_quick_quote_details);
+            this.Orders.Location = new System.Drawing.Point(4, 22);
+            this.Orders.Name = "Orders";
+            this.Orders.Padding = new System.Windows.Forms.Padding(3);
+            this.Orders.Size = new System.Drawing.Size(1166, 1938);
+            this.Orders.TabIndex = 1;
+            this.Orders.Text = "Orders";
+            this.Orders.UseVisualStyleBackColor = true;
             // 
             // dgv_quick_quote_details
             // 
@@ -1263,9 +1301,9 @@
             this.quick_id,
             this.quick_bom_id,
             this.quick_based_id,
+            this.quick_images,
             this.reference_code,
             this.quick_item_id,
-            this.quick_images,
             this.quick_item_code,
             this.quick_item_name,
             this.quick_qty,
@@ -1283,8 +1321,8 @@
             this.dgv_quick_quote_details.Enabled = false;
             this.dgv_quick_quote_details.Location = new System.Drawing.Point(3, 3);
             this.dgv_quick_quote_details.Name = "dgv_quick_quote_details";
-            this.dgv_quick_quote_details.Size = new System.Drawing.Size(1174, 1987);
-            this.dgv_quick_quote_details.TabIndex = 0;
+            this.dgv_quick_quote_details.Size = new System.Drawing.Size(1160, 1932);
+            this.dgv_quick_quote_details.TabIndex = 2;
             this.dgv_quick_quote_details.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgv_quick_quote_details_CellClick);
             this.dgv_quick_quote_details.CellContentDoubleClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgv_quick_quote_details_CellContentDoubleClick);
             this.dgv_quick_quote_details.CellEndEdit += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgv_quick_quote_details_CellEndEdit);
@@ -1314,24 +1352,6 @@
             this.quick_based_id.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
             this.quick_based_id.Visible = false;
             // 
-            // reference_code
-            // 
-            this.reference_code.DataPropertyName = "reference_code";
-            this.reference_code.HeaderText = "CODE";
-            this.reference_code.Name = "reference_code";
-            this.reference_code.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-            // 
-            // quick_item_id
-            // 
-            this.quick_item_id.DataPropertyName = "item_id";
-            dataGridViewCellStyle6.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
-            dataGridViewCellStyle6.SelectionForeColor = System.Drawing.Color.White;
-            this.quick_item_id.DefaultCellStyle = dataGridViewCellStyle6;
-            this.quick_item_id.HeaderText = "item_id";
-            this.quick_item_id.Name = "quick_item_id";
-            this.quick_item_id.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-            this.quick_item_id.Visible = false;
-            // 
             // quick_images
             // 
             this.quick_images.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
@@ -1342,13 +1362,31 @@
             this.quick_images.Resizable = System.Windows.Forms.DataGridViewTriState.True;
             this.quick_images.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
             // 
+            // reference_code
+            // 
+            this.reference_code.DataPropertyName = "reference_code";
+            this.reference_code.HeaderText = "CODE";
+            this.reference_code.Name = "reference_code";
+            this.reference_code.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            // 
+            // quick_item_id
+            // 
+            this.quick_item_id.DataPropertyName = "item_id";
+            dataGridViewCellStyle21.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
+            dataGridViewCellStyle21.SelectionForeColor = System.Drawing.Color.White;
+            this.quick_item_id.DefaultCellStyle = dataGridViewCellStyle21;
+            this.quick_item_id.HeaderText = "item_id";
+            this.quick_item_id.Name = "quick_item_id";
+            this.quick_item_id.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            this.quick_item_id.Visible = false;
+            // 
             // quick_item_code
             // 
             this.quick_item_code.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
             this.quick_item_code.DataPropertyName = "components";
-            dataGridViewCellStyle7.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
-            dataGridViewCellStyle7.SelectionForeColor = System.Drawing.Color.Black;
-            this.quick_item_code.DefaultCellStyle = dataGridViewCellStyle7;
+            dataGridViewCellStyle22.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
+            dataGridViewCellStyle22.SelectionForeColor = System.Drawing.Color.Black;
+            this.quick_item_code.DefaultCellStyle = dataGridViewCellStyle22;
             this.quick_item_code.FillWeight = 70.91644F;
             this.quick_item_code.HeaderText = "COMPONENTS";
             this.quick_item_code.Name = "quick_item_code";
@@ -1359,10 +1397,10 @@
             // 
             this.quick_item_name.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
             this.quick_item_name.DataPropertyName = "model";
-            dataGridViewCellStyle8.BackColor = System.Drawing.Color.LightGray;
-            dataGridViewCellStyle8.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
-            dataGridViewCellStyle8.SelectionForeColor = System.Drawing.Color.Black;
-            this.quick_item_name.DefaultCellStyle = dataGridViewCellStyle8;
+            dataGridViewCellStyle23.BackColor = System.Drawing.Color.LightGray;
+            dataGridViewCellStyle23.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
+            dataGridViewCellStyle23.SelectionForeColor = System.Drawing.Color.Black;
+            this.quick_item_name.DefaultCellStyle = dataGridViewCellStyle23;
             this.quick_item_name.FillWeight = 52.91645F;
             this.quick_item_name.HeaderText = "MODEL";
             this.quick_item_name.Name = "quick_item_name";
@@ -1373,11 +1411,11 @@
             // 
             this.quick_qty.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
             this.quick_qty.DataPropertyName = "qty";
-            dataGridViewCellStyle9.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle9.NullValue = "0";
-            dataGridViewCellStyle9.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
-            dataGridViewCellStyle9.SelectionForeColor = System.Drawing.Color.Black;
-            this.quick_qty.DefaultCellStyle = dataGridViewCellStyle9;
+            dataGridViewCellStyle24.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle24.NullValue = "0";
+            dataGridViewCellStyle24.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
+            dataGridViewCellStyle24.SelectionForeColor = System.Drawing.Color.Black;
+            this.quick_qty.DefaultCellStyle = dataGridViewCellStyle24;
             this.quick_qty.FillWeight = 20F;
             this.quick_qty.HeaderText = "QTY";
             this.quick_qty.Name = "quick_qty";
@@ -1387,15 +1425,16 @@
             // 
             this.quick_unit_of_measure.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
             this.quick_unit_of_measure.DataPropertyName = "unit_of_measure";
-            dataGridViewCellStyle10.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle10.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
-            dataGridViewCellStyle10.SelectionForeColor = System.Drawing.Color.Black;
-            this.quick_unit_of_measure.DefaultCellStyle = dataGridViewCellStyle10;
+            dataGridViewCellStyle25.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle25.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
+            dataGridViewCellStyle25.SelectionForeColor = System.Drawing.Color.Black;
+            this.quick_unit_of_measure.DefaultCellStyle = dataGridViewCellStyle25;
             this.quick_unit_of_measure.FillWeight = 20F;
             this.quick_unit_of_measure.HeaderText = "UNIT";
             this.quick_unit_of_measure.Name = "quick_unit_of_measure";
             this.quick_unit_of_measure.Resizable = System.Windows.Forms.DataGridViewTriState.True;
             this.quick_unit_of_measure.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            this.quick_unit_of_measure.Visible = false;
             // 
             // man_days
             // 
@@ -1417,8 +1456,9 @@
             // 
             this.quick_list_price.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
             this.quick_list_price.DataPropertyName = "list_price";
-            dataGridViewCellStyle11.Format = "C2";
-            this.quick_list_price.DefaultCellStyle = dataGridViewCellStyle11;
+            dataGridViewCellStyle26.Format = "C2";
+            dataGridViewCellStyle26.NullValue = null;
+            this.quick_list_price.DefaultCellStyle = dataGridViewCellStyle26;
             this.quick_list_price.FillWeight = 52.91645F;
             this.quick_list_price.HeaderText = "LIST PRICE";
             this.quick_list_price.Name = "quick_list_price";
@@ -1429,8 +1469,9 @@
             this.quick_unit_price.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
             this.quick_unit_price.ContextMenuStrip = this.UnitPriceColumnContextMenuStrip;
             this.quick_unit_price.DataPropertyName = "unit_price";
-            dataGridViewCellStyle12.Format = "C2";
-            this.quick_unit_price.DefaultCellStyle = dataGridViewCellStyle12;
+            dataGridViewCellStyle27.Format = "C2";
+            dataGridViewCellStyle27.NullValue = "0";
+            this.quick_unit_price.DefaultCellStyle = dataGridViewCellStyle27;
             this.quick_unit_price.FillWeight = 52.91645F;
             this.quick_unit_price.HeaderText = "UNIT PRICE";
             this.quick_unit_price.Name = "quick_unit_price";
@@ -1463,8 +1504,8 @@
             // 
             this.quick_net_discount.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
             this.quick_net_discount.DataPropertyName = "net_discount";
-            dataGridViewCellStyle13.Format = "C2";
-            this.quick_net_discount.DefaultCellStyle = dataGridViewCellStyle13;
+            dataGridViewCellStyle12.Format = "C2";
+            this.quick_net_discount.DefaultCellStyle = dataGridViewCellStyle12;
             this.quick_net_discount.FillWeight = 52.91645F;
             this.quick_net_discount.HeaderText = "NET DISCOUNT";
             this.quick_net_discount.Name = "quick_net_discount";
@@ -1475,8 +1516,8 @@
             // 
             this.quick_net_total.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
             this.quick_net_total.DataPropertyName = "net_total";
-            dataGridViewCellStyle14.Format = "C2";
-            this.quick_net_total.DefaultCellStyle = dataGridViewCellStyle14;
+            dataGridViewCellStyle28.Format = "C2";
+            this.quick_net_total.DefaultCellStyle = dataGridViewCellStyle28;
             this.quick_net_total.FillWeight = 52.91645F;
             this.quick_net_total.HeaderText = "NET TOTAL";
             this.quick_net_total.Name = "quick_net_total";
@@ -1487,8 +1528,8 @@
             // 
             this.quick_line_total.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
             this.quick_line_total.DataPropertyName = "line_total";
-            dataGridViewCellStyle15.Format = "C2";
-            this.quick_line_total.DefaultCellStyle = dataGridViewCellStyle15;
+            dataGridViewCellStyle29.Format = "C2";
+            this.quick_line_total.DefaultCellStyle = dataGridViewCellStyle29;
             this.quick_line_total.FillWeight = 52.91645F;
             this.quick_line_total.HeaderText = "LINE TOTAL";
             this.quick_line_total.Name = "quick_line_total";
@@ -1503,6 +1544,86 @@
             this.short_description.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
             this.short_description.Visible = false;
             // 
+            // Quote_Terms
+            // 
+            this.Quote_Terms.Controls.Add(this.QuotationTermsPanel);
+            this.Quote_Terms.Location = new System.Drawing.Point(4, 22);
+            this.Quote_Terms.Name = "Quote_Terms";
+            this.Quote_Terms.Padding = new System.Windows.Forms.Padding(3);
+            this.Quote_Terms.Size = new System.Drawing.Size(1166, 1938);
+            this.Quote_Terms.TabIndex = 0;
+            this.Quote_Terms.Text = "Quote Terms";
+            this.Quote_Terms.UseVisualStyleBackColor = true;
+            // 
+            // QuotationTermsPanel
+            // 
+            this.QuotationTermsPanel.AutoScroll = true;
+            this.QuotationTermsPanel.Controls.Add(this.TermAndConditionsRichTextBox);
+            this.QuotationTermsPanel.Controls.Add(this.label32);
+            this.QuotationTermsPanel.Controls.Add(this.ExclusionsRichTextBox);
+            this.QuotationTermsPanel.Controls.Add(this.label22);
+            this.QuotationTermsPanel.Controls.Add(this.label21);
+            this.QuotationTermsPanel.Controls.Add(this.InclusionsRichTextBox);
+            this.QuotationTermsPanel.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.QuotationTermsPanel.Location = new System.Drawing.Point(3, 3);
+            this.QuotationTermsPanel.Name = "QuotationTermsPanel";
+            this.QuotationTermsPanel.Size = new System.Drawing.Size(1160, 1932);
+            this.QuotationTermsPanel.TabIndex = 121;
+            // 
+            // TermAndConditionsRichTextBox
+            // 
+            this.TermAndConditionsRichTextBox.Location = new System.Drawing.Point(3, 414);
+            this.TermAndConditionsRichTextBox.Name = "TermAndConditionsRichTextBox";
+            this.TermAndConditionsRichTextBox.Size = new System.Drawing.Size(1150, 436);
+            this.TermAndConditionsRichTextBox.TabIndex = 5;
+            this.TermAndConditionsRichTextBox.Text = "";
+            // 
+            // label32
+            // 
+            this.label32.AutoSize = true;
+            this.label32.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label32.Location = new System.Drawing.Point(3, 399);
+            this.label32.Name = "label32";
+            this.label32.Size = new System.Drawing.Size(165, 13);
+            this.label32.TabIndex = 4;
+            this.label32.Text = "TERMS AND CONDITIONS:";
+            // 
+            // ExclusionsRichTextBox
+            // 
+            this.ExclusionsRichTextBox.Location = new System.Drawing.Point(3, 255);
+            this.ExclusionsRichTextBox.Name = "ExclusionsRichTextBox";
+            this.ExclusionsRichTextBox.Size = new System.Drawing.Size(1150, 120);
+            this.ExclusionsRichTextBox.TabIndex = 3;
+            this.ExclusionsRichTextBox.Text = "";
+            // 
+            // label22
+            // 
+            this.label22.AutoSize = true;
+            this.label22.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label22.Location = new System.Drawing.Point(3, 240);
+            this.label22.Name = "label22";
+            this.label22.Size = new System.Drawing.Size(89, 13);
+            this.label22.TabIndex = 2;
+            this.label22.Text = "EXCLUSIONS:";
+            // 
+            // label21
+            // 
+            this.label21.AutoSize = true;
+            this.label21.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label21.Location = new System.Drawing.Point(7, 14);
+            this.label21.Name = "label21";
+            this.label21.Size = new System.Drawing.Size(86, 13);
+            this.label21.TabIndex = 1;
+            this.label21.Text = "INCLUSIONS:";
+            // 
+            // InclusionsRichTextBox
+            // 
+            this.InclusionsRichTextBox.Location = new System.Drawing.Point(4, 33);
+            this.InclusionsRichTextBox.Name = "InclusionsRichTextBox";
+            this.InclusionsRichTextBox.Size = new System.Drawing.Size(1150, 189);
+            this.InclusionsRichTextBox.TabIndex = 0;
+            this.InclusionsRichTextBox.Text = "";
+            // 
             // project_tab
             // 
             this.project_tab.Controls.Add(this.tabControl2);
@@ -1510,7 +1631,7 @@
             this.project_tab.Location = new System.Drawing.Point(4, 37);
             this.project_tab.Name = "project_tab";
             this.project_tab.Padding = new System.Windows.Forms.Padding(3);
-            this.project_tab.Size = new System.Drawing.Size(1180, 2027);
+            this.project_tab.Size = new System.Drawing.Size(1180, 1970);
             this.project_tab.TabIndex = 1;
             this.project_tab.UseVisualStyleBackColor = true;
             // 
@@ -1669,7 +1790,6 @@
             // 
             // pnl_header
             // 
-            this.pnl_header.Controls.Add(this.btn_quotation_terms);
             this.pnl_header.Controls.Add(this.cmb_ship_to);
             this.pnl_header.Controls.Add(this.txt_sub_version_no);
             this.pnl_header.Controls.Add(this.txt_id);
@@ -1728,28 +1848,15 @@
             this.panel3.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panel3.Location = new System.Drawing.Point(0, 349);
             this.panel3.Name = "panel3";
-            this.panel3.Size = new System.Drawing.Size(1188, 2034);
+            this.panel3.Size = new System.Drawing.Size(1188, 2011);
             this.panel3.TabIndex = 80;
-            // 
-            // btn_quotation_terms
-            // 
-            this.btn_quotation_terms.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btn_quotation_terms.BackColor = System.Drawing.Color.White;
-            this.btn_quotation_terms.FlatAppearance.BorderColor = System.Drawing.Color.White;
-            this.btn_quotation_terms.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
-            this.btn_quotation_terms.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(255)))), ((int)(((byte)(128)))));
-            this.btn_quotation_terms.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btn_quotation_terms.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btn_quotation_terms.Location = new System.Drawing.Point(16, 248);
-            this.btn_quotation_terms.Name = "btn_quotation_terms";
-            this.btn_quotation_terms.Size = new System.Drawing.Size(168, 23);
-            this.btn_quotation_terms.TabIndex = 118;
-            this.btn_quotation_terms.Text = "QUOTATION TERMS";
-            this.btn_quotation_terms.UseVisualStyleBackColor = false;
-            this.btn_quotation_terms.Click += new System.EventHandler(this.btn_quotation_terms_Click);
             // 
             // pnl_footer
             // 
+            this.pnl_footer.Controls.Add(this.label38);
+            this.pnl_footer.Controls.Add(this.label37);
+            this.pnl_footer.Controls.Add(this.txt_additional_discount);
+            this.pnl_footer.Controls.Add(this.label28);
             this.pnl_footer.Controls.Add(this.btn_sales_order);
             this.pnl_footer.Controls.Add(this.btn_finalize);
             this.pnl_footer.Controls.Add(this.btn_cancel);
@@ -1774,270 +1881,52 @@
             this.pnl_footer.Controls.Add(this.label24);
             this.pnl_footer.Controls.Add(this.label25);
             this.pnl_footer.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.pnl_footer.Location = new System.Drawing.Point(0, 2383);
+            this.pnl_footer.Location = new System.Drawing.Point(0, 2360);
             this.pnl_footer.Name = "pnl_footer";
-            this.pnl_footer.Size = new System.Drawing.Size(1188, 258);
+            this.pnl_footer.Size = new System.Drawing.Size(1188, 281);
             this.pnl_footer.TabIndex = 79;
             // 
-            // label25
+            // label38
             // 
-            this.label25.AutoSize = true;
-            this.label25.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label25.Location = new System.Drawing.Point(110, 128);
-            this.label25.Name = "label25";
-            this.label25.Size = new System.Drawing.Size(74, 13);
-            this.label25.TabIndex = 77;
-            this.label25.Text = "Gross Sales";
+            this.label38.AutoSize = true;
+            this.label38.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label38.Location = new System.Drawing.Point(227, 204);
+            this.label38.Name = "label38";
+            this.label38.Size = new System.Drawing.Size(16, 13);
+            this.label38.TabIndex = 194;
+            this.label38.Text = "%";
             // 
-            // label24
+            // label37
             // 
-            this.label24.AutoSize = true;
-            this.label24.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label24.Location = new System.Drawing.Point(409, 129);
-            this.label24.Name = "label24";
-            this.label24.Size = new System.Drawing.Size(72, 13);
-            this.label24.TabIndex = 78;
-            this.label24.Text = "Vat Amount";
+            this.label37.AutoSize = true;
+            this.label37.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label37.Location = new System.Drawing.Point(522, 204);
+            this.label37.Name = "label37";
+            this.label37.Size = new System.Drawing.Size(16, 13);
+            this.label37.TabIndex = 193;
+            this.label37.Text = "%";
             // 
-            // label23
+            // txt_additional_discount
             // 
-            this.label23.AutoSize = true;
-            this.label23.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label23.Location = new System.Drawing.Point(121, 155);
-            this.label23.Name = "label23";
-            this.label23.Size = new System.Drawing.Size(62, 13);
-            this.label23.TabIndex = 79;
-            this.label23.Text = "Net Sales";
+            this.txt_additional_discount.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txt_additional_discount.Location = new System.Drawing.Point(491, 201);
+            this.txt_additional_discount.Name = "txt_additional_discount";
+            this.txt_additional_discount.Size = new System.Drawing.Size(30, 20);
+            this.txt_additional_discount.TabIndex = 192;
+            this.txt_additional_discount.Tag = "percent_format";
+            this.txt_additional_discount.Text = "0";
+            this.txt_additional_discount.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            this.txt_additional_discount.TextChanged += new System.EventHandler(this.txt_additional_discount_TextChanged);
             // 
-            // txt_gross_sales
+            // label28
             // 
-            this.txt_gross_sales.Enabled = false;
-            this.txt_gross_sales.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txt_gross_sales.Location = new System.Drawing.Point(190, 125);
-            this.txt_gross_sales.Name = "txt_gross_sales";
-            this.txt_gross_sales.ReadOnly = true;
-            this.txt_gross_sales.Size = new System.Drawing.Size(125, 20);
-            this.txt_gross_sales.TabIndex = 80;
-            this.txt_gross_sales.Tag = "money_format";
-            this.txt_gross_sales.Text = "0.00";
-            this.txt_gross_sales.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            // 
-            // txt_vat_amount
-            // 
-            this.txt_vat_amount.Enabled = false;
-            this.txt_vat_amount.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txt_vat_amount.Location = new System.Drawing.Point(517, 126);
-            this.txt_vat_amount.Name = "txt_vat_amount";
-            this.txt_vat_amount.ReadOnly = true;
-            this.txt_vat_amount.Size = new System.Drawing.Size(125, 20);
-            this.txt_vat_amount.TabIndex = 81;
-            this.txt_vat_amount.Tag = "money_format";
-            this.txt_vat_amount.Text = "0.00";
-            this.txt_vat_amount.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            // 
-            // txt_net_sales
-            // 
-            this.txt_net_sales.Enabled = false;
-            this.txt_net_sales.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txt_net_sales.Location = new System.Drawing.Point(190, 152);
-            this.txt_net_sales.Name = "txt_net_sales";
-            this.txt_net_sales.ReadOnly = true;
-            this.txt_net_sales.Size = new System.Drawing.Size(125, 20);
-            this.txt_net_sales.TabIndex = 82;
-            this.txt_net_sales.Tag = "money_format";
-            this.txt_net_sales.Text = "0.00";
-            this.txt_net_sales.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            // 
-            // label27
-            // 
-            this.label27.AutoSize = true;
-            this.label27.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label27.Location = new System.Drawing.Point(83, 181);
-            this.label27.Name = "label27";
-            this.label27.Size = new System.Drawing.Size(105, 13);
-            this.label27.TabIndex = 84;
-            this.label27.Text = "Percent Discount";
-            // 
-            // txt_percent_discount
-            // 
-            this.txt_percent_discount.Enabled = false;
-            this.txt_percent_discount.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txt_percent_discount.Location = new System.Drawing.Point(190, 178);
-            this.txt_percent_discount.Name = "txt_percent_discount";
-            this.txt_percent_discount.ReadOnly = true;
-            this.txt_percent_discount.Size = new System.Drawing.Size(125, 20);
-            this.txt_percent_discount.TabIndex = 87;
-            this.txt_percent_discount.Tag = "money_format";
-            this.txt_percent_discount.Text = "0.00";
-            this.txt_percent_discount.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            // 
-            // label31
-            // 
-            this.label31.AutoSize = true;
-            this.label31.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label31.Location = new System.Drawing.Point(397, 155);
-            this.label31.Name = "label31";
-            this.label31.Size = new System.Drawing.Size(89, 13);
-            this.label31.TabIndex = 89;
-            this.label31.Text = "Cash Discount";
-            // 
-            // label30
-            // 
-            this.label30.AutoSize = true;
-            this.label30.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label30.Location = new System.Drawing.Point(793, 128);
-            this.label30.Name = "label30";
-            this.label30.Size = new System.Drawing.Size(100, 13);
-            this.label30.TabIndex = 90;
-            this.label30.Text = "Net Amount Due";
-            // 
-            // label29
-            // 
-            this.label29.AutoSize = true;
-            this.label29.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label29.Location = new System.Drawing.Point(761, 149);
-            this.label29.Name = "label29";
-            this.label29.Size = new System.Drawing.Size(134, 13);
-            this.label29.TabIndex = 91;
-            this.label29.Text = "TOTAL AMOUNT DUE";
-            // 
-            // txt_cash_discount
-            // 
-            this.txt_cash_discount.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txt_cash_discount.Location = new System.Drawing.Point(487, 152);
-            this.txt_cash_discount.Name = "txt_cash_discount";
-            this.txt_cash_discount.Size = new System.Drawing.Size(155, 20);
-            this.txt_cash_discount.TabIndex = 92;
-            this.txt_cash_discount.Tag = "money_format";
-            this.txt_cash_discount.Text = "0.00";
-            this.txt_cash_discount.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            this.txt_cash_discount.TextChanged += new System.EventHandler(this.txt_cash_discount_TextChanged);
-            this.txt_cash_discount.DoubleClick += new System.EventHandler(this.txt_cash_discount_DoubleClick);
-            // 
-            // txt_net_amount_due
-            // 
-            this.txt_net_amount_due.Enabled = false;
-            this.txt_net_amount_due.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txt_net_amount_due.Location = new System.Drawing.Point(899, 125);
-            this.txt_net_amount_due.Name = "txt_net_amount_due";
-            this.txt_net_amount_due.ReadOnly = true;
-            this.txt_net_amount_due.Size = new System.Drawing.Size(200, 20);
-            this.txt_net_amount_due.TabIndex = 93;
-            this.txt_net_amount_due.Tag = "money_format";
-            this.txt_net_amount_due.Text = "0.00";
-            this.txt_net_amount_due.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            // 
-            // txt_total_amount_due
-            // 
-            this.txt_total_amount_due.Enabled = false;
-            this.txt_total_amount_due.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txt_total_amount_due.Location = new System.Drawing.Point(899, 146);
-            this.txt_total_amount_due.Name = "txt_total_amount_due";
-            this.txt_total_amount_due.ReadOnly = true;
-            this.txt_total_amount_due.Size = new System.Drawing.Size(200, 20);
-            this.txt_total_amount_due.TabIndex = 94;
-            this.txt_total_amount_due.Tag = "money_format";
-            this.txt_total_amount_due.Text = "0.00";
-            this.txt_total_amount_due.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            // 
-            // txt_vat_percent
-            // 
-            this.txt_vat_percent.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txt_vat_percent.Location = new System.Drawing.Point(487, 126);
-            this.txt_vat_percent.Name = "txt_vat_percent";
-            this.txt_vat_percent.ReadOnly = true;
-            this.txt_vat_percent.Size = new System.Drawing.Size(30, 20);
-            this.txt_vat_percent.TabIndex = 97;
-            this.txt_vat_percent.Tag = "";
-            this.txt_vat_percent.Text = "12%";
-            this.txt_vat_percent.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            // 
-            // label33
-            // 
-            this.label33.AutoSize = true;
-            this.label33.Location = new System.Drawing.Point(634, 22);
-            this.label33.Name = "label33";
-            this.label33.Size = new System.Drawing.Size(113, 13);
-            this.label33.TabIndex = 99;
-            this.label33.Text = "LONG DESCRIPTION";
-            // 
-            // txt_long_description
-            // 
-            this.txt_long_description.Location = new System.Drawing.Point(753, 19);
-            this.txt_long_description.Multiline = true;
-            this.txt_long_description.Name = "txt_long_description";
-            this.txt_long_description.Size = new System.Drawing.Size(330, 82);
-            this.txt_long_description.TabIndex = 100;
-            // 
-            // label34
-            // 
-            this.label34.AutoSize = true;
-            this.label34.Location = new System.Drawing.Point(100, 22);
-            this.label34.Name = "label34";
-            this.label34.Size = new System.Drawing.Size(121, 13);
-            this.label34.TabIndex = 101;
-            this.label34.Text = "SHORT DESCRIPTION";
-            // 
-            // txt_short_description
-            // 
-            this.txt_short_description.Location = new System.Drawing.Point(227, 19);
-            this.txt_short_description.Multiline = true;
-            this.txt_short_description.Name = "txt_short_description";
-            this.txt_short_description.Size = new System.Drawing.Size(330, 82);
-            this.txt_short_description.TabIndex = 102;
-            this.txt_short_description.TextChanged += new System.EventHandler(this.txt_short_description_TextChanged);
-            // 
-            // btn_save
-            // 
-            this.btn_save.BackColor = System.Drawing.Color.MediumSeaGreen;
-            this.btn_save.FlatAppearance.BorderColor = System.Drawing.Color.White;
-            this.btn_save.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(192)))), ((int)(((byte)(192)))));
-            this.btn_save.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(255)))), ((int)(((byte)(128)))));
-            this.btn_save.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btn_save.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btn_save.ForeColor = System.Drawing.Color.White;
-            this.btn_save.Location = new System.Drawing.Point(914, 212);
-            this.btn_save.Name = "btn_save";
-            this.btn_save.Size = new System.Drawing.Size(73, 22);
-            this.btn_save.TabIndex = 104;
-            this.btn_save.Text = "SAVE";
-            this.btn_save.UseVisualStyleBackColor = false;
-            this.btn_save.Visible = false;
-            // 
-            // btn_cancel
-            // 
-            this.btn_cancel.BackColor = System.Drawing.Color.Red;
-            this.btn_cancel.FlatAppearance.BorderColor = System.Drawing.Color.White;
-            this.btn_cancel.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
-            this.btn_cancel.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(255)))), ((int)(((byte)(128)))));
-            this.btn_cancel.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btn_cancel.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btn_cancel.ForeColor = System.Drawing.Color.White;
-            this.btn_cancel.Location = new System.Drawing.Point(843, 212);
-            this.btn_cancel.Name = "btn_cancel";
-            this.btn_cancel.Size = new System.Drawing.Size(73, 22);
-            this.btn_cancel.TabIndex = 103;
-            this.btn_cancel.Text = "CANCEL";
-            this.btn_cancel.UseVisualStyleBackColor = false;
-            this.btn_cancel.Visible = false;
-            this.btn_cancel.Click += new System.EventHandler(this.btn_cancel_Click);
-            // 
-            // btn_finalize
-            // 
-            this.btn_finalize.BackColor = System.Drawing.Color.LightSeaGreen;
-            this.btn_finalize.FlatAppearance.BorderColor = System.Drawing.Color.White;
-            this.btn_finalize.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(192)))), ((int)(((byte)(192)))));
-            this.btn_finalize.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(255)))), ((int)(((byte)(128)))));
-            this.btn_finalize.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btn_finalize.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btn_finalize.ForeColor = System.Drawing.Color.White;
-            this.btn_finalize.Location = new System.Drawing.Point(509, 226);
-            this.btn_finalize.Name = "btn_finalize";
-            this.btn_finalize.Size = new System.Drawing.Size(122, 22);
-            this.btn_finalize.TabIndex = 116;
-            this.btn_finalize.Text = "FINALIZE";
-            this.btn_finalize.UseVisualStyleBackColor = false;
-            this.btn_finalize.Click += new System.EventHandler(this.btn_finalize_Click);
+            this.label28.AutoSize = true;
+            this.label28.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label28.Location = new System.Drawing.Point(367, 204);
+            this.label28.Name = "label28";
+            this.label28.Size = new System.Drawing.Size(117, 13);
+            this.label28.TabIndex = 191;
+            this.label28.Text = "Additional Discount";
             // 
             // btn_sales_order
             // 
@@ -2048,13 +1937,270 @@
             this.btn_sales_order.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btn_sales_order.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btn_sales_order.ForeColor = System.Drawing.Color.White;
-            this.btn_sales_order.Location = new System.Drawing.Point(637, 226);
+            this.btn_sales_order.Location = new System.Drawing.Point(640, 249);
             this.btn_sales_order.Name = "btn_sales_order";
             this.btn_sales_order.Size = new System.Drawing.Size(122, 22);
-            this.btn_sales_order.TabIndex = 117;
+            this.btn_sales_order.TabIndex = 190;
             this.btn_sales_order.Text = "SALES ORDER";
             this.btn_sales_order.UseVisualStyleBackColor = false;
             this.btn_sales_order.Click += new System.EventHandler(this.btn_sales_order_Click);
+            // 
+            // btn_finalize
+            // 
+            this.btn_finalize.BackColor = System.Drawing.Color.LightSeaGreen;
+            this.btn_finalize.FlatAppearance.BorderColor = System.Drawing.Color.White;
+            this.btn_finalize.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(192)))), ((int)(((byte)(192)))));
+            this.btn_finalize.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(255)))), ((int)(((byte)(128)))));
+            this.btn_finalize.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btn_finalize.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btn_finalize.ForeColor = System.Drawing.Color.White;
+            this.btn_finalize.Location = new System.Drawing.Point(512, 249);
+            this.btn_finalize.Name = "btn_finalize";
+            this.btn_finalize.Size = new System.Drawing.Size(122, 22);
+            this.btn_finalize.TabIndex = 189;
+            this.btn_finalize.Text = "FINALIZE";
+            this.btn_finalize.UseVisualStyleBackColor = false;
+            // 
+            // btn_cancel
+            // 
+            this.btn_cancel.BackColor = System.Drawing.Color.Red;
+            this.btn_cancel.FlatAppearance.BorderColor = System.Drawing.Color.White;
+            this.btn_cancel.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
+            this.btn_cancel.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(255)))), ((int)(((byte)(128)))));
+            this.btn_cancel.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btn_cancel.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btn_cancel.ForeColor = System.Drawing.Color.White;
+            this.btn_cancel.Location = new System.Drawing.Point(846, 235);
+            this.btn_cancel.Name = "btn_cancel";
+            this.btn_cancel.Size = new System.Drawing.Size(73, 22);
+            this.btn_cancel.TabIndex = 187;
+            this.btn_cancel.Text = "CANCEL";
+            this.btn_cancel.UseVisualStyleBackColor = false;
+            this.btn_cancel.Visible = false;
+            // 
+            // btn_save
+            // 
+            this.btn_save.BackColor = System.Drawing.Color.MediumSeaGreen;
+            this.btn_save.FlatAppearance.BorderColor = System.Drawing.Color.White;
+            this.btn_save.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(192)))), ((int)(((byte)(192)))));
+            this.btn_save.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(255)))), ((int)(((byte)(128)))));
+            this.btn_save.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btn_save.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btn_save.ForeColor = System.Drawing.Color.White;
+            this.btn_save.Location = new System.Drawing.Point(917, 235);
+            this.btn_save.Name = "btn_save";
+            this.btn_save.Size = new System.Drawing.Size(73, 22);
+            this.btn_save.TabIndex = 188;
+            this.btn_save.Text = "SAVE";
+            this.btn_save.UseVisualStyleBackColor = false;
+            this.btn_save.Visible = false;
+            // 
+            // txt_short_description
+            // 
+            this.txt_short_description.Location = new System.Drawing.Point(230, 42);
+            this.txt_short_description.Multiline = true;
+            this.txt_short_description.Name = "txt_short_description";
+            this.txt_short_description.Size = new System.Drawing.Size(330, 82);
+            this.txt_short_description.TabIndex = 186;
+            this.txt_short_description.TextChanged += new System.EventHandler(this.txt_short_description_TextChanged);
+            // 
+            // label34
+            // 
+            this.label34.AutoSize = true;
+            this.label34.Location = new System.Drawing.Point(103, 45);
+            this.label34.Name = "label34";
+            this.label34.Size = new System.Drawing.Size(121, 13);
+            this.label34.TabIndex = 185;
+            this.label34.Text = "SHORT DESCRIPTION";
+            // 
+            // txt_long_description
+            // 
+            this.txt_long_description.Location = new System.Drawing.Point(756, 42);
+            this.txt_long_description.Multiline = true;
+            this.txt_long_description.Name = "txt_long_description";
+            this.txt_long_description.Size = new System.Drawing.Size(330, 82);
+            this.txt_long_description.TabIndex = 184;
+            // 
+            // label33
+            // 
+            this.label33.AutoSize = true;
+            this.label33.Location = new System.Drawing.Point(637, 45);
+            this.label33.Name = "label33";
+            this.label33.Size = new System.Drawing.Size(113, 13);
+            this.label33.TabIndex = 183;
+            this.label33.Text = "LONG DESCRIPTION";
+            // 
+            // txt_vat_percent
+            // 
+            this.txt_vat_percent.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txt_vat_percent.Location = new System.Drawing.Point(490, 149);
+            this.txt_vat_percent.Name = "txt_vat_percent";
+            this.txt_vat_percent.ReadOnly = true;
+            this.txt_vat_percent.Size = new System.Drawing.Size(30, 20);
+            this.txt_vat_percent.TabIndex = 182;
+            this.txt_vat_percent.Tag = "percent_format";
+            this.txt_vat_percent.Text = "12%";
+            this.txt_vat_percent.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            // 
+            // txt_total_amount_due
+            // 
+            this.txt_total_amount_due.Enabled = false;
+            this.txt_total_amount_due.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txt_total_amount_due.Location = new System.Drawing.Point(902, 169);
+            this.txt_total_amount_due.Name = "txt_total_amount_due";
+            this.txt_total_amount_due.ReadOnly = true;
+            this.txt_total_amount_due.Size = new System.Drawing.Size(200, 20);
+            this.txt_total_amount_due.TabIndex = 181;
+            this.txt_total_amount_due.Tag = "money_format";
+            this.txt_total_amount_due.Text = "0.00";
+            this.txt_total_amount_due.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            // 
+            // txt_net_amount_due
+            // 
+            this.txt_net_amount_due.Enabled = false;
+            this.txt_net_amount_due.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txt_net_amount_due.Location = new System.Drawing.Point(902, 148);
+            this.txt_net_amount_due.Name = "txt_net_amount_due";
+            this.txt_net_amount_due.ReadOnly = true;
+            this.txt_net_amount_due.Size = new System.Drawing.Size(200, 20);
+            this.txt_net_amount_due.TabIndex = 180;
+            this.txt_net_amount_due.Tag = "money_format";
+            this.txt_net_amount_due.Text = "0.00";
+            this.txt_net_amount_due.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            // 
+            // txt_cash_discount
+            // 
+            this.txt_cash_discount.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txt_cash_discount.Location = new System.Drawing.Point(490, 175);
+            this.txt_cash_discount.Name = "txt_cash_discount";
+            this.txt_cash_discount.Size = new System.Drawing.Size(155, 20);
+            this.txt_cash_discount.TabIndex = 179;
+            this.txt_cash_discount.Tag = "money_format";
+            this.txt_cash_discount.Text = "0.00";
+            this.txt_cash_discount.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            this.txt_cash_discount.TextChanged += new System.EventHandler(this.txt_cash_discount_TextChanged_1);
+            // 
+            // label29
+            // 
+            this.label29.AutoSize = true;
+            this.label29.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label29.Location = new System.Drawing.Point(764, 172);
+            this.label29.Name = "label29";
+            this.label29.Size = new System.Drawing.Size(134, 13);
+            this.label29.TabIndex = 178;
+            this.label29.Text = "TOTAL AMOUNT DUE";
+            // 
+            // label30
+            // 
+            this.label30.AutoSize = true;
+            this.label30.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label30.Location = new System.Drawing.Point(796, 151);
+            this.label30.Name = "label30";
+            this.label30.Size = new System.Drawing.Size(100, 13);
+            this.label30.TabIndex = 177;
+            this.label30.Text = "Net Amount Due";
+            // 
+            // label31
+            // 
+            this.label31.AutoSize = true;
+            this.label31.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label31.Location = new System.Drawing.Point(400, 178);
+            this.label31.Name = "label31";
+            this.label31.Size = new System.Drawing.Size(89, 13);
+            this.label31.TabIndex = 176;
+            this.label31.Text = "Cash Discount";
+            // 
+            // txt_percent_discount
+            // 
+            this.txt_percent_discount.Enabled = false;
+            this.txt_percent_discount.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txt_percent_discount.Location = new System.Drawing.Point(193, 201);
+            this.txt_percent_discount.Name = "txt_percent_discount";
+            this.txt_percent_discount.ReadOnly = true;
+            this.txt_percent_discount.Size = new System.Drawing.Size(31, 20);
+            this.txt_percent_discount.TabIndex = 175;
+            this.txt_percent_discount.Tag = "percent_format";
+            this.txt_percent_discount.Text = "0";
+            this.txt_percent_discount.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            // 
+            // label27
+            // 
+            this.label27.AutoSize = true;
+            this.label27.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label27.Location = new System.Drawing.Point(86, 204);
+            this.label27.Name = "label27";
+            this.label27.Size = new System.Drawing.Size(105, 13);
+            this.label27.TabIndex = 174;
+            this.label27.Text = "Percent Discount";
+            // 
+            // txt_net_sales
+            // 
+            this.txt_net_sales.Enabled = false;
+            this.txt_net_sales.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txt_net_sales.Location = new System.Drawing.Point(193, 175);
+            this.txt_net_sales.Name = "txt_net_sales";
+            this.txt_net_sales.ReadOnly = true;
+            this.txt_net_sales.Size = new System.Drawing.Size(125, 20);
+            this.txt_net_sales.TabIndex = 173;
+            this.txt_net_sales.Tag = "money_format";
+            this.txt_net_sales.Text = "0.00";
+            this.txt_net_sales.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            // 
+            // txt_vat_amount
+            // 
+            this.txt_vat_amount.Enabled = false;
+            this.txt_vat_amount.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txt_vat_amount.Location = new System.Drawing.Point(520, 149);
+            this.txt_vat_amount.Name = "txt_vat_amount";
+            this.txt_vat_amount.ReadOnly = true;
+            this.txt_vat_amount.Size = new System.Drawing.Size(125, 20);
+            this.txt_vat_amount.TabIndex = 172;
+            this.txt_vat_amount.Tag = "money_format";
+            this.txt_vat_amount.Text = "0.00";
+            this.txt_vat_amount.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            // 
+            // txt_gross_sales
+            // 
+            this.txt_gross_sales.Enabled = false;
+            this.txt_gross_sales.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txt_gross_sales.Location = new System.Drawing.Point(193, 148);
+            this.txt_gross_sales.Name = "txt_gross_sales";
+            this.txt_gross_sales.ReadOnly = true;
+            this.txt_gross_sales.Size = new System.Drawing.Size(125, 20);
+            this.txt_gross_sales.TabIndex = 171;
+            this.txt_gross_sales.Tag = "money_format";
+            this.txt_gross_sales.Text = "0.00";
+            this.txt_gross_sales.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            // 
+            // label23
+            // 
+            this.label23.AutoSize = true;
+            this.label23.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label23.Location = new System.Drawing.Point(124, 178);
+            this.label23.Name = "label23";
+            this.label23.Size = new System.Drawing.Size(62, 13);
+            this.label23.TabIndex = 170;
+            this.label23.Text = "Net Sales";
+            // 
+            // label24
+            // 
+            this.label24.AutoSize = true;
+            this.label24.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label24.Location = new System.Drawing.Point(412, 152);
+            this.label24.Name = "label24";
+            this.label24.Size = new System.Drawing.Size(72, 13);
+            this.label24.TabIndex = 169;
+            this.label24.Text = "Vat Amount";
+            // 
+            // label25
+            // 
+            this.label25.AutoSize = true;
+            this.label25.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label25.Location = new System.Drawing.Point(113, 151);
+            this.label25.Name = "label25";
+            this.label25.Size = new System.Drawing.Size(74, 13);
+            this.label25.TabIndex = 168;
+            this.label25.Text = "Gross Sales";
             // 
             // Quotation
             // 
@@ -2095,8 +2241,13 @@
             this.toolstrip_quotation.PerformLayout();
             this.tabControl.ResumeLayout(false);
             this.quick_tab.ResumeLayout(false);
+            this.tabControl1.ResumeLayout(false);
+            this.Orders.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.dgv_quick_quote_details)).EndInit();
             this.UnitPriceColumnContextMenuStrip.ResumeLayout(false);
+            this.Quote_Terms.ResumeLayout(false);
+            this.QuotationTermsPanel.ResumeLayout(false);
+            this.QuotationTermsPanel.PerformLayout();
             this.project_tab.ResumeLayout(false);
             this.tabControl2.ResumeLayout(false);
             this.pnl_project_name.ResumeLayout(false);
@@ -2179,7 +2330,6 @@
         private System.Windows.Forms.Panel panel3;
         private System.Windows.Forms.TabControl tabControl;
         private System.Windows.Forms.TabPage quick_tab;
-        private System.Windows.Forms.DataGridView dgv_quick_quote_details;
         private System.Windows.Forms.TabPage project_tab;
         private System.Windows.Forms.TabControl tabControl2;
         private System.Windows.Forms.TabPage tabPage1;
@@ -2258,29 +2408,11 @@
         private System.Windows.Forms.ToolStripButton btn_print;
         private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.DataGridViewTextBoxColumn quick_id;
-        private System.Windows.Forms.DataGridViewTextBoxColumn quick_bom_id;
-        private System.Windows.Forms.DataGridViewTextBoxColumn quick_based_id;
-        private System.Windows.Forms.DataGridViewTextBoxColumn reference_code;
-        private System.Windows.Forms.DataGridViewTextBoxColumn quick_item_id;
-        private System.Windows.Forms.DataGridViewTextBoxColumn quick_images;
-        private System.Windows.Forms.DataGridViewTextBoxColumn quick_item_code;
-        private System.Windows.Forms.DataGridViewTextBoxColumn quick_item_name;
-        private System.Windows.Forms.DataGridViewTextBoxColumn quick_qty;
-        private System.Windows.Forms.DataGridViewTextBoxColumn quick_unit_of_measure;
-        private System.Windows.Forms.DataGridViewTextBoxColumn man_days;
-        private System.Windows.Forms.DataGridViewTextBoxColumn labor_rate;
-        private System.Windows.Forms.DataGridViewTextBoxColumn quick_list_price;
-        private System.Windows.Forms.DataGridViewTextBoxColumn quick_unit_price;
         private System.Windows.Forms.ContextMenuStrip UnitPriceColumnContextMenuStrip;
         private System.Windows.Forms.ToolStripMenuItem canvasToolStripMenuItem;
-        private System.Windows.Forms.DataGridViewTextBoxColumn quick_discount;
-        private System.Windows.Forms.DataGridViewTextBoxColumn quick_net_discount;
-        private System.Windows.Forms.DataGridViewTextBoxColumn quick_net_total;
-        private System.Windows.Forms.DataGridViewTextBoxColumn quick_line_total;
-        private System.Windows.Forms.DataGridViewTextBoxColumn short_description;
-        private System.Windows.Forms.Button btn_quotation_terms;
         private System.Windows.Forms.Panel pnl_footer;
+        private System.Windows.Forms.TextBox txt_additional_discount;
+        private System.Windows.Forms.Label label28;
         private System.Windows.Forms.Button btn_sales_order;
         private System.Windows.Forms.Button btn_finalize;
         private System.Windows.Forms.Button btn_cancel;
@@ -2304,5 +2436,37 @@
         private System.Windows.Forms.Label label23;
         private System.Windows.Forms.Label label24;
         private System.Windows.Forms.Label label25;
+        private System.Windows.Forms.TabControl tabControl1;
+        private System.Windows.Forms.TabPage Orders;
+        private System.Windows.Forms.DataGridView dgv_quick_quote_details;
+        private System.Windows.Forms.TabPage Quote_Terms;
+        private System.Windows.Forms.Panel QuotationTermsPanel;
+        private System.Windows.Forms.RichTextBox TermAndConditionsRichTextBox;
+        private System.Windows.Forms.Label label32;
+        private System.Windows.Forms.RichTextBox ExclusionsRichTextBox;
+        private System.Windows.Forms.Label label22;
+        private System.Windows.Forms.Label label21;
+        private System.Windows.Forms.RichTextBox InclusionsRichTextBox;
+        private System.Windows.Forms.Label label37;
+        private System.Windows.Forms.Label label38;
+        private System.Windows.Forms.DataGridViewTextBoxColumn quick_id;
+        private System.Windows.Forms.DataGridViewTextBoxColumn quick_bom_id;
+        private System.Windows.Forms.DataGridViewTextBoxColumn quick_based_id;
+        private System.Windows.Forms.DataGridViewTextBoxColumn quick_images;
+        private System.Windows.Forms.DataGridViewTextBoxColumn reference_code;
+        private System.Windows.Forms.DataGridViewTextBoxColumn quick_item_id;
+        private System.Windows.Forms.DataGridViewTextBoxColumn quick_item_code;
+        private System.Windows.Forms.DataGridViewTextBoxColumn quick_item_name;
+        private System.Windows.Forms.DataGridViewTextBoxColumn quick_qty;
+        private System.Windows.Forms.DataGridViewTextBoxColumn quick_unit_of_measure;
+        private System.Windows.Forms.DataGridViewTextBoxColumn man_days;
+        private System.Windows.Forms.DataGridViewTextBoxColumn labor_rate;
+        private System.Windows.Forms.DataGridViewTextBoxColumn quick_list_price;
+        private System.Windows.Forms.DataGridViewTextBoxColumn quick_unit_price;
+        private System.Windows.Forms.DataGridViewTextBoxColumn quick_discount;
+        private System.Windows.Forms.DataGridViewTextBoxColumn quick_net_discount;
+        private System.Windows.Forms.DataGridViewTextBoxColumn quick_net_total;
+        private System.Windows.Forms.DataGridViewTextBoxColumn quick_line_total;
+        private System.Windows.Forms.DataGridViewTextBoxColumn short_description;
     }
 }

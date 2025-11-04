@@ -117,6 +117,7 @@
     <Compile Include="Data\STATIC_SHIPPED_TYPE.cs" />
     <Compile Include="Data\STATIC_WARRANTY.cs" />
     <Compile Include="Models\ApplicationModel.cs" />
+    <Compile Include="Models\CompanyModel.cs" />
     <Compile Include="Models\CurrentUserModel.cs" />
     <Compile Include="Models\BPI.cs" />
     <Compile Include="Models\bpi_list.cs" />
@@ -355,6 +356,7 @@
     <Compile Include="Services\Sales\ShipService.cs" />
     <Compile Include="Services\Sales\UnitOfMeasurementServices.cs" />
     <Compile Include="Services\Setup\ApplicationService.cs" />
+    <Compile Include="Services\Setup\CompanyService.cs" />
     <Compile Include="Services\Setup\ItemClassServices.cs" />
     <Compile Include="Services\Setup\ItemNameModel.cs" />
     <Compile Include="Services\Setup\ItemNameServices.cs" />

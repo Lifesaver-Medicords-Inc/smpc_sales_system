@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -27,6 +28,7 @@ namespace smpc_sales_system.Services.Sales.Models
         public double vat_amount { get; set; }
         public double net_sales { get; set; }
         public double percent_discount { get; set; }
+        public double additional_discounted_amount { get; set; }
         public double cash_discount { get; set; }
         public double net_amount_due { get; set; }
         public double total_amount_due { get; set; }   

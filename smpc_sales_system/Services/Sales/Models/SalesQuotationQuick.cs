@@ -16,6 +16,8 @@ namespace smpc_sales_system.Services.Sales.Models
         public string components { get; set; }
         public string model { get; set; }
         public int qty { get; set; }
+        public int man_days { get; set; }
+        public decimal labor_rate { get; set; }
         public string unit_of_measure { get; set; }
         public decimal list_price { get; set; }
         public decimal unit_price { get; set; }
@@ -23,6 +25,7 @@ namespace smpc_sales_system.Services.Sales.Models
         public decimal net_discount { get; set; }
         public decimal net_total { get; set; }
         public decimal line_total { get; set; }
+        public string short_description { get; set; }
     }
 
     class SalesQuotationSelectedImageModel

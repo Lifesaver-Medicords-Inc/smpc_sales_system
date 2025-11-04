@@ -4,6 +4,7 @@ using Newtonsoft.Json.Linq;
 using smpc_app.Data;
 using smpc_app.Services.Helpers;
 using smpc_inventory_app.Pages;
+using smpc_inventory_app.Services.Setup.Model.Item;
 using smpc_sales_app.Data;
 using smpc_sales_app.Services.Helpers;
 using smpc_sales_app.Services.Sales;
@@ -16,11 +17,15 @@ using smpc_sales_system.Services.Sales.Models;
 using smpc_sales_system.Services.Setup;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Net.WebSockets;
 using System.Reflection.Emit;
+using System.Runtime.CompilerServices;
+using System.Security.Cryptography;
+using System.Security.Policy;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -456,7 +461,7 @@ namespace smpc_sales_app.Pages.Sales
 
             this.tabControl.SelectedIndex = 0;
             this.tabControl.Height = 600;
-            this.Size = new Size(1386 - 80, 800);
+            this.Size = new Size(1386 - 80, 950);
             isProject = false;
             IsEdit = false;
         }
@@ -525,21 +530,34 @@ namespace smpc_sales_app.Pages.Sales
         public DataTable ImageList { get; set; } = new DataTable();
         public DataTable BomHead { get; set; } = new DataTable();
         public DataTable BomDetails { get; set; } = new DataTable();
+        public DataTable Company { get; set; } = new DataTable();
 
         private async Task fetchItemData()
         {
             var itemData = await ItemService.GetItem();
             var bomData = await ProjectService.GetBom();
+            var companyData = await CompanyService.GetAsDatatable();
+
+            if (itemData == null || bomData == null)
+                return;
+
             ItemList = JsonHelper.ToDataTable(itemData.items);
             ItemAdditionalSpecs = JsonHelper.ToDataTable(itemData.additionalspecs);
             ImageList = JsonHelper.ToDataTable(itemData.ItemImages);
             BomHead = JsonHelper.ToDataTable(bomData.bom_head);
             BomDetails = JsonHelper.ToDataTable(bomData.bom_details);
+            Company = companyData;
+
+            //Apply Quotation
+            quotationTerms();
         }
 
         private async Task fetchBpiData()
         {
             Bpi_Class bpi_data = await QuotationService.GetBpiCustomers();
+
+            if (bpi_data == null)
+                return;
 
             bpi_dt = JsonHelper.ToDataTable(bpi_data.bpi);
             bpi_general = JsonHelper.ToDataTable(bpi_data.general);
@@ -611,7 +629,11 @@ namespace smpc_sales_app.Pages.Sales
             SalesProjectList data = await ProjectService.GetProjects();
 
             DataTable project_quote = new DataTable();
+
             project_quote = JsonHelper.ToDataTable(data.SalesQuotation);
+
+            if (data == null || project_quote == null || project_quote.Rows.Count <= 0)
+                return;
 
             if (data == null || (data.sales_project_item_set == null || !data.sales_project_item_set.Any()))
             {
@@ -889,10 +911,6 @@ namespace smpc_sales_app.Pages.Sales
                     IsProject();
                 }
             }
-            else
-            {
-
-            }
 
         }
         public SalesProjectItemSet GetProjectItemSet()
@@ -1006,7 +1024,7 @@ namespace smpc_sales_app.Pages.Sales
             try
             {
                 Panel[] pnl_list = { pnl_header, pnl_footer };
-                var parentData = Helpers.GetControlsValues(pnl_list);
+                var parentData = Helpers.GetControlsValuesV2(pnl_list);
                 //var childData = Helpers.GetControlsValues(pnl_list);
                 int id;
                 bool isParsed = int.TryParse(txt_id.Text, out id);
@@ -1038,27 +1056,24 @@ namespace smpc_sales_app.Pages.Sales
                         continue;
 
                     Dictionary<string, object> data = new Dictionary<string, object>();
-                    //data.Add("is_child", bool.TryParse(item["quick_ischild"]?.ToString(), out bool isChild) ? isChild : false);
-                    //data.Add("is_parent", bool.TryParse(item["quick_is_parent"]?.ToString(), out bool isParent) ? isParent : false);
-                    //data.Add("reference_code", bool.TryParse(item["reference_code"]?.ToString(), out bool isParent) ? isParent : false);
+
                     data.Add("item_id", itemId);
                     data.Add("bom_id", int.TryParse(item["quick_bom_id"].ToString(), out int bomid) ? bomid : 0);
                     data.Add("components", item["quick_item_code"]);
                     data.Add("model", item["quick_item_name"]);
                     data.Add("qty", int.TryParse(item["quick_qty"].ToString(), out int val) ? val : 0);
                     data.Add("unit_of_measure", item["quick_unit_of_measure"]);
-                    data.Add("unit_price", decimal.Parse(Helpers.GetCleanedPriceValue(item["quick_unit_price"].ToString())));
+                    data.Add("unit_price", decimal.Parse((item["quick_unit_price"].ToString())));
                     data.Add("percent_discount", item["quick_discount"].ToString());
                     data.Add("net_discount", decimal.Parse(Helpers.GetCleanedPriceValue(item["quick_net_discount"].ToString())));
                     data.Add("net_total", decimal.Parse(Helpers.GetCleanedPriceValue(item["quick_net_total"].ToString())));
                     data.Add("line_total", decimal.Parse(Helpers.GetCleanedPriceValue(item["quick_line_total"].ToString())));
                     data.Add("reference_code", item["reference_code"].ToString());
                     data.Add("short_description", item["short_description"].ToString());
-                    data.Add("long_description", item["long_description"].ToString());
-
-                    quickQuoteList.Add(data);
+                    data.Add("man_days", int.TryParse(item["man_days"].ToString(), out int manday) ? manday : 0);
+                    data.Add("labor_rate", decimal.TryParse(item["labor_rate"].ToString(), out decimal laborday) ? laborday : 0);
+                quickQuoteList.Add(data);
                 }
-
 
                 if (quickQuoteList != null)
                 {
@@ -1097,6 +1112,8 @@ namespace smpc_sales_app.Pages.Sales
                     }
 
                     parentData["sales_quotation_quick"] = childCollection;
+                    //parentData["additional_discounted_amount"] = decimal.Parse(txt_additional_discount.Text);
+                    //parentData["cash_discount"] = decimal.Parse(txt_cash_discount.Text);
 
 
                     if (parentData.ContainsKey("sales_quotation_quick"))
@@ -1108,11 +1125,15 @@ namespace smpc_sales_app.Pages.Sales
                         {
                             //// this should await a response in the future if the response is success proceed to create if not notify the user
                             Helpers.ResetControls(pnl_header);
-                            Helpers.ResetControls(pnl_footer);
+                            //Helpers.ResetControls(pnl_footer);
                             //dgv_quick_quote_details.DataSource = this.childList.Clone();
                             //dgv_quick_quotes_show.Visible = true;
                             //dgv_quick_quotes_show.Enabled = false;
                             //toolstrip_quotation.Enabled = true;
+
+                            Panel[] panel = { pnl_header, pnl_footer };
+
+                            ResetControls(pnl_footer);
 
                             // IF SUCCESS
 
@@ -1170,6 +1191,8 @@ namespace smpc_sales_app.Pages.Sales
                     var cellQuickId = row.Cells["quick_id"].Value?.ToString();
                     var cellItemId = row.Cells["quick_item_id"].Value?.ToString();
 
+                    cellQuickId = string.IsNullOrWhiteSpace(cellQuickId) ? "0" : cellQuickId;
+
 
                     if (int.TryParse(cellQuickId, out int quickId) &&
                         int.TryParse(cellItemId, out int itemId))
@@ -1202,7 +1225,7 @@ namespace smpc_sales_app.Pages.Sales
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error: " + ex.Message);
+                MessageBox.Show("Error: " + ex.Message + Environment.NewLine + "Dev Error: from dgv_quick_quote_details_CellClick");
             }
         }
 
@@ -1232,14 +1255,8 @@ namespace smpc_sales_app.Pages.Sales
                 {
                     if (row.Cells["reference_code"].Value?.ToString() == parentReferenceCode)
                     {
-                        row.Cells["quick_unit_price"].Value = Helpers.FormatAsCurrency(totalUnitPrice.ToString());
-                        break;
-
-                        //if (decimal.TryParse(Helpers.GetCleanedPriceValue(row.Cells["quick_discount"].Value.ToString()), out decimal qty))
-                        //{
-                        //    row.Cells["quick_net_total"].Value = Helpers.FormatAsCurrency(double.Parse(totalUnitPrice.ToString()));
-
-                        //}              
+                        row.Cells["quick_unit_price"].Value = totalUnitPrice.ToString();//Helpers.FormatAsCurrency(totalUnitPrice.ToString());
+                        break;           
 
                     }
                 }
@@ -1295,10 +1312,10 @@ namespace smpc_sales_app.Pages.Sales
 
             if (ParentRow != null)
             {
-                decimal manDays = decimal.TryParse(ParentRow.Field<string>("man_days"), out decimal manDaysParsed) ? manDaysParsed : 0;
-                decimal laborRate = decimal.TryParse(ParentRow.Field<string>("labor_rate"), out decimal laborRateParsed) ? laborRateParsed : 0;
+                decimal manDays = Convert.ToDecimal(ParentRow["man_days"]);
+                decimal laborRate = Convert.ToDecimal(ParentRow["labor_rate"]);
 
-                totalLaborCost = manDays * laborRate;
+                totalLaborCost = laborRate * manDays;
 
                 //Console.WriteLine($"Adding labor cost for parent '{parentReferenceCode}': {manDays} * {laborRate} = {totalLaborCost:C}");
             }
@@ -1357,6 +1374,10 @@ namespace smpc_sales_app.Pages.Sales
                         var value = decimal.Parse(part.Substring(1));
                         result *= (1m / value);
                     }
+                    else if (part.Contains('/'))
+                    { 
+                        MessageBox.Show("Invalid discount format. Division should be at the start of the part.");
+                    }
                     else
                     {
                         // Normal multiplier
@@ -1373,6 +1394,37 @@ namespace smpc_sales_app.Pages.Sales
             }
         }
 
+        private static bool IsValidMoneyFormat(string input)
+        {
+            if (string.IsNullOrWhiteSpace(input))
+                return false;
+
+            // Remove currency symbols and thousands separators
+            string cleaned = input.Replace("₱", "")
+                                  .Replace("$", "")
+                                  .Replace(",", "")
+                                  .Trim();
+
+            decimal value;
+            return decimal.TryParse(cleaned, out value);
+        }
+
+        // Example usage in your code (add this check before parsing money values):
+        private static decimal GetCleanedPriceValue(string input)
+        {
+            if (!IsValidMoneyFormat(input))
+            {
+                MessageBox.Show("Invalid money format. Please enter a valid number.");
+                return 0;
+            }
+
+            // Remove currency symbols and thousands separators
+            var cleaned = decimal.Parse(input.Replace("₱", "")
+                                   .Replace("$", "")
+                                   .Replace(",", "")
+                                   .Trim());
+            return cleaned;
+        }
         int SelectedRowIndex = 0;
 
         private void ConnectGridviewToDescriptionText(int RowIndex, DataGridView dgv)
@@ -1499,12 +1551,6 @@ namespace smpc_sales_app.Pages.Sales
             }
         }
 
-        private void computeDgv()
-        {
-
-
-        }
-
         public List<Dictionary<string, object>> SelectedImages { get; private set; }
         private void HandleItemImageSelectionClick(int quickId, int itemId)
         {
@@ -1539,202 +1585,8 @@ namespace smpc_sales_app.Pages.Sales
             }
 
         }
-        private void GetBomData1(int rowIndex, int bomID, int itemid, DataGridView dgv)
-        {
-            int selectedIndex = bomID;
-            int selectedItem = itemid;
 
-            if (selectedIndex >= 0 && selectedIndex < BomDetails.Rows.Count)
-            {
-                //DataRow selectedItem = BomHead.Rows[selectedIndex];
-                DataTable bom_parent = Helpers.FilterExactDataTable(BomHead, selectedIndex.ToString(), "id");
-                DataTable bom_child = Helpers.FilterDataTable(BomDetails, selectedIndex.ToString(), "item_bom_id");
-                DataTable items_unit = Helpers.FilterExactDataTable(ItemList, selectedItem.ToString(), "id");
-
-                DataTable dataSource = dgv.DataSource as DataTable;
-                if (!isProject)
-                {
-                    if (dataSource == null) return;
-                }
-
-
-                string bom_parent_id = "";
-                string bom_parent_item_id = "";
-                string bom_parent_name = "";
-                string bom_parent_model = "";
-
-                // Parent Bom
-                foreach (DataRow row in bom_parent.Rows)
-                {
-                    if (isProject)
-                    {
-                        bom_parent_id = row["id"].ToString();
-                        bom_parent_item_id = row["item_id"].ToString();
-                        bom_parent_name = row["general_name"].ToString();
-                        bom_parent_model = row["item_model"].ToString();
-
-                        if (tabControl2.SelectedTab.Controls[0] is ItemSetUC currentControl)
-                        {
-                            currentControl.SetComponentModelDataUnbound(rowIndex, bom_parent_item_id, bom_parent_id, bom_parent_model);
-                        }
-                    }
-                    else
-                    {
-                        DataRow newRow = dataSource.NewRow();
-                        newRow["bom_id"] = row["id"];
-                        newRow["item_id"] = row["item_id"];
-
-                        newRow["unit_price"] = row["production_cost"];
-
-                        newRow["qty"] = row["production_qty"];
-
-                        newRow["components"] = row["general_name"];
-
-                        newRow["model"] = row["item_model"];
-
-                        newRow["is_parent"] = true;
-
-
-                        var matchingUnit = ItemList.AsEnumerable()
-                           .FirstOrDefault(item => item["id"].ToString() == row["item_id"].ToString());
-
-                        if (matchingUnit != null)
-                        {
-                            newRow["unit_of_measure"] = matchingUnit["unit_of_measure"];
-                        }
-                        else
-                        {
-                            newRow["unit_of_measure"] = DBNull.Value;
-                        }
-
-                        dataSource.Rows.Add(newRow);
-                    }
-
-                }
-
-                // Child Bom
-                foreach (DataRow row in bom_child.Rows)
-                {
-                    if (isProject)
-                    {
-                        if (tabControl2.SelectedTab.Controls[0] is ItemSetUC currentControl)
-                        {
-                            string item_id = row["item_id"].ToString();
-                            string item_name = row["item_name"].ToString();
-                            string size = row["size"].ToString();
-
-                            currentControl.SetComponentData(rowIndex, item_id, item_name, size, bom_parent_model, bom_parent_id);
-                            rowIndex++;
-                        }
-                    }
-                    else
-                    {
-
-                        DataRow newRow = dataSource.NewRow();
-                        newRow["bom_id"] = row["item_bom_id"];
-                        newRow["item_id"] = row["item_id"];
-                        newRow["components"] = row["item_name"];
-                        newRow["model"] = row["size"];
-                        newRow["qty"] = row["bom_qty"];
-
-                        var matchingUnit = ItemList.AsEnumerable()
-                            .FirstOrDefault(item => item["id"].ToString() == row["item_id"].ToString());
-
-                        if (matchingUnit != null)
-                        {
-                            newRow["unit_of_measure"] = matchingUnit["unit_of_measure"];
-                        }
-                        else
-                        {
-                            newRow["unit_of_measure"] = DBNull.Value;
-                        }
-
-                        newRow["unit_price"] = row["unit_price"];
-                        newRow["is_child"] = true;
-
-
-                        dataSource.Rows.Add(newRow);
-
-                        int addedRowIndex = dataSource.Rows.Count - 1;
-                        foreach (DataGridViewCell cell in dgv.Rows[addedRowIndex].Cells)
-                        {
-                            if (cell.OwningColumn.Name != "quick_qty" && cell.OwningColumn.Name != "quick_images")
-                            {
-                                cell.ReadOnly = true;
-                                cell.Style.BackColor = Color.LightGray;
-                            }
-                        }
-                    }
-
-                }
-                removeColumn();
-            }
-        }
-        private void GetBomData(int rowIndex, int bomID, int itemid, DataGridView dgv)
-        {
-            DataTable bom_parent = Helpers.FilterExactDataTable(BomHead, bomID.ToString(), "id");
-            DataTable bom_child = Helpers.FilterDataTable(BomDetails, bomID.ToString(), "item_bom_id");
-            DataTable items_unit = Helpers.FilterExactDataTable(ItemList, itemid.ToString(), "id");
-
-            if (bom_parent.Rows.Count == 0)
-            {
-                MessageBox.Show("Invalid selection. BOM not found.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-
-            DataTable dataSource = dgv.DataSource as DataTable;
-            if (!isProject && dataSource == null) return;
-
-            // Parent BOM
-            foreach (DataRow row in bom_parent.Rows)
-            {
-                DataRow newRow = dataSource.NewRow();
-                newRow["bom_id"] = row["id"];
-                newRow["item_id"] = row["item_id"];
-                newRow["unit_price"] = row["production_cost"];
-                newRow["qty"] = row["production_qty"];
-                newRow["components"] = row["general_name"];
-                newRow["model"] = row["item_model"];
-                newRow["is_parent"] = true;
-
-                var matchingUnit = ItemList.AsEnumerable()
-                    .FirstOrDefault(item => item["id"].ToString() == row["item_id"].ToString());
-                newRow["unit_of_measure"] = matchingUnit != null ? matchingUnit["unit_of_measure"] : DBNull.Value;
-
-                dataSource.Rows.Add(newRow);
-
-                // 🎨 Style as Parent
-                int addedRowIndex = dataSource.Rows.Count - 1;
-                Helpers.SalesItemRowStyler.ApplyStyle(dgv, addedRowIndex, "parent");
-            }
-
-            // Child BOM
-            foreach (DataRow row in bom_child.Rows)
-            {
-                DataRow newRow = dataSource.NewRow();
-                newRow["bom_id"] = row["item_bom_id"];
-                newRow["item_id"] = row["item_id"];
-                newRow["components"] = row["item_name"];
-                newRow["model"] = row["size"];
-                newRow["qty"] = row["bom_qty"];
-
-                var matchingUnit = ItemList.AsEnumerable()
-                    .FirstOrDefault(item => item["id"].ToString() == row["item_id"].ToString());
-                newRow["unit_of_measure"] = matchingUnit != null ? matchingUnit["unit_of_measure"] : DBNull.Value;
-
-                newRow["unit_price"] = row["unit_price"];
-                newRow["is_child"] = true;
-
-                dataSource.Rows.Add(newRow);
-
-                // 🎨 Style as Child
-                int addedRowIndex = dataSource.Rows.Count - 1;
-                Helpers.SalesItemRowStyler.ApplyStyle(dgv, addedRowIndex, "child");
-            }
-
-            removeColumn();
-        }
-
+        // Counters for reference codes
         int counterReference = 0;
         int counterParent = 1;
 
@@ -1863,7 +1715,7 @@ namespace smpc_sales_app.Pages.Sales
                     newChild["components"] = new string(' ', level * 4) + child["item_name"];
                     newChild["model"] = child["size"];
                     newChild["qty"] = qty;
-                    newChild["unit_price"] = Helpers.FormatAsCurrency(double.Parse(unitPrice.ToString()));
+                    newChild["unit_price"] = unitPrice.ToString();
                     newChild["reference_code"] = $"{additionalReference}.{counterSub}";
 
                     int addedChildIndex = rowIndex + 1;
@@ -1880,7 +1732,8 @@ namespace smpc_sales_app.Pages.Sales
 
             // Update the parent unit_price to total of all its descendants
             //1.186 is for 18% VAT
-            dataSource.Rows[rowIndex]["unit_price"] = Helpers.FormatAsCurrency(double.Parse(totalCost.ToString()) * 1.186); ;
+            decimal TotalCostWithMarkup = decimal.Parse(totalCost.ToString()) * 1.186m;
+            dataSource.Rows[rowIndex]["unit_price"] = TotalCostWithMarkup.ToString();
 
 
 
@@ -2231,9 +2084,12 @@ namespace smpc_sales_app.Pages.Sales
         {
 
         }
-        //
-        // REFACTOR SOON, TOO LONG AND REDUNDANT.
-        //
+        // PSEUDOCODE / PLAN
+        // - When binding childList to the DataGridView ensure the underlying DataTable contains a "quick_images" column.
+        // - If the column is missing, add it to the DataTable before assigning DataSource.
+        // - This guarantees the column exists (designer or runtime) and LoadQuickImageCounts can populate it.
+        // - Keep the rest of the bind logic unchanged.
+
         private void bind(bool isBind = false)
         {
             if (isBind)
@@ -2338,6 +2194,18 @@ namespace smpc_sales_app.Pages.Sales
                 // Create filtered view
                 DataView dataview = new DataView(childList);
                 dataview.RowFilter = $"based_id = " + this.transactionList.Rows[this.SelectedRow]["id"].ToString();
+
+                //// Ensure quick_images column exists
+                //// It not existing on the childList DataTable that why we need to check and add it here
+                //if (dataview.Table != null && !dataview.Table.Columns.Contains("quick_images"))
+                //{
+                //    var col = new DataGridViewTextBoxColumn();
+                //    col.Name = "quick_images";
+                //    col.HeaderText = "IMAGES";
+
+                //    dgv_quick_quote_details.Columns.Insert(4, col);
+                //}
+
                 dgv_quick_quote_details.DataSource = dataview;
 
                 LoadQuickImageCounts();
@@ -2345,33 +2213,37 @@ namespace smpc_sales_app.Pages.Sales
         }
         private void LoadQuickImageCounts()
         {
-            // Ensure quick_images column exists
-            if (!dgv_quick_quote_details.Columns.Contains("quick_images"))
-            {
-                // TO BE CHANGED/FIND INSIDE DGV COLUMN INSTEAD OF CREATING
-                var col = new DataGridViewTextBoxColumn();
-                col.Name = "quick_images";
-                col.HeaderText = "IMAGES";
+            //// Ensure quick_images column exists
+            //if (!dgv_quick_quote_details.Columns.Contains("quick_images"))
+            //{
+            //    // TO BE CHANGED/FIND INSIDE DGV COLUMN INSTEAD OF CREATING
+            //    var col = new DataGridViewTextBoxColumn();
+            //    col.Name = "quick_images";
+            //    col.HeaderText = "IMAGES";
 
-                if (dgv_quick_quote_details.Columns.Count > 6)
-                    dgv_quick_quote_details.Columns.Insert(6, col);
-                else
-                    dgv_quick_quote_details.Columns.Add(col);
-            }
+            //    if (dgv_quick_quote_details.Columns.Count > 6)
+            //        dgv_quick_quote_details.Columns.Insert(6, col);
+            //    else
+            //        dgv_quick_quote_details.Columns.Add(col);
+            //}
 
             // Loop through each row in the DataGridView
-            foreach (DataGridViewRow row in dgv_quick_quote_details.Rows)
+
+            if (dgv_quick_quote_details.Columns.Contains("quick_images"))
             {
-                if (row.Cells["quick_id"].Value == null) continue;
+                foreach (DataGridViewRow row in dgv_quick_quote_details.Rows)
+                {
+                    if (row.Cells["quick_id"].Value == null) continue;
 
-                int quickId = Convert.ToInt32(row.Cells["quick_id"].Value);
+                    int quickId = Convert.ToInt32(row.Cells["quick_id"].Value);
 
-                // Count how many images are linked to this quickId
-                int count = selectedImageList.AsEnumerable()
-                    .Count(r => Convert.ToInt32(r["quotation_quick_id"]) == quickId);
+                    // Count how many images are linked to this quickId
+                    int count = selectedImageList.AsEnumerable()
+                        .Count(r => Convert.ToInt32(r["quotation_quick_id"]) == quickId);
 
-                // Put the count in quick_images column
-                row.Cells["quick_images"].Value = $"SELECTED: {count}";
+                    // Put the count in quick_images column
+                    row.Cells["quick_images"].Value = $"SELECTED: {count}";
+                }
             }
         }
         private void txt_days_TextChanged(object sender, EventArgs e)
@@ -2412,6 +2284,28 @@ namespace smpc_sales_app.Pages.Sales
         private DataTable bpi_items = new DataTable();
         private object previousDataSource;
 
+
+        //Create this to handle resetting of controls with specific tags like money_format and percent_format
+        private void ResetControls(Panel panel)
+        {
+            foreach (Control ctrl in panel.Controls)
+            {
+                if (ctrl is TextBox)
+                {
+                    TextBox txtBox = (TextBox)ctrl;
+                    if (txtBox.Tag == "money_format")
+                    {
+                        txtBox.Text = "0.00";
+                    }
+                    else if (txtBox.Tag == "percent_format")
+                    {
+                        txtBox.Text = "0%";
+                    }
+                    txtBox.Text = "";
+                }
+            }
+        }
+
         private void btn_new_Click(object sender, EventArgs e)
         {
             GetLatestDate();
@@ -2421,8 +2315,14 @@ namespace smpc_sales_app.Pages.Sales
             // New Quick Quote
             if (!isProject)
             {
+
+
                 Helpers.ResetControls(pnl_header);
-                Helpers.ResetControls(pnl_footer);
+                ResetControls(pnl_footer);
+                
+              
+
+                //Helpers.ResetControls(panel);
 
                 // resets the datasource so that only customers would specific address would be seen.
 
@@ -3128,7 +3028,12 @@ namespace smpc_sales_app.Pages.Sales
                 await QuotationService.Update(finalizeData);
 
                 Helpers.ResetControls(pnl_header);
-                Helpers.ResetControls(pnl_footer);
+                //Helpers.ResetControls(pnl_footer);
+                ResetControls(pnl_footer);
+
+                Panel[] panel = { pnl_header, pnl_footer };
+
+                //Helpers.ResetControls(panel);
 
                 MessageBox.Show("Quotation successfully finalized.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
@@ -3318,6 +3223,7 @@ namespace smpc_sales_app.Pages.Sales
                 Helpers.ReadOnlyControls(pnls);
                 dgv_quick_quote_details.ReadOnly = false;
                 txt_cash_discount.ReadOnly = false;
+                txt_additional_discount.ReadOnly = false;
 
 
                 foreach (Control ctrl in pnl_footer.Controls)
@@ -3675,14 +3581,22 @@ namespace smpc_sales_app.Pages.Sales
             }
         }
 
+        private bool isUpdatingHierarchy = false;
+
         private void dgv_quick_quote_details_CellValueChanged(object sender, DataGridViewCellEventArgs e)
         {
+
+
+            if (isUpdatingHierarchy) 
+                return;
+
+            isUpdatingHierarchy = true;
             ComputeByReferenceHierarchy();
             ComputeReferenceNonHierarchy();
             ComputeFooterTotals();
-
-
+            isUpdatingHierarchy = false;
         }
+
 
         private void ComputeReferenceNonHierarchy()
         {
@@ -3707,8 +3621,8 @@ namespace smpc_sales_app.Pages.Sales
                 decimal netDiscount = discounted - TotalUnitPrice;
                 decimal netTotal = TotalUnitPrice;
 
-                row.Cells["quick_line_total"].Value = Helpers.FormatAsCurrency(discounted);
-                row.Cells["quick_net_total"].Value = Helpers.FormatAsCurrency(netTotal);
+                row.Cells["quick_line_total"].Value = discounted;
+                row.Cells["quick_net_total"].Value = netTotal;
             }
         }
 
@@ -3722,10 +3636,9 @@ namespace smpc_sales_app.Pages.Sales
 
                 var referenceCode = row.Cells["reference_code"].Value?.ToString();
                 if (!string.IsNullOrWhiteSpace(referenceCode) && !referenceCode.Contains("."))
-                {
-                    grossSalesTotal += decimal.Parse(Helpers.GetCleanedPriceValue(row.Cells["quick_line_total"].Value.ToString()));
-                    netSalesTotal += decimal.Parse(Helpers.GetCleanedPriceValue(row.Cells["quick_net_total"].Value.ToString()));
-
+                { 
+                    grossSalesTotal += decimal.Parse(Helpers.GetCleanedPriceValue(row.Cells["quick_net_total"].Value.ToString()));
+                    netSalesTotal += decimal.Parse(Helpers.GetCleanedPriceValue(row.Cells["quick_line_total"].Value.ToString()));
                 }
 
             }
@@ -3733,16 +3646,34 @@ namespace smpc_sales_app.Pages.Sales
 
             if (grossSalesTotal != 0)
             {
-                decimal percentDiscount = ((grossSalesTotal - netSalesTotal) / grossSalesTotal) * 1.00m;
+                decimal percentDiscount = ((grossSalesTotal - netSalesTotal) / grossSalesTotal) * 100;
 
-                txt_percent_discount.Text = String.Format("{0:P2}.", percentDiscount);
+                //if the pecentage go below 0 it will set to 0
+                percentDiscount = (percentDiscount <= 0) ? 0 : percentDiscount;
+
+                txt_percent_discount.Text = percentDiscount.ToString();
             }
 
+            decimal netSalesWithVat = netSalesTotal * 0.12m;
 
+            //txt_additional_discount.Text = txt_additional_discount.Text != "" ? txt_additional_discount.Text : "0%";
 
-            txt_gross_sales.Text = Helpers.FormatAsCurrency(grossSalesTotal);
-            txt_net_sales.Text = Helpers.FormatAsCurrency(netSalesTotal);
+            string AdditionalDiscountString = txt_additional_discount.Text.Replace('%', ' ').TrimEnd();
+            decimal AdditionalDiscount = decimal.Parse(AdditionalDiscountString != "" ? AdditionalDiscountString : "0");
 
+             AdditionalDiscount = AdditionalDiscount / 100;
+
+            decimal DiscountedTotal = netSalesTotal * AdditionalDiscount;
+
+            decimal NetAmountDue = (netSalesTotal - DiscountedTotal) + netSalesWithVat;
+
+            decimal TotalAmountDue = NetAmountDue - decimal.Parse(txt_cash_discount.Text != "" ? txt_cash_discount.Text : "0");
+
+            txt_gross_sales.Text = Helpers.FormatAsCurrency(grossSalesTotal.ToString());
+            txt_net_sales.Text = Helpers.FormatAsCurrency(netSalesTotal.ToString());
+            txt_vat_amount.Text = Helpers.FormatAsCurrency(netSalesWithVat.ToString());
+            txt_net_amount_due.Text = Helpers.FormatAsCurrency(NetAmountDue.ToString());
+            txt_total_amount_due.Text = Helpers.FormatAsCurrency(TotalAmountDue.ToString());
         }
 
         private void canvasToolStripMenuItem_Click(object sender, EventArgs e)
@@ -3752,21 +3683,230 @@ namespace smpc_sales_app.Pages.Sales
             HandleCanvasSelectionClick(SelectedRowIndex, id);
         }
 
-        private void btn_quotation_terms_Click(object sender, EventArgs e)
+        private void quotationTerms()
         {
-            quotationTermsVisible();
+            //Set Quotation Terms from Company Data Table
+            //Hardcoded to company id 1 for now
+            var SelectedCompany = Company.AsEnumerable()
+                .FirstOrDefault(row => row.Field<int>("id") == 1);
+
+            foreach (DataRow row in SelectedCompany.Table.Rows)
+            {
+                if (row.Field<int>("id") == 1)
+                {
+                    string inclusions = row.Field<string>("InclusionsQuotationTerms");
+                    InclusionsRichTextBox.Text = inclusions;
+                    string exclusions = row.Field<string>("ExclusionsQuotationTerms");
+                    ExclusionsRichTextBox.Text = exclusions;
+                    string terms_and_conditions = row.Field<string>("TermAndConditions");
+                    TermAndConditionsRichTextBox.Text = terms_and_conditions;
+                }
+            }
+
+
+            //Styling Inclusions Rich Text Box
+            ColorSelectedAndUnderlineWordsAndBold(InclusionsRichTextBox, "(PLACE)", Color.Blue);
+            UnderlineWords(InclusionsRichTextBox, "during company regular working hours only.");
+            ColorSelectedAndUnderlineWordsAndBold(InclusionsRichTextBox, "3 DAYS", Color.Black);
+            BoldWords(InclusionsRichTextBox, "want more than the allowable and beyond working hours, additional charges will be applied.");
+
+            //Styling Exclusions Rich Text Box
+            MakeAllTextBlue(ExclusionsRichTextBox);
+
+            //Styling Terms and Conditions Rich Text Box 
+            BoldWords(TermAndConditionsRichTextBox, "PAYMENT TERMS:");
+            ColorSelectedAndUnderlineWordsAndBold(TermAndConditionsRichTextBox, "CASH ON DELIVERY", Color.Blue);
+            BoldWords(TermAndConditionsRichTextBox, "QUOTATION VALIDITY");
+            BoldAndUnderlineWords(TermAndConditionsRichTextBox, "30 DAYS");
+            BoldWords(TermAndConditionsRichTextBox, "thereafter, it shall be subject to reconfirmation");
+            BoldWords(TermAndConditionsRichTextBox, "AVAILABILITY OF STOCK(S) AND/OR SERVICE(S): ");
+            ColorSelectedAndUnderlineWordsAndBold(TermAndConditionsRichTextBox, "4-6 MONTHS", Color.Blue);
+            BoldWords(TermAndConditionsRichTextBox, "DELIVERY TERMS:");
+            ColorSelectedAndUnderlineWordsAndBold(TermAndConditionsRichTextBox, "WAREHOUSE TO SITE VIA SEA (w/o HAULING).", Color.Blue);
+            BoldWords(TermAndConditionsRichTextBox, "OTHER CHARGES, TITLE, RISK OF LOSS:");
+            BoldWords(TermAndConditionsRichTextBox, "within three(3) days");
+            BoldWords(TermAndConditionsRichTextBox, "STORAGE:");
+            BoldWords(TermAndConditionsRichTextBox, "SALES RETURN / CANCELLATION POLICY:");
+            ColorSelectedAndUnderlineWordsAndBold(TermAndConditionsRichTextBox, "(as agreed upon %", Color.Blue);
+            ColorSelectedAndUnderlineWordsAndBold(TermAndConditionsRichTextBox, "or fixed", Color.Red);
+            BoldWords(TermAndConditionsRichTextBox, "a cancellation fee");
+            ColorSelectedAndUnderlineWordsAndBold(TermAndConditionsRichTextBox, "(fixed %) ", Color.Red);
+            BoldWords(TermAndConditionsRichTextBox, "WARRANTY:");
+            ColorSelectedAndUnderlineWordsAndBold(TermAndConditionsRichTextBox, "ONE (1) YEAR", Color.Blue);
+            BoldWords(TermAndConditionsRichTextBox, "SERVICES:");
+            BoldWords(TermAndConditionsRichTextBox, "WARRANTY:");
+
         }
 
-        bool isVisibleQuotationTerms = false; // declare at class level
-
-        private void quotationTermsVisible()
+        private void BoldWords(RichTextBox rtb, string wordToBold)
         {
-            // Flip the state
-            isVisibleQuotationTerms = !isVisibleQuotationTerms;
+            int startIndex = 0;
+            while (wordToBold.Length >= startIndex)
+            {
+                int wordStartIndex = rtb.Find(wordToBold, startIndex, RichTextBoxFinds.None);
+                if (wordStartIndex == -1)
+                    break;
 
-            // Example: toggle visibility of a panel
-            FlowLayoutPanel1.Visible = isVisibleQuotationTerms;
+                rtb.Select(wordStartIndex, wordToBold.Length);
+                rtb.SelectionFont = new Font(rtb.SelectionFont ?? rtb.Font, FontStyle.Bold);
+
+                startIndex = wordStartIndex + wordToBold.Length;
+            }
+            rtb.Select(0, 0); // Deselect
+        }
+
+
+
+        private void UnderlineWords(RichTextBox rtb, string wordToUnderline)
+        {
+            int startIndex = 0;
+
+            while (startIndex < rtb.Text.LastIndexOf(wordToUnderline))
+            {
+                int wordStartIndex = rtb.Find(wordToUnderline, startIndex, RichTextBoxFinds.None);
+                if (wordStartIndex != -1)
+                {
+                    // Select the word
+                    rtb.Select(wordStartIndex, wordToUnderline.Length);
+
+                    // Apply underline to the selection
+                    rtb.SelectionFont = new Font(rtb.SelectionFont ?? rtb.Font,
+                                                 rtb.SelectionFont.Style | FontStyle.Underline);
+
+                    // Move to the next word
+                    startIndex = wordStartIndex + wordToUnderline.Length;
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            // Deselect text
+            rtb.Select(0, 0);
+        }
+
+        private void ColorBlueWords(RichTextBox rtb, string wordToUnderline)
+        {
+            int startIndex = 0;
+
+            while (startIndex < rtb.Text.LastIndexOf(wordToUnderline))
+            {
+                int wordStartIndex = rtb.Find(wordToUnderline, startIndex, RichTextBoxFinds.None);
+                if (wordStartIndex != -1)
+                {
+                    // Select the word
+                    rtb.Select(wordStartIndex, wordToUnderline.Length);
+
+                    // Apply underline to the selection
+                    rtb.SelectionColor = Color.Blue;
+
+                    // Move to the next word
+                    startIndex = wordStartIndex + wordToUnderline.Length;
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            // Deselect text
+            rtb.Select(0, 0);
+        }
+
+        private void MakeAllTextBlue(RichTextBox rtb)
+        {
+            // Select all text
+            rtb.SelectAll();
+
+            // Change color to blue
+            rtb.SelectionColor = Color.Blue;
+            rtb.SelectionFont = new Font(rtb.SelectionFont ?? rtb.Font, FontStyle.Bold);
+
+            // Deselect everything
+            rtb.Select(0, 0);
+        }
+
+        private void txt_cash_discount_TextChanged_1(object sender, EventArgs e)
+        {
+            ComputeFooterTotals();
+        }
+
+        private void txt_additional_discount_TextChanged(object sender, EventArgs e)
+        {
+            int number = 0, value = 0;
+
+            if(int.TryParse(txt_additional_discount.Text, out number))
+            {
+                value = int.Parse(txt_additional_discount.Text);
+            }
+
+            if (value <= 100 && value >= 0)
+                ComputeFooterTotals();
+            else
+                MessageBox.Show("To be able to work the additional Discount. Please enter 100% to 0% only");
+        }
+        private void BoldAndUnderlineWords(RichTextBox rtb, string word)
+        {
+            int startIndex = 0;
+            while (startIndex < rtb.Text.LastIndexOf(word))
+            {
+                int wordStartIndex = rtb.Find(word, startIndex, RichTextBoxFinds.None);
+                if (wordStartIndex != -1)
+                {
+                    rtb.Select(wordStartIndex, word.Length);
+                    rtb.SelectionFont = new Font(rtb.SelectionFont ?? rtb.Font, FontStyle.Bold | FontStyle.Underline);
+                    startIndex = wordStartIndex + word.Length;
+                }
+                else
+                {
+                    break;
+                }
+            }
+            rtb.Select(0, 0);
+        }
+        private void ColorSelectedAndUnderlineWords(RichTextBox rtb, string word, Color SelectecColor)
+        {
+            int startIndex = 0;
+            while (startIndex < rtb.Text.LastIndexOf(word))
+            {
+                int wordStartIndex = rtb.Find(word, startIndex, RichTextBoxFinds.None);
+                if (wordStartIndex != -1)
+                {
+                    rtb.Select(wordStartIndex, word.Length);
+                    rtb.SelectionColor = SelectecColor;
+                  
+                    rtb.SelectionFont = new Font(rtb.SelectionFont ?? rtb.Font, FontStyle.Underline);
+                    startIndex = wordStartIndex + word.Length;
+                }
+                else
+                {
+                    break;
+                }
+            }
+            rtb.Select(0, 0);
+        }
+
+        private void ColorSelectedAndUnderlineWordsAndBold(RichTextBox rtb, string word, Color SelectecColor)
+        {
+            int startIndex = 0;
+            while (startIndex < rtb.Text.LastIndexOf(word))
+            {
+                int wordStartIndex = rtb.Find(word, startIndex, RichTextBoxFinds.None);
+                if (wordStartIndex != -1)
+                {
+                    rtb.Select(wordStartIndex, word.Length);
+                    rtb.SelectionColor = SelectecColor;
+
+                    rtb.SelectionFont = new Font(rtb.SelectionFont ?? rtb.Font, FontStyle.Bold | FontStyle.Underline);
+                    startIndex = wordStartIndex + word.Length;
+                }
+                else
+                {
+                    break;
+                }
+            }
+            rtb.Select(0, 0);
         }
     }
-
 }

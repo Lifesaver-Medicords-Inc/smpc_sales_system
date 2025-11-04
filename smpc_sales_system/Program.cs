@@ -25,7 +25,7 @@ namespace smpc_sales_system
 
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Layout());
+             Application.Run(new Layout());
         }
     }
 }

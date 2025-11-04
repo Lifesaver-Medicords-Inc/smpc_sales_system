@@ -24,6 +24,8 @@ namespace smpc_sales_system.Pages.Sales
         private async void fetchTemplates()
         {
             var data = await ProjectTemplatesService.GetProjectTemplates();
+            if( data == null)
+                return;
             var dt1 = JsonHelper.ToDataTable(data.SalesProjectTemplate);
             var dt2 = JsonHelper.ToDataTable(data.sales_project_template_child);
 

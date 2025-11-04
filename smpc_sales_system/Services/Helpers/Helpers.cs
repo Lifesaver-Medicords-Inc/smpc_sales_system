@@ -1,18 +1,20 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Net.Sockets;
-using System.Net;
-using System.Text;
-using System.Threading.Tasks;
-using System.Management;
 using System.Data; 
 using System.Data.SqlTypes;
-using System.Windows.Forms;
 using System.Drawing;
+using System.Globalization;
 using System.IO;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using System.Linq;
+using System.Management;
+using System.Net;
+using System.Net.Sockets;
+using System.Text;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace smpc_app.Services.Helpers
 {
@@ -30,6 +32,81 @@ namespace smpc_app.Services.Helpers
                 }
             }
         }
+
+        public static void ResetControls(Panel[] parents)
+        {
+            foreach (Panel pnl in parents)
+            {
+                foreach (Control control in pnl.Controls)
+                {
+                    if (control is TextBox textBox)
+                    {
+                        // Check for money_format tag
+                        if (textBox.Tag?.ToString() == "money_format")
+                        {
+                            string input = textBox.Text?.Trim() ?? "";
+
+                            if (!string.IsNullOrEmpty(input))
+                            {
+                                // Remove everything except digits, dot, comma, and minus
+                                string cleaned = Regex.Replace(input, @"[^0-9\.,\-]", "");
+
+                                // Replace comma with dot if comma used as decimal
+                                if (cleaned.Count(c => c == ',') == 1 && cleaned.Count(c => c == '.') == 0)
+                                    cleaned = cleaned.Replace(',', '.');
+
+                                // Attempt parsing
+                                bool isValid =
+                                    decimal.TryParse(cleaned, NumberStyles.Any, CultureInfo.InvariantCulture, out _) ||
+                                    decimal.TryParse(cleaned, NumberStyles.Any, CultureInfo.CurrentCulture, out _);
+
+                                if (!isValid)
+                                {
+                                    MessageBox.Show(
+                                        $"Invalid money format in \"{textBox.Name}\".\n" +
+                                        $"Value: \"{textBox.Text}\" could not be parsed.\nPlease enter a valid number.",
+                                        "Invalid Input",
+                                        MessageBoxButtons.OK,
+                                        MessageBoxIcon.Warning
+                                    );
+                                    textBox.Focus();
+                                    return; // stop processing
+                                }
+                            }
+                        }
+
+                        // Clear textbox
+                        textBox.Clear();
+                    }
+                    else if (control is ComboBox comboBox)
+                    {
+                        comboBox.SelectedIndex = -1;
+                    }
+                    else if (control is CheckBox checkBox)
+                    {
+                        checkBox.Checked = false;
+                    }
+                    else if (control is RadioButton radioButton)
+                    {
+                        radioButton.Checked = false;
+                    }
+                    else if (control is DateTimePicker dateTimePicker)
+                    {
+                        dateTimePicker.Value = DateTime.Now;
+                    }
+                    else if (control is NumericUpDown numericUpDown)
+                    {
+                        numericUpDown.Value = numericUpDown.Minimum;
+                    }
+                    else if (control is PictureBox pictureBox)
+                    {
+                        pictureBox.Image = null;
+                    }
+                }
+            }
+        }
+
+
         public static void ReadOnlyControls(Panel[] pnl_list)
         {
             foreach (Panel pnl in pnl_list)
@@ -282,6 +359,114 @@ namespace smpc_app.Services.Helpers
             }
             return values;
         }
+
+        public static Dictionary<string, dynamic> GetControlsValuesV2(Panel[] pnl1)
+        {
+            Dictionary<string, dynamic> values = new Dictionary<string, dynamic>();
+
+            foreach (Panel pnl in pnl1)
+            {
+                foreach (Control control in pnl.Controls)
+                {
+                    // Check if the control is a TextBox
+                    // Check if the control is a TextBox
+                    if (control is TextBox textBox)
+                    {
+                        string key = textBox.Name.Replace("txt_", "");
+                        dynamic val = null;
+
+                        // Handle money formatting
+                        if (textBox.Tag != null && (textBox.Tag.ToString() == "money_format" || textBox.Tag.ToString() == "percent_format"))
+                        {
+                            if (decimal.TryParse(GetCleanedPriceValue(textBox.Text), out decimal tempVal))
+                            {
+                                val = tempVal;
+                            }
+                            else
+                            {
+                                MessageBox.Show("Invalid money format. Please enter a valid number.");
+                                val = 0m;
+                            }
+                        }
+                        // Handle _id conversion
+                        else if (key.EndsWith("_id"))
+                        {
+                            if (int.TryParse(textBox.Text, out int idVal))
+                            {
+                                val = idVal;
+                            }
+                            else
+                            {
+                                MessageBox.Show($"Invalid ID format for '{key}'. Please enter a valid number.");
+                                val = 0;
+                            }
+                        }
+                        else
+                        {
+                            // Default to string if no special formatting
+                            val = textBox.Text.ToString();
+                        }
+
+                        values[key] = val;
+                    }
+
+
+                    if (control is ComboBox comboBox)
+                    {
+                        string key = comboBox.Name.Replace("cmb_", "");
+                        string val = "";
+
+                        if (comboBox.Tag?.ToString() == "DYNAMIC")
+                        {
+                            key += "_id";
+                            var selectedValue = comboBox.SelectedValue;
+
+                            // Handle null SelectedValue
+                            if (selectedValue != null && !(selectedValue is DataRowView))
+                            {
+                                values.Add(key, int.Parse(selectedValue.ToString()));
+                            }
+                            else
+                            {
+                                Console.WriteLine($"Warning: No valid selected value for {comboBox.Name}");
+                            }
+                        }
+                        else
+                        {
+                            val = comboBox.Text?.ToString() ?? string.Empty;
+                            values.Add(key, val);
+                        }
+                    }
+
+
+
+                    if (control is CheckBox checkbox)
+                    {
+                        string key = checkbox.Name.Replace("chk_", "");
+                        string val = String.Format("{0}", checkbox.Checked ? 1 : 0);
+                        values.Add(key, val);
+                    }
+
+
+                    if (control is DateTimePicker dateTimePicker)
+                    {
+                        string key = dateTimePicker.Name.Replace("dtp_", "");
+                        string val = String.Format("{0:yyyy-MM-dd HH:mm:ss}", dateTimePicker.Value);
+                        values.Add(key, val);
+                    }
+
+
+                    if (control is NumericUpDown numericUpDown)
+                    {
+                        string key = numericUpDown.Name.Replace("txt_", "");
+                        string val = String.Format("'{0}'", numericUpDown.Value);
+                        values.Add(key, val);
+                    }
+                }
+            }
+            return values;
+        }
+
         public static Boolean ValidateControlsValues(Panel pnl)
         {
             Boolean isError = false;
