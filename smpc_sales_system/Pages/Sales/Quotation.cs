@@ -2214,18 +2214,18 @@ namespace smpc_sales_app.Pages.Sales
         private void LoadQuickImageCounts()
         {
             //// Ensure quick_images column exists
-            //if (!dgv_quick_quote_details.Columns.Contains("quick_images"))
-            //{
-            //    // TO BE CHANGED/FIND INSIDE DGV COLUMN INSTEAD OF CREATING
-            //    var col = new DataGridViewTextBoxColumn();
-            //    col.Name = "quick_images";
-            //    col.HeaderText = "IMAGES";
+            if (!dgv_quick_quote_details.Columns.Contains("quick_images"))
+            {
+                // TO BE CHANGED/FIND INSIDE DGV COLUMN INSTEAD OF CREATING
+                var col = new DataGridViewTextBoxColumn();
+                col.Name = "quick_images";
+                col.HeaderText = "IMAGES";
 
-            //    if (dgv_quick_quote_details.Columns.Count > 6)
-            //        dgv_quick_quote_details.Columns.Insert(6, col);
-            //    else
-            //        dgv_quick_quote_details.Columns.Add(col);
-            //}
+                if (dgv_quick_quote_details.Columns.Count > 6)
+                    dgv_quick_quote_details.Columns.Insert(6, col);
+                else
+                    dgv_quick_quote_details.Columns.Add(col);
+            }
 
             // Loop through each row in the DataGridView
 
@@ -3047,7 +3047,7 @@ namespace smpc_sales_app.Pages.Sales
         }
         private void btn_sales_order_Click(object sender, EventArgs e)
         {
-            string documentNo = txt_document_no.Text.Trim();  // Assuming you have a document_no textbox in Quotation
+            string documentNo = txt_document_no.Text.Replace("FQ#", "");  // Assuming you have a document_no textbox in Quotation
 
             if (string.IsNullOrEmpty(documentNo))
             {
