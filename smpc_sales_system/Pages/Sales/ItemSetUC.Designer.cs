@@ -30,22 +30,25 @@ namespace smpc_sales_system.Pages.Sales
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle28 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle32 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle33 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle29 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle30 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle31 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle34 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle35 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle36 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle5 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle6 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle7 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle8 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle9 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
             this.pnl_project_content = new System.Windows.Forms.Panel();
+            this.dgv_final = new System.Windows.Forms.DataGridView();
+            this.Final = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Fla = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Voltage = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.txt_size_up_5 = new System.Windows.Forms.TextBox();
             this.label9 = new System.Windows.Forms.Label();
             this.txt_item_set_notes = new System.Windows.Forms.TextBox();
             this.label8 = new System.Windows.Forms.Label();
             this.txt_item_set_description = new System.Windows.Forms.TextBox();
-            this.txt_item_ = new System.Windows.Forms.TextBox();
             this.txt_size_up_4 = new System.Windows.Forms.TextBox();
             this.textBox6 = new System.Windows.Forms.TextBox();
             this.textBox5 = new System.Windows.Forms.TextBox();
@@ -65,9 +68,7 @@ namespace smpc_sales_system.Pages.Sales
             this.txt_no_of_sets = new System.Windows.Forms.TextBox();
             this.textBox40 = new System.Windows.Forms.TextBox();
             this.textBox39 = new System.Windows.Forms.TextBox();
-            this.label44 = new System.Windows.Forms.Label();
             this.textBox41 = new System.Windows.Forms.TextBox();
-            this.txt_final = new System.Windows.Forms.TextBox();
             this.label39 = new System.Windows.Forms.Label();
             this.txt_additional = new System.Windows.Forms.TextBox();
             this.label40 = new System.Windows.Forms.Label();
@@ -106,28 +107,7 @@ namespace smpc_sales_system.Pages.Sales
             this.label56 = new System.Windows.Forms.Label();
             this.txt_template_name = new System.Windows.Forms.TextBox();
             this.dgv_project_items = new System.Windows.Forms.DataGridView();
-            this.project_items_id = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.project_items_item_id = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.project_items_based_id = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.project_items_template_id = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.project_items_bom_id = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.project_items_node_id = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.project_items_node_name = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.project_items_parent_node_id = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.project_items_node_order = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.project_items_node_type = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.project_items_images = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.project_items_components = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.project_items_model = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.project_items_item_inv_type = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.project_items_qty = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.project_items_list_price = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.project_items_unit_price = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.project_items_multiplier = new System.Windows.Forms.DataGridViewComboBoxColumn();
             this.bs_multiplier = new System.Windows.Forms.BindingSource(this.components);
-            this.project_items_discount = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.project_items_line_total = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.project_items_notes = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.bs_project_components = new System.Windows.Forms.BindingSource(this.components);
             this.ds_project = new System.Data.DataSet();
             this.dataTable9 = new System.Data.DataTable();
@@ -160,44 +140,70 @@ namespace smpc_sales_system.Pages.Sales
             this.dataColumn16 = new System.Data.DataColumn();
             this.dataTable3 = new System.Data.DataTable();
             this.dataTable4 = new System.Data.DataTable();
-            this.label58 = new System.Windows.Forms.Label();
-            this.label57 = new System.Windows.Forms.Label();
-            this.dgv_wiring = new System.Windows.Forms.DataGridView();
-            this.project_wiring_id = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.project_wiring_based_id = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.cmb_unit = new System.Windows.Forms.DataGridViewComboBoxColumn();
             this.bs_units_qty_set = new System.Windows.Forms.BindingSource(this.components);
-            this.dataGridViewTextBoxColumn21 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.project_wiring_materials = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.project_wiring_amp_req = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.project_wiring_wire_amp = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.project_wiring_description = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.project_wiring_num_of_wires_set = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.project_wiring_num_of_qty_set = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.project_wiring_distance_travelled = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.project_wiring_allowance = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.project_wiring_qty = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.project_wiring_num_of_sets = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.project_wiring_total_qty = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.project_wiring_cost = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.project_wiring_total_cost = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.project_wiring_unit = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.bs_project_wiring = new System.Windows.Forms.BindingSource(this.components);
             this.timer_send_message_conditions = new System.Windows.Forms.Timer(this.components);
             this.timer_send_message_content = new System.Windows.Forms.Timer(this.components);
             this.timer_send_message_cell_items = new System.Windows.Forms.Timer(this.components);
             this.timer_send_message_cell_wiring = new System.Windows.Forms.Timer(this.components);
             this.button1 = new System.Windows.Forms.Button();
-            this.label6 = new System.Windows.Forms.Label();
-            this.txt_FLA = new System.Windows.Forms.TextBox();
-            this.label7 = new System.Windows.Forms.Label();
-            this.txt_VOLT = new System.Windows.Forms.TextBox();
             this.errorProvider1 = new System.Windows.Forms.ErrorProvider(this.components);
             this.bs_units_qty = new System.Windows.Forms.BindingSource(this.components);
             this.template_id = new System.Windows.Forms.TextBox();
             this.timer_update_conditions = new System.Windows.Forms.Timer(this.components);
             this.timer_update_content = new System.Windows.Forms.Timer(this.components);
+            this.checkBox1 = new System.Windows.Forms.CheckBox();
+            this.label58 = new System.Windows.Forms.Label();
+            this.txt_FLA = new System.Windows.Forms.TextBox();
+            this.label6 = new System.Windows.Forms.Label();
+            this.txt_VOLT = new System.Windows.Forms.TextBox();
+            this.label7 = new System.Windows.Forms.Label();
+            this.checkBox_Wiring = new System.Windows.Forms.CheckBox();
+            this.dgv_wiring = new System.Windows.Forms.DataGridView();
+            this.project_wiring_id = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.project_wiring_based_id = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.cmb_unit = new System.Windows.Forms.DataGridViewComboBoxColumn();
+            this.project_wiring_materials = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.project_wiring_wire_amp = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.project_wiring_description = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.project_wiring_num_of_wiring_set = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.project_wiring_num_of_wiring_set_format = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.project_wiring_distance_travelled = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.project_wiring_allowance = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.project_wiring_qty = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.project_wiring_qty_format = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.project_wiring_num_of_sets = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.project_wiring_total_qty = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.project_wiring_cost = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.project_wiring_total_cost = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.project_wiring_unit = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.cb_template_project = new System.Windows.Forms.ComboBox();
+            this.project_items_id = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.item_id = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.project_items_based_id = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.project_items_template_id = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.project_items_bom_id = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.project_items_node_id = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.project_items_node_name = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.project_items_parent_node_id = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.project_items_node_order = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.project_items_node_type = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.project_items_images = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.reference_code = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.project_items_components = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.project_items_model = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.project_items_item_inv_type = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.project_items_qty = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.man_days = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.labor_rate = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.project_items_list_price = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.project_items_unit_price = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.project_items_multiplier = new System.Windows.Forms.DataGridViewComboBoxColumn();
+            this.project_items_discount = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.project_items_line_total = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.project_items_notes = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.pnl_project_content.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dgv_final)).BeginInit();
             this.pnl_advanced_conditions.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgv_project_items)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.bs_multiplier)).BeginInit();
@@ -208,21 +214,21 @@ namespace smpc_sales_system.Pages.Sales
             ((System.ComponentModel.ISupportInitialize)(this.dataTable2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dataTable3)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dataTable4)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.dgv_wiring)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.bs_units_qty_set)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.bs_project_wiring)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.errorProvider1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.bs_units_qty)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dgv_wiring)).BeginInit();
             this.SuspendLayout();
             // 
             // pnl_project_content
             // 
+            this.pnl_project_content.Controls.Add(this.dgv_final);
             this.pnl_project_content.Controls.Add(this.txt_size_up_5);
             this.pnl_project_content.Controls.Add(this.label9);
             this.pnl_project_content.Controls.Add(this.txt_item_set_notes);
             this.pnl_project_content.Controls.Add(this.label8);
             this.pnl_project_content.Controls.Add(this.txt_item_set_description);
-            this.pnl_project_content.Controls.Add(this.txt_item_);
             this.pnl_project_content.Controls.Add(this.txt_size_up_4);
             this.pnl_project_content.Controls.Add(this.textBox6);
             this.pnl_project_content.Controls.Add(this.textBox5);
@@ -242,9 +248,7 @@ namespace smpc_sales_system.Pages.Sales
             this.pnl_project_content.Controls.Add(this.txt_no_of_sets);
             this.pnl_project_content.Controls.Add(this.textBox40);
             this.pnl_project_content.Controls.Add(this.textBox39);
-            this.pnl_project_content.Controls.Add(this.label44);
             this.pnl_project_content.Controls.Add(this.textBox41);
-            this.pnl_project_content.Controls.Add(this.txt_final);
             this.pnl_project_content.Controls.Add(this.label39);
             this.pnl_project_content.Controls.Add(this.txt_additional);
             this.pnl_project_content.Controls.Add(this.label40);
@@ -265,8 +269,48 @@ namespace smpc_sales_system.Pages.Sales
             this.pnl_project_content.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.pnl_project_content.Location = new System.Drawing.Point(0, 0);
             this.pnl_project_content.Name = "pnl_project_content";
-            this.pnl_project_content.Size = new System.Drawing.Size(1074, 332);
+            this.pnl_project_content.Size = new System.Drawing.Size(1132, 332);
             this.pnl_project_content.TabIndex = 148;
+            // 
+            // dgv_final
+            // 
+            this.dgv_final.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dgv_final.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.Final,
+            this.Fla,
+            this.Voltage});
+            this.dgv_final.Location = new System.Drawing.Point(881, 128);
+            this.dgv_final.Name = "dgv_final";
+            this.dgv_final.ReadOnly = true;
+            this.dgv_final.RowHeadersVisible = false;
+            this.dgv_final.RowHeadersWidthSizeMode = System.Windows.Forms.DataGridViewRowHeadersWidthSizeMode.AutoSizeToAllHeaders;
+            this.dgv_final.Size = new System.Drawing.Size(235, 75);
+            this.dgv_final.TabIndex = 171;
+            this.dgv_final.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgv_final_CellClick);
+            // 
+            // Final
+            // 
+            this.Final.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.Final.DataPropertyName = "final";
+            this.Final.HeaderText = "FINAL";
+            this.Final.Name = "Final";
+            this.Final.ReadOnly = true;
+            // 
+            // Fla
+            // 
+            this.Fla.DataPropertyName = "fla";
+            this.Fla.HeaderText = "FLA";
+            this.Fla.Name = "Fla";
+            this.Fla.ReadOnly = true;
+            this.Fla.Visible = false;
+            // 
+            // Voltage
+            // 
+            this.Voltage.DataPropertyName = "voltage";
+            this.Voltage.HeaderText = "VOLTAGE";
+            this.Voltage.Name = "Voltage";
+            this.Voltage.ReadOnly = true;
+            this.Voltage.Visible = false;
             // 
             // txt_size_up_5
             // 
@@ -314,15 +358,6 @@ namespace smpc_sales_system.Pages.Sales
             this.txt_item_set_description.Name = "txt_item_set_description";
             this.txt_item_set_description.Size = new System.Drawing.Size(468, 93);
             this.txt_item_set_description.TabIndex = 167;
-            // 
-            // txt_item_
-            // 
-            this.txt_item_.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F);
-            this.txt_item_.Location = new System.Drawing.Point(881, 170);
-            this.txt_item_.Name = "txt_item_";
-            this.txt_item_.Size = new System.Drawing.Size(53, 20);
-            this.txt_item_.TabIndex = 165;
-            this.txt_item_.Visible = false;
             // 
             // txt_size_up_4
             // 
@@ -490,16 +525,6 @@ namespace smpc_sales_system.Pages.Sales
             this.textBox39.TabIndex = 110;
             this.textBox39.Text = "HEAD";
             // 
-            // label44
-            // 
-            this.label44.AutoSize = true;
-            this.label44.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label44.Location = new System.Drawing.Point(878, 128);
-            this.label44.Name = "label44";
-            this.label44.Size = new System.Drawing.Size(42, 13);
-            this.label44.TabIndex = 129;
-            this.label44.Text = "FINAL";
-            // 
             // textBox41
             // 
             this.textBox41.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -508,16 +533,6 @@ namespace smpc_sales_system.Pages.Sales
             this.textBox41.Size = new System.Drawing.Size(85, 20);
             this.textBox41.TabIndex = 111;
             this.textBox41.Text = "VOLTAGE";
-            // 
-            // txt_final
-            // 
-            this.txt_final.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F);
-            this.txt_final.Location = new System.Drawing.Point(881, 144);
-            this.txt_final.Name = "txt_final";
-            this.txt_final.Size = new System.Drawing.Size(230, 20);
-            this.txt_final.TabIndex = 128;
-            this.txt_final.Click += new System.EventHandler(this.textBox50_Click);
-            this.txt_final.TextChanged += new System.EventHandler(this.txt_final_TextChanged);
             // 
             // label39
             // 
@@ -689,7 +704,7 @@ namespace smpc_sales_system.Pages.Sales
             this.pnl_advanced_conditions.Controls.Add(this.txt_motor_enclosure);
             this.pnl_advanced_conditions.Location = new System.Drawing.Point(22, 352);
             this.pnl_advanced_conditions.Name = "pnl_advanced_conditions";
-            this.pnl_advanced_conditions.Size = new System.Drawing.Size(1034, 107);
+            this.pnl_advanced_conditions.Size = new System.Drawing.Size(1092, 107);
             this.pnl_advanced_conditions.TabIndex = 150;
             // 
             // cmb_starting_method
@@ -856,28 +871,30 @@ namespace smpc_sales_system.Pages.Sales
             // 
             // txt_template_name
             // 
-            this.txt_template_name.Location = new System.Drawing.Point(105, 464);
+            this.txt_template_name.Location = new System.Drawing.Point(425, 465);
             this.txt_template_name.Name = "txt_template_name";
             this.txt_template_name.Size = new System.Drawing.Size(218, 20);
             this.txt_template_name.TabIndex = 152;
+            this.txt_template_name.Visible = false;
             this.txt_template_name.MouseClick += new System.Windows.Forms.MouseEventHandler(this.textBox64_MouseClick);
             // 
             // dgv_project_items
             // 
             this.dgv_project_items.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            dataGridViewCellStyle28.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle28.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle28.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle28.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle28.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle28.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle28.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dgv_project_items.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle28;
+            this.dgv_project_items.BackgroundColor = System.Drawing.SystemColors.ActiveBorder;
+            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dgv_project_items.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
             this.dgv_project_items.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dgv_project_items.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.project_items_id,
-            this.project_items_item_id,
+            this.item_id,
             this.project_items_based_id,
             this.project_items_template_id,
             this.project_items_bom_id,
@@ -887,185 +904,41 @@ namespace smpc_sales_system.Pages.Sales
             this.project_items_node_order,
             this.project_items_node_type,
             this.project_items_images,
+            this.reference_code,
             this.project_items_components,
             this.project_items_model,
             this.project_items_item_inv_type,
             this.project_items_qty,
+            this.man_days,
+            this.labor_rate,
             this.project_items_list_price,
             this.project_items_unit_price,
             this.project_items_multiplier,
             this.project_items_discount,
             this.project_items_line_total,
             this.project_items_notes});
-            dataGridViewCellStyle32.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle32.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle32.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle32.ForeColor = System.Drawing.SystemColors.ControlText;
-            dataGridViewCellStyle32.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle32.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle32.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.dgv_project_items.DefaultCellStyle = dataGridViewCellStyle32;
+            dataGridViewCellStyle5.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle5.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle5.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle5.ForeColor = System.Drawing.SystemColors.ControlText;
+            dataGridViewCellStyle5.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle5.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle5.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.dgv_project_items.DefaultCellStyle = dataGridViewCellStyle5;
             this.dgv_project_items.Location = new System.Drawing.Point(18, 490);
             this.dgv_project_items.Name = "dgv_project_items";
-            dataGridViewCellStyle33.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle33.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle33.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle33.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle33.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle33.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle33.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dgv_project_items.RowHeadersDefaultCellStyle = dataGridViewCellStyle33;
-            this.dgv_project_items.Size = new System.Drawing.Size(1034, 408);
+            dataGridViewCellStyle6.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle6.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle6.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle6.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle6.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle6.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle6.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dgv_project_items.RowHeadersDefaultCellStyle = dataGridViewCellStyle6;
+            this.dgv_project_items.Size = new System.Drawing.Size(1092, 408);
             this.dgv_project_items.TabIndex = 151;
             this.dgv_project_items.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgv_project_items_CellClick);
-            this.dgv_project_items.CellEndEdit += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgv_project_items_CellEndEdit);
-            // 
-            // project_items_id
-            // 
-            this.project_items_id.DataPropertyName = "items_id";
-            this.project_items_id.HeaderText = "id";
-            this.project_items_id.Name = "project_items_id";
-            this.project_items_id.Visible = false;
-            // 
-            // project_items_item_id
-            // 
-            this.project_items_item_id.DataPropertyName = "item_id";
-            this.project_items_item_id.HeaderText = "item_id";
-            this.project_items_item_id.Name = "project_items_item_id";
-            this.project_items_item_id.Visible = false;
-            // 
-            // project_items_based_id
-            // 
-            this.project_items_based_id.DataPropertyName = "based_id";
-            this.project_items_based_id.HeaderText = "based_id";
-            this.project_items_based_id.Name = "project_items_based_id";
-            this.project_items_based_id.Visible = false;
-            // 
-            // project_items_template_id
-            // 
-            this.project_items_template_id.DataPropertyName = "template_id";
-            this.project_items_template_id.HeaderText = "template_id";
-            this.project_items_template_id.Name = "project_items_template_id";
-            this.project_items_template_id.Visible = false;
-            // 
-            // project_items_bom_id
-            // 
-            this.project_items_bom_id.DataPropertyName = "bom_id";
-            this.project_items_bom_id.HeaderText = "bom_id";
-            this.project_items_bom_id.Name = "project_items_bom_id";
-            this.project_items_bom_id.Visible = false;
-            // 
-            // project_items_node_id
-            // 
-            this.project_items_node_id.DataPropertyName = "node_id";
-            this.project_items_node_id.HeaderText = "node_id";
-            this.project_items_node_id.Name = "project_items_node_id";
-            this.project_items_node_id.Visible = false;
-            // 
-            // project_items_node_name
-            // 
-            this.project_items_node_name.DataPropertyName = "node_name";
-            this.project_items_node_name.HeaderText = "node_name";
-            this.project_items_node_name.Name = "project_items_node_name";
-            this.project_items_node_name.Visible = false;
-            // 
-            // project_items_parent_node_id
-            // 
-            this.project_items_parent_node_id.DataPropertyName = "parent_node_id";
-            this.project_items_parent_node_id.HeaderText = "parent_node_id";
-            this.project_items_parent_node_id.Name = "project_items_parent_node_id";
-            this.project_items_parent_node_id.Visible = false;
-            // 
-            // project_items_node_order
-            // 
-            this.project_items_node_order.DataPropertyName = "node_order";
-            this.project_items_node_order.HeaderText = "node_order";
-            this.project_items_node_order.Name = "project_items_node_order";
-            this.project_items_node_order.Visible = false;
-            // 
-            // project_items_node_type
-            // 
-            this.project_items_node_type.DataPropertyName = "node_type";
-            this.project_items_node_type.HeaderText = "node_type";
-            this.project_items_node_type.Name = "project_items_node_type";
-            this.project_items_node_type.Visible = false;
-            // 
-            // project_items_images
-            // 
-            this.project_items_images.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
-            this.project_items_images.HeaderText = "IMAGES";
-            this.project_items_images.Name = "project_items_images";
-            this.project_items_images.Width = 60;
-            // 
-            // project_items_components
-            // 
-            this.project_items_components.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.project_items_components.DataPropertyName = "components";
-            this.project_items_components.HeaderText = "COMPONENTS";
-            this.project_items_components.Name = "project_items_components";
-            // 
-            // project_items_model
-            // 
-            this.project_items_model.DataPropertyName = "model";
-            this.project_items_model.HeaderText = "MODEL";
-            this.project_items_model.Name = "project_items_model";
-            // 
-            // project_items_item_inv_type
-            // 
-            this.project_items_item_inv_type.DataPropertyName = "item_inv_type";
-            this.project_items_item_inv_type.HeaderText = "ITEM INV TYPE";
-            this.project_items_item_inv_type.Name = "project_items_item_inv_type";
-            // 
-            // project_items_qty
-            // 
-            this.project_items_qty.DataPropertyName = "qty";
-            this.project_items_qty.HeaderText = "QTY";
-            this.project_items_qty.Name = "project_items_qty";
-            // 
-            // project_items_list_price
-            // 
-            this.project_items_list_price.DataPropertyName = "list_price_per_unit";
-            dataGridViewCellStyle29.NullValue = "0.00";
-            this.project_items_list_price.DefaultCellStyle = dataGridViewCellStyle29;
-            this.project_items_list_price.HeaderText = "LIST PRICE";
-            this.project_items_list_price.Name = "project_items_list_price";
-            // 
-            // project_items_unit_price
-            // 
-            this.project_items_unit_price.DataPropertyName = "unit_price";
-            dataGridViewCellStyle30.NullValue = "0.00";
-            this.project_items_unit_price.DefaultCellStyle = dataGridViewCellStyle30;
-            this.project_items_unit_price.HeaderText = "UNIT PRICE";
-            this.project_items_unit_price.Name = "project_items_unit_price";
-            // 
-            // project_items_multiplier
-            // 
-            this.project_items_multiplier.DataPropertyName = "multiplier";
-            this.project_items_multiplier.DataSource = this.bs_multiplier;
-            this.project_items_multiplier.HeaderText = "MULTIPLIER";
-            this.project_items_multiplier.Name = "project_items_multiplier";
-            this.project_items_multiplier.Resizable = System.Windows.Forms.DataGridViewTriState.True;
-            this.project_items_multiplier.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
-            // 
-            // project_items_discount
-            // 
-            this.project_items_discount.DataPropertyName = "discount_price";
-            dataGridViewCellStyle31.NullValue = "0.00";
-            this.project_items_discount.DefaultCellStyle = dataGridViewCellStyle31;
-            this.project_items_discount.HeaderText = "DISCOUNT/MARK UP PRICE";
-            this.project_items_discount.Name = "project_items_discount";
-            // 
-            // project_items_line_total
-            // 
-            this.project_items_line_total.DataPropertyName = "component_total";
-            this.project_items_line_total.HeaderText = "LINE TOTAL";
-            this.project_items_line_total.Name = "project_items_line_total";
-            // 
-            // project_items_notes
-            // 
-            this.project_items_notes.DataPropertyName = "notes";
-            this.project_items_notes.HeaderText = "NOTES";
-            this.project_items_notes.Name = "project_items_notes";
+            this.dgv_project_items.CellEndEdit += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgv_project_items_CellClick);
             // 
             // bs_project_components
             // 
@@ -1230,216 +1103,10 @@ namespace smpc_sales_system.Pages.Sales
             // 
             this.dataTable4.TableName = "tbl_unit_qty";
             // 
-            // label58
-            // 
-            this.label58.AutoSize = true;
-            this.label58.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label58.Location = new System.Drawing.Point(698, 1021);
-            this.label58.Name = "label58";
-            this.label58.Size = new System.Drawing.Size(113, 13);
-            this.label58.TabIndex = 156;
-            this.label58.Text = "ASSIGNED ENGR.";
-            // 
-            // label57
-            // 
-            this.label57.AutoSize = true;
-            this.label57.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label57.Location = new System.Drawing.Point(19, 1001);
-            this.label57.Name = "label57";
-            this.label57.Size = new System.Drawing.Size(54, 13);
-            this.label57.TabIndex = 155;
-            this.label57.Text = "WIRING";
-            // 
-            // dgv_wiring
-            // 
-            this.dgv_wiring.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.dgv_wiring.AutoGenerateColumns = false;
-            dataGridViewCellStyle34.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle34.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle34.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle34.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle34.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle34.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle34.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dgv_wiring.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle34;
-            this.dgv_wiring.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dgv_wiring.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.project_wiring_id,
-            this.project_wiring_based_id,
-            this.cmb_unit,
-            this.dataGridViewTextBoxColumn21,
-            this.project_wiring_materials,
-            this.project_wiring_amp_req,
-            this.project_wiring_wire_amp,
-            this.project_wiring_description,
-            this.project_wiring_num_of_wires_set,
-            this.project_wiring_num_of_qty_set,
-            this.project_wiring_distance_travelled,
-            this.project_wiring_allowance,
-            this.project_wiring_qty,
-            this.project_wiring_num_of_sets,
-            this.project_wiring_total_qty,
-            this.project_wiring_cost,
-            this.project_wiring_total_cost,
-            this.project_wiring_unit});
-            this.dgv_wiring.DataSource = this.bs_project_wiring;
-            dataGridViewCellStyle35.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle35.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle35.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle35.ForeColor = System.Drawing.SystemColors.ControlText;
-            dataGridViewCellStyle35.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle35.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle35.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.dgv_wiring.DefaultCellStyle = dataGridViewCellStyle35;
-            this.dgv_wiring.Location = new System.Drawing.Point(24, 1043);
-            this.dgv_wiring.Name = "dgv_wiring";
-            dataGridViewCellStyle36.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle36.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle36.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle36.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle36.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle36.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle36.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dgv_wiring.RowHeadersDefaultCellStyle = dataGridViewCellStyle36;
-            this.dgv_wiring.Size = new System.Drawing.Size(1034, 447);
-            this.dgv_wiring.TabIndex = 154;
-            this.dgv_wiring.CellEndEdit += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgv_wiring_CellEndEdit);
-            // 
-            // project_wiring_id
-            // 
-            this.project_wiring_id.DataPropertyName = "id";
-            this.project_wiring_id.HeaderText = "ID";
-            this.project_wiring_id.Name = "project_wiring_id";
-            this.project_wiring_id.Visible = false;
-            // 
-            // project_wiring_based_id
-            // 
-            this.project_wiring_based_id.DataPropertyName = "based_id";
-            this.project_wiring_based_id.HeaderText = "based_id";
-            this.project_wiring_based_id.Name = "project_wiring_based_id";
-            this.project_wiring_based_id.Visible = false;
-            // 
-            // cmb_unit
-            // 
-            this.cmb_unit.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.cmb_unit.DataPropertyName = "UNIT";
-            this.cmb_unit.DataSource = this.bs_units_qty_set;
-            this.cmb_unit.HeaderText = "UNIT";
-            this.cmb_unit.Name = "cmb_unit";
-            this.cmb_unit.Resizable = System.Windows.Forms.DataGridViewTriState.True;
-            this.cmb_unit.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
-            this.cmb_unit.Visible = false;
-            // 
             // bs_units_qty_set
             // 
             this.bs_units_qty_set.DataMember = "tbl_unit_set";
             this.bs_units_qty_set.DataSource = this.ds_project;
-            // 
-            // dataGridViewTextBoxColumn21
-            // 
-            this.dataGridViewTextBoxColumn21.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.dataGridViewTextBoxColumn21.DataPropertyName = "#";
-            this.dataGridViewTextBoxColumn21.HeaderText = "#";
-            this.dataGridViewTextBoxColumn21.Name = "dataGridViewTextBoxColumn21";
-            // 
-            // project_wiring_materials
-            // 
-            this.project_wiring_materials.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.project_wiring_materials.DataPropertyName = "MATERIALS";
-            this.project_wiring_materials.HeaderText = "MATERIALS";
-            this.project_wiring_materials.Name = "project_wiring_materials";
-            // 
-            // project_wiring_amp_req
-            // 
-            this.project_wiring_amp_req.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.project_wiring_amp_req.DataPropertyName = "AMP REQ.";
-            this.project_wiring_amp_req.HeaderText = "AMP REQ.";
-            this.project_wiring_amp_req.Name = "project_wiring_amp_req";
-            // 
-            // project_wiring_wire_amp
-            // 
-            this.project_wiring_wire_amp.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.project_wiring_wire_amp.DataPropertyName = "WIRE AMP.";
-            this.project_wiring_wire_amp.HeaderText = "WIRE AMP.";
-            this.project_wiring_wire_amp.Name = "project_wiring_wire_amp";
-            // 
-            // project_wiring_description
-            // 
-            this.project_wiring_description.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.project_wiring_description.DataPropertyName = "DESCRIPTION";
-            this.project_wiring_description.HeaderText = "DESCRIPTION";
-            this.project_wiring_description.Name = "project_wiring_description";
-            // 
-            // project_wiring_num_of_wires_set
-            // 
-            this.project_wiring_num_of_wires_set.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.project_wiring_num_of_wires_set.DataPropertyName = "# OF WIRES / SET";
-            this.project_wiring_num_of_wires_set.HeaderText = "# OF WIRES / SET";
-            this.project_wiring_num_of_wires_set.Name = "project_wiring_num_of_wires_set";
-            // 
-            // project_wiring_num_of_qty_set
-            // 
-            this.project_wiring_num_of_qty_set.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.project_wiring_num_of_qty_set.DataPropertyName = "# OF QTY / SET";
-            this.project_wiring_num_of_qty_set.HeaderText = "# OF QTY / SET";
-            this.project_wiring_num_of_qty_set.Name = "project_wiring_num_of_qty_set";
-            // 
-            // project_wiring_distance_travelled
-            // 
-            this.project_wiring_distance_travelled.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.project_wiring_distance_travelled.DataPropertyName = "DISTANCE TRAVELLED / SET";
-            this.project_wiring_distance_travelled.HeaderText = "DISTANCE TRAVELLED / SET";
-            this.project_wiring_distance_travelled.Name = "project_wiring_distance_travelled";
-            // 
-            // project_wiring_allowance
-            // 
-            this.project_wiring_allowance.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.project_wiring_allowance.DataPropertyName = "ALLOWANCE / WIRE / SET";
-            this.project_wiring_allowance.HeaderText = "ALLOWANCE / WIRE / SET";
-            this.project_wiring_allowance.Name = "project_wiring_allowance";
-            // 
-            // project_wiring_qty
-            // 
-            this.project_wiring_qty.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.project_wiring_qty.DataPropertyName = "QTY";
-            this.project_wiring_qty.HeaderText = "QTY";
-            this.project_wiring_qty.Name = "project_wiring_qty";
-            // 
-            // project_wiring_num_of_sets
-            // 
-            this.project_wiring_num_of_sets.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.project_wiring_num_of_sets.DataPropertyName = "# OF SETS";
-            this.project_wiring_num_of_sets.HeaderText = "# OF SETS";
-            this.project_wiring_num_of_sets.Name = "project_wiring_num_of_sets";
-            // 
-            // project_wiring_total_qty
-            // 
-            this.project_wiring_total_qty.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.project_wiring_total_qty.DataPropertyName = "TOTAL QTY.";
-            this.project_wiring_total_qty.HeaderText = "TOTAL QTY.";
-            this.project_wiring_total_qty.Name = "project_wiring_total_qty";
-            // 
-            // project_wiring_cost
-            // 
-            this.project_wiring_cost.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.project_wiring_cost.DataPropertyName = "COST";
-            this.project_wiring_cost.HeaderText = "COST";
-            this.project_wiring_cost.Name = "project_wiring_cost";
-            // 
-            // project_wiring_total_cost
-            // 
-            this.project_wiring_total_cost.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.project_wiring_total_cost.DataPropertyName = "TOTAL COST";
-            this.project_wiring_total_cost.HeaderText = "TOTAL COST";
-            this.project_wiring_total_cost.Name = "project_wiring_total_cost";
-            // 
-            // project_wiring_unit
-            // 
-            this.project_wiring_unit.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.project_wiring_unit.DataPropertyName = "UNIT";
-            this.project_wiring_unit.HeaderText = "UNIT";
-            this.project_wiring_unit.Name = "project_wiring_unit";
             // 
             // bs_project_wiring
             // 
@@ -1477,43 +1144,8 @@ namespace smpc_sales_system.Pages.Sales
             this.button1.Size = new System.Drawing.Size(35, 21);
             this.button1.TabIndex = 157;
             this.button1.UseVisualStyleBackColor = false;
+            this.button1.Visible = false;
             this.button1.Click += new System.EventHandler(this.button1_Click);
-            // 
-            // label6
-            // 
-            this.label6.AutoSize = true;
-            this.label6.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label6.Location = new System.Drawing.Point(21, 1020);
-            this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(29, 13);
-            this.label6.TabIndex = 160;
-            this.label6.Text = "FLA";
-            // 
-            // txt_FLA
-            // 
-            this.txt_FLA.Location = new System.Drawing.Point(53, 1017);
-            this.txt_FLA.Name = "txt_FLA";
-            this.txt_FLA.ReadOnly = true;
-            this.txt_FLA.Size = new System.Drawing.Size(66, 20);
-            this.txt_FLA.TabIndex = 159;
-            // 
-            // label7
-            // 
-            this.label7.AutoSize = true;
-            this.label7.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label7.Location = new System.Drawing.Point(126, 1020);
-            this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(64, 13);
-            this.label7.TabIndex = 162;
-            this.label7.Text = "VOLTAGE";
-            // 
-            // txt_VOLT
-            // 
-            this.txt_VOLT.Location = new System.Drawing.Point(195, 1016);
-            this.txt_VOLT.Name = "txt_VOLT";
-            this.txt_VOLT.ReadOnly = true;
-            this.txt_VOLT.Size = new System.Drawing.Size(66, 20);
-            this.txt_VOLT.TabIndex = 161;
             // 
             // errorProvider1
             // 
@@ -1542,10 +1174,456 @@ namespace smpc_sales_system.Pages.Sales
             this.timer_update_content.Interval = 5000;
             this.timer_update_content.Tick += new System.EventHandler(this.timer_update_content_Tick);
             // 
+            // checkBox1
+            // 
+            this.checkBox1.AutoSize = true;
+            this.checkBox1.Location = new System.Drawing.Point(-15, -15);
+            this.checkBox1.Name = "checkBox1";
+            this.checkBox1.Size = new System.Drawing.Size(80, 17);
+            this.checkBox1.TabIndex = 164;
+            this.checkBox1.Text = "checkBox1";
+            this.checkBox1.UseVisualStyleBackColor = true;
+            // 
+            // label58
+            // 
+            this.label58.AutoSize = true;
+            this.label58.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label58.Location = new System.Drawing.Point(698, 943);
+            this.label58.Name = "label58";
+            this.label58.Size = new System.Drawing.Size(113, 13);
+            this.label58.TabIndex = 156;
+            this.label58.Text = "ASSIGNED ENGR.";
+            // 
+            // txt_FLA
+            // 
+            this.txt_FLA.Location = new System.Drawing.Point(53, 939);
+            this.txt_FLA.Name = "txt_FLA";
+            this.txt_FLA.ReadOnly = true;
+            this.txt_FLA.Size = new System.Drawing.Size(66, 20);
+            this.txt_FLA.TabIndex = 159;
+            // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label6.Location = new System.Drawing.Point(21, 942);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(29, 13);
+            this.label6.TabIndex = 160;
+            this.label6.Text = "FLA";
+            // 
+            // txt_VOLT
+            // 
+            this.txt_VOLT.Location = new System.Drawing.Point(195, 938);
+            this.txt_VOLT.Name = "txt_VOLT";
+            this.txt_VOLT.ReadOnly = true;
+            this.txt_VOLT.Size = new System.Drawing.Size(66, 20);
+            this.txt_VOLT.TabIndex = 161;
+            // 
+            // label7
+            // 
+            this.label7.AutoSize = true;
+            this.label7.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label7.Location = new System.Drawing.Point(126, 942);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(64, 13);
+            this.label7.TabIndex = 162;
+            this.label7.Text = "VOLTAGE";
+            // 
+            // checkBox_Wiring
+            // 
+            this.checkBox_Wiring.AutoSize = true;
+            this.checkBox_Wiring.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.checkBox_Wiring.Location = new System.Drawing.Point(20, 916);
+            this.checkBox_Wiring.Name = "checkBox_Wiring";
+            this.checkBox_Wiring.Size = new System.Drawing.Size(73, 17);
+            this.checkBox_Wiring.TabIndex = 165;
+            this.checkBox_Wiring.Text = "WIRING";
+            this.checkBox_Wiring.UseVisualStyleBackColor = true;
+            this.checkBox_Wiring.CheckedChanged += new System.EventHandler(this.checkBox_Wiring_CheckedChanged);
+            // 
+            // dgv_wiring
+            // 
+            this.dgv_wiring.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.dgv_wiring.AutoGenerateColumns = false;
+            dataGridViewCellStyle7.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle7.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle7.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle7.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle7.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle7.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle7.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dgv_wiring.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle7;
+            this.dgv_wiring.ColumnHeadersHeight = 100;
+            this.dgv_wiring.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.project_wiring_id,
+            this.project_wiring_based_id,
+            this.cmb_unit,
+            this.project_wiring_materials,
+            this.project_wiring_wire_amp,
+            this.project_wiring_description,
+            this.project_wiring_num_of_wiring_set,
+            this.project_wiring_num_of_wiring_set_format,
+            this.project_wiring_distance_travelled,
+            this.project_wiring_allowance,
+            this.project_wiring_qty,
+            this.project_wiring_qty_format,
+            this.project_wiring_num_of_sets,
+            this.project_wiring_total_qty,
+            this.project_wiring_cost,
+            this.project_wiring_total_cost,
+            this.project_wiring_unit});
+            this.dgv_wiring.DataSource = this.bs_project_wiring;
+            dataGridViewCellStyle8.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle8.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle8.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle8.ForeColor = System.Drawing.SystemColors.ControlText;
+            dataGridViewCellStyle8.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle8.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle8.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.dgv_wiring.DefaultCellStyle = dataGridViewCellStyle8;
+            this.dgv_wiring.Location = new System.Drawing.Point(24, 965);
+            this.dgv_wiring.Name = "dgv_wiring";
+            dataGridViewCellStyle9.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle9.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle9.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle9.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle9.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle9.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle9.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dgv_wiring.RowHeadersDefaultCellStyle = dataGridViewCellStyle9;
+            this.dgv_wiring.Size = new System.Drawing.Size(1092, 416);
+            this.dgv_wiring.TabIndex = 154;
+            this.dgv_wiring.CellEndEdit += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgv_wiring_CellEndEdit);
+            // 
+            // project_wiring_id
+            // 
+            this.project_wiring_id.DataPropertyName = "id";
+            this.project_wiring_id.HeaderText = "ID";
+            this.project_wiring_id.Name = "project_wiring_id";
+            this.project_wiring_id.Visible = false;
+            // 
+            // project_wiring_based_id
+            // 
+            this.project_wiring_based_id.DataPropertyName = "based_id";
+            this.project_wiring_based_id.HeaderText = "based_id";
+            this.project_wiring_based_id.Name = "project_wiring_based_id";
+            this.project_wiring_based_id.Visible = false;
+            // 
+            // cmb_unit
+            // 
+            this.cmb_unit.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.cmb_unit.DataPropertyName = "UNIT";
+            this.cmb_unit.DataSource = this.bs_units_qty_set;
+            this.cmb_unit.HeaderText = "UNIT";
+            this.cmb_unit.Name = "cmb_unit";
+            this.cmb_unit.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+            this.cmb_unit.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
+            this.cmb_unit.Visible = false;
+            // 
+            // project_wiring_materials
+            // 
+            this.project_wiring_materials.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.project_wiring_materials.DataPropertyName = "MATERIALS";
+            this.project_wiring_materials.FillWeight = 200F;
+            this.project_wiring_materials.HeaderText = "MATERIALS";
+            this.project_wiring_materials.MinimumWidth = 200;
+            this.project_wiring_materials.Name = "project_wiring_materials";
+            // 
+            // project_wiring_wire_amp
+            // 
+            this.project_wiring_wire_amp.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.project_wiring_wire_amp.DataPropertyName = "WIRE AMP.";
+            this.project_wiring_wire_amp.HeaderText = "WIRE AMP.";
+            this.project_wiring_wire_amp.Name = "project_wiring_wire_amp";
+            // 
+            // project_wiring_description
+            // 
+            this.project_wiring_description.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.project_wiring_description.DataPropertyName = "DESCRIPTION";
+            this.project_wiring_description.HeaderText = "DESCRIPTION";
+            this.project_wiring_description.Name = "project_wiring_description";
+            // 
+            // project_wiring_num_of_wiring_set
+            // 
+            this.project_wiring_num_of_wiring_set.DataPropertyName = "# OF WIRES / SET";
+            this.project_wiring_num_of_wiring_set.FillWeight = 50F;
+            this.project_wiring_num_of_wiring_set.HeaderText = "SET";
+            this.project_wiring_num_of_wiring_set.MinimumWidth = 50;
+            this.project_wiring_num_of_wiring_set.Name = "project_wiring_num_of_wiring_set";
+            this.project_wiring_num_of_wiring_set.Width = 50;
+            // 
+            // project_wiring_num_of_wiring_set_format
+            // 
+            this.project_wiring_num_of_wiring_set_format.DataPropertyName = "NumberOfQtyFormat";
+            this.project_wiring_num_of_wiring_set_format.FillWeight = 30F;
+            this.project_wiring_num_of_wiring_set_format.HeaderText = "";
+            this.project_wiring_num_of_wiring_set_format.Name = "project_wiring_num_of_wiring_set_format";
+            this.project_wiring_num_of_wiring_set_format.ReadOnly = true;
+            this.project_wiring_num_of_wiring_set_format.Width = 30;
+            // 
+            // project_wiring_distance_travelled
+            // 
+            this.project_wiring_distance_travelled.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.project_wiring_distance_travelled.DataPropertyName = "DISTANCE TRAVELLED / SET";
+            this.project_wiring_distance_travelled.HeaderText = "DISTANCE TRAVELLED / SET";
+            this.project_wiring_distance_travelled.Name = "project_wiring_distance_travelled";
+            // 
+            // project_wiring_allowance
+            // 
+            this.project_wiring_allowance.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.project_wiring_allowance.DataPropertyName = "ALLOWANCE / WIRE / SET";
+            this.project_wiring_allowance.HeaderText = "ALLOWANCE / WIRE / SET";
+            this.project_wiring_allowance.Name = "project_wiring_allowance";
+            // 
+            // project_wiring_qty
+            // 
+            this.project_wiring_qty.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.project_wiring_qty.DataPropertyName = "QTY";
+            this.project_wiring_qty.FillWeight = 50F;
+            this.project_wiring_qty.HeaderText = "QTY";
+            this.project_wiring_qty.MinimumWidth = 50;
+            this.project_wiring_qty.Name = "project_wiring_qty";
+            // 
+            // project_wiring_qty_format
+            // 
+            this.project_wiring_qty_format.DataPropertyName = "QtyFormat";
+            this.project_wiring_qty_format.FillWeight = 30F;
+            this.project_wiring_qty_format.HeaderText = "";
+            this.project_wiring_qty_format.Name = "project_wiring_qty_format";
+            this.project_wiring_qty_format.Width = 30;
+            // 
+            // project_wiring_num_of_sets
+            // 
+            this.project_wiring_num_of_sets.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.project_wiring_num_of_sets.DataPropertyName = "# OF SETS";
+            this.project_wiring_num_of_sets.HeaderText = "# OF SETS";
+            this.project_wiring_num_of_sets.Name = "project_wiring_num_of_sets";
+            // 
+            // project_wiring_total_qty
+            // 
+            this.project_wiring_total_qty.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.project_wiring_total_qty.DataPropertyName = "TOTAL QTY.";
+            this.project_wiring_total_qty.HeaderText = "TOTAL QTY.";
+            this.project_wiring_total_qty.Name = "project_wiring_total_qty";
+            // 
+            // project_wiring_cost
+            // 
+            this.project_wiring_cost.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.project_wiring_cost.DataPropertyName = "COST";
+            this.project_wiring_cost.HeaderText = "COST";
+            this.project_wiring_cost.Name = "project_wiring_cost";
+            // 
+            // project_wiring_total_cost
+            // 
+            this.project_wiring_total_cost.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.project_wiring_total_cost.DataPropertyName = "TOTAL COST";
+            this.project_wiring_total_cost.HeaderText = "TOTAL COST";
+            this.project_wiring_total_cost.Name = "project_wiring_total_cost";
+            // 
+            // project_wiring_unit
+            // 
+            this.project_wiring_unit.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.project_wiring_unit.DataPropertyName = "UNIT";
+            this.project_wiring_unit.HeaderText = "UNIT";
+            this.project_wiring_unit.Name = "project_wiring_unit";
+            this.project_wiring_unit.Visible = false;
+            // 
+            // cb_template_project
+            // 
+            this.cb_template_project.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.cb_template_project.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cb_template_project.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.cb_template_project.FormattingEnabled = true;
+            this.cb_template_project.Location = new System.Drawing.Point(99, 465);
+            this.cb_template_project.Name = "cb_template_project";
+            this.cb_template_project.Size = new System.Drawing.Size(215, 21);
+            this.cb_template_project.TabIndex = 166;
+            this.cb_template_project.SelectedIndexChanged += new System.EventHandler(this.cb_template_project_SelectedIndexChanged);
+            // 
+            // project_items_id
+            // 
+            this.project_items_id.DataPropertyName = "items_id";
+            this.project_items_id.HeaderText = "id";
+            this.project_items_id.Name = "project_items_id";
+            this.project_items_id.Visible = false;
+            // 
+            // item_id
+            // 
+            this.item_id.DataPropertyName = "item_id";
+            this.item_id.HeaderText = "item_id";
+            this.item_id.Name = "item_id";
+            this.item_id.Visible = false;
+            // 
+            // project_items_based_id
+            // 
+            this.project_items_based_id.DataPropertyName = "based_id";
+            this.project_items_based_id.HeaderText = "based_id";
+            this.project_items_based_id.Name = "project_items_based_id";
+            this.project_items_based_id.Visible = false;
+            // 
+            // project_items_template_id
+            // 
+            this.project_items_template_id.DataPropertyName = "template_id";
+            this.project_items_template_id.HeaderText = "template_id";
+            this.project_items_template_id.Name = "project_items_template_id";
+            this.project_items_template_id.Visible = false;
+            // 
+            // project_items_bom_id
+            // 
+            this.project_items_bom_id.DataPropertyName = "bom_id";
+            this.project_items_bom_id.HeaderText = "bom_id";
+            this.project_items_bom_id.Name = "project_items_bom_id";
+            this.project_items_bom_id.Visible = false;
+            // 
+            // project_items_node_id
+            // 
+            this.project_items_node_id.DataPropertyName = "node_id";
+            this.project_items_node_id.HeaderText = "node_id";
+            this.project_items_node_id.Name = "project_items_node_id";
+            this.project_items_node_id.Visible = false;
+            // 
+            // project_items_node_name
+            // 
+            this.project_items_node_name.DataPropertyName = "node_name";
+            this.project_items_node_name.HeaderText = "node_name";
+            this.project_items_node_name.Name = "project_items_node_name";
+            this.project_items_node_name.Visible = false;
+            // 
+            // project_items_parent_node_id
+            // 
+            this.project_items_parent_node_id.DataPropertyName = "parent_node_id";
+            this.project_items_parent_node_id.HeaderText = "parent_node_id";
+            this.project_items_parent_node_id.Name = "project_items_parent_node_id";
+            this.project_items_parent_node_id.Visible = false;
+            // 
+            // project_items_node_order
+            // 
+            this.project_items_node_order.DataPropertyName = "node_order";
+            this.project_items_node_order.HeaderText = "node_order";
+            this.project_items_node_order.Name = "project_items_node_order";
+            this.project_items_node_order.Visible = false;
+            // 
+            // project_items_node_type
+            // 
+            this.project_items_node_type.DataPropertyName = "node_type";
+            this.project_items_node_type.HeaderText = "node_type";
+            this.project_items_node_type.Name = "project_items_node_type";
+            this.project_items_node_type.Visible = false;
+            // 
+            // project_items_images
+            // 
+            this.project_items_images.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
+            this.project_items_images.HeaderText = "IMAGES";
+            this.project_items_images.Name = "project_items_images";
+            this.project_items_images.Width = 60;
+            // 
+            // reference_code
+            // 
+            this.reference_code.DataPropertyName = "reference_code";
+            this.reference_code.HeaderText = "REFERENCE CODE";
+            this.reference_code.Name = "reference_code";
+            this.reference_code.Width = 50;
+            // 
+            // project_items_components
+            // 
+            this.project_items_components.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.project_items_components.DataPropertyName = "components";
+            this.project_items_components.HeaderText = "COMPONENTS";
+            this.project_items_components.MinimumWidth = 100;
+            this.project_items_components.Name = "project_items_components";
+            this.project_items_components.ReadOnly = true;
+            // 
+            // project_items_model
+            // 
+            this.project_items_model.DataPropertyName = "model";
+            this.project_items_model.HeaderText = "MODEL";
+            this.project_items_model.Name = "project_items_model";
+            this.project_items_model.ReadOnly = true;
+            // 
+            // project_items_item_inv_type
+            // 
+            this.project_items_item_inv_type.DataPropertyName = "item_inv_type";
+            this.project_items_item_inv_type.HeaderText = "ITEM INV TYPE";
+            this.project_items_item_inv_type.MinimumWidth = 40;
+            this.project_items_item_inv_type.Name = "project_items_item_inv_type";
+            this.project_items_item_inv_type.Width = 40;
+            // 
+            // project_items_qty
+            // 
+            this.project_items_qty.DataPropertyName = "qty";
+            this.project_items_qty.HeaderText = "QTY";
+            this.project_items_qty.MinimumWidth = 40;
+            this.project_items_qty.Name = "project_items_qty";
+            this.project_items_qty.Width = 40;
+            // 
+            // man_days
+            // 
+            this.man_days.DataPropertyName = "man_days";
+            this.man_days.HeaderText = "MAN DAYS";
+            this.man_days.Name = "man_days";
+            this.man_days.Visible = false;
+            // 
+            // labor_rate
+            // 
+            this.labor_rate.DataPropertyName = "labor_rate";
+            this.labor_rate.HeaderText = "LABOR RATE";
+            this.labor_rate.Name = "labor_rate";
+            this.labor_rate.Visible = false;
+            // 
+            // project_items_list_price
+            // 
+            this.project_items_list_price.DataPropertyName = "list_price_per_unit";
+            dataGridViewCellStyle2.NullValue = "0.00";
+            this.project_items_list_price.DefaultCellStyle = dataGridViewCellStyle2;
+            this.project_items_list_price.HeaderText = "LIST PRICE";
+            this.project_items_list_price.Name = "project_items_list_price";
+            // 
+            // project_items_unit_price
+            // 
+            this.project_items_unit_price.DataPropertyName = "unit_price";
+            dataGridViewCellStyle3.NullValue = "0.00";
+            this.project_items_unit_price.DefaultCellStyle = dataGridViewCellStyle3;
+            this.project_items_unit_price.HeaderText = "UNIT PRICE";
+            this.project_items_unit_price.Name = "project_items_unit_price";
+            // 
+            // project_items_multiplier
+            // 
+            this.project_items_multiplier.DataPropertyName = "multiplier";
+            this.project_items_multiplier.DataSource = this.bs_multiplier;
+            this.project_items_multiplier.HeaderText = "MULTIPLIER";
+            this.project_items_multiplier.Name = "project_items_multiplier";
+            this.project_items_multiplier.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+            this.project_items_multiplier.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
+            // 
+            // project_items_discount
+            // 
+            this.project_items_discount.DataPropertyName = "discount_price";
+            dataGridViewCellStyle4.NullValue = "0.00";
+            this.project_items_discount.DefaultCellStyle = dataGridViewCellStyle4;
+            this.project_items_discount.HeaderText = "DISCOUNT/MARK UP PRICE";
+            this.project_items_discount.Name = "project_items_discount";
+            // 
+            // project_items_line_total
+            // 
+            this.project_items_line_total.DataPropertyName = "component_total";
+            this.project_items_line_total.HeaderText = "LINE TOTAL";
+            this.project_items_line_total.Name = "project_items_line_total";
+            // 
+            // project_items_notes
+            // 
+            this.project_items_notes.DataPropertyName = "notes";
+            this.project_items_notes.HeaderText = "NOTES";
+            this.project_items_notes.Name = "project_items_notes";
+            // 
             // ItemSetUC
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.cb_template_project);
+            this.Controls.Add(this.checkBox_Wiring);
+            this.Controls.Add(this.checkBox1);
             this.Controls.Add(this.template_id);
             this.Controls.Add(this.label7);
             this.Controls.Add(this.txt_VOLT);
@@ -1553,7 +1631,6 @@ namespace smpc_sales_system.Pages.Sales
             this.Controls.Add(this.txt_FLA);
             this.Controls.Add(this.button1);
             this.Controls.Add(this.label58);
-            this.Controls.Add(this.label57);
             this.Controls.Add(this.dgv_wiring);
             this.Controls.Add(this.label56);
             this.Controls.Add(this.txt_template_name);
@@ -1562,10 +1639,11 @@ namespace smpc_sales_system.Pages.Sales
             this.Controls.Add(this.label45);
             this.Controls.Add(this.pnl_project_content);
             this.Name = "ItemSetUC";
-            this.Size = new System.Drawing.Size(1074, 1390);
+            this.Size = new System.Drawing.Size(1132, 1390);
             this.Load += new System.EventHandler(this.ItemSetUC_Load);
             this.pnl_project_content.ResumeLayout(false);
             this.pnl_project_content.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dgv_final)).EndInit();
             this.pnl_advanced_conditions.ResumeLayout(false);
             this.pnl_advanced_conditions.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgv_project_items)).EndInit();
@@ -1577,11 +1655,11 @@ namespace smpc_sales_system.Pages.Sales
             ((System.ComponentModel.ISupportInitialize)(this.dataTable2)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.dataTable3)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.dataTable4)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.dgv_wiring)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.bs_units_qty_set)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.bs_project_wiring)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.errorProvider1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.bs_units_qty)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dgv_wiring)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -1599,9 +1677,7 @@ namespace smpc_sales_system.Pages.Sales
         private System.Windows.Forms.TextBox txt_no_of_sets;
         private System.Windows.Forms.TextBox textBox40;
         private System.Windows.Forms.TextBox textBox39;
-        private System.Windows.Forms.Label label44;
         private System.Windows.Forms.TextBox textBox41;
-        private System.Windows.Forms.TextBox txt_final;
         private System.Windows.Forms.Label label39;
         private System.Windows.Forms.TextBox txt_additional;
         private System.Windows.Forms.Label label40;
@@ -1634,9 +1710,6 @@ namespace smpc_sales_system.Pages.Sales
         private System.Windows.Forms.Label label56;
         private System.Windows.Forms.TextBox txt_template_name;
         private System.Windows.Forms.DataGridView dgv_project_items;
-        private System.Windows.Forms.Label label58;
-        private System.Windows.Forms.Label label57;
-        private System.Windows.Forms.DataGridView dgv_wiring;
         private System.Windows.Forms.BindingSource bs_project_components;
         private System.Data.DataSet ds_project;
         private System.Data.DataTable dataTable9;
@@ -1689,11 +1762,6 @@ namespace smpc_sales_system.Pages.Sales
         private System.Data.DataColumn dataColumn15;
         private System.Windows.Forms.ComboBox cmb_starting_method;
         private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn1;
-        private System.Windows.Forms.TextBox txt_item_;
-        private System.Windows.Forms.Label label6;
-        private System.Windows.Forms.TextBox txt_FLA;
-        private System.Windows.Forms.Label label7;
-        private System.Windows.Forms.TextBox txt_VOLT;
         private System.Windows.Forms.ErrorProvider errorProvider1;
         private System.Data.DataColumn dataColumn16;
         private System.Windows.Forms.BindingSource bs_units_qty_set;
@@ -1719,8 +1787,44 @@ namespace smpc_sales_system.Pages.Sales
         private System.Windows.Forms.DataGridViewTextBoxColumn wiring_total_qty;
         private System.Windows.Forms.DataGridViewTextBoxColumn wiring_cost;
         private System.Windows.Forms.DataGridViewTextBoxColumn wiring_total_cost;
+        private System.Windows.Forms.Timer timer_update_conditions;
+        private System.Windows.Forms.Timer timer_update_content;
+        private System.Windows.Forms.CheckBox checkBox1;
+        private System.Windows.Forms.CheckBox checkBox_Wiring;
+        private System.Windows.Forms.Label label7;
+        private System.Windows.Forms.TextBox txt_VOLT;
+        private System.Windows.Forms.Label label6;
+        private System.Windows.Forms.TextBox txt_FLA;
+        private System.Windows.Forms.Label label58;
+        private System.Windows.Forms.DataGridView dgv_wiring;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn21;
+        private System.Windows.Forms.DataGridViewTextBoxColumn project_wiring_num_of_qty_set;
+        private System.Windows.Forms.DataGridView dgv_final;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Final;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Fla;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Voltage;
+        private System.Windows.Forms.DataGridViewTextBoxColumn project_wiring_id;
+        private System.Windows.Forms.DataGridViewTextBoxColumn project_wiring_based_id;
+        private System.Windows.Forms.DataGridViewComboBoxColumn cmb_unit;
+        private System.Windows.Forms.DataGridViewTextBoxColumn project_wiring_materials;
+        private System.Windows.Forms.DataGridViewTextBoxColumn project_wiring_amp_req;
+        private System.Windows.Forms.DataGridViewTextBoxColumn project_wiring_wire_amp;
+        private System.Windows.Forms.DataGridViewTextBoxColumn project_wiring_description;
+        private System.Windows.Forms.DataGridViewTextBoxColumn project_wiring_num_of_wires_set;
+        private System.Windows.Forms.DataGridViewTextBoxColumn project_wiring_num_of_wiring_set;
+        private System.Windows.Forms.DataGridViewTextBoxColumn project_wiring_num_of_wiring_set_format;
+        private System.Windows.Forms.DataGridViewTextBoxColumn project_wiring_distance_travelled;
+        private System.Windows.Forms.DataGridViewTextBoxColumn project_wiring_allowance;
+        private System.Windows.Forms.DataGridViewTextBoxColumn project_wiring_qty;
+        private System.Windows.Forms.DataGridViewTextBoxColumn project_wiring_qty_format;
+        private System.Windows.Forms.DataGridViewTextBoxColumn project_wiring_num_of_sets;
+        private System.Windows.Forms.DataGridViewTextBoxColumn project_wiring_total_qty;
+        private System.Windows.Forms.DataGridViewTextBoxColumn project_wiring_cost;
+        private System.Windows.Forms.DataGridViewTextBoxColumn project_wiring_total_cost;
+        private System.Windows.Forms.DataGridViewTextBoxColumn project_wiring_unit;
+        private System.Windows.Forms.ComboBox cb_template_project;
         private System.Windows.Forms.DataGridViewTextBoxColumn project_items_id;
-        private System.Windows.Forms.DataGridViewTextBoxColumn project_items_item_id;
+        private System.Windows.Forms.DataGridViewTextBoxColumn item_id;
         private System.Windows.Forms.DataGridViewTextBoxColumn project_items_based_id;
         private System.Windows.Forms.DataGridViewTextBoxColumn project_items_template_id;
         private System.Windows.Forms.DataGridViewTextBoxColumn project_items_bom_id;
@@ -1730,35 +1834,18 @@ namespace smpc_sales_system.Pages.Sales
         private System.Windows.Forms.DataGridViewTextBoxColumn project_items_node_order;
         private System.Windows.Forms.DataGridViewTextBoxColumn project_items_node_type;
         private System.Windows.Forms.DataGridViewTextBoxColumn project_items_images;
+        private System.Windows.Forms.DataGridViewTextBoxColumn reference_code;
         private System.Windows.Forms.DataGridViewTextBoxColumn project_items_components;
         private System.Windows.Forms.DataGridViewTextBoxColumn project_items_model;
         private System.Windows.Forms.DataGridViewTextBoxColumn project_items_item_inv_type;
         private System.Windows.Forms.DataGridViewTextBoxColumn project_items_qty;
+        private System.Windows.Forms.DataGridViewTextBoxColumn man_days;
+        private System.Windows.Forms.DataGridViewTextBoxColumn labor_rate;
         private System.Windows.Forms.DataGridViewTextBoxColumn project_items_list_price;
         private System.Windows.Forms.DataGridViewTextBoxColumn project_items_unit_price;
         private System.Windows.Forms.DataGridViewComboBoxColumn project_items_multiplier;
         private System.Windows.Forms.DataGridViewTextBoxColumn project_items_discount;
         private System.Windows.Forms.DataGridViewTextBoxColumn project_items_line_total;
         private System.Windows.Forms.DataGridViewTextBoxColumn project_items_notes;
-        private System.Windows.Forms.DataGridViewTextBoxColumn project_wiring_id;
-        private System.Windows.Forms.DataGridViewTextBoxColumn project_wiring_based_id;
-        private System.Windows.Forms.DataGridViewComboBoxColumn cmb_unit;
-        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn21;
-        private System.Windows.Forms.DataGridViewTextBoxColumn project_wiring_materials;
-        private System.Windows.Forms.DataGridViewTextBoxColumn project_wiring_amp_req;
-        private System.Windows.Forms.DataGridViewTextBoxColumn project_wiring_wire_amp;
-        private System.Windows.Forms.DataGridViewTextBoxColumn project_wiring_description;
-        private System.Windows.Forms.DataGridViewTextBoxColumn project_wiring_num_of_wires_set;
-        private System.Windows.Forms.DataGridViewTextBoxColumn project_wiring_num_of_qty_set;
-        private System.Windows.Forms.DataGridViewTextBoxColumn project_wiring_distance_travelled;
-        private System.Windows.Forms.DataGridViewTextBoxColumn project_wiring_allowance;
-        private System.Windows.Forms.DataGridViewTextBoxColumn project_wiring_qty;
-        private System.Windows.Forms.DataGridViewTextBoxColumn project_wiring_num_of_sets;
-        private System.Windows.Forms.DataGridViewTextBoxColumn project_wiring_total_qty;
-        private System.Windows.Forms.DataGridViewTextBoxColumn project_wiring_cost;
-        private System.Windows.Forms.DataGridViewTextBoxColumn project_wiring_total_cost;
-        private System.Windows.Forms.DataGridViewTextBoxColumn project_wiring_unit;
-        private System.Windows.Forms.Timer timer_update_conditions;
-        private System.Windows.Forms.Timer timer_update_content;
     }
 }

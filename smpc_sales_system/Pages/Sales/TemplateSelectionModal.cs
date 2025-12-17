@@ -15,6 +15,8 @@ namespace smpc_sales_system.Pages.Sales
 {
     public partial class TemplateSelectionModal : Form
     {
+        private string TemplateName;
+
         public TemplateSelectionModal()
         {
             InitializeComponent();
@@ -47,11 +49,17 @@ namespace smpc_sales_system.Pages.Sales
             return result;
         }
 
+        public string GetTemplateName()
+        {
+            return TemplateName;
+        }
+
         private void dataGridView1_CellClick(object sender, DataGridViewCellEventArgs e)
         {
             if (e.RowIndex >= 0)
             {
-                string id = dataGridView1.Rows[e.RowIndex].Cells[0].Value.ToString();
+                string id = dataGridView1.Rows[e.RowIndex].Cells["template_id"].Value.ToString();
+                TemplateName = dataGridView1.Rows[e.RowIndex].Cells["template_name"].Value.ToString();
 
                 Dictionary<string, dynamic> data = new Dictionary<string, dynamic>()
                 {

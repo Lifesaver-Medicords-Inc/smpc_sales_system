@@ -1,4 +1,5 @@
 ﻿using smpc_sales_app.Pages.Sales;
+using smpc_sales_system.Pages;
 using smpc_sales_system.Pages.Sales;
 using System;
 using System.Collections.Generic;
@@ -40,7 +41,7 @@ namespace smpc_sales_app.Services
             // application setup transaction
             { "Application Setup", new Applications() },
             { "Ship Type Setup", new ShipTypeSetup() },
-            { "Template Setup", new TemplateSelectionModal() },
+            { "Template Setup", new ProjectTemplate() },
 
 
             //inventory

@@ -79,7 +79,7 @@ namespace smpc_sales_system.Pages.Sales
             this.DataGridViewModel.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
             this.DataGridViewModel.Size = new System.Drawing.Size(490, 335);
             this.DataGridViewModel.TabIndex = 2;
-            this.DataGridViewModel.CellDoubleClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.DataGridViewModel_CellDoubleClick);
+            this.DataGridViewModel.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.DataGridViewModel_CellClick);
             // 
             // ModelModal
             // 

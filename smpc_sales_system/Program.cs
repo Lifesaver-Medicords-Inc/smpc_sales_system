@@ -17,7 +17,7 @@ namespace smpc_sales_system
         /// </summary>
         [STAThread]
         static void Main()
-        {
+        { 
             // Set application-wide currency format to Philippine Peso
             CultureInfo culture = new CultureInfo("en-PH");
             Thread.CurrentThread.CurrentCulture = culture;
@@ -25,7 +25,7 @@ namespace smpc_sales_system
 
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-             Application.Run(new Layout());
+            Application.Run(new Layout());
         }
     }
 }

@@ -704,6 +704,7 @@ namespace smpc_sales_app.Pages.Sales
             this.dgv_order_sales.Name = "dgv_order_sales";
             this.dgv_order_sales.Size = new System.Drawing.Size(1229, 252);
             this.dgv_order_sales.TabIndex = 12;
+            this.dgv_order_sales.CellMouseClick += new System.Windows.Forms.DataGridViewCellMouseEventHandler(this.dgv_order_sales_CellMouseClick);
             // 
             // dgv_project
             // 
@@ -2154,10 +2155,11 @@ namespace smpc_sales_app.Pages.Sales
             // delivery_preference
             // 
             this.delivery_preference.DataPropertyName = "delivery_preference";
+            this.delivery_preference.DisplayStyle = System.Windows.Forms.DataGridViewComboBoxDisplayStyle.ComboBox;
             this.delivery_preference.FillWeight = 109.5354F;
             this.delivery_preference.HeaderText = "DELIVERY PREFERENCE";
             this.delivery_preference.Items.AddRange(new object[] {
-            "",
+            " ",
             "(ASSEMBLED)",
             "(SEMI-ASSEMBLED)",
             "(INCLUDED-IN)",

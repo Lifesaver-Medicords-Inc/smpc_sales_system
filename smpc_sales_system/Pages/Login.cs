@@ -59,11 +59,11 @@ namespace smpc_sales_app.Pages
                 data.Add("motherboard_serial_no", Helpers.GetSerialNumber());
                 data.Add("machine_name", Environment.MachineName);
                 var currentUser = await AuthServices.Login(data);
-               
+                
                 //var currentUserInventory = await smpc_inventory_app.Services.Auth.AuthServices.Login(data);
 
 
-                if (currentUser.Success)
+                 if (currentUser.Success)
                 {
                     CacheData.CurrentUser = currentUser.Data;
 

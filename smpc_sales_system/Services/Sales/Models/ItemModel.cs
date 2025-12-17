@@ -15,7 +15,7 @@ namespace smpc_inventory_app.Services.Setup.Model.Item
         public int item_model_id { get; set; }
         public string item_code { get; set; }
         public string short_desc { get; set; }
-        public int item_brand_id { get; set; }
+        public int item_brand_id  { get; set; }
         public int unit_of_measure_id { get; set; }
         public bool is_inventory_item { get; set; }
         public bool is_sales_item { get; set; }

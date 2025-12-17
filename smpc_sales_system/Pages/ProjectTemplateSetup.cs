@@ -166,51 +166,52 @@ namespace smpc_sales_system.Pages
             var childList = (List<ProjectTemplateChildModel>)result["sales_project_template_child"];
 
           
-            foreach (TreeNode parent in treeView1.Nodes)
-            {
-                ProjectTemplateChildModel parentModel = new ProjectTemplateChildModel
-                {
-                    node_id = nodeIdCounter++,  
-                    parent_node_id = 0,        
-                    node_name = parent.Text,
-                    node_level = 0,
-                    node_order = childList.Count + 1,
-                    item_id = 0,
-                    node_type = parent.Nodes.Count > 0 ? "Parent" : "Leaf"
-                };
+        //    foreach (TreeNode parent in treeView1.Nodes)
+        //    {
+        //        ProjectTemplateChildModel parentModel = new ProjectTemplateChildModel
+        //        {
+        //            node_id = nodeIdCounter++,  
+        //            parent_node_id = 0,        
+        //            node_name = parent.Text,
+        //            node_level = 0,
+        //            node_order = childList.Count + 1,
+        //            item_id = 0,
+        //            node_type = parent.Nodes.Count > 0 ? "Parent" : "Leaf"
+        //        };
 
-                childList.Add(parentModel);
+        //        childList.Add(parentModel);
 
               
-                foreach (TreeNode child in parent.Nodes)
-                {
-                    AddNodeToApiModel(child, parentModel.node_id, 1, childList, ref nodeIdCounter);
-                }
-            }
-            return result;
+        //        foreach (TreeNode child in parent.Nodes)
+        //        {
+        //            AddNodeToApiModel(child, parentModel.node_id, 1, childList, ref nodeIdCounter);
+        //        }
+        //    }
+           return result;
+
         }
 
 
         private void AddNodeToApiModel(TreeNode node, int parentId, int level, List<ProjectTemplateChildModel> childNodes, ref int nodeIdCounter)
         {
-            ProjectTemplateChildModel childModel = new ProjectTemplateChildModel
-            {
-                node_id = nodeIdCounter++,  
-                parent_node_id = parentId, 
-                node_name = node.Text,
-                node_level = level,
-                node_order = childNodes.Count + 1,
-                item_id = 0,
-                node_type = node.Nodes.Count > 0 ? "Parent" : "Leaf"
-            };
+            //ProjectTemplateChildModel childModel = new ProjectTemplateChildModel
+            //{
+            //    node_id = nodeIdCounter++,  
+            //    parent_node_id = parentId, 
+            //    node_name = node.Text,
+            //    node_level = level,
+            //    node_order = childNodes.Count + 1,
+            //    item_id = 0,
+            //    node_type = node.Nodes.Count > 0 ? "Parent" : "Leaf"
+            //};
 
-            childNodes.Add(childModel);
+            //childNodes.Add(childModel);
 
-            // Process all child nodes
-            foreach (TreeNode child in node.Nodes)
-            {
-                AddNodeToApiModel(child, childModel.node_id, level + 1, childNodes, ref nodeIdCounter);
-            }
+            //// Process all child nodes
+            //foreach (TreeNode child in node.Nodes)
+            //{
+            //    AddNodeToApiModel(child, childModel.node_id, level + 1, childNodes, ref nodeIdCounter);
+            //}
         }
 
         private void button2_Click(object sender, EventArgs e)

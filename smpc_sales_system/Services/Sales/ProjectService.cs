@@ -24,6 +24,7 @@ namespace smpc_sales_system.Services.Sales
         static string url_canvas = "/sales/salescanvas";
         static string url_pumps = "/sales/projects_pumps";
         static string url_wiring = "/sales/project_wiring";
+
         public static async Task<SalesProjectList> GetProjects()
         {
             var response = await RequestToApi<ApiResponseModel<SalesProjectList>>.Get(url);
@@ -44,7 +45,6 @@ namespace smpc_sales_system.Services.Sales
             CanvasViewList suppliers = response.Data;
             return suppliers;
         }
-
 
         public static async Task<ApiResponseModel> InsertCanvas(Dictionary<string, dynamic> data)
         {

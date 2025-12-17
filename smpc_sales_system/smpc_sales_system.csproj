@@ -149,6 +149,12 @@
     <Compile Include="Pages\PRModal.Designer.cs">
       <DependentUpon>PRModal.cs</DependentUpon>
     </Compile>
+    <Compile Include="Pages\ProjectTemplate.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Pages\ProjectTemplate.Designer.cs">
+      <DependentUpon>ProjectTemplate.cs</DependentUpon>
+    </Compile>
     <Compile Include="Pages\ProjectTemplateSetup.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -214,6 +220,12 @@
     </Compile>
     <Compile Include="Pages\Sales\ProjectTest.Designer.cs">
       <DependentUpon>ProjectTest.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\Sales\PumpItemModal.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Pages\Sales\PumpItemModal.Designer.cs">
+      <DependentUpon>PumpItemModal.cs</DependentUpon>
     </Compile>
     <Compile Include="Pages\Sales\PurchaseRequisition.cs">
       <SubType>UserControl</SubType>
@@ -384,6 +396,9 @@
     <EmbeddedResource Include="Pages\PRModal.resx">
       <DependentUpon>PRModal.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Pages\ProjectTemplate.resx">
+      <DependentUpon>ProjectTemplate.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Pages\ProjectTemplateSetup.resx">
       <DependentUpon>ProjectTemplateSetup.cs</DependentUpon>
     </EmbeddedResource>
@@ -425,6 +440,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Pages\Sales\ProjectTest.resx">
       <DependentUpon>ProjectTest.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Pages\Sales\PumpItemModal.resx">
+      <DependentUpon>PumpItemModal.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Pages\Sales\PurchaseRequisition.resx">
       <DependentUpon>PurchaseRequisition.cs</DependentUpon>

@@ -25,5 +25,10 @@ namespace smpc_sales_system.Services.Setup
             var response = await RequestToApi<ApiResponseModel>.Post(url, data);
             return response;
         }
+        public static async Task<ApiResponseModel> Update(Dictionary<string, dynamic> data)
+        {
+            var response = await RequestToApi<ApiResponseModel>.Put(url, data);
+            return response;
+        }
     }
 }

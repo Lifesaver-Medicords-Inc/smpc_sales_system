@@ -1,5 +1,6 @@
 ﻿using smpc_inventory_app.Pages;
 using smpc_inventory_app.Pages.Engineering.Boq;
+using smpc_sales_app.Data;
 using smpc_sales_app.Pages;
 using System;
 using System.Collections.Generic;
@@ -50,9 +51,15 @@ namespace smpc_sales_system.Pages.Sales
                 .Select(row => row.Field<int>("item_name_id"))
                 .FirstOrDefault();
 
-            DataTable ItemData = _ItemData.AsEnumerable()
-            .Where(row => row.Field<int>("item_name_id") == item_name_id)
-            .CopyToDataTable();
+            DataTable ItemData = _ItemData.AsEnumerable().CopyToDataTable();
+
+            if (item_name_id != 0)
+            {
+                ItemData = _ItemData.AsEnumerable()
+             .Where(row => row.Field<int>("item_name_id") == item_name_id)
+             .CopyToDataTable();
+
+            }
 
             if (!ItemData.Columns.Contains("Type"))
                 ItemData.Columns.Add("Type", typeof(string));
@@ -93,20 +100,11 @@ namespace smpc_sales_system.Pages.Sales
             if (dgv.Columns.Contains("Type"))
                 dgv.Columns["Type"].HeaderText = "TYPE";
         }
-        public int GetItemId()
+
+        private void DataGridViewModel_CellClick(object sender, DataGridViewCellEventArgs e)
         {
-            return itemId;
-        }
-        public int GetBomId()
-        {
-            return bomId;
-        }
-        public bool IsBom()
-        {
-            return isBom;
-        }
-        private void DataGridViewModel_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
-        {
+            if (e.RowIndex < 0)
+                return;
 
             var row = DataGridViewModel.Rows[e.RowIndex];
             int id = row.Cells["id"].Value != null ? Convert.ToInt32(row.Cells["id"].Value) : 0;
@@ -128,6 +126,19 @@ namespace smpc_sales_system.Pages.Sales
                 this.DialogResult = DialogResult.OK;
                 this.Close();
             }
+        }
+
+        public int GetItemId()
+        {
+            return itemId;
+        }
+        public int GetBomId()
+        {
+            return bomId;
+        }
+        public bool IsBom()
+        {
+            return isBom;
         }
     }
 }

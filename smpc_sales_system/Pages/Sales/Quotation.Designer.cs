@@ -170,27 +170,8 @@
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.Orders = new System.Windows.Forms.TabPage();
             this.dgv_quick_quote_details = new System.Windows.Forms.DataGridView();
-            this.quick_id = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.quick_bom_id = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.quick_based_id = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.quick_images = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.reference_code = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.quick_item_id = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.quick_item_code = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.quick_item_name = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.quick_qty = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.quick_unit_of_measure = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.man_days = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.labor_rate = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.quick_list_price = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.quick_unit_price = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.UnitPriceColumnContextMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.canvasToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.quick_discount = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.quick_net_discount = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.quick_net_total = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.quick_line_total = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.short_description = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Quote_Terms = new System.Windows.Forms.TabPage();
             this.QuotationTermsPanel = new System.Windows.Forms.Panel();
             this.TermAndConditionsRichTextBox = new System.Windows.Forms.RichTextBox();
@@ -246,6 +227,25 @@
             this.label23 = new System.Windows.Forms.Label();
             this.label24 = new System.Windows.Forms.Label();
             this.label25 = new System.Windows.Forms.Label();
+            this.quick_id = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.quick_bom_id = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.quick_based_id = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.quick_images = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.reference_code = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.item_id = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.quick_item_code = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.quick_item_name = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.quick_qty = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.quick_unit_of_measure = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.man_days = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.labor_rate = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.quick_list_price = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.quick_unit_price = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.quick_discount = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.quick_net_discount = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.quick_net_total = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.quick_line_total = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.short_description = new System.Windows.Forms.DataGridViewTextBoxColumn();
             ((System.ComponentModel.ISupportInitialize)(this.bs_project_multipliers)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.ds_project)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dataTable8)).BeginInit();
@@ -1303,7 +1303,7 @@
             this.quick_based_id,
             this.quick_images,
             this.reference_code,
-            this.quick_item_id,
+            this.item_id,
             this.quick_item_code,
             this.quick_item_name,
             this.quick_qty,
@@ -1328,155 +1328,6 @@
             this.dgv_quick_quote_details.CellEndEdit += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgv_quick_quote_details_CellEndEdit);
             this.dgv_quick_quote_details.CellValueChanged += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgv_quick_quote_details_CellValueChanged);
             // 
-            // quick_id
-            // 
-            this.quick_id.DataPropertyName = "id";
-            this.quick_id.HeaderText = "id";
-            this.quick_id.Name = "quick_id";
-            this.quick_id.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-            this.quick_id.Visible = false;
-            // 
-            // quick_bom_id
-            // 
-            this.quick_bom_id.DataPropertyName = "bom_id";
-            this.quick_bom_id.HeaderText = "bom_id";
-            this.quick_bom_id.Name = "quick_bom_id";
-            this.quick_bom_id.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-            this.quick_bom_id.Visible = false;
-            // 
-            // quick_based_id
-            // 
-            this.quick_based_id.DataPropertyName = "based_id";
-            this.quick_based_id.HeaderText = "based_id";
-            this.quick_based_id.Name = "quick_based_id";
-            this.quick_based_id.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-            this.quick_based_id.Visible = false;
-            // 
-            // quick_images
-            // 
-            this.quick_images.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.quick_images.DataPropertyName = "images";
-            this.quick_images.FillWeight = 40F;
-            this.quick_images.HeaderText = "IMAGES";
-            this.quick_images.Name = "quick_images";
-            this.quick_images.Resizable = System.Windows.Forms.DataGridViewTriState.True;
-            this.quick_images.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-            // 
-            // reference_code
-            // 
-            this.reference_code.DataPropertyName = "reference_code";
-            this.reference_code.HeaderText = "CODE";
-            this.reference_code.Name = "reference_code";
-            this.reference_code.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-            // 
-            // quick_item_id
-            // 
-            this.quick_item_id.DataPropertyName = "item_id";
-            dataGridViewCellStyle6.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
-            dataGridViewCellStyle6.SelectionForeColor = System.Drawing.Color.White;
-            this.quick_item_id.DefaultCellStyle = dataGridViewCellStyle6;
-            this.quick_item_id.HeaderText = "item_id";
-            this.quick_item_id.Name = "quick_item_id";
-            this.quick_item_id.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-            this.quick_item_id.Visible = false;
-            // 
-            // quick_item_code
-            // 
-            this.quick_item_code.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.quick_item_code.DataPropertyName = "components";
-            dataGridViewCellStyle7.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
-            dataGridViewCellStyle7.SelectionForeColor = System.Drawing.Color.Black;
-            this.quick_item_code.DefaultCellStyle = dataGridViewCellStyle7;
-            this.quick_item_code.FillWeight = 70.91644F;
-            this.quick_item_code.HeaderText = "COMPONENTS";
-            this.quick_item_code.Name = "quick_item_code";
-            this.quick_item_code.Resizable = System.Windows.Forms.DataGridViewTriState.True;
-            this.quick_item_code.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-            // 
-            // quick_item_name
-            // 
-            this.quick_item_name.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.quick_item_name.DataPropertyName = "model";
-            dataGridViewCellStyle8.BackColor = System.Drawing.Color.LightGray;
-            dataGridViewCellStyle8.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
-            dataGridViewCellStyle8.SelectionForeColor = System.Drawing.Color.Black;
-            this.quick_item_name.DefaultCellStyle = dataGridViewCellStyle8;
-            this.quick_item_name.FillWeight = 52.91645F;
-            this.quick_item_name.HeaderText = "MODEL";
-            this.quick_item_name.Name = "quick_item_name";
-            this.quick_item_name.ReadOnly = true;
-            this.quick_item_name.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-            // 
-            // quick_qty
-            // 
-            this.quick_qty.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.quick_qty.DataPropertyName = "qty";
-            dataGridViewCellStyle9.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle9.NullValue = "0";
-            dataGridViewCellStyle9.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
-            dataGridViewCellStyle9.SelectionForeColor = System.Drawing.Color.Black;
-            this.quick_qty.DefaultCellStyle = dataGridViewCellStyle9;
-            this.quick_qty.FillWeight = 20F;
-            this.quick_qty.HeaderText = "QTY";
-            this.quick_qty.Name = "quick_qty";
-            this.quick_qty.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-            // 
-            // quick_unit_of_measure
-            // 
-            this.quick_unit_of_measure.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.quick_unit_of_measure.DataPropertyName = "unit_of_measure";
-            dataGridViewCellStyle10.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle10.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
-            dataGridViewCellStyle10.SelectionForeColor = System.Drawing.Color.Black;
-            this.quick_unit_of_measure.DefaultCellStyle = dataGridViewCellStyle10;
-            this.quick_unit_of_measure.FillWeight = 20F;
-            this.quick_unit_of_measure.HeaderText = "UNIT";
-            this.quick_unit_of_measure.Name = "quick_unit_of_measure";
-            this.quick_unit_of_measure.Resizable = System.Windows.Forms.DataGridViewTriState.True;
-            this.quick_unit_of_measure.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-            this.quick_unit_of_measure.Visible = false;
-            // 
-            // man_days
-            // 
-            this.man_days.DataPropertyName = "man_days";
-            this.man_days.HeaderText = "MAN DAYS";
-            this.man_days.Name = "man_days";
-            this.man_days.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-            this.man_days.Visible = false;
-            // 
-            // labor_rate
-            // 
-            this.labor_rate.DataPropertyName = "labor_rate";
-            this.labor_rate.HeaderText = "LABOR RATE";
-            this.labor_rate.Name = "labor_rate";
-            this.labor_rate.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-            this.labor_rate.Visible = false;
-            // 
-            // quick_list_price
-            // 
-            this.quick_list_price.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.quick_list_price.DataPropertyName = "list_price";
-            dataGridViewCellStyle11.Format = "C2";
-            dataGridViewCellStyle11.NullValue = null;
-            this.quick_list_price.DefaultCellStyle = dataGridViewCellStyle11;
-            this.quick_list_price.FillWeight = 52.91645F;
-            this.quick_list_price.HeaderText = "LIST PRICE";
-            this.quick_list_price.Name = "quick_list_price";
-            this.quick_list_price.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-            // 
-            // quick_unit_price
-            // 
-            this.quick_unit_price.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.quick_unit_price.ContextMenuStrip = this.UnitPriceColumnContextMenuStrip;
-            this.quick_unit_price.DataPropertyName = "unit_price";
-            dataGridViewCellStyle12.Format = "C2";
-            dataGridViewCellStyle12.NullValue = "0";
-            this.quick_unit_price.DefaultCellStyle = dataGridViewCellStyle12;
-            this.quick_unit_price.FillWeight = 52.91645F;
-            this.quick_unit_price.HeaderText = "UNIT PRICE";
-            this.quick_unit_price.Name = "quick_unit_price";
-            this.quick_unit_price.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-            // 
             // UnitPriceColumnContextMenuStrip
             // 
             this.UnitPriceColumnContextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -1490,59 +1341,6 @@
             this.canvasToolStripMenuItem.Size = new System.Drawing.Size(144, 22);
             this.canvasToolStripMenuItem.Text = "Canvas Sheet";
             this.canvasToolStripMenuItem.Click += new System.EventHandler(this.canvasToolStripMenuItem_Click);
-            // 
-            // quick_discount
-            // 
-            this.quick_discount.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.quick_discount.DataPropertyName = "percent_discount";
-            this.quick_discount.FillWeight = 52.91645F;
-            this.quick_discount.HeaderText = "MULTIPLIER";
-            this.quick_discount.Name = "quick_discount";
-            this.quick_discount.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-            // 
-            // quick_net_discount
-            // 
-            this.quick_net_discount.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.quick_net_discount.DataPropertyName = "net_discount";
-            dataGridViewCellStyle13.Format = "C2";
-            this.quick_net_discount.DefaultCellStyle = dataGridViewCellStyle13;
-            this.quick_net_discount.FillWeight = 52.91645F;
-            this.quick_net_discount.HeaderText = "NET DISCOUNT";
-            this.quick_net_discount.Name = "quick_net_discount";
-            this.quick_net_discount.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-            this.quick_net_discount.Visible = false;
-            // 
-            // quick_net_total
-            // 
-            this.quick_net_total.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.quick_net_total.DataPropertyName = "net_total";
-            dataGridViewCellStyle14.Format = "C2";
-            this.quick_net_total.DefaultCellStyle = dataGridViewCellStyle14;
-            this.quick_net_total.FillWeight = 52.91645F;
-            this.quick_net_total.HeaderText = "NET TOTAL";
-            this.quick_net_total.Name = "quick_net_total";
-            this.quick_net_total.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-            this.quick_net_total.Visible = false;
-            // 
-            // quick_line_total
-            // 
-            this.quick_line_total.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.quick_line_total.DataPropertyName = "line_total";
-            dataGridViewCellStyle15.Format = "C2";
-            this.quick_line_total.DefaultCellStyle = dataGridViewCellStyle15;
-            this.quick_line_total.FillWeight = 52.91645F;
-            this.quick_line_total.HeaderText = "LINE TOTAL";
-            this.quick_line_total.Name = "quick_line_total";
-            this.quick_line_total.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-            // 
-            // short_description
-            // 
-            this.short_description.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.short_description.DataPropertyName = "short_description";
-            this.short_description.HeaderText = "SHORT DESCRIPTION";
-            this.short_description.Name = "short_description";
-            this.short_description.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-            this.short_description.Visible = false;
             // 
             // Quote_Terms
             // 
@@ -2203,6 +2001,209 @@
             this.label25.TabIndex = 168;
             this.label25.Text = "Gross Sales";
             // 
+            // quick_id
+            // 
+            this.quick_id.DataPropertyName = "id";
+            this.quick_id.HeaderText = "id";
+            this.quick_id.Name = "quick_id";
+            this.quick_id.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            this.quick_id.Visible = false;
+            // 
+            // quick_bom_id
+            // 
+            this.quick_bom_id.DataPropertyName = "bom_id";
+            this.quick_bom_id.HeaderText = "bom_id";
+            this.quick_bom_id.Name = "quick_bom_id";
+            this.quick_bom_id.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            this.quick_bom_id.Visible = false;
+            // 
+            // quick_based_id
+            // 
+            this.quick_based_id.DataPropertyName = "based_id";
+            this.quick_based_id.HeaderText = "based_id";
+            this.quick_based_id.Name = "quick_based_id";
+            this.quick_based_id.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            this.quick_based_id.Visible = false;
+            // 
+            // quick_images
+            // 
+            this.quick_images.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.quick_images.DataPropertyName = "images";
+            this.quick_images.FillWeight = 40F;
+            this.quick_images.HeaderText = "IMAGES";
+            this.quick_images.Name = "quick_images";
+            this.quick_images.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+            this.quick_images.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            // 
+            // reference_code
+            // 
+            this.reference_code.DataPropertyName = "reference_code";
+            this.reference_code.HeaderText = "CODE";
+            this.reference_code.Name = "reference_code";
+            this.reference_code.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            // 
+            // item_id
+            // 
+            this.item_id.DataPropertyName = "item_id";
+            dataGridViewCellStyle6.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
+            dataGridViewCellStyle6.SelectionForeColor = System.Drawing.Color.White;
+            this.item_id.DefaultCellStyle = dataGridViewCellStyle6;
+            this.item_id.HeaderText = "item_id";
+            this.item_id.Name = "item_id";
+            this.item_id.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            this.item_id.Visible = false;
+            // 
+            // quick_item_code
+            // 
+            this.quick_item_code.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.quick_item_code.DataPropertyName = "components";
+            dataGridViewCellStyle7.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
+            dataGridViewCellStyle7.SelectionForeColor = System.Drawing.Color.Black;
+            this.quick_item_code.DefaultCellStyle = dataGridViewCellStyle7;
+            this.quick_item_code.FillWeight = 70.91644F;
+            this.quick_item_code.HeaderText = "COMPONENTS";
+            this.quick_item_code.Name = "quick_item_code";
+            this.quick_item_code.ReadOnly = true;
+            this.quick_item_code.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+            this.quick_item_code.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            // 
+            // quick_item_name
+            // 
+            this.quick_item_name.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.quick_item_name.DataPropertyName = "model";
+            dataGridViewCellStyle8.BackColor = System.Drawing.Color.LightGray;
+            dataGridViewCellStyle8.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
+            dataGridViewCellStyle8.SelectionForeColor = System.Drawing.Color.Black;
+            this.quick_item_name.DefaultCellStyle = dataGridViewCellStyle8;
+            this.quick_item_name.FillWeight = 52.91645F;
+            this.quick_item_name.HeaderText = "MODEL";
+            this.quick_item_name.Name = "quick_item_name";
+            this.quick_item_name.ReadOnly = true;
+            this.quick_item_name.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            // 
+            // quick_qty
+            // 
+            this.quick_qty.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.quick_qty.DataPropertyName = "qty";
+            dataGridViewCellStyle9.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle9.NullValue = "0";
+            dataGridViewCellStyle9.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
+            dataGridViewCellStyle9.SelectionForeColor = System.Drawing.Color.Black;
+            this.quick_qty.DefaultCellStyle = dataGridViewCellStyle9;
+            this.quick_qty.FillWeight = 20F;
+            this.quick_qty.HeaderText = "QTY";
+            this.quick_qty.Name = "quick_qty";
+            this.quick_qty.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            // 
+            // quick_unit_of_measure
+            // 
+            this.quick_unit_of_measure.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.quick_unit_of_measure.DataPropertyName = "unit_of_measure";
+            dataGridViewCellStyle10.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle10.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
+            dataGridViewCellStyle10.SelectionForeColor = System.Drawing.Color.Black;
+            this.quick_unit_of_measure.DefaultCellStyle = dataGridViewCellStyle10;
+            this.quick_unit_of_measure.FillWeight = 20F;
+            this.quick_unit_of_measure.HeaderText = "UNIT";
+            this.quick_unit_of_measure.Name = "quick_unit_of_measure";
+            this.quick_unit_of_measure.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+            this.quick_unit_of_measure.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            this.quick_unit_of_measure.Visible = false;
+            // 
+            // man_days
+            // 
+            this.man_days.DataPropertyName = "man_days";
+            this.man_days.HeaderText = "MAN DAYS";
+            this.man_days.Name = "man_days";
+            this.man_days.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            this.man_days.Visible = false;
+            // 
+            // labor_rate
+            // 
+            this.labor_rate.DataPropertyName = "labor_rate";
+            this.labor_rate.HeaderText = "LABOR RATE";
+            this.labor_rate.Name = "labor_rate";
+            this.labor_rate.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            this.labor_rate.Visible = false;
+            // 
+            // quick_list_price
+            // 
+            this.quick_list_price.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.quick_list_price.DataPropertyName = "list_price";
+            dataGridViewCellStyle11.Format = "C2";
+            dataGridViewCellStyle11.NullValue = null;
+            this.quick_list_price.DefaultCellStyle = dataGridViewCellStyle11;
+            this.quick_list_price.FillWeight = 52.91645F;
+            this.quick_list_price.HeaderText = "LIST PRICE";
+            this.quick_list_price.Name = "quick_list_price";
+            this.quick_list_price.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            // 
+            // quick_unit_price
+            // 
+            this.quick_unit_price.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.quick_unit_price.ContextMenuStrip = this.UnitPriceColumnContextMenuStrip;
+            this.quick_unit_price.DataPropertyName = "unit_price";
+            dataGridViewCellStyle12.Format = "C2";
+            dataGridViewCellStyle12.NullValue = "0";
+            this.quick_unit_price.DefaultCellStyle = dataGridViewCellStyle12;
+            this.quick_unit_price.FillWeight = 52.91645F;
+            this.quick_unit_price.HeaderText = "UNIT PRICE";
+            this.quick_unit_price.Name = "quick_unit_price";
+            this.quick_unit_price.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            // 
+            // quick_discount
+            // 
+            this.quick_discount.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.quick_discount.DataPropertyName = "percent_discount";
+            this.quick_discount.FillWeight = 52.91645F;
+            this.quick_discount.HeaderText = "MULTIPLIER";
+            this.quick_discount.Name = "quick_discount";
+            this.quick_discount.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            // 
+            // quick_net_discount
+            // 
+            this.quick_net_discount.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.quick_net_discount.DataPropertyName = "net_discount";
+            dataGridViewCellStyle13.Format = "C2";
+            this.quick_net_discount.DefaultCellStyle = dataGridViewCellStyle13;
+            this.quick_net_discount.FillWeight = 52.91645F;
+            this.quick_net_discount.HeaderText = "NET DISCOUNT";
+            this.quick_net_discount.Name = "quick_net_discount";
+            this.quick_net_discount.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            this.quick_net_discount.Visible = false;
+            // 
+            // quick_net_total
+            // 
+            this.quick_net_total.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.quick_net_total.DataPropertyName = "net_total";
+            dataGridViewCellStyle14.Format = "C2";
+            this.quick_net_total.DefaultCellStyle = dataGridViewCellStyle14;
+            this.quick_net_total.FillWeight = 52.91645F;
+            this.quick_net_total.HeaderText = "NET TOTAL";
+            this.quick_net_total.Name = "quick_net_total";
+            this.quick_net_total.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            this.quick_net_total.Visible = false;
+            // 
+            // quick_line_total
+            // 
+            this.quick_line_total.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.quick_line_total.DataPropertyName = "line_total";
+            dataGridViewCellStyle15.Format = "C2";
+            this.quick_line_total.DefaultCellStyle = dataGridViewCellStyle15;
+            this.quick_line_total.FillWeight = 52.91645F;
+            this.quick_line_total.HeaderText = "LINE TOTAL";
+            this.quick_line_total.Name = "quick_line_total";
+            this.quick_line_total.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            // 
+            // short_description
+            // 
+            this.short_description.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.short_description.DataPropertyName = "short_description";
+            this.short_description.HeaderText = "SHORT DESCRIPTION";
+            this.short_description.Name = "short_description";
+            this.short_description.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            this.short_description.Visible = false;
+            // 
             // Quotation
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -2455,7 +2456,7 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn quick_based_id;
         private System.Windows.Forms.DataGridViewTextBoxColumn quick_images;
         private System.Windows.Forms.DataGridViewTextBoxColumn reference_code;
-        private System.Windows.Forms.DataGridViewTextBoxColumn quick_item_id;
+        private System.Windows.Forms.DataGridViewTextBoxColumn item_id;
         private System.Windows.Forms.DataGridViewTextBoxColumn quick_item_code;
         private System.Windows.Forms.DataGridViewTextBoxColumn quick_item_name;
         private System.Windows.Forms.DataGridViewTextBoxColumn quick_qty;

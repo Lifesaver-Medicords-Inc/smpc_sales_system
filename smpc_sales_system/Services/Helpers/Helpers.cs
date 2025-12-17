@@ -1007,5 +1007,83 @@ namespace smpc_app.Services.Helpers
             }
         }
 
+        public static void EnableGroupHeaders(DataGridView dgv, Dictionary<string, string[]> columnGroups)
+        {
+            if (dgv == null || columnGroups == null || columnGroups.Count == 0)
+                return;
+
+            // Double buffer to reduce flickering
+            typeof(DataGridView).InvokeMember("DoubleBuffered",
+                System.Reflection.BindingFlags.NonPublic |
+                System.Reflection.BindingFlags.Instance |
+                System.Reflection.BindingFlags.SetProperty,
+                null, dgv, new object[] { true });
+
+            // Redraw on scroll/resize
+            dgv.Scroll += (s, e) => dgv.Invalidate();
+            dgv.ColumnWidthChanged += (s, e) => dgv.Invalidate();
+
+            // Paint group headers
+            dgv.Paint += (s, e) => DrawGroupHeaders(dgv, e, columnGroups);
+
+            // Override column header painting
+            dgv.CellPainting += (s, e) => DrawGroupedHeaderCells(dgv, e);
+        }
+
+        private static void DrawGroupHeaders(DataGridView dgv, PaintEventArgs e, Dictionary<string, string[]> groups)
+        {
+            foreach (var group in groups)
+            {
+                string groupName = group.Key;
+                string[] cols = group.Value;
+
+                if (!cols.All(c => dgv.Columns.Contains(c)))
+                    continue;
+
+                DataGridViewColumn firstCol = dgv.Columns[cols.First()];
+                DataGridViewColumn lastCol = dgv.Columns[cols.Last()];
+
+                Rectangle r1 = dgv.GetCellDisplayRectangle(firstCol.Index, -1, true);
+                Rectangle r2 = dgv.GetCellDisplayRectangle(lastCol.Index, -1, true);
+
+                if (r1.IsEmpty || r2.IsEmpty) continue;
+
+                Rectangle headerRect = new Rectangle(r1.X, r1.Y, r2.Right - r1.X, r1.Height / 2);
+
+                using (Brush b = new SolidBrush(SystemColors.Control))
+                    e.Graphics.FillRectangle(b, headerRect);
+
+                e.Graphics.DrawRectangle(Pens.Gray, headerRect);
+
+                TextRenderer.DrawText(e.Graphics, groupName,
+                    dgv.ColumnHeadersDefaultCellStyle.Font,
+                    headerRect, Color.Black,
+                    TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
+            }
+        }
+
+        private static void DrawGroupedHeaderCells(DataGridView dgv, DataGridViewCellPaintingEventArgs e)
+        {
+            if (e.RowIndex == -1 && e.ColumnIndex >= 0)
+            {
+                e.PaintBackground(e.CellBounds, true);
+
+                Rectangle fullRect = e.CellBounds;
+
+                // Bottom half for column text
+                Rectangle textRect = fullRect;
+                textRect.Y += textRect.Height / 2;
+                textRect.Height /= 2;
+
+                TextRenderer.DrawText(e.Graphics,
+                    e.FormattedValue?.ToString() ?? "",
+                    e.CellStyle.Font, textRect,
+                    e.CellStyle.ForeColor,
+                    TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
+
+                e.Handled = true;
+            }
+        }
+
     }
 } 

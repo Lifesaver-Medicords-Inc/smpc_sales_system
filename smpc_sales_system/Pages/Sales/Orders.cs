@@ -100,7 +100,7 @@ namespace smpc_sales_app.Pages.Sales
             bpi_address = JsonHelper.ToDataTable(bpi_data.address);
             bpi_contacts = JsonHelper.ToDataTable(bpi_data.contacts);
         }
-        private async Task FetchQuotationDetails()
+        private async Task   FetchQuotationDetails()
         {
             SalesQuotationList data = await QuotationService.GetQuotations();
             transactionList = JsonHelper.ToDataTable(data.SalesQuotation);
@@ -1495,6 +1495,7 @@ namespace smpc_sales_app.Pages.Sales
                         {
                             data.Add("quotation_quick_id", int.Parse(item["quick_quote_id"].ToString()));
                         }
+
                         data.Add("numbering", (item["number1"].ToString()));
                         data.Add("qty", int.Parse(item["qtydgv"].ToString()));
                         data.Add("item_code", (item["itemcodedgv"].ToString()));
@@ -1572,6 +1573,12 @@ namespace smpc_sales_app.Pages.Sales
                 MessageBox.Show("Error: " + ex.Message + "\n\n" + "Stack Trace: " + ex.StackTrace);
             }
         }
+
+        private void dgv_order_sales_CellMouseClick(object sender, DataGridViewCellMouseEventArgs e)
+        {
+            Console.WriteLine(dgv_order_sales.Rows[e.RowIndex].Cells["delivery_preference"].Value.ToString());
+        }
+
         private void BindControlsForNewOrderORexisting()
         {
             Helpers.ResetControls(pnl_header);

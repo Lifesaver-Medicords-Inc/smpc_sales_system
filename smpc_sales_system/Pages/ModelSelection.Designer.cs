@@ -79,7 +79,7 @@ namespace smpc_sales_system.Pages
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.button1);
             this.Name = "ModelSelection";
-            this.Text = "ModelSelection";
+            this.Text = "  ";
             this.panel1.ResumeLayout(false);
             this.ResumeLayout(false);
 

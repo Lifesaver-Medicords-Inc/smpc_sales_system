@@ -75,7 +75,7 @@ namespace smpc_sales_app.Pages
         {
             if (bomHead == null || bomHead.Rows.Count == 0)
             {
-                MessageBox.Show("No BOM data available at all.");
+                //MessageBox.Show("No BOM data available at all.");
                 isItem = true;
                 this.result = rowIndex;
                 this.itemId = itemid;
@@ -108,12 +108,29 @@ namespace smpc_sales_app.Pages
 
         private void fetchData()
         {
+            dtItem = distinctByItemNameId(dtItem);
+
             DataView dataview = new DataView(dtItem);
             dgv_itemList.DataSource = dataview;
 
             IdentifyItemType(dgv_itemList);
 
             dgv_itemList.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+        }
+
+        private DataTable distinctByItemNameId(DataTable dt)
+        {
+            if (bomHead == null || bomHead.Rows.Count == 0)
+            {
+
+                var distinctRows = dt.AsEnumerable()
+                    .GroupBy(row => new { ColumnA = row.Field<int>("item_name_id") })
+                    .Select(group => group.First());
+
+                dt = distinctRows.CopyToDataTable();
+            }
+
+            return dt;
         }
 
         private void ItemModal_Load(object sender, EventArgs e)
@@ -124,7 +141,12 @@ namespace smpc_sales_app.Pages
         private void btn_search_Click(object sender, EventArgs e)
         {
             string searchText = txt_specs.Text.Trim();
+
+            dtItem = distinctByItemNameId(dtItem);
+
             DataView dv = new DataView(dtItem);
+
+
             dv.RowFilter = $"item_code LIKE '%{searchText}%' OR item_name LIKE '%{searchText}%'";
             dgv_itemList.DataSource = dv;
 
@@ -133,7 +155,7 @@ namespace smpc_sales_app.Pages
         private void IdentifyItemType(DataGridView dgv)
         {
             // Ensure "Type" column exists
-            if (!dgv.Columns.Contains("Type"))
+            if (!dgv.Columns.Contains("Type")) 
             {
                 dgv.Columns.Add("Type", "Type");
             }

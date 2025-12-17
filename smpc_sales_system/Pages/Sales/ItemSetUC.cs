@@ -1,7 +1,9 @@
 ﻿using smpc_app.Services.Helpers;
 using smpc_sales_app.Data;
+using smpc_sales_app.Models;
 using smpc_sales_app.Pages.Sales;
 using smpc_sales_app.Services.Helpers;
+using smpc_sales_app.Services.Sales;
 using smpc_sales_system.Models;
 using smpc_sales_system.Services.Sales;
 using smpc_sales_system.Services.Setup;
@@ -9,11 +11,15 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics.Metrics;
 using System.Drawing;
 using System.Linq;
+using System.Management.Instrumentation;
+using System.Reflection.Emit;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.TextBox;
 
 namespace smpc_sales_system.Pages.Sales
 {
@@ -29,8 +35,10 @@ namespace smpc_sales_system.Pages.Sales
         public event EventHandler CellChangedWiring;
         public event EventHandler ButtonClicked;
         public event EventHandler CellClicked;
+        public event EventHandler CellClickedModel;
         public event EventHandler CellClickedCanvas;
         public event EventHandler FinalTxtBoxClicked;
+        public event EventHandler DeleteReferenceCode;
 
         public ItemSetUC()
         {
@@ -43,6 +51,12 @@ namespace smpc_sales_system.Pages.Sales
             AttachCellValuechangedEventWiring(dgv_wiring);
             dgv_project_items.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
             setProjectWirings();
+
+            //Default hide wiring
+            WiringVisible(false);
+
+            // project template
+
         }
 
         public void SetUnitsOfMeasure(DataTable qty, DataTable qty_set)
@@ -98,7 +112,7 @@ namespace smpc_sales_system.Pages.Sales
         // wiring
         private void DataGridView_CellValueChangedWiring(object sender, DataGridViewCellEventArgs e)
         {
-            
+
             timer_send_message_cell_wiring.Stop();
             timer_send_message_cell_wiring.Start();
         }
@@ -122,7 +136,7 @@ namespace smpc_sales_system.Pages.Sales
         }
 
 
-      
+
         //
         //    TIMERS
         //
@@ -161,16 +175,12 @@ namespace smpc_sales_system.Pages.Sales
             UpdateProjectContent?.Invoke(this, EventArgs.Empty);
         }
 
-
-
-
-
         //
         //  GETTERS
         //
         public Dictionary<string, dynamic> GetAdvancedConditionsData()
         {
-            Panel[] pnl_adv = { pnl_advanced_conditions};
+            Panel[] pnl_adv = { pnl_advanced_conditions };
             var data = Helpers.GetControlsValues(pnl_adv);
             Dictionary<string, dynamic> conditions = new Dictionary<string, dynamic>();
 
@@ -213,9 +223,6 @@ namespace smpc_sales_system.Pages.Sales
             return data;
         }
 
-
-
-
         public Dictionary<string, dynamic> GetProjectContentsData()
         {
             Panel[] pnl_content = { pnl_project_content };
@@ -233,12 +240,12 @@ namespace smpc_sales_system.Pages.Sales
                     MessageBox.Show("Invalid ID");
                 }
             }
-           
+
 
             return data;
         }
 
-        
+
         public Dictionary<string, dynamic> GetProjectWiringData()
         {
             var wiringSource = Helpers.ConvertDataGridViewToDataTable(dgv_wiring);
@@ -312,7 +319,7 @@ namespace smpc_sales_system.Pages.Sales
 
                     list_price_per_unit = decimal.TryParse(Helpers.GetCleanedPriceValue(item["project_items_list_price"]?.ToString()), out decimal listPrice) ? listPrice : 0.0m,
                     unit_price = decimal.TryParse(Helpers.GetCleanedPriceValue(item["project_items_unit_price"]?.ToString()), out decimal unitPrice) ? unitPrice : 0.0m,
-                    
+
                     multiplier = item["project_items_multiplier"]?.ToString() ?? string.Empty,
                     discount_price = decimal.TryParse(Helpers.GetCleanedPriceValue(item["project_items_discount"]?.ToString()), out decimal discountPrice) ? discountPrice : 0.0m,
                     component_total = decimal.TryParse(Helpers.GetCleanedPriceValue(item["project_items_line_total"]?.ToString()), out decimal total) ? total : 0.0m,
@@ -326,9 +333,6 @@ namespace smpc_sales_system.Pages.Sales
             data["sales_project_items"] = items;
             return data;
         }
-
-
-     
 
         private static class ProjectQuoteDGV
         {
@@ -344,7 +348,7 @@ namespace smpc_sales_system.Pages.Sales
         {
             private decimal Qty { get; set; }
             private string Multiplier { get; set; }
-            public decimal Discount { get; private set; } 
+            public decimal Discount { get; private set; }
             public decimal ListPrice { get; private set; }
             public decimal NetTotal { get; private set; }
 
@@ -363,7 +367,7 @@ namespace smpc_sales_system.Pages.Sales
                 {
                     decimal totalBeforeAdjustment = Qty * ListPrice;
                     decimal price = ListPrice;
-                    
+
                     if (Multiplier.Contains("*"))
                     {
                         string[] factors = Multiplier.Split('*');
@@ -434,7 +438,7 @@ namespace smpc_sales_system.Pages.Sales
                 {
                     Discount = 0;
                     NetTotal = Qty * ListPrice;
-                  
+
                 }
             }
         }
@@ -458,8 +462,6 @@ namespace smpc_sales_system.Pages.Sales
                 this.dgv_project_items.Rows[e.RowIndex].Cells[ProjectQuoteDGV.LIST_PRICE].Value = Helpers.FormatAsCurrency(list_price_cell);
                 this.dgv_project_items.Rows[e.RowIndex].Cells[ProjectQuoteDGV.UNIT_PRICE].Value = Helpers.FormatAsCurrency(unit_price_cell);
 
-
-
                 if (qty_cell != null && list_price_cell != null)
                 {
                     decimal listPrice;
@@ -472,10 +474,10 @@ namespace smpc_sales_system.Pages.Sales
                     projectComputation.ComputeProjectQuote();
 
 
-                     // currency converter
-                     this.dgv_project_items.Rows[e.RowIndex].Cells[ProjectQuoteDGV.DISCOUNT].Value = projectComputation.Discount.ToString("C2");
-                     this.dgv_project_items.Rows[e.RowIndex].Cells[ProjectQuoteDGV.NET_TOTAL].Value = projectComputation.NetTotal.ToString("C2");
-                  
+                    // currency converter
+                    this.dgv_project_items.Rows[e.RowIndex].Cells[ProjectQuoteDGV.DISCOUNT].Value = projectComputation.Discount.ToString("C2");
+                    this.dgv_project_items.Rows[e.RowIndex].Cells[ProjectQuoteDGV.NET_TOTAL].Value = projectComputation.NetTotal.ToString("C2");
+
                     ProjectComputationLoop();
                 }
             }
@@ -486,24 +488,6 @@ namespace smpc_sales_system.Pages.Sales
             }
         }
 
-        //private void computeTncBonds(DataGridViewCellEventArgs e)
-        //{
-        //    try
-        //    {
-        //        var qty_cell = dgv_tnc_bonds.Rows[e.RowIndex].Cells["project_items_components"].Value;
-        //        var 
-
-        //    }
-        //    catch (Exception ex)
-        //    {
-
-        //    }
-        //}
-
-
-
-
-
         public Dictionary<string, dynamic> ProjectComputationLoop()
         {
             Quotation q = new Quotation();
@@ -511,7 +495,7 @@ namespace smpc_sales_system.Pages.Sales
             decimal percent_discount = 0;
             decimal net_amount_due = 0, total_amount_due = 0;
             decimal cash_discount = q.GetCashDiscount();
-            const decimal VAT_RATE = 0.12m; 
+            const decimal VAT_RATE = 0.12m;
 
             foreach (DataGridViewRow row in this.dgv_project_items.Rows)
             {
@@ -521,7 +505,7 @@ namespace smpc_sales_system.Pages.Sales
                     // Calculate gross amount (qty * list price)
                     decimal qty = decimal.TryParse(row.Cells[ProjectQuoteDGV.QTY].Value.ToString(), out decimal parsedQty) ? parsedQty : 0m;
 
-                 
+
                     decimal listPrice = decimal.Parse(Helpers.GetCleanedPriceValue(row.Cells[ProjectQuoteDGV.LIST_PRICE].Value.ToString()));
                     decimal rowGross = (decimal)(qty * listPrice);
                     gross_sales += rowGross;
@@ -530,7 +514,7 @@ namespace smpc_sales_system.Pages.Sales
                     if (row.Cells[ProjectQuoteDGV.NET_TOTAL].Value != null &&
                         !String.IsNullOrEmpty(row.Cells[ProjectQuoteDGV.NET_TOTAL].Value.ToString()))
                     {
-                       
+
                         decimal netTotal = decimal.Parse(Helpers.GetCleanedPriceValue(row.Cells[ProjectQuoteDGV.NET_TOTAL].Value.ToString()));
                         net_sales += netTotal;
                     }
@@ -561,7 +545,7 @@ namespace smpc_sales_system.Pages.Sales
             data.Add("net_amount_due", Helpers.MoneyFormatDecimal(net_amount_due));
             data.Add("total_amount_due", Helpers.MoneyFormatDecimal(total_amount_due));
             return data;
-       }  
+        }
 
 
         //
@@ -570,17 +554,17 @@ namespace smpc_sales_system.Pages.Sales
         public void SetAdvancedPanelData(DataTable dt)
         {
 
-            Panel[] pnls = { pnl_advanced_conditions};
+            Panel[] pnls = { pnl_advanced_conditions };
             Helpers.BindControls(pnls, dt);
         }
 
         public void SetContentsPanelData(DataTable dt)
         {
             Panel[] pnls = { pnl_project_content };
-            Helpers.BindControls(pnls, dt);  
+            Helpers.BindControls(pnls, dt);
         }
 
-        public Dictionary <string, dynamic> GetSizeUpData()
+        public Dictionary<string, dynamic> GetSizeUpData()
         {
             Panel[] pnl = { pnl_project_content };
             Dictionary<string, dynamic> values = new Dictionary<string, dynamic>();
@@ -607,8 +591,20 @@ namespace smpc_sales_system.Pages.Sales
 
 
 
-        public async void SetProjectItemsData(DataTable dt)
+        public async void SetProjectItemsData(DataTable dt, string TemplateName)
         {
+            /* Pseudocode (plan):
+               - Build a lookup/dictionary of node_id -> ProjectTemplateChildModel without throwing on duplicate keys.
+                 Use GroupBy(node_id) and pick the first row for each group (optionally log duplicates).
+               - Find root nodes (parent_node_id == 0) and order by node_order.
+               - For each root node:
+                 - Add a row to dgv_project_items and populate the standard fields.
+                 - Style the components cell (bold + background).
+                 - Recursively add child nodes by calling AddChildNodesFromDb with the full dt and the prepared nodeLookup.
+               - Finally set column autosize and call bondsTncReadOnly() to apply special rules.
+            */
+
+            txt_template_name.Text = TemplateName;
 
             dgv_project_items.Rows.Clear();
 
@@ -617,24 +613,28 @@ namespace smpc_sales_system.Pages.Sales
             Font boldFont = new Font(dgv_project_items.DefaultCellStyle.Font, FontStyle.Bold);
             Font normalFont = new Font(dgv_project_items.DefaultCellStyle.Font, FontStyle.Regular);
 
-            Dictionary<int, ProjectTemplateChildModel> nodeLookup = dt.AsEnumerable()
-                          .ToDictionary(
-                              row => row.Field<int>("node_id"),
-                              row => new ProjectTemplateChildModel
-                              {
-                                  node_id = row.Field<int>("node_id"),
-                                  node_name = row.Field<string>("node_name"),
-                                  parent_node_id = row.Field<int>("parent_node_id"),
-                                  node_order = row.Field<int>("node_order"),
-                                  node_type = row.Field<string>("node_type")
-                              }
-                          );
-
+            // Build a dictionary that handles duplicate node_id values by grouping and taking the first row for each id.
+            var nodeLookup = dt.AsEnumerable()
+                               .GroupBy(row => row.Field<int>("node_id"))
+                               .ToDictionary(
+                                   g => g.Key,
+                                   g =>
+                                   {
+                                       var row = g.First();
+                                       return new ProjectTemplateChildModel
+                                       {
+                                           Id = row.Field<int>("id"),
+                                           ParentId = row.Field<int>("parent_id"),
+                                           ItemId = row.Field<int>("item_id"),
+                                           Components = row.Field<string>("components"),
+                                           Level = row.Field<int>("level")
+                                       };
+                                   });
 
             var rootNodes = dt.AsEnumerable()
-                          .Where(row => row.Field<int>("parent_node_id") == 0)
-                          .OrderBy(row => row.Field<int>("node_order"))
-                          .ToList();
+                              .Where(row => row.Field<int>("parent_node_id") == 0)
+                              .OrderBy(row => row.Field<int>("node_order"))
+                              .ToList();
 
             foreach (var rootNode in rootNodes)
             {
@@ -658,7 +658,7 @@ namespace smpc_sales_system.Pages.Sales
 
             }
 
-            dgv_project_items. Columns[1].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+            dgv_project_items.Columns[1].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
             bondsTncReadOnly();
         }
 
@@ -671,7 +671,7 @@ namespace smpc_sales_system.Pages.Sales
 
                 var cellValue = row.Cells["project_items_components"].Value;
 
-              
+
 
                 if (cellValue != null)
                 {
@@ -688,10 +688,10 @@ namespace smpc_sales_system.Pages.Sales
                     if (containsTnC || containsBonds)
                     {
                         //row.ReadOnly = true;
-                        
+
                         row.Cells["project_items_model"].Style.BackColor = Color.Silver;
                         row.Cells["project_items_item_inv_type"].Style.BackColor = Color.Silver;
-                        
+
                     }
 
                     if (containsTnC)
@@ -709,15 +709,8 @@ namespace smpc_sales_system.Pages.Sales
             }
         }
 
-
-
-
         public void SetFetchedItemData(DataTable dt)
         {
-            //if (dt.Columns.Contains("id"))
-            //{
-            //    dt.Columns.Remove("id");
-            //}
 
             if (!dt.Columns.Contains("node_type"))
             {
@@ -754,17 +747,14 @@ namespace smpc_sales_system.Pages.Sales
             var stringtable = Helpers.ConvertDataTableToStringTable(dt);
             dgv_wiring.DataSource = stringtable;
             dgv_wiring.ReadOnly = false;
-            
+
         }
-
-
-
 
         private void ApplyRowStyles()
         {
             foreach (DataGridViewRow row in dgv_project_items.Rows)
             {
-                if (!row.IsNewRow) 
+                if (!row.IsNewRow)
                 {
                     DataGridViewCell cell = row.Cells[9];
                     int nodeTypeColumnIndex = dgv_project_items.Columns["project_items_node_type"].Index;
@@ -787,7 +777,7 @@ namespace smpc_sales_system.Pages.Sales
                     else if (string.IsNullOrWhiteSpace(nodeType))
                     {
                         cell.Style.BackColor = Color.LightGreen;
-                       // MessageBox.Show("none");
+                        // MessageBox.Show("none");
                     }
                 }
             }
@@ -840,10 +830,58 @@ namespace smpc_sales_system.Pages.Sales
         }
 
 
-        public void SetFinalPumpData (string FLA, string Voltage)
+        public void SetFinalPumpData(string FLA, string Voltage, string Final)
         {
-            txt_FLA.Text = FLA.ToString();
-            txt_VOLT.Text = Voltage.ToString();
+
+            dgv_final.Rows.Add(Final.ToString(), FLA.ToString(), Voltage.ToString());
+
+            decimal fla_highest = 0;
+            decimal voltage_highest = 0;
+            decimal fla_total = 0;
+            decimal Pump_Total_Qty = 0;
+
+
+            foreach (DataGridViewRow row in dgv_final.Rows)
+            {
+
+                if (row.IsNewRow) continue;
+
+                decimal fla = decimal.Parse(row.Cells["fla"].Value.ToString());
+                decimal voltage = decimal.Parse(row.Cells["voltage"].Value.ToString());
+
+                if (fla > fla_highest)
+                {
+                    fla_highest = fla;
+                }
+                if (voltage > voltage_highest)
+                {
+                    voltage_highest = voltage;
+                }
+
+                fla_total += fla;
+            }
+
+            txt_FLA.Text = fla_highest.ToString();
+            txt_VOLT.Text = voltage_highest.ToString();
+
+            foreach (DataGridViewRow row in dgv_project_items.Rows)
+            {
+                if (row.IsNewRow) continue;
+
+                if (row.Cells["project_items_components"].Value == null)
+                {
+                    return;
+                }
+
+                if (row.Cells["project_items_components"].Value.ToString().ToLower() == "pump")
+                {
+                    Pump_Total_Qty += int.Parse(row.Cells["project_items_qty"].Value.ToString());
+                }
+            }
+
+            //ECB To Controller Value AMP REQ.
+            dgv_wiring.Rows[0].Cells["project_wiring_amp_req"].Value = fla_highest * Pump_Total_Qty * 1.25m;
+
         }
 
         public DataGridView DgvProjectItems
@@ -868,11 +906,12 @@ namespace smpc_sales_system.Pages.Sales
                     newRow["item_id"] = itemid;
                     newRow["components"] = itemName;
                     newRow["model"] = model;
-                    newRow["bom_id"] = bomid; 
-                    
+                    newRow["bom_id"] = bomid;
+
                     dt.Rows.InsertAt(newRow, index);
                 }
             }
+
         }
 
 
@@ -921,16 +960,195 @@ namespace smpc_sales_system.Pages.Sales
             newRow.Cells[4].Style = cellStyle2; // Style for size (Column 4)
         }
 
-       
+        private DataTable stockQuickDataTable;
 
-
-     
-
+        public DataTable ItemList { get; set; } = new DataTable();
+        public DataTable BomHead { get; set; } = new DataTable();
+        public DataTable BomDetails { get; set; } = new DataTable();
 
         // for wiring soon
-        private void ItemSetUC_Load(object sender, EventArgs e)
+        private async void ItemSetUC_Load(object sender, EventArgs e)
         {
-            
+
+            stockQuickDataTable = Helpers.GetDataTableFromUnboundGrid(dgv_project_items);
+
+            var dt = await ProjectTemplatesService.GetProjectTemplates();
+            DataTable listOfTemplates = JsonHelper.ToDataTable(dt.SalesProjectTemplate);
+            DataTable templates = JsonHelper.ToDataTable(dt.sales_project_template_child);
+
+            var itemData = await ItemService.GetItem();
+            var bomData = await ProjectService.GetBom();
+
+            ItemList = JsonHelper.ToDataTable(itemData.items);
+            BomHead = JsonHelper.ToDataTable(bomData.bom_head);
+            BomDetails = JsonHelper.ToDataTable(bomData.bom_details);
+
+            // --- ADD initial 0/default row ---
+            DataRow defaultRow = listOfTemplates.NewRow();
+            defaultRow["template_id"] = 0; // or DBNull.Value
+            defaultRow["template_name"] = "-- Select Template --";
+            listOfTemplates.Rows.InsertAt(defaultRow, 0); // Insert at index 0
+
+            cb_template_project.DataSource = listOfTemplates;
+            cb_template_project.DisplayMember = "template_name";
+            cb_template_project.ValueMember = "template_id";
+
+            cb_template_project.SelectedIndexChanged += cb_template_project_SelectedIndexChanged;
+
+            var dtProjectTemplates = await ProjectService.GetProjects();
+
+            ClearProjectItemsDgv();
+
+        }
+
+        private void ClearProjectItemsDgv()
+        {
+            if (dgv_project_items.DataSource is DataTable dtpi)
+            {
+                dtpi.Rows.Clear();
+            }
+            else if (dgv_project_items.DataSource is DataView dv)
+            {
+                dv.Table.Clear(); // clear the underlying DataTable
+            }
+            else
+            {
+                dgv_project_items.Rows.Clear(); // fallback for unbound
+            }
+
+            dgv_project_items.DataSource = stockQuickDataTable.Clone();
+        }
+
+        bool isLoadingTemplate = false;
+
+        private async void cb_template_project_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
+            if (isLoadingTemplate)
+                return;
+
+            try
+            {
+                isLoadingTemplate = true;
+
+                ClearProjectItemsDgv();
+
+                if (cb_template_project.SelectedValue == null || cb_template_project.SelectedValue == DBNull.Value)
+                    return;
+
+                string templateId = cb_template_project.SelectedValue.ToString();
+                if (templateId == "0")
+                    return;
+
+                // Get templates
+                var dt = await ProjectTemplatesService.GetProjectTemplates();
+                DataTable templatesChild = JsonHelper.ToDataTable(dt.sales_project_template_child);
+
+                // Filter children
+                var childRows = templatesChild.AsEnumerable()
+                    .Where(r => r.Field<int>("ParentId").ToString() == templateId)
+                    .ToList();
+
+                if (childRows.Count == 0)
+                    return;
+
+                DataTable dataSource = dgv_project_items.DataSource as DataTable;
+
+                string lastRef = "";
+
+                // Stack for hierarchical numbering
+                List<int> levelCounters = new List<int>();
+
+                foreach (var row in childRows)
+                {
+                    DataRow newRow = dataSource.NewRow();
+
+                    int level = row.Field<int?>("Level") ?? 0;
+
+                    // Expand counters list to match this level
+                    while (levelCounters.Count <= level)
+                        levelCounters.Add(0);
+
+                    // Reset deeper levels when moving up
+                    for (int i = level + 1; i < levelCounters.Count; i++)
+                        levelCounters[i] = 0;
+
+                    // Increment this level counter
+                    levelCounters[level]++;
+
+                    // Create hierarchical number like 1.2.3
+                    string refCode = string.Join(".", levelCounters.Where(v => v > 0));
+
+                    string indent = new string(' ', level * 4);
+
+                    newRow["components"] = indent + (row["Components"]?.ToString() ?? "");
+                    newRow["item_id"] = row["ItemId"];
+                    newRow["reference_code"] = refCode;
+                    newRow["template_id"] = templateId;
+
+                    dataSource.Rows.Add(newRow);
+
+                    lastRef = refCode.Split('.')[0];
+                }
+
+                int LastRefInt = 0;
+
+                if (lastRef != "")
+                    LastRefInt = int.Parse(lastRef);
+                else
+                    LastRefInt = 0;
+
+                AddWiringRowsComponent(LastRefInt);
+            }
+            finally
+            {
+                isLoadingTemplate = false;
+            }
+
+        }
+
+        private void AddWiringRowsComponent(int Reference)
+        {
+            int NewReference = Reference + 1;
+
+            DataTable dataSource = dgv_project_items.DataSource as DataTable;
+
+            DataRow newRow = dataSource.NewRow();
+
+            newRow["components"] = "WIRING MATERIALS";
+            newRow["item_id"] = 0;
+            newRow["reference_code"] = NewReference;
+            newRow["template_id"] = "wiring";
+
+            dataSource.Rows.Add(newRow);
+
+            DataRow newRow2 = dataSource.NewRow();
+
+            newRow2["components"] = "    CTL-MOTOR";
+            newRow2["item_id"] = 0;
+            newRow2["reference_code"] = NewReference.ToString() + ".1";
+            newRow2["template_id"] = "wiring";
+
+            dataSource.Rows.Add(newRow2);
+
+
+            DataRow newRow3 = dataSource.NewRow();
+
+            newRow3["components"] = "    CTL-ECB";
+            newRow3["item_id"] = 0;
+            newRow3["reference_code"] = NewReference.ToString() + ".2";
+            newRow3["template_id"] = "wiring";
+
+            dataSource.Rows.Add(newRow3);
+
+            DataRow newRow4 = dataSource.NewRow();
+
+            newRow4["components"] = "WIRING LABOR";
+            newRow4["item_id"] = 0;
+            newRow4["reference_code"] = NewReference + 1;
+            newRow4["template_id"] = "wiring";
+
+            dataSource.Rows.Add(newRow4);
         }
 
         private void textBox64_MouseClick(object sender, MouseEventArgs e)
@@ -944,6 +1162,7 @@ namespace smpc_sales_system.Pages.Sales
         }
 
         int index { get; set; }
+        public Action<int, DataGridView> HandleItemSelectionClick { get; internal set; }
 
         public int GetIndex()
         {
@@ -952,20 +1171,399 @@ namespace smpc_sales_system.Pages.Sales
 
         private void dgv_project_items_CellClick(object sender, DataGridViewCellEventArgs e)
         {
-            if (dgv_project_items.Columns[e.ColumnIndex].Name == "project_items_model")
+            if (e.RowIndex < 0 || e.ColumnIndex < 0)
+                return;
+
+            index = e.RowIndex;
+            if (dgv_project_items.Columns[e.ColumnIndex].Name == "project_items_components")
             {
-                index = e.RowIndex;
                 CellClicked?.Invoke(this, EventArgs.Empty);
             }
-          
 
-            if (e.ColumnIndex == 3)
+            if (dgv_project_items.Columns[e.ColumnIndex].Name == "project_items_model")
             {
+
+                if (dgv_project_items.Rows[index].Cells["project_items_template_id"].Value.ToString() == "" ||
+                dgv_project_items.Rows[index].Cells["project_items_template_id"].Value == DBNull.Value ||
+                dgv_project_items.Rows[index].Cells["project_items_template_id"].Value.ToString() == "0")
+
+                    CellClickedModel?.Invoke(index, EventArgs.Empty);
+
+                else if (dgv_project_items.Rows[index].Cells["project_items_template_id"].Value.ToString() == "wiring")
+
+                    MessageBox.Show("Wiring don't have models");
+
+                else
+                    AssignModel(index, dgv_project_items);
+
+            }
+        }
+
+        private void AddModel(DataGridView dgv, int rowIndex, bool isBom, int BomId, int ItemId, string referenceCode, int templateId = 0)
+        {
+
+            DeleteRowsByReferenceCode(rowIndex, dgv);
+
+            DataRow row = ItemList.AsEnumerable()
+                .FirstOrDefault(r => r.Field<int>("id") == ItemId);
+
+            int level = referenceCode.Count(f => f == '.');
+            string indent = new string(' ', level * 4);
+
+            DataTable dataSource = dgv.DataSource as DataTable;
+
+            if (dataSource == null) return;
+
+            DataRow projectItem = dataSource.NewRow();
+            projectItem["item_id"] = ItemId;
+            projectItem["components"] = indent + row["item_name"];
+            projectItem["reference_code"] = referenceCode;
+            projectItem["model"] = row["item_model"];
+            projectItem["template_id"] = templateId;
+
+            dataSource.Rows.InsertAt(projectItem, rowIndex);
+        }
+
+        private void AssignModel(int index, DataGridView dgv)
+        {
+            string Id = dgv.Rows[index].Cells["item_id"].Value.ToString();
+
+            ModelModal createModal = new ModelModal(ItemList, BomHead, BomDetails, Id);
+            DialogResult result = createModal.ShowDialog();
+
+            string referenceCode = dgv.Rows[index].Cells["reference_code"].Value.ToString();
+
+            if (result == DialogResult.OK)
+            {
+                bool isBom = createModal.IsBom();
+                int BomId = createModal.GetBomId();
+                int ItemId = createModal.GetItemId();
+
+                DataTable SelectedItem = ItemList.AsEnumerable()
+                    .Where(row => row.Field<int>("id") == createModal.GetItemId())
+                    .CopyToDataTable();
+
+                int templateId = int.Parse(dgv.Rows[index].Cells["project_items_template_id"].Value.ToString());
+                int itemIdTemplate = int.Parse(dgv  .Rows[index].Cells["item_id"].Value.ToString());
+
+                if (templateId != 0)
+                    ValidateAndApplyTemplateBOM(index, dgv, ItemId, referenceCode, templateId, BomId, isBom, itemIdTemplate);
+                else
+                {
+                    AddModel(dgv, index, isBom, BomId, ItemId, referenceCode);
+                }
+            }
+        }
+
+        private void ValidateAndApplyTemplateBOM(int rowIndex, DataGridView dgv, int itemId, string parentReferenceCode, int templateId, int BomId, bool isBom,int itemIdTemplate)
+        {
+            if (!(dgv.DataSource is DataTable projectTable))
+                return;
+
+            DataTable templateChildren = GetTemplateChildren(parentReferenceCode);
+
+            DataTable ComparedData = GetComparedDataBOMTemplate(itemId, templateChildren, parentReferenceCode, BomId, itemIdTemplate);
+            
+            if (ComparedData == null || ComparedData.Rows.Count == 0)
+            {
+                AddModel(dgv, index, isBom, BomId, itemId, parentReferenceCode);
+
+                return;
+            }
+                
+
+            DeleteRowsByReferenceCode(rowIndex, dgv);
+
+            foreach (DataRow row in ComparedData.Rows)
+            {
+
+                DataTable dataSource = dgv.DataSource as DataTable;
+                if (dataSource == null) return;
+
+                string spaceLevel = new string(' ', ((int)row["level"] - 1) * 4);
+
+                DataRow projectItem = dataSource.NewRow();
+                projectItem["item_id"] = row["item_id"];
+                projectItem["components"] = spaceLevel + row["item_name"];
+                projectItem["reference_code"] = row["reference_code"];
+                projectItem["model"] = row["model"];
+                projectItem["template_id"] = templateId;
+
+                dataSource.Rows.InsertAt(projectItem, rowIndex);
+
+                rowIndex++;
+            }
+        }
+
+        private void DeleteRowsByReferenceCode(int RowIndex, DataGridView dgv)
+        {
+
+            string referenceCode = dgv.Rows[RowIndex].Cells["reference_code"].Value.ToString();
+
+            if (dgv.DataSource is DataTable dataSource)
+            {
+
+                // Collect rows to delete (avoid modifying collection while iterating)
+                var rowsToDelete = new List<DataRow>();
+                foreach (DataRow row in dataSource.Rows)
+                {
+                    var refCode = row.Table.Columns.Contains("reference_code") ? row["reference_code"]?.ToString() : null;
+                    if (!string.IsNullOrEmpty(refCode) &&
+                        (refCode == referenceCode || refCode.StartsWith(referenceCode + ".")))
+                    {
+                        rowsToDelete.Add(row);
+                    }
+                }
+
+                // Remove rows
+                foreach (var row in rowsToDelete)
+                {
+                    dataSource.Rows.Remove(row);
+                }
+
+                // Optionally refresh DataGridView
+                //dgv.Refresh();
+            }
+        }
+
+        private void GenerateReferenceCode(DataTable tempBOM, string startReference)
+        {
+            // Parse starting reference into level counters
+            Dictionary<int, int> levelCounter = new Dictionary<int, int>();
+
+            string[] parts = startReference.Split('.');
+            for (int i = 0; i < parts.Length; i++)
+                levelCounter[i + 1] = int.Parse(parts[i]);
+
+            int maxInitialLevel = parts.Length;
+            bool firstRow = true;
+
+            foreach (DataRow row in tempBOM.Rows)
+            {
+                int level = row.Field<int>("level");
+
+                if (firstRow)
+                {
+                    // First row uses the starting reference exactly
+                    row["reference_code"] = startReference;
+                    firstRow = false;
+                    continue;
+                }
+
+                // When level stays inside or under initial depth
+                if (!levelCounter.ContainsKey(level))
+                    levelCounter[level] = 1;
+                else
+                    levelCounter[level]++;
+
+                // Clean deeper levels when going up
+                var removeKeys = levelCounter.Keys.Where(k => k > level).ToList();
+                foreach (var key in removeKeys)
+                    levelCounter.Remove(key);
+
+                // Build the final reference code
+                string refCode = string.Join(".",
+                    levelCounter.Where(x => x.Key <= level)
+                                .OrderBy(x => x.Key)
+                                .Select(x => x.Value)
+                );
+
+                row["reference_code"] = refCode;
+            }
+        }
+
+        private DataTable GetComparedDataBOMTemplate(int itemId, DataTable templateSelected, string parentReference, int BomId, int itemIdTemplate)
+        {
+            DataTable tempCompared = new DataTable();
+
+            tempCompared.Columns.Add("item_id", typeof(int));
+            tempCompared.Columns.Add("item_name", typeof(string));
+            tempCompared.Columns.Add("level", typeof(int));
+            tempCompared.Columns.Add("parent_item_id", typeof(int));
+            tempCompared.Columns.Add("reference_code", typeof(string));
+            tempCompared.Columns.Add("model", typeof(string));
+
+            tempCompared = GetRecursiveBOM(itemId, tempCompared, templateSelected, parentReference, BomId, itemIdTemplate);
+
+            //fix the Reference
+            GenerateReferenceCode(tempCompared, parentReference);
+
+            return tempCompared;
+        }
+
+        private DataTable GetRecursiveBOM(int itemId, DataTable tempBOM, DataTable templateSelected, string parentReference, int BomId, int itemIdTemplate, int level = 1, int parentItemId = 0)
+        {
+            // Get parent rom
+            var parent = BomHead.AsEnumerable()
+                    .SingleOrDefault(r => r.Field<int>("id") == BomId);
+
+            if (parent == null)
+                return tempBOM;
+            
+
+            string ParentReferenceCode = templateSelected.AsEnumerable()
+                                .Where(r => r.Field<int>("item_id") == itemIdTemplate
+                                    && r.Field<int>("level") == level)
+                                .Select(r => r.Field<string>("reference_code"))
+                                .FirstOrDefault();
+
+            //Add parent to tempBOM
+            tempBOM.Rows.Add(
+                parent.Field<int>("item_id"),
+                parent.Field<string>("general_name").Trim(),
+                level,
+                parentItemId,
+                ParentReferenceCode,
+                parent.Field<string>("item_model").Trim()
+                );
+
+            // Get children rows
+            var children = BomDetails.AsEnumerable()
+                .Where(r => r.Field<int>("item_bom_id") == parent.Field<int>("id"))
+                .ToList();
+
+            if (ParentReferenceCode == null || ParentReferenceCode == "")
+                return tempBOM;
+
+            int nextLevel = level + 1;
+
+            foreach (var row in children)
+            {
+
+                int childId = row.Field<int>("item_id");
+
+                var subParent = BomHead.AsEnumerable()
+                    .SingleOrDefault(r => r.Field<int>("item_id") == childId);
+
+                string ChildModel = ItemList.AsEnumerable()
+                                       .Where(r => r.Field<int>("id") == childId)
+                                       .Select(r => r.Field<string>("item_model"))
+                                       .FirstOrDefault();
+
+                if (subParent != null)
+                {
+                    int subBomId = subParent["id"] != DBNull.Value ? subParent.Field<int>("id") : 0;
+                    GetRecursiveBOM(childId, tempBOM, templateSelected, parentReference, subBomId, childId, nextLevel, parent.Field<int>("id"));
+                }
+                else
+                    // Add leaf to tempBOM
+                    tempBOM.Rows.Add(
+                        row.Field<int>("item_id"),
+                        row.Field<string>("item_name").Trim(),
+                        nextLevel,
+                        parent.Field<int>("id"),
+                        IncrementReferenceCode(ParentReferenceCode),
+                        ChildModel
+                        );
+            }
+
+            DataTable TemplateChild = null;
+
+            if (templateSelected.Rows.Count > 1)
+            {
+
+                TemplateChild = templateSelected.AsEnumerable()
+                     .Where(r => r.Field<string>("reference_code").ToString().StartsWith(ParentReferenceCode)
+                     && r.Field<int>("level") == nextLevel)
+                    .CopyToDataTable();
+
+                //Already added the TemplateChild here
+                foreach (DataRow row in TemplateChild.Rows)
+                {
+
+                    if (!children.AsEnumerable().Any(r => r.Field<string>("item_name").Trim() == row.Field<string>("item_name").Trim()))
+                    {
+                        tempBOM.Rows.Add(
+                               row.Field<int>("item_id"),
+                               row.Field<string>("item_name").Trim(),
+                               nextLevel,
+                               parent.Field<int>("id"),
+                               row.Field<string>("reference_code"),
+                               ""
+                               );
+                    }
+                }
 
             }
 
+            return tempBOM;
         }
 
+        public static string IncrementReferenceCode(string referenceCode)
+        {
+            if (string.IsNullOrWhiteSpace(referenceCode))
+                throw new ArgumentException("Reference code cannot be empty.");
+
+            var parts = referenceCode.Split('.');
+
+            // Parse and increment the last part
+            if (int.TryParse(parts[parts.Length - 1], out int lastNumber))
+            {
+                lastNumber++;
+                parts[parts.Length - 1] = lastNumber.ToString();
+            }
+            else
+            {
+                throw new FormatException("Invalid reference code format.");
+            }
+
+            return string.Join(".", parts);
+        }
+
+        public DataTable GetTemplateChildren(string referenceCode)
+        {
+            DataTable TemplateChildren = new DataTable();
+
+            TemplateChildren.Columns.Add("item_id", typeof(int));
+            TemplateChildren.Columns.Add("item_name", typeof(string));
+            TemplateChildren.Columns.Add("level", typeof(int));
+            TemplateChildren.Columns.Add("reference_code", typeof(string));
+            //TemplateChildren.Columns.Add("parent_item_id", typeof(int));
+
+            DataTable dgv_project_temp = new DataTable();
+
+            dgv_project_temp = (DataTable)dgv_project_items.DataSource;
+
+            dgv_project_temp = dgv_project_temp.AsEnumerable()
+                .Where(r => r.Field<string>("reference_code").StartsWith(referenceCode + ".") ||
+                r.Field<string>("reference_code") == referenceCode)
+                .CopyToDataTable();
+
+
+            foreach (DataRow row in dgv_project_temp.Rows)
+            {
+                // Add parent to tempTemplateChildren
+                TemplateChildren.Rows.Add(
+                    Convert.ToInt32(row["item_id"]),
+                    row["components"]?.ToString().Trim() ?? "",
+                    GetLevel(row["reference_code"]?.ToString() ?? ""),
+                    row["reference_code"]?.ToString()
+                    );
+            }
+
+            return TemplateChildren;
+        }
+
+        public string GetParentReference(string referenceCode)
+        {
+            if (string.IsNullOrWhiteSpace(referenceCode))
+                return null;
+
+            int lastDotIndex = referenceCode.LastIndexOf('.');
+
+            if (lastDotIndex == -1)
+                return null; // This is a root-level reference (e.g., "1")
+
+            return referenceCode.Substring(0, lastDotIndex);
+        }
+
+        private int GetLevel(string referenceCode)
+        {
+            if (string.IsNullOrWhiteSpace(referenceCode))
+                return 0;
+
+            return referenceCode.Split('.').Length;
+        }
 
         public EventHandler CellEdited;
         private void dgv_project_items_CellEndEdit(object sender, DataGridViewCellEventArgs e)
@@ -979,52 +1577,62 @@ namespace smpc_sales_system.Pages.Sales
         DataTable wiringTable = new DataTable();
         private void setProjectWirings()
         {
-            //if (isInsertControllerToMotor)
-            //{
 
-            //}
             wiringTable.Columns.Add("Materials", typeof(string));
             wiringTable.Columns.Add("num", typeof(string));
-            wiringTable.Columns.Add("AMP REQ.", typeof(string));
+            wiringTable.Columns.Add("NumberOfQtyFormat", typeof(string));
+            wiringTable.Columns.Add("QtyFormat", typeof(string));
+            wiringTable.Columns.Add("NoOfWiresSet", typeof(string));
+            wiringTable.Columns.Add("AMPREQ", typeof(string));
 
             int counter = 1;
             string[] defaultWiring = { "ECB To Controller", "Conduit Pipe", "Elbow", "Coupling", "Flexible Conduit", "Straight Connector", "Controller to motor", "Ground" };
+            string[] defaultQTYFormat = { "m", "pcs", "pcs", "pcs", "m", "pcs", "m", "m" };
+            string[] defaultNumberOfWiresSet = { "3", "", "", "", "", "", "3", "1" };
 
-            foreach (string value in defaultWiring)
+            for (int i = 0; i < defaultWiring.Length; i++)
             {
-               DataRow row = wiringTable.NewRow();
-               row["Materials"] = value;
-               row["num"] = counter.ToString();
-               wiringTable.Rows.Add(row);
-               counter++;
+                DataRow row = wiringTable.NewRow();
+                row["num"] = counter.ToString();
+                row["Materials"] = defaultWiring[i];
+                row["NumberOfQtyFormat"] = defaultQTYFormat[i];
+                row["QtyFormat"] = defaultQTYFormat[i];
+                row["NoOfWiresSet"] = defaultNumberOfWiresSet[i];
+
+                //project_wiring_num_of_qty_set_format
+                wiringTable.Rows.Add(row);
+                counter++;
             }
 
           
             bs_project_wiring.DataSource = wiringTable;
             dgv_wiring.DataSource = bs_project_wiring;
 
-           
-        }
 
-        private void textBox50_Click(object sender, EventArgs e)
-        {
-            FinalTxtBoxClicked?.Invoke(this, EventArgs.Empty);
+            //Grouping the columns in wiring
+            string[] NumberOfQtySet = { "project_wiring_num_of_wiring_set", "project_wiring_num_of_wiring_set_format" };
+            string NumberOfQtySetHeaderName = "#" + Environment.NewLine + " OF QTY " + Environment.NewLine + " / SET";
+
+            Dictionary<string, string[]> FirstGrouping = new Dictionary<string, string[]>
+            {
+                { NumberOfQtySetHeaderName, NumberOfQtySet }
+            };
+
+            Helpers.EnableGroupHeaders(dgv_wiring, FirstGrouping);
+
+            string[] QtyHeader = { "project_wiring_qty", "project_wiring_qty_format" };
+            string QtyHeaderName = "Project Inventory";
+
+            Dictionary<string, string[]> SecondGrouping = new Dictionary<string, string[]>
+            {
+                { QtyHeaderName, QtyHeader }
+            };
+
+            Helpers.EnableGroupHeaders(dgv_wiring, SecondGrouping);
         }
 
         private void cmb_starting_method_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (string.IsNullOrWhiteSpace(txt_FLA.Text) || string.IsNullOrWhiteSpace(txt_VOLT.Text))
-            {
-                MessageBox.Show(
-                        "Pump selection is required to proceed.",
-                        "Missing Pump Selection",
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Warning);
-                errorProvider1.SetError(txt_final, "Pump selection is required!");
-                txt_final.Focus();
-
-                return;
-            }
 
             if (wiringTable == null || wiringTable.Rows.Count == 0)
             {
@@ -1042,7 +1650,7 @@ namespace smpc_sales_system.Pages.Sales
                 {
                     if (row["Materials"].ToString() == "Controller to motor")
                     {
-                        row["AMP REQ."] = ampRequirement;
+                         row["AMPREQ"] = ampRequirement;
                         break;
                     }
                 }
@@ -1058,7 +1666,7 @@ namespace smpc_sales_system.Pages.Sales
                 {
                     if (row["Materials"].ToString() == "Controller to motor")
                     {
-                        row["AMP REQ."] = ampRequirement;
+                        row["AMPREQ"] = ampRequirement;
                         break;
                     }
                 }
@@ -1072,31 +1680,25 @@ namespace smpc_sales_system.Pages.Sales
                 {
                     if (row["Materials"].ToString() == "Controller to motor")
                     {
-                        row["AMP REQ."] = FLA;
+                        row["AMPREQ"] = FLA;
                         break;
                     }
                 }
             }
         }
 
-
-        private void txt_final_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
-
         private void ComputeWiringDGV(DataGridViewCellEventArgs e)
         {
             try
             {
-                var noOfWiresCell = dgv_wiring.Rows[e.RowIndex].Cells["wiring_num_of_wires_set"].Value;
-                var noOfQtyCell = dgv_wiring.Rows[e.RowIndex].Cells["wiring_num_of_qty_set"].Value;
-                var distanceTravelledCell = dgv_wiring.Rows[e.RowIndex].Cells["wiring_distance_travelled"].Value;
-                var allowanceWireSetCell = dgv_wiring.Rows[e.RowIndex].Cells["wiring_allowance"].Value;
-                var noOfSetsCell = dgv_wiring.Rows[e.RowIndex].Cells["wiring_num_of_sets"].Value;
-                var costCell = dgv_wiring.Rows[e.RowIndex].Cells["wiring_cost"].Value;
+                var noOfWiresCell = dgv_wiring.Rows[e.RowIndex].Cells["project_wiring_num_of_wires_set"].Value;
+                var noOfQtyCell = dgv_wiring.Rows[e.RowIndex].Cells["project_wiring_num_of_wiring_set"].Value;
+                var distanceTravelledCell = dgv_wiring.Rows[e.RowIndex].Cells["project_wiring_distance_travelled"].Value;
+                var allowanceWireSetCell = dgv_wiring.Rows[e.RowIndex].Cells["project_wiring_allowance"].Value;
+                var noOfSetsCell = dgv_wiring.Rows[e.RowIndex].Cells["project_wiring_qty"].Value;
+                var costCell = dgv_wiring.Rows[e.RowIndex].Cells["project_wiring_cost"].Value;
 
+                 
                 if (!double.TryParse(noOfWiresCell?.ToString(), out double noOfWires))
                     noOfWires = 0;
 
@@ -1114,29 +1716,23 @@ namespace smpc_sales_system.Pages.Sales
 
                 if (!decimal.TryParse(costCell?.ToString(), out decimal costs))
                     costs = 0;
-                      
 
-
+                //double WiresAndQty = noOfWires * noOfQty;
                 double qty = noOfQty * (distanceTravelled + allowanceWireSet);
-                this.dgv_wiring.Rows[e.RowIndex].Cells["wiring_qty"].Value = qty.ToString();
-
+                dgv_wiring.Rows[e.RowIndex].Cells["project_wiring_qty"].Value = qty.ToString();
 
                 double totalQty = qty * noOfSets;
-                this.dgv_wiring.Rows[e.RowIndex].Cells["wiring_total_qty"].Value = totalQty.ToString();
+                dgv_wiring.Rows[e.RowIndex].Cells["project_wiring_total_qty"].Value = totalQty.ToString();
 
                 decimal totalCost = (decimal)totalQty * (decimal)costs;
-                this.dgv_wiring.Rows[e.RowIndex].Cells["wiring_total_cost"].Value = totalCost.ToString();
+                dgv_wiring.Rows[e.RowIndex].Cells["project_wiring_total_cost"].Value = totalCost.ToString();
 
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error: " + ex.Message);
+                MessageBox.Show("Error [Compute Wiring]: " + ex.Message);
             }
         }
-
-
-
-
 
         private void dgv_wiring_CellEndEdit(object sender, DataGridViewCellEventArgs e)
         {
@@ -1157,7 +1753,7 @@ namespace smpc_sales_system.Pages.Sales
                     {
                         if (row["Materials"] != null && row["Materials"].ToString() == "ECB To Controller")
                         {
-                            row["AMP REQ."] = ECB;
+                            row["AMPREQ"] = ECB;
                             break;
                         }
                     }
@@ -1169,6 +1765,32 @@ namespace smpc_sales_system.Pages.Sales
         private void txt_no_of_pump_set_TextChanged(object sender, EventArgs e)
         {
             computeECBToController();
+        }
+
+        private void checkBox_Wiring_CheckedChanged(object sender, EventArgs e)
+        {
+            WiringVisible(checkBox_Wiring.Checked);
+        }
+
+        private void WiringVisible(bool checkBox)
+        {
+            dgv_wiring.Visible = checkBox;
+            label6.Visible = checkBox;
+            txt_FLA.Visible = checkBox;
+            label7.Visible = checkBox;
+            txt_VOLT.Visible = checkBox;
+            label58.Visible = checkBox;
+
+        }
+
+        private void txt_final_Click(object sender, EventArgs e)
+        {
+            FinalTxtBoxClicked?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void dgv_final_CellClick(object sender, DataGridViewCellEventArgs e)
+        {
+            FinalTxtBoxClicked?.Invoke(this, EventArgs.Empty);
         }
     }
 }

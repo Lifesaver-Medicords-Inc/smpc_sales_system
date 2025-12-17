@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace smpc_sales_system.Models
 {
@@ -12,19 +13,18 @@ namespace smpc_sales_system.Models
         public string template_name { get; set; }
     }
 
-
-
     public class ProjectTemplateChildModel
     {
-        public int nodes_id { get; set; }
-        public int node_id { get; set; }
-        public int parent_node_id { get; set; }
-        public int based_id { get; set; }
-        public string node_name { get; set; }
-        public int node_level { get; set; }
-        public int node_order { get; set; }
-        public int item_id { get; set; }
-        public string node_type { get; set; }
+        [JsonProperty("id")]
+        public int Id { get; set; }
+        [JsonProperty("parent_id")]
+        public int ParentId { get; set; }
+        [JsonProperty("item_id")]
+        public int ItemId { get; set; }
+        [JsonProperty("components")]
+        public string Components { get; set; }
+        [JsonProperty("level")]
+        public int Level { get; set; }
     }
 
     public class ProjectTemplateList
