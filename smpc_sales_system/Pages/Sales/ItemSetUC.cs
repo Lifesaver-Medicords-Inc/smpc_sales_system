@@ -19,6 +19,7 @@ using System.Reflection.Emit;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Xml.Linq;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.TextBox;
 
 namespace smpc_sales_system.Pages.Sales
@@ -382,7 +383,7 @@ namespace smpc_sales_system.Pages.Sales
                                 }
                                 else
                                 {
-                                    Console.WriteLine("Each discount factor must be between 0 and 1.");
+                                    Console.WriteLine("Each discount factor must be bet en 0 and 1.");
                                     Discount = 0;
                                     NetTotal = totalBeforeAdjustment;
                                     return;
@@ -1197,10 +1198,20 @@ namespace smpc_sales_system.Pages.Sales
                     AssignModel(index, dgv_project_items);
 
             }
+
+            ComputeByReferenceHierarchy();
         }
 
         private void AddModel(DataGridView dgv, int rowIndex, bool isBom, int BomId, int ItemId, string referenceCode, int templateId = 0)
         {
+            decimal unitPrice = 0.00m;
+
+            if (rowIndex >= 0)
+            {
+                DataGridViewRow DataGridRow = dgv.Rows[rowIndex];
+
+                unitPrice = decimal.Parse(DataGridRow.Cells["project_items_unit_price"].Value?.ToString());
+            }
 
             DeleteRowsByReferenceCode(rowIndex, dgv);
 
@@ -1220,6 +1231,7 @@ namespace smpc_sales_system.Pages.Sales
             projectItem["reference_code"] = referenceCode;
             projectItem["model"] = row["item_model"];
             projectItem["template_id"] = templateId;
+            projectItem["unit_price"] = unitPrice;
 
             dataSource.Rows.InsertAt(projectItem, rowIndex);
         }
@@ -1262,15 +1274,36 @@ namespace smpc_sales_system.Pages.Sales
 
             DataTable templateChildren = GetTemplateChildren(parentReferenceCode);
 
-            DataTable ComparedData = GetComparedDataBOMTemplate(itemId, templateChildren, parentReferenceCode, BomId, itemIdTemplate);
-            
+            DataTable tempCompared = new DataTable();
+
+            tempCompared.Columns.Add("item_id", typeof(int));
+            tempCompared.Columns.Add("item_name", typeof(string));
+            tempCompared.Columns.Add("level", typeof(int));
+            tempCompared.Columns.Add("parent_item_id", typeof(int));
+            tempCompared.Columns.Add("reference_code", typeof(string));
+            tempCompared.Columns.Add("model", typeof(string));
+            tempCompared.Columns.Add("qty", typeof(int));
+            tempCompared.Columns.Add("man_days", typeof(decimal));
+            tempCompared.Columns.Add("labor_cost", typeof(decimal));
+            tempCompared.Columns.Add("unit_price", typeof(decimal));
+
+            var result = GetRecursiveBOM(itemId, tempCompared, templateChildren, BomId, itemIdTemplate);
+
+            tempCompared = result.tempTable;
+
+            //fix the Reference
+            GenerateReferenceCode(tempCompared, parentReferenceCode);
+
+
+            DataTable ComparedData = tempCompared;
+
+
             if (ComparedData == null || ComparedData.Rows.Count == 0)
             {
                 AddModel(dgv, index, isBom, BomId, itemId, parentReferenceCode);
 
                 return;
-            }
-                
+             }
 
             DeleteRowsByReferenceCode(rowIndex, dgv);
 
@@ -1288,13 +1321,16 @@ namespace smpc_sales_system.Pages.Sales
                 projectItem["reference_code"] = row["reference_code"];
                 projectItem["model"] = row["model"];
                 projectItem["template_id"] = templateId;
+                projectItem["man_days"] = row["man_days"];
+                projectItem["labor_rate"] = row["labor_cost"];
+                projectItem["qty"] = row["qty"];
+                projectItem["unit_price"] = row["unit_price"];
 
                 dataSource.Rows.InsertAt(projectItem, rowIndex);
 
                 rowIndex++;
             }
         }
-
         private void DeleteRowsByReferenceCode(int RowIndex, DataGridView dgv)
         {
 
@@ -1372,122 +1408,265 @@ namespace smpc_sales_system.Pages.Sales
             }
         }
 
-        private DataTable GetComparedDataBOMTemplate(int itemId, DataTable templateSelected, string parentReference, int BomId, int itemIdTemplate)
+        private (DataTable tempTable, decimal subTotal) GetRecursiveBOM(int itemId, DataTable tempBOM, DataTable templateSelected, int bomId, int itemIdTemplate, int level = 1, int parentItemId = 0)
         {
-            DataTable tempCompared = new DataTable();
-
-            tempCompared.Columns.Add("item_id", typeof(int));
-            tempCompared.Columns.Add("item_name", typeof(string));
-            tempCompared.Columns.Add("level", typeof(int));
-            tempCompared.Columns.Add("parent_item_id", typeof(int));
-            tempCompared.Columns.Add("reference_code", typeof(string));
-            tempCompared.Columns.Add("model", typeof(string));
-
-            tempCompared = GetRecursiveBOM(itemId, tempCompared, templateSelected, parentReference, BomId, itemIdTemplate);
-
-            //fix the Reference
-            GenerateReferenceCode(tempCompared, parentReference);
-
-            return tempCompared;
-        }
-
-        private DataTable GetRecursiveBOM(int itemId, DataTable tempBOM, DataTable templateSelected, string parentReference, int BomId, int itemIdTemplate, int level = 1, int parentItemId = 0)
-        {
-            // Get parent rom
+            // Find parent BOM
             var parent = BomHead.AsEnumerable()
-                    .SingleOrDefault(r => r.Field<int>("id") == BomId);
+                .SingleOrDefault(r => r.Field<int>("id") == bomId);
 
             if (parent == null)
-                return tempBOM;
-            
+                return (tempBOM, 0m);
 
-            string ParentReferenceCode = templateSelected.AsEnumerable()
-                                .Where(r => r.Field<int>("item_id") == itemIdTemplate
-                                    && r.Field<int>("level") == level)
-                                .Select(r => r.Field<string>("reference_code"))
-                                .FirstOrDefault();
+            // Get parent reference code from template
+            string parentReferenceCode = templateSelected.AsEnumerable()
+                .Where(r => r.Field<int>("item_id") == itemIdTemplate &&
+                            r.Field<int>("level") == level)
+                .Select(r => r.Field<string>("reference_code"))
+                .FirstOrDefault();
 
-            //Add parent to tempBOM
-            tempBOM.Rows.Add(
+            if (string.IsNullOrWhiteSpace(parentReferenceCode))
+                return (tempBOM, 0m);
+
+            // Base cost (labor + production)
+            decimal laborCost = parent.Field<int>("man_days") * parent.Field<decimal>("labor_rate");
+            decimal productionCost = parent.Field<decimal>("production_cost");
+            decimal totalCost = laborCost + productionCost;
+
+            // Add parent row (capture reference!)
+            DataRow parentRow = tempBOM.Rows.Add(
                 parent.Field<int>("item_id"),
                 parent.Field<string>("general_name").Trim(),
                 level,
                 parentItemId,
-                ParentReferenceCode,
-                parent.Field<string>("item_model").Trim()
-                );
+                parentReferenceCode,
+                parent.Field<string>("item_model").Trim(),
+                parent.Field<int>("production_qty"),
+                parent.Field<int>("man_days"),
+                parent.Field<decimal>("labor_rate"),
+                0m // unit_price placeholder
+            );
 
-            // Get children rows
+            int nextLevel = level + 1;
+
+            // Get children
             var children = BomDetails.AsEnumerable()
                 .Where(r => r.Field<int>("item_bom_id") == parent.Field<int>("id"))
                 .ToList();
 
-            if (ParentReferenceCode == null || ParentReferenceCode == "")
-                return tempBOM;
-
-            int nextLevel = level + 1;
-
-            foreach (var row in children)
+            foreach (var child in children)
             {
+                int childItemId = child.Field<int>("item_id");
 
-                int childId = row.Field<int>("item_id");
+                var childBom = BomHead.AsEnumerable()
+                    .SingleOrDefault(r => r.Field<int>("item_id") == childItemId);
 
-                var subParent = BomHead.AsEnumerable()
-                    .SingleOrDefault(r => r.Field<int>("item_id") == childId);
+                string childModel = ItemList.AsEnumerable()
+                    .Where(r => r.Field<int>("id") == childItemId)
+                    .Select(r => r.Field<string>("item_model"))
+                    .FirstOrDefault();
 
-                string ChildModel = ItemList.AsEnumerable()
-                                       .Where(r => r.Field<int>("id") == childId)
-                                       .Select(r => r.Field<string>("item_model"))
-                                       .FirstOrDefault();
-
-                if (subParent != null)
+                // Child has its own BOM → recurse
+                if (childBom != null)
                 {
-                    int subBomId = subParent["id"] != DBNull.Value ? subParent.Field<int>("id") : 0;
-                    GetRecursiveBOM(childId, tempBOM, templateSelected, parentReference, subBomId, childId, nextLevel, parent.Field<int>("id"));
+                    int childBomId = childBom.Field<int>("id");
+
+                    var result = GetRecursiveBOM(
+                        childItemId,
+                        tempBOM,
+                        templateSelected,
+                        childBomId,
+                        childItemId,
+                        nextLevel,
+                        parent.Field<int>("id")
+                    );
+
+                    totalCost += result.subTotal;
                 }
                 else
-                    // Add leaf to tempBOM
+                {
+                    // Leaf item
+                    decimal unitPrice = decimal.Parse(child.Field<string>("unit_price"));
+                    int qty = child.Field<int>("bom_qty");
+                    decimal lineTotal = unitPrice * qty;
+
+                    totalCost += lineTotal;
+
                     tempBOM.Rows.Add(
-                        row.Field<int>("item_id"),
-                        row.Field<string>("item_name").Trim(),
+                        childItemId,
+                        child.Field<string>("item_name").Trim(),
                         nextLevel,
                         parent.Field<int>("id"),
-                        IncrementReferenceCode(ParentReferenceCode),
-                        ChildModel
-                        );
+                        IncrementReferenceCode(parentReferenceCode),
+                        childModel,
+                        qty,
+                        0,
+                        0,
+                        unitPrice
+                    );
+                }
             }
 
-            DataTable TemplateChild = null;
+            // Add missing template children (if any)
+            var templateChildren = templateSelected.AsEnumerable()
+                .Where(r => r.Field<string>("reference_code").StartsWith(parentReferenceCode) &&
+                            r.Field<int>("level") == nextLevel);
 
-            if (templateSelected.Rows.Count > 1)
+            if (templateChildren.Any())
             {
-
-                TemplateChild = templateSelected.AsEnumerable()
-                     .Where(r => r.Field<string>("reference_code").ToString().StartsWith(ParentReferenceCode)
-                     && r.Field<int>("level") == nextLevel)
-                    .CopyToDataTable();
-
-                //Already added the TemplateChild here
-                foreach (DataRow row in TemplateChild.Rows)
+                foreach (var row in templateChildren)
                 {
+                    bool exists = children.Any(c =>
+                        c.Field<string>("item_name").Trim() ==
+                        row.Field<string>("item_name").Trim());
 
-                    if (!children.AsEnumerable().Any(r => r.Field<string>("item_name").Trim() == row.Field<string>("item_name").Trim()))
+                    if (!exists)
                     {
                         tempBOM.Rows.Add(
-                               row.Field<int>("item_id"),
-                               row.Field<string>("item_name").Trim(),
-                               nextLevel,
-                               parent.Field<int>("id"),
-                               row.Field<string>("reference_code"),
-                               ""
-                               );
+                            row.Field<int>("item_id"),
+                            row.Field<string>("item_name").Trim(),
+                            nextLevel,
+                            parent.Field<int>("id"),
+                            row.Field<string>("reference_code"),
+                            "",
+                            0,
+                            0,
+                            0,
+                            0m
+                        );
                     }
                 }
-
             }
 
-            return tempBOM;
+            // Apply VAT (18%)
+            decimal totalWithVat = totalCost * 1.18m;
+
+            // Update parent safely
+            parentRow["unit_price"] = totalWithVat;
+
+            return (tempBOM, totalCost);
         }
+
+        //private (DataTable tempTable, decimal subTotal) GetRecursiveBOM(int rowIndex, int itemId, DataTable tempBOM, DataTable templateSelected, string parentReference, int BomId, int itemIdTemplate, int level = 1, int parentItemId = 0)
+        //{
+        //    // Get parent rom
+        //    var parent = BomHead.AsEnumerable()
+        //            .SingleOrDefault(r => r.Field<int>("id") == BomId);
+
+        //    if (parent == null)
+        //        return (tempBOM, 0);
+            
+        //    string ParentReferenceCode = templateSelected.AsEnumerable()
+        //                        .Where(r => r.Field<int>("item_id") == itemIdTemplate
+        //                            && r.Field<int>("level") == level)
+        //                        .Select(r => r.Field<string>("reference_code"))
+        //                        .FirstOrDefault();
+
+        //    decimal ParentPrice = parent.Field<decimal>("production_cost");
+        //    decimal laborCost = parent.Field<int>("man_days") * parent.Field<decimal>("labor_rate");
+        //    decimal totalCost = laborCost;
+
+        //    //Add parent to tempBOM
+        //    tempBOM.Rows.Add(
+        //        parent.Field<int>("item_id"),
+        //        parent.Field<string>("general_name").Trim(),
+        //        level,
+        //        parentItemId,
+        //        ParentReferenceCode,
+        //        parent.Field<string>("item_model").Trim(),
+        //        parent.Field<int>("production_qty"),
+        //        parent.Field<int>("man_days"),
+        //        parent.Field<decimal>("labor_rate"),
+        //        ParentPrice
+        //        );
+
+        //    // Get children rows
+        //    var children = BomDetails.AsEnumerable()
+        //        .Where(r => r.Field<int>("item_bom_id") == parent.Field<int>("id"))
+        //        .ToList();
+
+        //    if (ParentReferenceCode == null || ParentReferenceCode == "")
+        //        return (tempBOM, 0);
+
+        //    int nextLevel = level + 1;
+
+        //    int nextRowIndex = rowIndex + 1;
+
+        //    foreach (var row in children)
+        //    {
+
+        //        int childId = row.Field<int>("item_id");
+
+        //        var subParent = BomHead.AsEnumerable()
+        //            .SingleOrDefault(r => r.Field<int>("item_id") == childId);
+
+        //        string ChildModel = ItemList.AsEnumerable()
+        //                               .Where(r => r.Field<int>("id") == childId)
+        //                               .Select(r => r.Field<string>("item_model"))
+        //                               .FirstOrDefault();
+
+        //        if (subParent != null)
+        //        {
+        //            int subBomId = subParent["id"] != DBNull.Value ? subParent.Field<int>("id") : 0;
+        //            var result = GetRecursiveBOM(nextRowIndex, childId, tempBOM, templateSelected, parentReference, subBomId, childId, nextLevel, parent.Field<int>("id"));
+
+        //            totalCost += result.subTotal;
+        //        }
+        //        else
+        //        {
+        //            decimal lineTotal = decimal.Parse(row.Field<string>("unit_price").Trim()) * row.Field<int>("bom_qty");
+        //            totalCost += lineTotal;
+
+        //            // Add leaf to tempBOM
+        //            tempBOM.Rows.Add(
+        //                row.Field<int>("item_id"),
+        //                row.Field<string>("item_name").Trim(),
+        //                nextLevel, 
+        //                parent.Field<int>("id"),
+        //                IncrementReferenceCode(ParentReferenceCode),
+        //                ChildModel,
+        //                row.Field<int>("bom_qty"),
+        //                0,
+        //                0,
+        //                decimal.Parse(row.Field<string>("unit_price").Trim())
+        //                );
+        //        } 
+        //    }
+
+        //    DataTable TemplateChild = null;
+
+        //    if (templateSelected.Rows.Count > 1)
+        //    {
+
+        //        TemplateChild = templateSelected.AsEnumerable()
+        //             .Where(r => r.Field<string>("reference_code").ToString().StartsWith(ParentReferenceCode)
+        //             && r.Field<int>("level") == nextLevel)
+        //            .CopyToDataTable();
+
+        //        //Already added the TemplateChild here
+        //        foreach (DataRow row in TemplateChild.Rows)
+        //        {
+
+        //            if (!children.AsEnumerable().Any(r => r.Field<string>("item_name").Trim() == row.Field<string>("item_name").Trim()))
+        //            {
+        //                tempBOM.Rows.Add(
+        //                       row.Field<int>("item_id"),
+        //                       row.Field<string>("item_name").Trim(),
+        //                       nextLevel,
+        //                       parent.Field<int>("id"),
+        //                       row.Field<string>("reference_code"),
+        //                       ""
+        //                       );
+        //            }
+        //        }
+
+        //    }
+
+        //    // Update the parent unit_price to total of all its descendants
+        //    //1.186 is for 18% VAT
+        //    decimal TotalCostWithMarkup = decimal.Parse(totalCost.ToString()) * 1.186m;
+        //    tempBOM.Rows[rowIndex]["unit_price"] = TotalCostWithMarkup.ToString();
+        //    return (tempBOM, totalCost);
+        //}
 
         public static string IncrementReferenceCode(string referenceCode)
         {
@@ -1568,9 +1747,10 @@ namespace smpc_sales_system.Pages.Sales
         public EventHandler CellEdited;
         private void dgv_project_items_CellEndEdit(object sender, DataGridViewCellEventArgs e)
         {
-             ComputeProjectDgv(e);
-             CellEdited?.Invoke(this, EventArgs.Empty);
-             //ItemChanged?.Invoke(this, EventArgs.Empty);
+            //ComputeProjectDgv(e);
+            //CellEdited?.Invoke(this, EventArgs.Empty);
+            //ItemChanged?.Invoke(this, EventArgs.Empty);
+            ComputeByReferenceHierarchy();
         }
 
         //bool isInsertControllerToMotor = false;
@@ -1771,7 +1951,7 @@ namespace smpc_sales_system.Pages.Sales
         {
             WiringVisible(checkBox_Wiring.Checked);
         }
-
+         
         private void WiringVisible(bool checkBox)
         {
             dgv_wiring.Visible = checkBox;
@@ -1792,5 +1972,128 @@ namespace smpc_sales_system.Pages.Sales
         {
             FinalTxtBoxClicked?.Invoke(this, EventArgs.Empty);
         }
+
+        private void ComputeByReferenceHierarchy()
+        {
+
+            DataTable dataSourceQuickQuote = dgv_project_items.DataSource as DataTable;
+
+            if (dataSourceQuickQuote == null) return;
+
+            var parentReferenceCodes = dataSourceQuickQuote.AsEnumerable()
+                .Select(row => GetParentReferenceCode(dataSourceQuickQuote, row.Field<string>("reference_code")))
+                .Where(parentCode => !string.IsNullOrEmpty(parentCode))
+                .Distinct()
+                .ToList();
+
+            foreach (var parentReferenceCode in parentReferenceCodes)
+            {
+                // Calculate the total unit_price for the given parent and its descendants
+                decimal totalUnitPrice = GetTotalUnitPriceForChildren(dataSourceQuickQuote, parentReferenceCode);
+
+                // Output the total unit_price for this parent reference_code
+                Console.WriteLine($"Total unit_price for children of '{parentReferenceCode}' and its descendants: {totalUnitPrice:C}");
+
+                // Update the DataGridView cell for the parent reference_code
+                foreach (DataGridViewRow row in dgv_project_items.Rows)
+                {
+                    if (row.Cells["reference_code"].Value?.ToString() == parentReferenceCode)
+                    {
+                        row.Cells["project_items_unit_price"].Value = totalUnitPrice.ToString();//Helpers.FormatAsCurrency(totalUnitPrice.ToString());
+                        break;
+
+                    }
+                }
+            }
+        }
+
+        private string GetParentReferenceCode(DataTable dt, string v)
+        {
+            if (string.IsNullOrWhiteSpace(v))
+                return null;
+
+            int lastDot = v.LastIndexOf('.');
+            if (lastDot > 0)
+                return v.Substring(0, lastDot);
+
+            // No parent (top-level)
+            return null;
+        }
+
+        private decimal GetTotalUnitPriceForChildren(DataTable dt, string parentReferenceCode)
+        {
+
+            var ParentRow = dt.AsEnumerable()
+                .FirstOrDefault(row => row.Field<string>("reference_code") == parentReferenceCode);
+
+            // Find all direct children of the parent reference_code
+            if (dt == null)
+                return 0;
+
+            var children = dt.AsEnumerable()
+                .Where(row =>
+                {
+                    var refCode = row.Field<string>("reference_code");
+
+                    if (refCode == null) return false;
+
+                    if (refCode == parentReferenceCode) return false;
+
+                    // must start with parentReferenceCode + "."
+                    if (!refCode.StartsWith(parentReferenceCode + ".")) return false;
+
+                    // remove parent prefix and check if there's another dot — means it's a grandchild
+                    var remainder = refCode.Substring(parentReferenceCode.Length + 1);
+                    return !remainder.Contains(".");
+                })
+                .ToList();
+
+            // If no children found, return 0
+            if (!children.Any())
+                return 0;
+
+            decimal totalLaborCost = 0m;
+
+            if (ParentRow != null)
+            {
+                decimal manDays = Convert.IsDBNull(ParentRow["man_days"]) ? 0m : Convert.ToDecimal(ParentRow["man_days"]);
+                decimal laborRate = Convert.IsDBNull(ParentRow["labor_rate"]) ? 0m : Convert.ToDecimal(ParentRow["labor_rate"]);
+
+                totalLaborCost = laborRate * manDays;
+
+                Console.WriteLine($"Adding labor cost for parent '{parentReferenceCode}': {manDays} * {laborRate} = {totalLaborCost:C}");
+            }
+
+            decimal AllChildTotal = 0;
+
+            // For each child, recursively sum their descendants' unit_prices
+            foreach (var child in children)
+            {
+                string childReferenceCode = child.Field<string>("reference_code");
+
+                // Recursively find the total for this child's descendants
+                decimal ChildTotal = GetTotalUnitPriceForChildren(dt, childReferenceCode);
+                AllChildTotal = ChildTotal;
+                Console.WriteLine($"Adding total from child '{childReferenceCode}': 'Child Total:' {ChildTotal}': 'Total Amount:' {AllChildTotal:C}");
+            }
+
+            // Sum the unit_price for the current direct children
+            decimal totalUnitPrice = children.Sum(row =>
+            {
+                string value = Helpers.GetCleanedPriceValue(row["unit_price"]?.ToString());
+                string qty = Helpers.GetCleanedPriceValue(row["qty"]?.ToString());
+                decimal NewUnitPrice = (decimal.TryParse(value, out decimal parsed) ? parsed : 0) * (decimal.TryParse(qty, out decimal qtyParsed) ? qtyParsed : 0);
+
+                Console.WriteLine($"sum all the child  unit_price for '{row.Field<string>("reference_code")} ': {value} ' * ' {qty} ' = ' {NewUnitPrice:C}");
+
+                return NewUnitPrice;
+            });
+
+            decimal TotalAmount = (totalLaborCost + totalUnitPrice) * 1.186m;
+            //decimal TotalAmount = (totalLaborCost + totalUnitPrice);
+
+            return TotalAmount;
+        }
+
     }
 }

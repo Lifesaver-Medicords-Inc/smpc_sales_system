@@ -760,7 +760,7 @@ namespace smpc_sales_app.Pages.Sales
             tabControl2.TabPages.Add(addNewTab);
 
             fetchProjectMultipliers();
-            //ConnectToWebSocket("Sales", selectedSalesQuotationId);
+            ConnectToWebSocket("Sales", selectedSalesQuotationId);
         }
 
         private async void CellClickedModelUC(object sender, EventArgs e)
@@ -1748,14 +1748,10 @@ namespace smpc_sales_app.Pages.Sales
                 counterSub++;
             }
 
-
             // Update the parent unit_price to total of all its descendants
             //1.186 is for 18% VAT
             decimal TotalCostWithMarkup = decimal.Parse(totalCost.ToString()) * 1.186m;
             dataSource.Rows[rowIndex]["unit_price"] = TotalCostWithMarkup.ToString();
-
-
-
 
             counterParent++;
             return totalCost;

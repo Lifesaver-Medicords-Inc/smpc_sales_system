@@ -1576,7 +1576,7 @@ namespace smpc_sales_app.Pages.Sales
 
         private void dgv_order_sales_CellMouseClick(object sender, DataGridViewCellMouseEventArgs e)
         {
-            Console.WriteLine(dgv_order_sales.Rows[e.RowIndex].Cells["delivery_preference"].Value.ToString());
+            //Console.WriteLine(dgv_order_sales.Rows[e.RowIndex].Cells["delivery_preference"].Value.ToString());
         }
 
         private void BindControlsForNewOrderORexisting()
