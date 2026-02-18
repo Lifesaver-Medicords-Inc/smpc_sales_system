@@ -116,7 +116,7 @@ namespace smpc_sales_app.Pages.Sales
                     var updatedConditionsData = currentControl.GetAdvancedConditionsData();
                     data["branch"] = "Sales";
                     data["project_id"] = this.selectedProjectID;
-                    data["sales_project_content_advanced_condition"] = updatedConditionsData;
+                    data["sales_project_content_advanced_condition"] = updatedConditionsData; 
 
                     await SendMessageAsync(data);
 
@@ -292,22 +292,31 @@ namespace smpc_sales_app.Pages.Sales
         }
         private async void Cell_EditedUC(object sender, EventArgs e)
         {
+            RecomputeParentTotals();
+        }
+
+        private void RecomputeParentTotals()
+        {
             decimal gross = 0, vat = 0, net = 0, percent = 0, cash_disc = 0, net_amount = 0, total_amount = 0;
 
             foreach (TabPage tab in tabControl2.TabPages)
             {
-                if (tab.Controls.Count > 0 && tab.Controls[0] is ItemSetUC currentControl) // Check if control exists
+                var itemControls = tab.Controls.OfType<ItemSetUC>();
+
+                foreach (var currentControl in itemControls)
                 {
-                    var data = currentControl.ProjectComputationLoop() ?? new Dictionary<string, object>();
+                    var data = currentControl.ProjectComputationLoop();
+                    if (data == null) continue;
 
-                    if (data.TryGetValue("gross_sales", out var grossVal)) gross += Convert.ToDecimal(grossVal);
-                    if (data.TryGetValue("vat_amount", out var vatVal)) vat += Convert.ToDecimal(vatVal);
-                    if (data.TryGetValue("net_sales", out var netVal)) net += Convert.ToDecimal(netVal);
-                    //if (data.TryGetValue("percent_discount", out var percentVal)) percent += Convert.ToDecimal(percentVal);
-                    if (data.TryGetValue("cash_discount", out var cashDiscVal)) cash_disc += Convert.ToDecimal(cashDiscVal);
-                    if (data.TryGetValue("net_amount_due", out var netAmountVal)) net_amount += Convert.ToDecimal(netAmountVal);
-                    if (data.TryGetValue("total_amount_due", out var totalAmountVal)) total_amount += Convert.ToDecimal(totalAmountVal);
+                    Console.WriteLine("Quotation - net sales: " + net);
 
+                    AddDecimal(data, "gross_sales", ref gross);
+                    AddDecimal(data, "vat_amount", ref vat);
+                    AddDecimal(data, "net_sales", ref net);
+                    AddDecimal(data, "percent_discount", ref percent);
+                    AddDecimal(data, "cash_discount", ref cash_disc);
+                    AddDecimal(data, "net_amount_due", ref net_amount);
+                    AddDecimal(data, "total_amount_due", ref total_amount);
                 }
             }
 
@@ -319,6 +328,18 @@ namespace smpc_sales_app.Pages.Sales
             txt_net_amount_due.Text = Helpers.MoneyFormatDecimal(net_amount);
             txt_total_amount_due.Text = Helpers.MoneyFormatDecimal(total_amount);
         }
+
+        private void AddDecimal(Dictionary<string, object> data, string key, ref decimal target)
+        {
+            if (data.TryGetValue(key, out var val) && val != null)
+            {
+                if (decimal.TryParse(val.ToString(), out var result))
+                {
+                    target += result;
+                }
+            }
+        }
+
         private async void Button_ClickedUC(object sender, EventArgs e)
         {
             var dt = await ProjectTemplatesService.GetProjectTemplates();
@@ -642,7 +663,7 @@ namespace smpc_sales_app.Pages.Sales
                 // Get the last index (before the add new tab)
                 var lastIndex = this.tabControl2.TabCount - 1;
                 // Create a new TabPage
-                TabPage newTab = new TabPage("New Project");
+                TabPage newTab = new TabPage("New Project 1");
                 // Create an instance of ItemSetUC
                 ItemSetUC UC = new ItemSetUC
                 {
@@ -661,6 +682,7 @@ namespace smpc_sales_app.Pages.Sales
 
                 UC.CellChangedProject += Cell_DataChanged;
                 UC.CellClicked += Cell_ClickedUC;
+                UC.CellClicked += Cell_EditedUC;
                 UC.CellClickedModel += CellClickedModelUC;
                 //UC.DeleteReferenceCode += DeleteRowsByReferenceCode;
 
@@ -1927,6 +1949,7 @@ namespace smpc_sales_app.Pages.Sales
             //        dgv_quick_quote_details.BeginEdit(true);
             //    }));
             //}
+            
 
         }
         DataTable stockQuickDataTable = new DataTable();
@@ -2371,7 +2394,7 @@ namespace smpc_sales_app.Pages.Sales
                 var lastIndex = this.tabControl2.TabCount - 1;
 
                 // Create a new TabPage
-                TabPage newTab = new TabPage("New Project");
+                TabPage newTab = new TabPage("New Project 1");
                 // Create an instance of ItemSetUC
                 ItemSetUC UC = new ItemSetUC
                 {
@@ -2854,57 +2877,42 @@ namespace smpc_sales_app.Pages.Sales
         }
         private void tabControl2_MouseDown(object sender, MouseEventArgs e)
         {
-            if (tabControl2.TabPages.Count == 0) return;
+            //if (tabControl2.TabPages.Count == 0) return;
+
+            //if (e.Button == MouseButtons.Right)
+            //{
+            //    for (int i = 0; i < tabControl2.TabPages.Count; i++)
+            //    {
+            //        Rectangle tabRect = tabControl2.GetTabRect(i);
+
+            //        if (tabRect.Contains(e.Location))
+            //        {
+            //            Color currentColor = tabControl2.TabPages[i].Tag is Color ? (Color)tabControl2.TabPages[i].Tag : Color.White;
+
+            //            if (currentColor == Color.Red)
+            //            {
+            //                tabControl2.TabPages[i].Tag = Color.White;
+            //            }
+            //            else
+            //            {
+            //                tabControl2.TabPages[i].Tag = Color.Red;
+            //            }
 
 
-            if (e.Button == MouseButtons.Right)
-            {
-                for (int i = 0; i < tabControl2.TabPages.Count; i++)
-                {
-                    Rectangle tabRect = tabControl2.GetTabRect(i);
-
-                    if (tabRect.Contains(e.Location))
-                    {
-                        Color currentColor = tabControl2.TabPages[i].Tag is Color ? (Color)tabControl2.TabPages[i].Tag : Color.White;
-
-                        if (currentColor == Color.Red)
-                        {
-                            tabControl2.TabPages[i].Tag = Color.White;
-                        }
-                        else
-                        {
-                            tabControl2.TabPages[i].Tag = Color.Red;
-                        }
-
-
-                        tabControl2.Invalidate();
-                        break;
-                    }
-                }
-            }
+            //            tabControl2.Invalidate();
+            //            break;
+            //        }
+            //    }
+            //}
 
             var lastIndex = this.tabControl2.TabCount - 1;
             if (this.tabControl2.GetTabRect(lastIndex).Contains(e.Location))
             {
                 // Create a new TabPage
 
-                string tabs = string.Empty;
-                ItemSetModal modal = new ItemSetModal();
-                DialogResult r = modal.ShowDialog();
+                string tabNewName = NamingTabControl(lastIndex);
 
-
-                if (r == DialogResult.OK)
-                {
-                    tabs = modal.GetResult();
-                }
-
-                if (string.IsNullOrWhiteSpace(tabs))
-                {
-                    MessageBox.Show("Cannot save tab without a name please type again.");
-                    return;
-                }
-
-                var newTabPage = new TabPage(tabs);
+                var newTabPage = new TabPage(tabNewName);
 
                 // Create an instance of your UserControl
                 ItemSetUC myControl = new ItemSetUC
@@ -2934,22 +2942,52 @@ namespace smpc_sales_app.Pages.Sales
         private void tabControl2_MouseDoubleClick(object sender, MouseEventArgs e)
         {
             //D2 ka mag-edit ng tabcontrol name
-            if (e.Button == MouseButtons.Right)
+            //if (e.Button == MouseButtons.Right)
+            //{
+            //    for (int i = 0; i < tabControl2.TabCount; i++)
+            //    {
+            //        // Check if the click coordinates fall within the header area of a tab
+            //        if (tabControl2.GetTabRect(i).Contains(e.Location))
+            //        {
+            //            rightClickedTabIndex = i;
+            //            // Select the tab that was right-clicked (optional, but good UX)
+            //            int selectedIndex = tabControl2.SelectedIndex;
+            //            string tabNewName = NamingTabControl(selectedIndex);
+
+            //            // Renames the tab here
+            //            tabControl2.TabPages[selectedIndex].Text = tabNewName;
+
+            //            tabControl1.SelectedIndex = i;
+
+            //            return;
+            //        }
+            //    }
+            //    rightClickedTabIndex = -1; // No tab was clicked
+            //}
+
+        }
+
+        private string NamingTabControl(int selectedIndex)
+        {
+
+            string tabs = string.Empty;
+            ItemSetModal modal = new ItemSetModal();
+            DialogResult r = modal.ShowDialog();
+
+
+            if (r == DialogResult.OK)
             {
-                for (int i = 0; i < tabControl2.TabCount; i++)
-                {
-                    // Check if the click coordinates fall within the header area of a tab
-                    if (tabControl2.GetTabRect(i).Contains(e.Location))
-                    {
-                        rightClickedTabIndex = i;
-                        // Select the tab that was right-clicked (optional, but good UX)
-                        tabControl1.SelectedIndex = i;
-                        return;
-                    }
-                }
-                rightClickedTabIndex = -1; // No tab was clicked
+                tabs = modal.GetResult();
             }
 
+            if (string.IsNullOrWhiteSpace(tabs))
+            {
+                MessageBox.Show("Empty ");
+                int CountTab = selectedIndex + 1;
+                return "New Project " + CountTab;
+            }
+
+            return tabs;
         }
 
         private void RenameMenuItem_Click(object sender, EventArgs e)
@@ -3921,6 +3959,33 @@ namespace smpc_sales_app.Pages.Sales
                 }
             }
             rtb.Select(0, 0);
+        }
+
+        private void toolStripMenuItemTagRed_Click(object sender, EventArgs e)
+        {
+            int selectedIndex = tabControl2.SelectedIndex;
+            Color currentColor = tabControl2.TabPages[selectedIndex].Tag is Color ? (Color)tabControl2.TabPages[selectedIndex].Tag : Color.White;
+
+            if (currentColor == Color.Red)
+            {
+                tabControl2.TabPages[selectedIndex].Tag = Color.White;
+            }
+            else
+            {
+                tabControl2.TabPages[selectedIndex].Tag = Color.Red;
+            }
+
+            tabControl2.Invalidate();
+        }
+
+        private void toolStripMenuItemRenameTabs_Click(object sender, EventArgs e)
+        {
+            // Select the tab that was right-clicked (optional, but good UX)
+            int selectedIndex = tabControl2.SelectedIndex;
+            string tabNewName = NamingTabControl(selectedIndex);
+
+            // Renames the tab here
+            tabControl2.TabPages[selectedIndex].Text = tabNewName;
         }
     }
 }

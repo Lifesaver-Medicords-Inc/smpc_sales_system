@@ -925,7 +925,7 @@ namespace smpc_sales_system.Pages.Sales
             dataGridViewCellStyle5.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
             dataGridViewCellStyle5.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
             this.dgv_project_items.DefaultCellStyle = dataGridViewCellStyle5;
-            this.dgv_project_items.Location = new System.Drawing.Point(18, 490);
+            this.dgv_project_items.Location = new System.Drawing.Point(17, 490);
             this.dgv_project_items.Name = "dgv_project_items";
             dataGridViewCellStyle6.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
             dataGridViewCellStyle6.BackColor = System.Drawing.SystemColors.Control;
@@ -939,6 +939,7 @@ namespace smpc_sales_system.Pages.Sales
             this.dgv_project_items.TabIndex = 151;
             this.dgv_project_items.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgv_project_items_CellClick);
             this.dgv_project_items.CellEndEdit += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgv_project_items_CellEndEdit);
+            this.dgv_project_items.CellValueChanged += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgv_project_items_CellValueChanged);
             // 
             // project_items_id
             // 
@@ -1013,6 +1014,7 @@ namespace smpc_sales_system.Pages.Sales
             // project_items_images
             // 
             this.project_items_images.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
+            this.project_items_images.DataPropertyName = "project_items_images";
             this.project_items_images.HeaderText = "IMAGES";
             this.project_items_images.Name = "project_items_images";
             this.project_items_images.Width = 60;

@@ -491,17 +491,21 @@ namespace smpc_sales_system.Pages.Sales
 
         public Dictionary<string, dynamic> ProjectComputationLoop()
         {
-            Quotation q = new Quotation();
+            dgv_project_items.EndEdit();
+
+            ComputeByReferenceHierarchy(dgv_project_items);
+            ComputeReferenceNonHierarchy(dgv_project_items);
+
+            Quotation quote = new Quotation();
             decimal gross_sales = 0, vat_amount = 0, net_sales = 0;
             decimal percent_discount = 0;
             decimal net_amount_due = 0, total_amount_due = 0;
-            decimal cash_discount = q.GetCashDiscount();
+            decimal cash_discount = quote.GetCashDiscount();
             const decimal VAT_RATE = 0.12m;
 
             foreach (DataGridViewRow row in this.dgv_project_items.Rows)
             {
-                if (row.Cells[ProjectQuoteDGV.QTY].Value != null &&
-                    row.Cells[ProjectQuoteDGV.LIST_PRICE].Value != null)
+                if (row.Cells[ProjectQuoteDGV.QTY].Value != null && row.Cells[ProjectQuoteDGV.LIST_PRICE].Value != null)
                 {
                     // Calculate gross amount (qty * list price)
                     decimal qty = decimal.TryParse(row.Cells[ProjectQuoteDGV.QTY].Value.ToString(), out decimal parsedQty) ? parsedQty : 0m;
@@ -514,13 +518,15 @@ namespace smpc_sales_system.Pages.Sales
                     // Get net total (after discount)
                     if (row.Cells[ProjectQuoteDGV.NET_TOTAL].Value != null &&
                         !String.IsNullOrEmpty(row.Cells[ProjectQuoteDGV.NET_TOTAL].Value.ToString()))
-                    {
+                    {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   
 
                         decimal netTotal = decimal.Parse(Helpers.GetCleanedPriceValue(row.Cells[ProjectQuoteDGV.NET_TOTAL].Value.ToString()));
                         net_sales += netTotal;
                     }
                 }
             }
+
+            Console.WriteLine("ProjectComputationLoop - net sales: " + net_sales);
 
             // Calculate percent discount
             if (gross_sales != 0)
@@ -531,7 +537,7 @@ namespace smpc_sales_system.Pages.Sales
             vat_amount = net_sales * VAT_RATE;
 
             // Calculate net amount due (subtract cash discount)
-            net_amount_due = net_sales - cash_discount;
+            net_amount_due = net_sales - cash_discount; 
 
             // Calculate total amount due (net amount + VAT)
             total_amount_due = net_amount_due + vat_amount;
@@ -546,6 +552,8 @@ namespace smpc_sales_system.Pages.Sales
             data.Add("net_amount_due", Helpers.MoneyFormatDecimal(net_amount_due));
             data.Add("total_amount_due", Helpers.MoneyFormatDecimal(total_amount_due));
             return data;
+
+            //dgv_project_items.EndEdit();
         }
 
 
@@ -554,7 +562,6 @@ namespace smpc_sales_system.Pages.Sales
         //
         public void SetAdvancedPanelData(DataTable dt)
         {
-
             Panel[] pnls = { pnl_advanced_conditions };
             Helpers.BindControls(pnls, dt);
         }
@@ -869,11 +876,11 @@ namespace smpc_sales_system.Pages.Sales
             {
                 if (row.IsNewRow) continue;
 
-                if (row.Cells["project_items_components"].Value == null)
+                if (row.Cells["project_items_components"].Value == null || row.Cells["project_items_qty"].Value.ToString() == null || row.Cells["project_items_qty"].Value.ToString() == "")
                 {
                     return;
                 }
-
+                 
                 if (row.Cells["project_items_components"].Value.ToString().ToLower() == "pump")
                 {
                     Pump_Total_Qty += int.Parse(row.Cells["project_items_qty"].Value.ToString());
@@ -881,10 +888,12 @@ namespace smpc_sales_system.Pages.Sales
             }
 
             //ECB To Controller Value AMP REQ.
-            dgv_wiring.Rows[0].Cells["project_wiring_amp_req"].Value = fla_highest * Pump_Total_Qty * 1.25m;
+
+            if (checkBox_Wiring.Checked)
+                dgv_wiring.Rows[0].Cells["project_wiring_wire_amp"].Value = fla_highest * Pump_Total_Qty * 1.25m;
 
         }
-
+         
         public DataGridView DgvProjectItems
         {
             get { return this.dgv_project_items; }
@@ -968,7 +977,7 @@ namespace smpc_sales_system.Pages.Sales
         public DataTable BomDetails { get; set; } = new DataTable();
 
         // for wiring soon
-        private async void ItemSetUC_Load(object sender, EventArgs e)
+        private async void ItemSetUC_Load(object sender, EventArgs e) 
         {
 
             stockQuickDataTable = Helpers.GetDataTableFromUnboundGrid(dgv_project_items);
@@ -987,7 +996,7 @@ namespace smpc_sales_system.Pages.Sales
             // --- ADD initial 0/default row ---
             DataRow defaultRow = listOfTemplates.NewRow();
             defaultRow["template_id"] = 0; // or DBNull.Value
-            defaultRow["template_name"] = "-- Select Template --";
+            defaultRow["template_name"] = "-- No Template --";
             listOfTemplates.Rows.InsertAt(defaultRow, 0); // Insert at index 0
 
             cb_template_project.DataSource = listOfTemplates;
@@ -1021,6 +1030,7 @@ namespace smpc_sales_system.Pages.Sales
         }
 
         bool isLoadingTemplate = false;
+        int LastRefInt = 0;
 
         private async void cb_template_project_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -1028,6 +1038,8 @@ namespace smpc_sales_system.Pages.Sales
             if (isLoadingTemplate)
                 return;
 
+            string lastRef = "";
+            
             try
             {
                 isLoadingTemplate = true;
@@ -1055,7 +1067,7 @@ namespace smpc_sales_system.Pages.Sales
 
                 DataTable dataSource = dgv_project_items.DataSource as DataTable;
 
-                string lastRef = "";
+
 
                 // Stack for hierarchical numbering
                 List<int> levelCounters = new List<int>();
@@ -1091,18 +1103,19 @@ namespace smpc_sales_system.Pages.Sales
 
                     lastRef = refCode.Split('.')[0];
                 }
-
-                int LastRefInt = 0;
-
+            }
+            finally
+            {
                 if (lastRef != "")
                     LastRefInt = int.Parse(lastRef);
                 else
                     LastRefInt = 0;
 
-                AddWiringRowsComponent(LastRefInt);
-            }
-            finally
-            {
+                if (checkBox_Wiring.Checked)
+                {
+                    AddWiringRowsComponent(LastRefInt);
+                }
+
                 isLoadingTemplate = false;
             }
 
@@ -1152,6 +1165,21 @@ namespace smpc_sales_system.Pages.Sales
             dataSource.Rows.Add(newRow4);
         }
 
+        private void RemoveWiringRowsComponentByBaseReference()
+        {
+            DataTable dataSource = dgv_project_items.DataSource as DataTable;
+            if (dataSource == null)
+                return;
+
+            var rowsToRemove = dataSource.AsEnumerable()
+                .Where(r =>
+                    r.Field<string>("template_id") == "wiring")
+                .ToList();
+
+            foreach (DataRow row in rowsToRemove)
+                dataSource.Rows.Remove(row);
+        }
+
         private void textBox64_MouseClick(object sender, MouseEventArgs e)
         {
 
@@ -1199,18 +1227,32 @@ namespace smpc_sales_system.Pages.Sales
 
             }
 
-            ComputeByReferenceHierarchy();
+            //ComputeByReferenceHierarchy(dgv_project_items);
+            //ComputeReferenceNonHierarchy(dgv_project_items);
+            ProjectComputationLoop();
         }
 
         private void AddModel(DataGridView dgv, int rowIndex, bool isBom, int BomId, int ItemId, string referenceCode, int templateId = 0)
         {
             decimal unitPrice = 0.00m;
+            int Qty = 0; 
 
             if (rowIndex >= 0)
             {
                 DataGridViewRow DataGridRow = dgv.Rows[rowIndex];
 
-                unitPrice = decimal.Parse(DataGridRow.Cells["project_items_unit_price"].Value?.ToString());
+                var cellValue = DataGridRow.Cells["project_items_unit_price"].Value;
+                var cellQty = DataGridRow.Cells["project_items_qty"].Value;
+
+                if (cellValue != null && decimal.TryParse(cellValue.ToString(), out decimal parsedValue))
+                {
+                    unitPrice = parsedValue;
+                }
+
+                if (cellQty != null && int.TryParse(cellQty.ToString(), out int parsedQty))
+                {
+                    Qty = parsedQty;
+                }
             }
 
             DeleteRowsByReferenceCode(rowIndex, dgv);
@@ -1232,6 +1274,7 @@ namespace smpc_sales_system.Pages.Sales
             projectItem["model"] = row["item_model"];
             projectItem["template_id"] = templateId;
             projectItem["unit_price"] = unitPrice;
+            projectItem["qty"] = Qty;
 
             dataSource.Rows.InsertAt(projectItem, rowIndex);
         }
@@ -1545,129 +1588,6 @@ namespace smpc_sales_system.Pages.Sales
 
             return (tempBOM, totalCost);
         }
-
-        //private (DataTable tempTable, decimal subTotal) GetRecursiveBOM(int rowIndex, int itemId, DataTable tempBOM, DataTable templateSelected, string parentReference, int BomId, int itemIdTemplate, int level = 1, int parentItemId = 0)
-        //{
-        //    // Get parent rom
-        //    var parent = BomHead.AsEnumerable()
-        //            .SingleOrDefault(r => r.Field<int>("id") == BomId);
-
-        //    if (parent == null)
-        //        return (tempBOM, 0);
-            
-        //    string ParentReferenceCode = templateSelected.AsEnumerable()
-        //                        .Where(r => r.Field<int>("item_id") == itemIdTemplate
-        //                            && r.Field<int>("level") == level)
-        //                        .Select(r => r.Field<string>("reference_code"))
-        //                        .FirstOrDefault();
-
-        //    decimal ParentPrice = parent.Field<decimal>("production_cost");
-        //    decimal laborCost = parent.Field<int>("man_days") * parent.Field<decimal>("labor_rate");
-        //    decimal totalCost = laborCost;
-
-        //    //Add parent to tempBOM
-        //    tempBOM.Rows.Add(
-        //        parent.Field<int>("item_id"),
-        //        parent.Field<string>("general_name").Trim(),
-        //        level,
-        //        parentItemId,
-        //        ParentReferenceCode,
-        //        parent.Field<string>("item_model").Trim(),
-        //        parent.Field<int>("production_qty"),
-        //        parent.Field<int>("man_days"),
-        //        parent.Field<decimal>("labor_rate"),
-        //        ParentPrice
-        //        );
-
-        //    // Get children rows
-        //    var children = BomDetails.AsEnumerable()
-        //        .Where(r => r.Field<int>("item_bom_id") == parent.Field<int>("id"))
-        //        .ToList();
-
-        //    if (ParentReferenceCode == null || ParentReferenceCode == "")
-        //        return (tempBOM, 0);
-
-        //    int nextLevel = level + 1;
-
-        //    int nextRowIndex = rowIndex + 1;
-
-        //    foreach (var row in children)
-        //    {
-
-        //        int childId = row.Field<int>("item_id");
-
-        //        var subParent = BomHead.AsEnumerable()
-        //            .SingleOrDefault(r => r.Field<int>("item_id") == childId);
-
-        //        string ChildModel = ItemList.AsEnumerable()
-        //                               .Where(r => r.Field<int>("id") == childId)
-        //                               .Select(r => r.Field<string>("item_model"))
-        //                               .FirstOrDefault();
-
-        //        if (subParent != null)
-        //        {
-        //            int subBomId = subParent["id"] != DBNull.Value ? subParent.Field<int>("id") : 0;
-        //            var result = GetRecursiveBOM(nextRowIndex, childId, tempBOM, templateSelected, parentReference, subBomId, childId, nextLevel, parent.Field<int>("id"));
-
-        //            totalCost += result.subTotal;
-        //        }
-        //        else
-        //        {
-        //            decimal lineTotal = decimal.Parse(row.Field<string>("unit_price").Trim()) * row.Field<int>("bom_qty");
-        //            totalCost += lineTotal;
-
-        //            // Add leaf to tempBOM
-        //            tempBOM.Rows.Add(
-        //                row.Field<int>("item_id"),
-        //                row.Field<string>("item_name").Trim(),
-        //                nextLevel, 
-        //                parent.Field<int>("id"),
-        //                IncrementReferenceCode(ParentReferenceCode),
-        //                ChildModel,
-        //                row.Field<int>("bom_qty"),
-        //                0,
-        //                0,
-        //                decimal.Parse(row.Field<string>("unit_price").Trim())
-        //                );
-        //        } 
-        //    }
-
-        //    DataTable TemplateChild = null;
-
-        //    if (templateSelected.Rows.Count > 1)
-        //    {
-
-        //        TemplateChild = templateSelected.AsEnumerable()
-        //             .Where(r => r.Field<string>("reference_code").ToString().StartsWith(ParentReferenceCode)
-        //             && r.Field<int>("level") == nextLevel)
-        //            .CopyToDataTable();
-
-        //        //Already added the TemplateChild here
-        //        foreach (DataRow row in TemplateChild.Rows)
-        //        {
-
-        //            if (!children.AsEnumerable().Any(r => r.Field<string>("item_name").Trim() == row.Field<string>("item_name").Trim()))
-        //            {
-        //                tempBOM.Rows.Add(
-        //                       row.Field<int>("item_id"),
-        //                       row.Field<string>("item_name").Trim(),
-        //                       nextLevel,
-        //                       parent.Field<int>("id"),
-        //                       row.Field<string>("reference_code"),
-        //                       ""
-        //                       );
-        //            }
-        //        }
-
-        //    }
-
-        //    // Update the parent unit_price to total of all its descendants
-        //    //1.186 is for 18% VAT
-        //    decimal TotalCostWithMarkup = decimal.Parse(totalCost.ToString()) * 1.186m;
-        //    tempBOM.Rows[rowIndex]["unit_price"] = TotalCostWithMarkup.ToString();
-        //    return (tempBOM, totalCost);
-        //}
-
         public static string IncrementReferenceCode(string referenceCode)
         {
             if (string.IsNullOrWhiteSpace(referenceCode))
@@ -1748,10 +1668,14 @@ namespace smpc_sales_system.Pages.Sales
         private void dgv_project_items_CellEndEdit(object sender, DataGridViewCellEventArgs e)
         {
             //ComputeProjectDgv(e);
-            //CellEdited?.Invoke(this, EventArgs.Empty);
-            //ItemChanged?.Invoke(this, EventArgs.Empty);
-            ComputeByReferenceHierarchy();
+            CellEdited?.Invoke(this, EventArgs.Empty);
+            ItemChanged?.Invoke(this, EventArgs.Empty);
+            //ComputeByReferenceHierarchy(dgv_project_items);
+            //ComputeReferenceNonHierarchy(dgv_project_items);
+            dgv_project_items.CommitEdit(DataGridViewDataErrorContexts.Commit);
+            dgv_project_items.EndEdit();
         }
+
 
         //bool isInsertControllerToMotor = false;
         DataTable wiringTable = new DataTable();
@@ -1816,7 +1740,13 @@ namespace smpc_sales_system.Pages.Sales
 
             if (wiringTable == null || wiringTable.Rows.Count == 0)
             {
-                MessageBox.Show("Wiring table is empty");
+                MessageBox.Show("Wiring table is empty"); 
+                return;
+            }
+
+            if (txt_FLA.Text == "" && txt_VOLT.Text == "")
+            {
+                MessageBox.Show("FLA and voltage are required here. It’s possible that the final values have not been set.");
                 return;
             }
 
@@ -1869,9 +1799,9 @@ namespace smpc_sales_system.Pages.Sales
 
         private void ComputeWiringDGV(DataGridViewCellEventArgs e)
         {
-            try
-            {
-                var noOfWiresCell = dgv_wiring.Rows[e.RowIndex].Cells["project_wiring_num_of_wires_set"].Value;
+            //try
+            //{
+                var noOfWiresCell = dgv_wiring.Rows[e.RowIndex].Cells["project_wiring_num_of_wiring_set"].Value;
                 var noOfQtyCell = dgv_wiring.Rows[e.RowIndex].Cells["project_wiring_num_of_wiring_set"].Value;
                 var distanceTravelledCell = dgv_wiring.Rows[e.RowIndex].Cells["project_wiring_distance_travelled"].Value;
                 var allowanceWireSetCell = dgv_wiring.Rows[e.RowIndex].Cells["project_wiring_allowance"].Value;
@@ -1907,11 +1837,63 @@ namespace smpc_sales_system.Pages.Sales
                 decimal totalCost = (decimal)totalQty * (decimal)costs;
                 dgv_wiring.Rows[e.RowIndex].Cells["project_wiring_total_cost"].Value = totalCost.ToString();
 
-            }
-            catch (Exception ex)
+            //}
+            //catch (Exception ex)
+            //{
+            //    MessageBox.Show("Error [Compute Wiring]: " + ex.Message);
+            //}
+            ComputeWiringToProjectItem();
+        }
+
+        private void ComputeWiringToProjectItem()
+        {
+            double TotalECG = 0, TotalMotor = 0;
+
+            for (int i = 0; i < 4; i++)
+                TotalECG += GetRowValue(i);
+
+            for (int i = 4; i < 8; i++)
+                TotalMotor += GetRowValue(i);
+
+            var RowIndexCTLMotor = dgv_project_items.Rows
+                .Cast<DataGridViewRow>()
+                .Where(r => !r.IsNewRow)
+                .FirstOrDefault(r =>
+                    r.Cells["project_items_components"].Value?.ToString().Trim() == "CTL-MOTOR"
+                )?.Index ?? -1;
+
+
+            var RowIndexCTLECB = dgv_project_items.Rows
+                .Cast<DataGridViewRow>()
+                .Where(r => !r.IsNewRow)
+                .FirstOrDefault(r =>
+                    r.Cells["project_items_components"].Value?.ToString().Trim() == "CTL-ECB"
+                )?.Index ?? -1;
+
+
+            if (RowIndexCTLECB != -1)
             {
-                MessageBox.Show("Error [Compute Wiring]: " + ex.Message);
+                dgv_project_items.Rows[RowIndexCTLECB].Cells["project_items_unit_price"].Value = TotalECG;
             }
+
+            if (RowIndexCTLMotor != -1)
+            {
+                dgv_project_items.Rows[RowIndexCTLMotor].Cells["project_items_unit_price"].Value = TotalMotor;
+            }
+
+        }
+
+        double GetRowValue(int rowIndex)
+        {
+            if (rowIndex >= dgv_wiring.Rows.Count) return 0;
+
+            var value = dgv_wiring.Rows[rowIndex]
+                .Cells["project_wiring_total_cost"]
+                .Value;
+
+            return double.TryParse(value?.ToString(), out var result)
+                ? result
+                : 0;
         }
 
         private void dgv_wiring_CellEndEdit(object sender, DataGridViewCellEventArgs e)
@@ -1950,6 +1932,11 @@ namespace smpc_sales_system.Pages.Sales
         private void checkBox_Wiring_CheckedChanged(object sender, EventArgs e)
         {
             WiringVisible(checkBox_Wiring.Checked);
+
+            if (checkBox_Wiring.Checked)
+                AddWiringRowsComponent(LastRefInt);
+            else
+                RemoveWiringRowsComponentByBaseReference();
         }
          
         private void WiringVisible(bool checkBox)
@@ -1973,15 +1960,15 @@ namespace smpc_sales_system.Pages.Sales
             FinalTxtBoxClicked?.Invoke(this, EventArgs.Empty);
         }
 
-        private void ComputeByReferenceHierarchy()
+        private void ComputeByReferenceHierarchy(DataGridView dgv)
         {
 
-            DataTable dataSourceQuickQuote = dgv_project_items.DataSource as DataTable;
+            DataTable dt = dgv.DataSource as DataTable;
 
-            if (dataSourceQuickQuote == null) return;
+            if (dt == null || dgv == null) return;
 
-            var parentReferenceCodes = dataSourceQuickQuote.AsEnumerable()
-                .Select(row => GetParentReferenceCode(dataSourceQuickQuote, row.Field<string>("reference_code")))
+            var parentReferenceCodes = dt.AsEnumerable()
+                .Select(row => GetParentReferenceCode(dt, row.Field<string>("reference_code")))
                 .Where(parentCode => !string.IsNullOrEmpty(parentCode))
                 .Distinct()
                 .ToList();
@@ -1989,21 +1976,91 @@ namespace smpc_sales_system.Pages.Sales
             foreach (var parentReferenceCode in parentReferenceCodes)
             {
                 // Calculate the total unit_price for the given parent and its descendants
-                decimal totalUnitPrice = GetTotalUnitPriceForChildren(dataSourceQuickQuote, parentReferenceCode);
+                decimal totalUnitPrice = GetTotalUnitPriceForChildren(dt, parentReferenceCode);
 
                 // Output the total unit_price for this parent reference_code
-                Console.WriteLine($"Total unit_price for children of '{parentReferenceCode}' and its descendants: {totalUnitPrice:C}");
+                //Console.WriteLine($"Total unit_price for children of '{parentReferenceCode}' and its descendants: {totalUnitPrice.ToString():C}");
 
                 // Update the DataGridView cell for the parent reference_code
-                foreach (DataGridViewRow row in dgv_project_items.Rows)
+                foreach (DataGridViewRow row in dgv.Rows)
                 {
                     if (row.Cells["reference_code"].Value?.ToString() == parentReferenceCode)
                     {
-                        row.Cells["project_items_unit_price"].Value = totalUnitPrice.ToString();//Helpers.FormatAsCurrency(totalUnitPrice.ToString());
+                        row.Cells["project_items_unit_price"].Value = totalUnitPrice;
                         break;
-
+                         
                     }
                 }
+            }
+        }
+
+        private void ComputeReferenceNonHierarchy(DataGridView dgv)
+        {
+
+            foreach (DataGridViewRow row in dgv.Rows)  
+            {
+                if (row.IsNewRow) continue;
+
+                var referenceCode = row.Cells["reference_code"].Value?.ToString();
+                if (string.IsNullOrWhiteSpace(referenceCode) || referenceCode.Contains("."))
+                    continue;
+
+                if (row.Cells["project_items_qty"].Value == null || string.IsNullOrEmpty(row.Cells["project_items_qty"].Value.ToString()) ||
+                    row.Cells["project_items_unit_price"].Value == null || string.IsNullOrEmpty(row.Cells["project_items_unit_price"].Value.ToString()))
+                    continue;
+
+                decimal unitPrice = Convert.ToDecimal(Helpers.GetCleanedPriceValue(row.Cells["project_items_unit_price"].Value.ToString()));
+                decimal discount = CalculateDiscountMultiplier(row.Cells["project_items_multiplier"].Value?.ToString());
+                decimal qty = Convert.ToDecimal(row.Cells["project_items_qty"].Value);
+                decimal TotalUnitPrice = unitPrice * qty;
+                decimal discounted = TotalUnitPrice * discount;
+                decimal netDiscount = discounted - TotalUnitPrice;
+                decimal netTotal = TotalUnitPrice;
+
+                row.Cells["project_items_line_total"].Value = discounted;
+            }
+        }
+
+        public static decimal CalculateDiscountMultiplier(string discountString)
+        {
+            if (string.IsNullOrWhiteSpace(discountString))
+                return 1m;
+
+            try
+            {
+                // Replace all spaces for safety
+                discountString = discountString.Replace(" ", "");
+
+                // Split by '*' while keeping '/' info
+                var parts = discountString.Split(new[] { '*' }, StringSplitOptions.RemoveEmptyEntries);
+
+                decimal result = 1m;
+
+                foreach (var part in parts)
+                {
+                    if (part.StartsWith("/"))
+                    {
+                        // Handle division case like "/.7"
+                        var value = decimal.Parse(part.Substring(1));
+                        result *= (1m / value);
+                    }
+                    else if (part.Contains('/'))
+                    {
+                        MessageBox.Show("Invalid discount format. Division should be at the start of the part.");
+                    }
+                    else
+                    {
+                        // Normal multiplier
+                        var value = decimal.Parse(part);
+                        result *= value;
+                    }
+                }
+
+                return result;
+            }
+            catch
+            {
+                throw new ArgumentException("Invalid discount string format.");
             }
         }
 
@@ -2048,6 +2105,13 @@ namespace smpc_sales_system.Pages.Sales
                 })
                 .ToList();
 
+            //var children = dt.AsEnumerable()
+            //.Where(r =>
+            //     r.Field<string>("reference_code") is string code &&
+            //    code.StartsWith(parentReferenceCode + ".") &&
+            //    code.Count(c => c == '.') == parentReferenceCode.Count(c => c == '.') + 1)
+            //.ToList();  
+
             // If no children found, return 0
             if (!children.Any())
                 return 0;
@@ -2061,7 +2125,7 @@ namespace smpc_sales_system.Pages.Sales
 
                 totalLaborCost = laborRate * manDays;
 
-                Console.WriteLine($"Adding labor cost for parent '{parentReferenceCode}': {manDays} * {laborRate} = {totalLaborCost:C}");
+                //Console.WriteLine($"Adding labor cost for parent '{parentReferenceCode}': {manDays} * {laborRate} = {totalLaborCost:C}");
             }
 
             decimal AllChildTotal = 0;
@@ -2072,9 +2136,9 @@ namespace smpc_sales_system.Pages.Sales
                 string childReferenceCode = child.Field<string>("reference_code");
 
                 // Recursively find the total for this child's descendants
-                decimal ChildTotal = GetTotalUnitPriceForChildren(dt, childReferenceCode);
-                AllChildTotal = ChildTotal;
-                Console.WriteLine($"Adding total from child '{childReferenceCode}': 'Child Total:' {ChildTotal}': 'Total Amount:' {AllChildTotal:C}");
+                decimal ChildTotal =  GetTotalUnitPriceForChildren(dt, childReferenceCode);
+                AllChildTotal += ChildTotal;
+                //Console.WriteLine($"Adding total from child '{childReferenceCode}': 'Child Total:' {ChildTotal}': 'Total Amount:' {AllChildTotal:C}");
             }
 
             // Sum the unit_price for the current direct children
@@ -2084,7 +2148,7 @@ namespace smpc_sales_system.Pages.Sales
                 string qty = Helpers.GetCleanedPriceValue(row["qty"]?.ToString());
                 decimal NewUnitPrice = (decimal.TryParse(value, out decimal parsed) ? parsed : 0) * (decimal.TryParse(qty, out decimal qtyParsed) ? qtyParsed : 0);
 
-                Console.WriteLine($"sum all the child  unit_price for '{row.Field<string>("reference_code")} ': {value} ' * ' {qty} ' = ' {NewUnitPrice:C}");
+                //Console.WriteLine($"sum all the child  unit_price for '{row.Field<string>("reference_code")} ': {value} ' * ' {qty} ' = ' {NewUnitPrice:C}");
 
                 return NewUnitPrice;
             });
@@ -2095,5 +2159,11 @@ namespace smpc_sales_system.Pages.Sales
             return TotalAmount;
         }
 
+        private void dgv_project_items_CellValueChanged(object sender, DataGridViewCellEventArgs e)
+        {
+            //ComputeByReferenceHierarchy(dgv_project_items);
+            //ComputeReferenceNonHierarchy(dgv_project_items);
+            //ProjectComputationLoop();
+        }
     }
 }
