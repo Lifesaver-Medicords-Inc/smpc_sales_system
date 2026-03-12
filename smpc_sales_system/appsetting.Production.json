@@ -1,0 +1,6 @@
+{
+  "AppSettings": {
+    "ApiBaseUrl": "https://disordered-wilhelmina-nondetrimentally.ngrok-free.dev/api",
+    "EnableLogging": true
+  }
+}

@@ -20,7 +20,7 @@ namespace smpc_sales_app.Data
         public static DataTable Orders { get; set; } = new DataTable();
 
         public static String SessionToken { get; set; } = "";
-        public static CurrentUserModel CurrentUser { get; set; } = null;
+        public static smpc_inventory_app.Model.CurrentUserModel CurrentUser { get; set; }
 
 
 

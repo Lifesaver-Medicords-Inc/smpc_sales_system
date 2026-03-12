@@ -1,5 +1,6 @@
 using Newtonsoft.Json;
 using smpc_sales_app.Data;
+using smpc_sales_system;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -16,15 +17,11 @@ namespace smpc_sales_app.Services.Helpers
     //static string baseUrl = "http://127.0.0.1:3000/api";
     internal class RequestToApi<T> where T : class
     {
-        //DEV ENV
-        static string baseUrl = "http://127.0.0.1:3000/api";
-        //PROD ENV
-        //static string baseUrl = "http://52.76.70.203:8000/api";
-        //static string baseUrl = "https://b088-2001-4451-83a9-cd00-d35-514e-7116-c76a.ngrok-free.app/api";
-        static Uri baseUri = new Uri(baseUrl);
-        // Create a CookieContainer to store cookies
+        static string baseUrl => Program.ApiBaseUrl ?? "http://127.0.0.1:3000/api";
+
+        
         static CookieContainer cookieContainer = new CookieContainer();
-       
+
         static private async Task<T> SendRequestAsync(string url, HttpMethod method, string body = null)
         {
             // Create an HttpClientHandler and assign the CookieContainer to it

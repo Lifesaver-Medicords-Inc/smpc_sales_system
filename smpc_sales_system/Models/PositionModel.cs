@@ -1,4 +1,5 @@
-﻿using System;
+﻿using smpc_inventory_app.Model;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;

@@ -1,4 +1,4 @@
-using smpc_app.Services.Helpers;
+﻿using smpc_app.Services.Helpers;
 using smpc_inventory_app.Services.Setup.Item;
 using smpc_sales_app.Data;
 using smpc_sales_app.Services.Sales;
@@ -58,24 +58,20 @@ namespace smpc_sales_app.Pages
                 var data = Helpers.GetControlsValues(pnl_auth);
                 data.Add("motherboard_serial_no", Helpers.GetSerialNumber());
                 data.Add("machine_name", Environment.MachineName);
+
                 var currentUser = await AuthServices.Login(data);
-                
-                //var currentUserInventory = await smpc_inventory_app.Services.Auth.AuthServices.Login(data);
 
-
-                 if (currentUser.Success)
+                if (currentUser != null && currentUser.Success)
                 {
-                    CacheData.CurrentUser = currentUser.Data;
+                    smpc_sales_app.Data.CacheData.CurrentUser = currentUser.Data;
+                    smpc_inventory_app.Data.CacheData.CurrentUser = currentUser.Data; // now same type, no mapping needed
 
-                    smpc_inventory_app.Pages.Login login = new smpc_inventory_app.Pages.Login();
-                    login.LoginFromSales(data);
                     CacheData.PaymentTerms = await PaymentTermsServices.GetAsDatatable();
                     CacheData.ApplicationSetup = await ApplicationService.GetAsDatatable();
                     CacheData.UoM = await UnitOfMeasurementServices.GetAsDatatable();
                     CacheData.ShipTypeSetup = await ShipService.GetAsDatatable();
+
                     this.DialogResult = DialogResult.OK;
-                    string department = "sales";
-                    string endpoint = $"/ api / ws / setup / test ? department={department}";
                 }
                 else
                 {

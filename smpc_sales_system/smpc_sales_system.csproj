@@ -14,6 +14,22 @@
     <Deterministic>true</Deterministic>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <PublishUrl>D:\LEM\Publish\Sales\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>5</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <PublishWizardCompleted>true</PublishWizardCompleted>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -34,7 +50,76 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <ManifestCertificateThumbprint>2EFCE3BF873D30F65F860EDB3F01743E30888C13</ManifestCertificateThumbprint>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ManifestKeyFile>smpc_sales_system_TemporaryKey.pfx</ManifestKeyFile>
+  </PropertyGroup>
+  <PropertyGroup>
+    <GenerateManifests>true</GenerateManifests>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignManifests>true</SignManifests>
+  </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.Bcl.AsyncInterfaces, Version=10.0.0.4, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Bcl.AsyncInterfaces.10.0.4\lib\net462\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.Configuration, Version=10.0.0.4, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.Configuration.10.0.4\lib\net462\Microsoft.Extensions.Configuration.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.Configuration.Abstractions, Version=10.0.0.4, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.Configuration.Abstractions.10.0.4\lib\net462\Microsoft.Extensions.Configuration.Abstractions.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.Configuration.Binder, Version=10.0.0.4, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.Configuration.Binder.10.0.4\lib\net462\Microsoft.Extensions.Configuration.Binder.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.Configuration.EnvironmentVariables, Version=10.0.0.4, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.Configuration.EnvironmentVariables.10.0.4\lib\net462\Microsoft.Extensions.Configuration.EnvironmentVariables.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.Configuration.FileExtensions, Version=10.0.0.4, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.Configuration.FileExtensions.10.0.4\lib\net462\Microsoft.Extensions.Configuration.FileExtensions.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.Configuration.Json, Version=10.0.0.4, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.Configuration.Json.10.0.4\lib\net462\Microsoft.Extensions.Configuration.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.Configuration.UserSecrets, Version=10.0.0.4, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.Configuration.UserSecrets.10.0.4\lib\net462\Microsoft.Extensions.Configuration.UserSecrets.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.DependencyInjection, Version=10.0.0.4, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.DependencyInjection.10.0.4\lib\net462\Microsoft.Extensions.DependencyInjection.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions, Version=10.0.0.4, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.DependencyInjection.Abstractions.10.0.4\lib\net462\Microsoft.Extensions.DependencyInjection.Abstractions.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.FileProviders.Abstractions, Version=10.0.0.4, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.FileProviders.Abstractions.10.0.4\lib\net462\Microsoft.Extensions.FileProviders.Abstractions.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.FileProviders.Physical, Version=10.0.0.4, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.FileProviders.Physical.10.0.4\lib\net462\Microsoft.Extensions.FileProviders.Physical.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.FileSystemGlobbing, Version=10.0.0.4, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.FileSystemGlobbing.10.0.4\lib\net462\Microsoft.Extensions.FileSystemGlobbing.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.Logging, Version=10.0.0.4, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.Logging.10.0.4\lib\net462\Microsoft.Extensions.Logging.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.Logging.Abstractions, Version=10.0.0.4, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.Logging.Abstractions.10.0.4\lib\net462\Microsoft.Extensions.Logging.Abstractions.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.Logging.Configuration, Version=10.0.0.4, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.Logging.Configuration.10.0.4\lib\net462\Microsoft.Extensions.Logging.Configuration.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.Options, Version=10.0.0.4, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.Options.10.0.4\lib\net462\Microsoft.Extensions.Options.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.Options.ConfigurationExtensions, Version=10.0.0.4, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.Options.ConfigurationExtensions.10.0.4\lib\net462\Microsoft.Extensions.Options.ConfigurationExtensions.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.Primitives, Version=10.0.0.4, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.Primitives.10.0.4\lib\net462\Microsoft.Extensions.Primitives.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.ReportViewer.Common, Version=15.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.ReportingServices.ReportViewerControl.Winforms.150.1652.0\lib\net40\Microsoft.ReportViewer.Common.dll</HintPath>
     </Reference>
@@ -60,37 +145,59 @@
     <Reference Include="Serilog, Version=4.3.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
       <HintPath>..\packages\Serilog.4.3.0\lib\net471\Serilog.dll</HintPath>
     </Reference>
-    <Reference Include="smpc_inventory_app, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\smpc_inventory_system\smpc_inventory_app\bin\Debug\smpc_inventory_app.exe</HintPath>
+    <Reference Include="Serilog.Sinks.Console, Version=6.1.1.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
+      <HintPath>..\packages\Serilog.Sinks.Console.6.1.1\lib\net471\Serilog.Sinks.Console.dll</HintPath>
+    </Reference>
+    <Reference Include="Serilog.Sinks.Debug, Version=3.0.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
+      <HintPath>..\packages\Serilog.Sinks.Debug.3.0.0\lib\net471\Serilog.Sinks.Debug.dll</HintPath>
+    </Reference>
+    <Reference Include="Serilog.Sinks.File, Version=7.0.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
+      <HintPath>..\packages\Serilog.Sinks.File.7.0.0\lib\net471\Serilog.Sinks.File.dll</HintPath>
+    </Reference>
+    <Reference Include="smpc_inventory_app">
+      <HintPath>..\..\Inventory\smpc_inventory_app\bin\Debug\smpc_inventory_app.exe</HintPath>
     </Reference>
     <Reference Include="System" />
-    <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Buffers.4.5.1\lib\net461\System.Buffers.dll</HintPath>
+    <Reference Include="System.Buffers, Version=4.0.5.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Buffers.4.6.1\lib\net462\System.Buffers.dll</HintPath>
     </Reference>
     <Reference Include="System.CodeDom, Version=9.0.0.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.CodeDom.9.0.1\lib\net462\System.CodeDom.dll</HintPath>
     </Reference>
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Configuration.ConfigurationManager, Version=10.0.0.4, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Configuration.ConfigurationManager.10.0.4\lib\net462\System.Configuration.ConfigurationManager.dll</HintPath>
+    </Reference>
     <Reference Include="System.Core" />
-    <Reference Include="System.Diagnostics.DiagnosticSource, Version=8.0.0.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Diagnostics.DiagnosticSource.8.0.1\lib\net462\System.Diagnostics.DiagnosticSource.dll</HintPath>
+    <Reference Include="System.Diagnostics.DiagnosticSource, Version=10.0.0.4, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Diagnostics.DiagnosticSource.10.0.4\lib\net462\System.Diagnostics.DiagnosticSource.dll</HintPath>
+    </Reference>
+    <Reference Include="System.IO.Pipelines, Version=10.0.0.4, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.IO.Pipelines.10.0.4\lib\net462\System.IO.Pipelines.dll</HintPath>
     </Reference>
     <Reference Include="System.Management" />
-    <Reference Include="System.Memory, Version=4.0.1.2, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Memory.4.5.5\lib\net461\System.Memory.dll</HintPath>
+    <Reference Include="System.Memory, Version=4.0.5.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Memory.4.6.3\lib\net462\System.Memory.dll</HintPath>
     </Reference>
     <Reference Include="System.Numerics" />
-    <Reference Include="System.Numerics.Vectors, Version=4.1.4.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Numerics.Vectors.4.5.0\lib\net46\System.Numerics.Vectors.dll</HintPath>
+    <Reference Include="System.Numerics.Vectors, Version=4.1.6.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Numerics.Vectors.4.6.1\lib\net462\System.Numerics.Vectors.dll</HintPath>
     </Reference>
-    <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.6.0.0\lib\net461\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
+    <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=6.0.3.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.6.1.2\lib\net462\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Text.Encodings.Web, Version=10.0.0.4, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Text.Encodings.Web.10.0.4\lib\net462\System.Text.Encodings.Web.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Text.Json, Version=10.0.0.4, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Text.Json.10.0.4\lib\net462\System.Text.Json.dll</HintPath>
     </Reference>
     <Reference Include="System.Threading.Channels, Version=8.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Threading.Channels.8.0.0\lib\net462\System.Threading.Channels.dll</HintPath>
     </Reference>
-    <Reference Include="System.Threading.Tasks.Extensions, Version=4.2.0.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Threading.Tasks.Extensions.4.5.4\lib\net461\System.Threading.Tasks.Extensions.dll</HintPath>
+    <Reference Include="System.Threading.Tasks.Extensions, Version=4.2.4.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Threading.Tasks.Extensions.4.6.3\lib\net462\System.Threading.Tasks.Extensions.dll</HintPath>
     </Reference>
     <Reference Include="System.Windows.Forms.DataVisualization" />
     <Reference Include="System.Xml.Linq" />
@@ -107,6 +214,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Config\LoggerConfig.cs" />
     <Compile Include="Data\CacheData.cs" />
     <Compile Include="Data\ITEM_DATA.cs" />
     <Compile Include="Data\STATIC_ENTITY_TYPE.cs" />
@@ -118,7 +226,6 @@
     <Compile Include="Data\STATIC_WARRANTY.cs" />
     <Compile Include="Models\ApplicationModel.cs" />
     <Compile Include="Models\CompanyModel.cs" />
-    <Compile Include="Models\CurrentUserModel.cs" />
     <Compile Include="Models\BPI.cs" />
     <Compile Include="Models\bpi_list.cs" />
     <Compile Include="Models\ItemParent.cs" />
@@ -131,195 +238,131 @@
     <Compile Include="Models\SalesProject.cs" />
     <Compile Include="Models\SalesWiringModel.cs" />
     <Compile Include="Models\UserPermissionModel.cs" />
-    <Compile Include="Pages\CRMModal.cs">
-      <SubType>Form</SubType>
-    </Compile>
+    <Compile Include="Pages\CRMModal.cs" />
     <Compile Include="Pages\CRMModal.designer.cs">
       <DependentUpon>CRMModal.cs</DependentUpon>
     </Compile>
-    <Compile Include="Pages\ModelSelection.cs">
-      <SubType>Form</SubType>
-    </Compile>
+    <Compile Include="Pages\ModelSelection.cs" />
     <Compile Include="Pages\ModelSelection.Designer.cs">
       <DependentUpon>ModelSelection.cs</DependentUpon>
     </Compile>
-    <Compile Include="Pages\PRModal.cs">
-      <SubType>Form</SubType>
-    </Compile>
+    <Compile Include="Pages\PRModal.cs" />
     <Compile Include="Pages\PRModal.Designer.cs">
       <DependentUpon>PRModal.cs</DependentUpon>
     </Compile>
-    <Compile Include="Pages\ProjectTemplate.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
+    <Compile Include="Pages\ProjectTemplate.cs" />
     <Compile Include="Pages\ProjectTemplate.Designer.cs">
       <DependentUpon>ProjectTemplate.cs</DependentUpon>
     </Compile>
-    <Compile Include="Pages\ProjectTemplateSetup.cs">
-      <SubType>Form</SubType>
-    </Compile>
+    <Compile Include="Pages\ProjectTemplateSetup.cs" />
     <Compile Include="Pages\ProjectTemplateSetup.Designer.cs">
       <DependentUpon>ProjectTemplateSetup.cs</DependentUpon>
     </Compile>
-    <Compile Include="Pages\Sales\BomSelection.cs">
-      <SubType>Form</SubType>
-    </Compile>
+    <Compile Include="Pages\Sales\BomSelection.cs" />
     <Compile Include="Pages\Sales\BomSelection.Designer.cs">
       <DependentUpon>BomSelection.cs</DependentUpon>
     </Compile>
-    <Compile Include="Pages\Sales\CRM.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
+    <Compile Include="Pages\Sales\CRM.cs" />
     <Compile Include="Pages\Sales\CRM.Designer.cs">
       <DependentUpon>CRM.cs</DependentUpon>
     </Compile>
-    <Compile Include="Pages\Sales\frm_canvas_modal.cs">
-      <SubType>Form</SubType>
-    </Compile>
+    <Compile Include="Pages\Sales\frm_canvas_modal.cs" />
     <Compile Include="Pages\Sales\frm_canvas_modal.Designer.cs">
       <DependentUpon>frm_canvas_modal.cs</DependentUpon>
     </Compile>
-    <Compile Include="Pages\Sales\ItemImageModal.cs">
-      <SubType>Form</SubType>
-    </Compile>
+    <Compile Include="Pages\Sales\ItemImageModal.cs" />
     <Compile Include="Pages\Sales\ItemImageModal.Designer.cs">
       <DependentUpon>ItemImageModal.cs</DependentUpon>
     </Compile>
-    <Compile Include="Pages\Sales\ItemImagesModal.cs">
-      <SubType>Form</SubType>
-    </Compile>
+    <Compile Include="Pages\Sales\ItemImagesModal.cs" />
     <Compile Include="Pages\Sales\ItemImagesModal.Designer.cs">
       <DependentUpon>ItemImagesModal.cs</DependentUpon>
     </Compile>
-    <Compile Include="Pages\Sales\ItemImageUC.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
+    <Compile Include="Pages\Sales\ItemImageUC.cs" />
     <Compile Include="Pages\Sales\ItemImageUC.Designer.cs">
       <DependentUpon>ItemImageUC.cs</DependentUpon>
     </Compile>
-    <Compile Include="Pages\Sales\itemsetModal.cs">
-      <SubType>Form</SubType>
-    </Compile>
+    <Compile Include="Pages\Sales\itemsetModal.cs" />
     <Compile Include="Pages\Sales\itemsetModal.Designer.cs">
       <DependentUpon>itemsetModal.cs</DependentUpon>
     </Compile>
-    <Compile Include="Pages\Sales\ItemSetUC.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
+    <Compile Include="Pages\Sales\ItemSetUC.cs" />
     <Compile Include="Pages\Sales\ItemSetUC.Designer.cs">
       <DependentUpon>ItemSetUC.cs</DependentUpon>
     </Compile>
-    <Compile Include="Pages\ModelModal.cs">
-      <SubType>Form</SubType>
-    </Compile>
+    <Compile Include="Pages\ModelModal.cs" />
     <Compile Include="Pages\ModelModal.Designer.cs">
       <DependentUpon>ModelModal.cs</DependentUpon>
     </Compile>
-    <Compile Include="Pages\Sales\ProjectTest.cs">
-      <SubType>Form</SubType>
-    </Compile>
+    <Compile Include="Pages\Sales\ProjectTest.cs" />
     <Compile Include="Pages\Sales\ProjectTest.Designer.cs">
       <DependentUpon>ProjectTest.cs</DependentUpon>
     </Compile>
-    <Compile Include="Pages\Sales\PumpItemModal.cs">
-      <SubType>Form</SubType>
-    </Compile>
+    <Compile Include="Pages\Sales\PumpItemModal.cs" />
     <Compile Include="Pages\Sales\PumpItemModal.Designer.cs">
       <DependentUpon>PumpItemModal.cs</DependentUpon>
     </Compile>
-    <Compile Include="Pages\Sales\PurchaseRequisition.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
+    <Compile Include="Pages\Sales\PurchaseRequisition.cs" />
     <Compile Include="Pages\Sales\PurchaseRequisition.designer.cs">
       <DependentUpon>PurchaseRequisition.cs</DependentUpon>
     </Compile>
-    <Compile Include="Pages\Sales\SalesPrintModal.cs">
-      <SubType>Form</SubType>
-    </Compile>
+    <Compile Include="Pages\Sales\SalesPrintModal.cs" />
     <Compile Include="Pages\Sales\SalesPrintModal.Designer.cs">
       <DependentUpon>SalesPrintModal.cs</DependentUpon>
     </Compile>
-    <Compile Include="Pages\Sales\TemplateSelectionModal.cs">
-      <SubType>Form</SubType>
-    </Compile>
+    <Compile Include="Pages\Sales\TemplateSelectionModal.cs" />
     <Compile Include="Pages\Sales\TemplateSelectionModal.Designer.cs">
       <DependentUpon>TemplateSelectionModal.cs</DependentUpon>
     </Compile>
-    <Compile Include="Pages\Sales\UC_History.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
+    <Compile Include="Pages\Sales\UC_History.cs" />
     <Compile Include="Pages\Sales\UC_History.Designer.cs">
       <DependentUpon>UC_History.cs</DependentUpon>
     </Compile>
-    <Compile Include="Pages\SearchOrder.cs">
-      <SubType>Form</SubType>
-    </Compile>
+    <Compile Include="Pages\SearchOrder.cs" />
     <Compile Include="Pages\SearchOrder.Designer.cs">
       <DependentUpon>SearchOrder.cs</DependentUpon>
     </Compile>
-    <Compile Include="Pages\VersionModal.cs">
-      <SubType>Form</SubType>
-    </Compile>
+    <Compile Include="Pages\VersionModal.cs" />
     <Compile Include="Pages\VersionModal.Designer.cs">
       <DependentUpon>VersionModal.cs</DependentUpon>
     </Compile>
-    <Compile Include="Pages\ItemModal.cs">
-      <SubType>Form</SubType>
-    </Compile>
+    <Compile Include="Pages\ItemModal.cs" />
     <Compile Include="Pages\ItemModal.Designer.cs">
       <DependentUpon>ItemModal.cs</DependentUpon>
     </Compile>
-    <Compile Include="Pages\Layout.cs">
-      <SubType>Form</SubType>
-    </Compile>
+    <Compile Include="Pages\Layout.cs" />
     <Compile Include="Pages\Layout.Designer.cs">
       <DependentUpon>Layout.cs</DependentUpon>
     </Compile>
-    <Compile Include="Pages\Login.cs">
-      <SubType>Form</SubType>
-    </Compile>
+    <Compile Include="Pages\Login.cs" />
     <Compile Include="Pages\Login.Designer.cs">
       <DependentUpon>Login.cs</DependentUpon>
     </Compile>
-    <Compile Include="Pages\Sales\Applications.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
+    <Compile Include="Pages\Sales\Applications.cs" />
     <Compile Include="Pages\Sales\Applications.Designer.cs">
       <DependentUpon>Applications.cs</DependentUpon>
     </Compile>
-    <Compile Include="Pages\Sales\Opportunities.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
+    <Compile Include="Pages\Sales\Opportunities.cs" />
     <Compile Include="Pages\Sales\Opportunities.Designer.cs">
       <DependentUpon>Opportunities.cs</DependentUpon>
     </Compile>
-    <Compile Include="Pages\Sales\Orders.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
+    <Compile Include="Pages\Sales\Orders.cs" />
     <Compile Include="Pages\Sales\Orders.Designer.cs">
       <DependentUpon>Orders.cs</DependentUpon>
     </Compile>
-    <Compile Include="Pages\Sales\Quotation.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
+    <Compile Include="Pages\Sales\Quotation.cs" />
     <Compile Include="Pages\Sales\Quotation.designer.cs">
       <DependentUpon>Quotation.cs</DependentUpon>
     </Compile>
-    <Compile Include="Pages\Sales\SetupSelectionModal.cs">
-      <SubType>Form</SubType>
-    </Compile>
+    <Compile Include="Pages\Sales\SetupSelectionModal.cs" />
     <Compile Include="Pages\Sales\SetupSelectionModal.Designer.cs">
       <DependentUpon>SetupSelectionModal.cs</DependentUpon>
     </Compile>
-    <Compile Include="Pages\Sales\ShipTypeSetup.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
+    <Compile Include="Pages\Sales\ShipTypeSetup.cs" />
     <Compile Include="Pages\Sales\ShipTypeSetup.designer.cs">
       <DependentUpon>ShipTypeSetup.cs</DependentUpon>
     </Compile>
-    <Compile Include="Pages\SetupModal.cs">
-      <SubType>Form</SubType>
-    </Compile>
+    <Compile Include="Pages\SetupModal.cs" />
     <Compile Include="Pages\SetupModal.Designer.cs">
       <DependentUpon>SetupModal.cs</DependentUpon>
     </Compile>
@@ -376,7 +419,6 @@
     <Compile Include="Services\Setup\ProjectModel.cs" />
     <Compile Include="Services\Setup\ProjectServicesss.cs" />
     <Compile Include="Services\Setup\ProjectTemplatesService.cs" />
-    <Compile Include="SqlServerTypes\Loader.cs" />
     <Compile Include="Utils\Taxation.cs" />
     <EmbeddedResource Include="Pages\CRMModal.resx">
       <DependentUpon>CRMModal.cs</DependentUpon>
@@ -487,6 +529,8 @@
     <EmbeddedResource Include="Reports\OrderReport.rdlc" />
     <EmbeddedResource Include="Reports\ProjectReport.rdlc" />
     <EmbeddedResource Include="Reports\QuotationReport.rdlc" />
+    <None Include="appsetting.Development.json" />
+    <None Include="appsetting.Production.json" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -497,12 +541,14 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
+    <None Include="smpc_sales_system_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Data\TempFiles\" />
+    <Folder Include="Logs\" />
     <Folder Include="Pages\Setup\" />
   </ItemGroup>
   <ItemGroup>
@@ -520,11 +566,18 @@
   <ItemGroup>
     <None Include="Resources\NoImage.bmp" />
     <None Include="Resources\no-pictures.png" />
-    <Content Include="SqlServerTypes\readme.htm" />
-    <Content Include="SqlServerTypes\x64\msvcr120.dll" />
-    <Content Include="SqlServerTypes\x64\SqlServerSpatial140.dll" />
-    <Content Include="SqlServerTypes\x86\msvcr120.dll" />
-    <Content Include="SqlServerTypes\x86\SqlServerSpatial140.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include=".NETFramework,Version=v4.7.2">
+      <Visible>False</Visible>
+      <ProductName>Microsoft .NET Framework 4.7.2 %28x86 and x64%29</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\Serilog.4.3.0\build\Serilog.targets" Condition="Exists('..\packages\Serilog.4.3.0\build\Serilog.targets')" />
@@ -533,5 +586,7 @@
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\Serilog.4.3.0\build\Serilog.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Serilog.4.3.0\build\Serilog.targets'))" />
+    <Error Condition="!Exists('..\packages\System.ValueTuple.4.6.1\build\net471\System.ValueTuple.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\System.ValueTuple.4.6.1\build\net471\System.ValueTuple.targets'))" />
   </Target>
+  <Import Project="..\packages\System.ValueTuple.4.6.1\build\net471\System.ValueTuple.targets" Condition="Exists('..\packages\System.ValueTuple.4.6.1\build\net471\System.ValueTuple.targets')" />
 </Project>
