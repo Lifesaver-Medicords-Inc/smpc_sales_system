@@ -22,6 +22,7 @@ using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Net.WebSockets;
+using System.Reflection;
 using System.Reflection.Emit;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
@@ -105,7 +106,7 @@ namespace smpc_sales_app.Pages.Sales
                 }
             }
         }
-
+ 
         private async void ItemSet_DataChanged(object sender, EventArgs e)
         {
             if (IsEdit)
@@ -481,9 +482,14 @@ namespace smpc_sales_app.Pages.Sales
 
             this.tabControl.SelectedIndex = 0;
             this.tabControl.Height = 600;
-            this.Size = new Size(1386 - 80, 950);
+            this.tabControl.Width = System.Windows.Forms.Screen.AllScreens.Length;
+            //this.Size = new Size(1386 - 80, 950);
             isProject = false;
             IsEdit = false;
+
+            fetchQuotationDetails();
+
+            bind();
         }
         private void btn_project_Click(object sender, EventArgs e)
         {
@@ -499,7 +505,7 @@ namespace smpc_sales_app.Pages.Sales
             this.btn_quick_quote.BackColor = Color.White;
             this.btn_project.BackColor = Color.FromArgb(255, 128, 128);
 
-            this.tabControl.SelectedIndex = 1;
+            this.tabControl.SelectedIndex = 1; 
             this.tabControl.Height = 600;
             this.Size = new Size(1386 - 80, 2354);
 
@@ -507,7 +513,7 @@ namespace smpc_sales_app.Pages.Sales
             isProject = true;
 
             UC_History h = new UC_History();
-            flowLayoutPanel2.Controls.Add(h);
+            flowLayoutPanelChangeHistory.Controls.Add(h);
 
             foreach (Control ctrl in h.Controls)
             {
@@ -567,7 +573,7 @@ namespace smpc_sales_app.Pages.Sales
             BomDetails = JsonHelper.ToDataTable(bomData.bom_details);
             Company = companyData;
 
-            //Apply Quotation
+            //Apply Quotation Terms and Conditions
             quotationTerms();
         }
 
@@ -586,6 +592,8 @@ namespace smpc_sales_app.Pages.Sales
             bpi_items = JsonHelper.ToDataTable(bpi_data.items);
         }
         SalesQuotationList data;
+
+        SalesProject projectData;
         private async Task fetchQuotationDetails()
         {
             Panel[] panels = { pnl_header, pnl_footer };
@@ -597,6 +605,8 @@ namespace smpc_sales_app.Pages.Sales
             dgv_quick_quote_details.Enabled = false;
 
             data = await QuotationService.GetQuotations();
+
+            //projectData = await 
 
             if (data != null && data.SalesQuotation != null && data.SalesQuotation.Any())
             {
@@ -628,7 +638,6 @@ namespace smpc_sales_app.Pages.Sales
                 //pnl_header.Enabled = true;
                 //pnl_footer.Enabled = true;
 
-                Helpers.ResetReadOnlyControls(panels);
             }
 
             toolstrip_quotation.Enabled = true;
@@ -643,18 +652,56 @@ namespace smpc_sales_app.Pages.Sales
 
         private int selectedProject = 0;
         private string selectedProjectID = "0";
-        private async void fetchSalesProject()
+
+        public static DataTable ToDataTable<T>(List<T> items)
         {
+            var dataTable = new DataTable(typeof(T).Name);
+
+            // Get public instance properties
+            var properties = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance);
+
+            foreach (var prop in properties)
+            {
+                // Handle Nullable types so the DataTable column has the correct base type
+                var propType = Nullable.GetUnderlyingType(prop.PropertyType) ?? prop.PropertyType;
+                dataTable.Columns.Add(prop.Name, propType);
+            }
+
+            if (items != null)
+            {
+                foreach (var item in items)
+                {
+                    var row = dataTable.NewRow();
+                    foreach (var prop in properties)
+                    {
+                        // Use DBNull.Value for nulls to avoid errors in DataTable rows
+                        row[prop.Name] = prop.GetValue(item) ?? DBNull.Value;
+                    }
+                    dataTable.Rows.Add(row);
+                }
+            }
+
+            return dataTable;
+        }
+
+        private async Task fetchSalesProject()
+        {
+            // 1. Fetch data
             SalesProjectList data = await ProjectService.GetProjects();
 
-            DataTable project_quote = new DataTable();
+            // 2. Add null-check before accessing 'data.SalesQuotation'
+            if (data?.SalesQuotation == null) return;
 
-            if (data == null || project_quote == null || project_quote.Rows.Count <= 0)
-                return;
+            // 3. Convert to DataTable
 
-            project_quote = JsonHelper.ToDataTable(data.SalesQuotation);
+            DataTable project_quote = JsonHelper.ToDataTable(data.SalesQuotation);
 
+            transactionList = JsonHelper.ToDataTable(data.SalesQuotation);
 
+            // 4. Validate the resulting DataTable
+            if (project_quote == null || project_quote.Rows.Count == 0) return;
+
+            bind(true);
 
             if (data == null || (data.sales_project_item_set == null || !data.sales_project_item_set.Any()))
             {
@@ -710,7 +757,7 @@ namespace smpc_sales_app.Pages.Sales
 
             //Helpers.BindControls(pnls, dt2, selectedProject);s
 
-            string selectedSalesQuotationId = null;// project_quote.Rows[0]["id"].ToString();
+            string selectedSalesQuotationId = project_quote.Rows[0]["id"]?.ToString() ?? null;
             this.selectedProjectID = selectedSalesQuotationId;
             txt_project_name.Text = project_quote.Rows[0]["project_name"].ToString();
 
@@ -770,19 +817,19 @@ namespace smpc_sales_app.Pages.Sales
 
                 UC.SetAdvancedPanelData(conditionsView.ToTable());
                 UC.SetContentsPanelData(contentView.ToTable());
-                UC.SetFetchedItemData(itemView.ToTable());
-                UC.SetProjectWiring(wiringView.ToTable());
-
 
                 newTab.Controls.Add(UC);
                 tabControl2.TabPages.Add(newTab);
+
+                UC.SetFetchedItemData(itemView.ToTable());
+                UC.SetProjectWiring(wiringView.ToTable());
             }
 
             TabPage addNewTab = new TabPage("+");
             tabControl2.TabPages.Add(addNewTab);
 
             fetchProjectMultipliers();
-            ConnectToWebSocket("Sales", selectedSalesQuotationId);
+            //ConnectToWebSocket("Sales", selectedSalesQuotationId);
         }
 
         private async void CellClickedModelUC(object sender, EventArgs e)
@@ -937,19 +984,14 @@ namespace smpc_sales_app.Pages.Sales
 
         private void btn_save_Click(object sender, EventArgs e)
         {
-
-            if (!IsEdit)
+            if (!isProject)
             {
-                if (!isProject)
-                {
-                    IsQuickQuote();
-                }
-                else
-                {
-                    IsProject();
-                }
+                IsQuickQuote();
             }
-
+            else
+            {
+                IsProject();
+            }
         }
         public SalesProjectItemSet GetProjectItemSet()
         {
@@ -969,7 +1011,6 @@ namespace smpc_sales_app.Pages.Sales
             var pnl_quotation = Helpers.GetControlsValues(pnl_list);
 
             pnl_quotation["project_name"] = txt_project_name.Text.Trim();
-
 
             //
             // Checker if project name is null or its empty it would not proceed.
@@ -1008,38 +1049,78 @@ namespace smpc_sales_app.Pages.Sales
 
                 if (selectedControl != null)
                 {
-                    pnl_quotation["sales_project_content_advanced_condition"] = selectedControl.GetAdvancedConditionsData();
-                    pnl_quotation["sales_project_content"] = selectedControl.GetProjectContentsData();
-                    pnl_quotation["sales_project_item_set"] = GetProjectItemSet();
                     pnl_quotation["sales_project_multiplier"] = multipliers;
+                    pnl_quotation["sales_project_history"] = selectedControl.GetHistoryList();
+                    pnl_quotation["sales_project_item_set"] = GetProjectItemSet();
+                    pnl_quotation["sales_project_content"] = selectedControl.GetProjectContentsData();
+                    pnl_quotation["sales_project_content_advanced_condition"] = selectedControl.GetAdvancedConditionsData();
                     pnl_quotation["sales_project_items"] = selectedControl.GetProjectItems()["sales_project_items"];
                     pnl_quotation["sales_project_wiring"] = selectedControl.GetProjectWiringData()["sales_project_wiring"];
 
-                    if (pnl_quotation.ContainsKey("customer_id") && pnl_quotation["customer_id"] is string customerIdStr)
+                    if (!ConvertToInt(pnl_quotation, "customer_id", "Invalid customer ID"))
                     {
-                        if (int.TryParse(customerIdStr, out int customerId))
-                        {
-                            pnl_quotation["customer_id"] = customerId;
-                        }
-                        else
-                        {
-                            MessageBox.Show("Invalid customer ID");
-                            return;
-                        }
+                        return;
                     }
 
-                    var post = await ProjectService.Insert(pnl_quotation);
-                    if (post.Success)
+                    if (isNewRecord)
+                        pnl_quotation["id"] = 0;
+                    
+                    if (IsEdit)
+                        pnl_quotation["id"] = int.Parse(pnl_quotation["id"]);
+
+
+                    pnl_quotation["percent_discount"] = float.Parse(txt_additional_discount.Text);
+                    pnl_quotation["isProject"] = true;
+
+                    if (isNewRecord)
                     {
-                        MessageBox.Show(post.message);
+                        var post = await ProjectService.Insert(pnl_quotation);
+                        if (post.Success)
+                            {
+                                MessageBox.Show("Saved");
+
+                                SetNewFormMode(false);
+                            }
+                        else
+                            MessageBox.Show(post.message);
                     }
-                    else
+                    
+                    if (IsEdit)
                     {
-                        MessageBox.Show(post.message);
+                        var edit = await ProjectService.UpdateProjectItems(pnl_quotation);
+
+                        if (edit.Success)
+                        {
+                            MessageBox.Show("Updated");
+
+                            SetNewFormMode(false);
+                        }
+                        else
+                            MessageBox.Show(edit.message);
                     }
+
                 }
             }
         }
+
+        public static bool ConvertToInt(Dictionary<string, dynamic> dict,string key,string errorMessage)
+        {
+            if (!dict.TryGetValue(key, out var value))
+                return true;
+
+            if (value is int)
+                return true;
+
+            if (value is string s && int.TryParse(s, out int result))
+            {
+                dict[key] = result;
+                return true;
+            }
+
+            MessageBox.Show(errorMessage);
+            return false;
+        }
+
         private void removeColumn()
         {
             // Make sure to handle the removal from the bottom to avoid index shifting issues
@@ -1078,6 +1159,7 @@ namespace smpc_sales_app.Pages.Sales
 
                 parentData["bill_to_id"] = bill_to_id;
                 parentData["ship_to_id"] = ship_to_id;
+                parentData["isProject"] = false;
 
 
                 var dataSource = Helpers.ConvertDataGridViewToDataTable(dgv_quick_quote_details);
@@ -1955,8 +2037,8 @@ namespace smpc_sales_app.Pages.Sales
         DataTable stockQuickDataTable = new DataTable();
         private async void Quotation_Load(object sender, EventArgs e)
         {
-            int dgvWidth = dgv_quick_quote_details.Width;
-            int dgvHeight = dgv_quick_quote_details.Height;
+            //int dgvWidth = dgv_quick_quote_details.Width;
+            //int dgvHeight = dgv_quick_quote_details.Height;
 
             Panel[] panels = { pnl_header, pnl_footer };
             Helpers.ReadOnlyControls(panels);
@@ -2079,7 +2161,6 @@ namespace smpc_sales_app.Pages.Sales
         {
             if (isBind)
             {
-
                 Panel[] pnlList = { pnl_header, pnl_footer };
                 DataTable HeaderList = this.transactionList.Clone();
                 HeaderList.Columns.Add("branch_name", typeof(string));
@@ -2908,8 +2989,9 @@ namespace smpc_sales_app.Pages.Sales
             var lastIndex = this.tabControl2.TabCount - 1;
             if (this.tabControl2.GetTabRect(lastIndex).Contains(e.Location))
             {
-                // Create a new TabPage
+                //here is the code for adding new tab (+)
 
+                // Create a new TabPage
                 string tabNewName = NamingTabControl(lastIndex);
 
                 var newTabPage = new TabPage(tabNewName);
@@ -2922,8 +3004,11 @@ namespace smpc_sales_app.Pages.Sales
 
                 };
 
+                //plus events function
                 myControl.CellClicked += Cell_ClickedUC;
                 myControl.CellClickedModel += CellClickedModelUC;
+                myControl.CellEdited += Cell_EditedUC;
+                myControl.FinalTxtBoxClicked += FinalTxtBoxClicked;
 
                 // Add the UserControl to the new tab
                 newTabPage.Controls.Add(myControl);
@@ -3059,13 +3144,48 @@ namespace smpc_sales_app.Pages.Sales
                 currentControl.setMultiplier(multiply);
             }
         }
+
+
+
         private void btn_finalize_Click(object sender, EventArgs e)
         {
             if (MessageBox.Show("Are you sure you want to finalize?", "Confirm", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
             {
-                FinalizeQuickQuotation();
+                if (isProject)
+                    FinalizeProjectQuotation();
+                else
+                    FinalizeQuickQuotation();
             }
         }
+
+        private async void FinalizeProjectQuotation()
+        {
+            try
+            {
+                int quotationId = Convert.ToInt32(txt_id.Text);
+
+                var finalizeData = new Dictionary<string, dynamic>
+                {
+                    ["id"] = quotationId,
+                    ["is_finalized"] = true
+                };
+
+                await QuotationService.Update(finalizeData);
+
+                Helpers.ResetControls(pnl_header);
+                ResetControls(pnl_footer);
+
+                await fetchSalesProject();
+
+
+
+            }
+            catch(Exception ex)
+            {
+                MessageBox.Show("Error: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
         private async void FinalizeQuickQuotation()
         {
             try
@@ -3110,7 +3230,7 @@ namespace smpc_sales_app.Pages.Sales
 
             // Create an instance of Orders user control
             Orders ordersPage = new Orders(documentNo);
-            ordersPage.Width = this.Parent.Width;
+            //ordersPage.Width = this.Parent.Width;
             this.Parent.Controls.Add(ordersPage);
             this.Hide();
         }
@@ -3190,7 +3310,7 @@ namespace smpc_sales_app.Pages.Sales
         private void back_Click(object sender, EventArgs e)
         {
             Opportunities OpportunitiesPage = new Opportunities();
-            OpportunitiesPage.Width = this.Parent.Width;
+            //OpportunitiesPage.Width = this.Parent.Width;
             this.Parent.Controls.Add(OpportunitiesPage);
             this.Dispose();
         }
@@ -3986,6 +4106,52 @@ namespace smpc_sales_app.Pages.Sales
 
             // Renames the tab here
             tabControl2.TabPages[selectedIndex].Text = tabNewName;
+        }
+
+        //
+        const string HeaderLabel = "Header -> ";
+        const string FooterLabel = "Footer -> ";
+        const string ProjectLabel = "Project Header: ";
+        const string ProjectMulti = "Multiplier Table -> ";
+
+        //Per tabs
+        const string ActionDetails = "Sub Project: ";
+        const string AdvanceConditions = "Advance Conditions: ";
+        const string ProjectItems = "Project Items Table -> ";
+        const string ProjectWiring = "Project Wiring Table -> ";
+
+        //Additional
+        const string ActionArrowLeft = "-> ";
+
+        private void AddProjectHistory(Dictionary<string, dynamic> pnlQuotation, uint basedId, string user, string oldData, string newData)
+        {
+            // Create history entry
+            var now = DateTime.Now;
+
+            var historyEntry = new Dictionary<string, object>
+            {
+                ["based_id"] = basedId,
+                ["user"] = user,
+                ["date"] = now.ToString("yyyy-MM-dd"),
+                ["time"] = now.ToString("HH:mm:ss"),
+                ["old_data"] = oldData,
+                ["new_data"] = newData
+            };
+
+            // Check if history list exists
+            if (!pnlQuotation.ContainsKey("sales_project_history"))
+            {
+                pnlQuotation["sales_project_history"] = new List<Dictionary<string, object>>();
+            }
+
+            // Add to list
+            var historyList = pnlQuotation["sales_project_history"] as List<Dictionary<string, object>>;
+            historyList.Add(historyEntry);
+        }
+
+        private void txt_project_name_Leave(object sender, EventArgs e)
+        {
+            string action = ProjectLabel + txt_project_name.Text;
         }
     }
 }

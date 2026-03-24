@@ -57,10 +57,9 @@ namespace smpc_sales_app.Pages
             {
                 var data = Helpers.GetControlsValues(pnl_auth);
                 data.Add("motherboard_serial_no", Helpers.GetSerialNumber());
-                data.Add("machine_name", Environment.MachineName);
+                data.Add("machine_name", Environment.MachineName); 
 
                 var currentUser = await AuthServices.Login(data);
-
                 if (currentUser != null && currentUser.Success)
                 {
                     smpc_sales_app.Data.CacheData.CurrentUser = currentUser.Data;

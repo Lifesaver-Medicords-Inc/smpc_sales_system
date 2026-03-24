@@ -53,6 +53,7 @@ namespace smpc_sales_app.Pages
             this.pnl_auth.Name = "pnl_auth";
             this.pnl_auth.Size = new System.Drawing.Size(296, 106);
             this.pnl_auth.TabIndex = 0;
+            this.pnl_auth.Paint += new System.Windows.Forms.PaintEventHandler(this.pnl_auth_Paint);
             // 
             // btn_cancel
             // 
@@ -73,7 +74,7 @@ namespace smpc_sales_app.Pages
             this.label2.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label2.Location = new System.Drawing.Point(29, 43);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(77, 16);
+            this.label2.Size = new System.Drawing.Size(76, 16);
             this.label2.TabIndex = 11;
             this.label2.Text = "Password : ";
             // 
@@ -83,7 +84,7 @@ namespace smpc_sales_app.Pages
             this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label1.Location = new System.Drawing.Point(14, 17);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(93, 16);
+            this.label1.Size = new System.Drawing.Size(92, 16);
             this.label1.TabIndex = 10;
             this.label1.Text = "Employee Id : ";
             // 

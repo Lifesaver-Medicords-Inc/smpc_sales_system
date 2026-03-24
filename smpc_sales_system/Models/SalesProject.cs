@@ -57,6 +57,16 @@ namespace smpc_sales_system.Models
         public string no_of_sets { get; set; }
         public string no_of_pump_set { get; set; }
         public string item_set_notes { get; set; }
+        public SalesProjectContentFinal []final { get; set; }
+    }
+
+    public class SalesProjectContentFinal
+    {
+        public int id { get; set; }
+        public int content_id { get; set; }
+        public string final { get; set; }
+        public decimal fla { get; set; }
+        public decimal voltage { get; set; }
     }
 
 
@@ -83,11 +93,9 @@ namespace smpc_sales_system.Models
         public int item_id { get; set; }
         public int based_id { get; set; }
 
-        public int node_id { get; set; }
-        public string node_name { get; set; }
-        public int parent_node_id { get; set; }
-        public int node_order { get; set; }
-        public string node_type { get; set; }
+        public string reference_code {get; set;}
+        public int man_days { get; set; }
+        public decimal labor_rate { get; set; }
         public string components { get; set; }
         public string model { get; set; }
         public string item_inv_type { get; set; }

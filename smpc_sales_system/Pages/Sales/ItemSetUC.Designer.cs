@@ -41,6 +41,8 @@ namespace smpc_sales_system.Pages.Sales
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle9 = new System.Windows.Forms.DataGridViewCellStyle();
             this.pnl_project_content = new System.Windows.Forms.Panel();
             this.dgv_final = new System.Windows.Forms.DataGridView();
+            this.Id = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.content_Id = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Final = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Fla = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Voltage = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -112,11 +114,6 @@ namespace smpc_sales_system.Pages.Sales
             this.project_items_based_id = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.project_items_template_id = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.project_items_bom_id = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.project_items_node_id = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.project_items_node_name = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.project_items_parent_node_id = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.project_items_node_order = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.project_items_node_type = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.project_items_images = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.reference_code = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.project_items_components = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -182,7 +179,7 @@ namespace smpc_sales_system.Pages.Sales
             this.label6 = new System.Windows.Forms.Label();
             this.txt_VOLT = new System.Windows.Forms.TextBox();
             this.label7 = new System.Windows.Forms.Label();
-            this.checkBox_Wiring = new System.Windows.Forms.CheckBox();
+            this.chk_wiring = new System.Windows.Forms.CheckBox();
             this.dgv_wiring = new System.Windows.Forms.DataGridView();
             this.project_wiring_id = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.project_wiring_based_id = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -202,6 +199,7 @@ namespace smpc_sales_system.Pages.Sales
             this.project_wiring_total_cost = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.project_wiring_unit = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.cb_template_project = new System.Windows.Forms.ComboBox();
+            this.cmb_assign_engineer_user_id = new System.Windows.Forms.ComboBox();
             this.pnl_project_content.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgv_final)).BeginInit();
             this.pnl_advanced_conditions.SuspendLayout();
@@ -276,6 +274,8 @@ namespace smpc_sales_system.Pages.Sales
             // 
             this.dgv_final.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dgv_final.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.Id,
+            this.content_Id,
             this.Final,
             this.Fla,
             this.Voltage});
@@ -287,6 +287,22 @@ namespace smpc_sales_system.Pages.Sales
             this.dgv_final.Size = new System.Drawing.Size(235, 75);
             this.dgv_final.TabIndex = 171;
             this.dgv_final.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgv_final_CellClick);
+            // 
+            // Id
+            // 
+            this.Id.DataPropertyName = "Id";
+            this.Id.HeaderText = "Id";
+            this.Id.Name = "Id";
+            this.Id.ReadOnly = true;
+            this.Id.Visible = false;
+            // 
+            // content_Id
+            // 
+            this.content_Id.DataPropertyName = "content_Id";
+            this.content_Id.HeaderText = "ContentId";
+            this.content_Id.Name = "content_Id";
+            this.content_Id.ReadOnly = true;
+            this.content_Id.Visible = false;
             // 
             // Final
             // 
@@ -428,6 +444,7 @@ namespace smpc_sales_system.Pages.Sales
             this.txt_content_id.Name = "txt_content_id";
             this.txt_content_id.Size = new System.Drawing.Size(35, 20);
             this.txt_content_id.TabIndex = 154;
+            this.txt_content_id.Visible = false;
             // 
             // label5
             // 
@@ -775,6 +792,7 @@ namespace smpc_sales_system.Pages.Sales
             this.txt_conditions_id.Name = "txt_conditions_id";
             this.txt_conditions_id.Size = new System.Drawing.Size(35, 20);
             this.txt_conditions_id.TabIndex = 153;
+            this.txt_conditions_id.Visible = false;
             // 
             // label53
             // 
@@ -898,11 +916,6 @@ namespace smpc_sales_system.Pages.Sales
             this.project_items_based_id,
             this.project_items_template_id,
             this.project_items_bom_id,
-            this.project_items_node_id,
-            this.project_items_node_name,
-            this.project_items_parent_node_id,
-            this.project_items_node_order,
-            this.project_items_node_type,
             this.project_items_images,
             this.reference_code,
             this.project_items_components,
@@ -975,41 +988,6 @@ namespace smpc_sales_system.Pages.Sales
             this.project_items_bom_id.HeaderText = "bom_id";
             this.project_items_bom_id.Name = "project_items_bom_id";
             this.project_items_bom_id.Visible = false;
-            // 
-            // project_items_node_id
-            // 
-            this.project_items_node_id.DataPropertyName = "node_id";
-            this.project_items_node_id.HeaderText = "node_id";
-            this.project_items_node_id.Name = "project_items_node_id";
-            this.project_items_node_id.Visible = false;
-            // 
-            // project_items_node_name
-            // 
-            this.project_items_node_name.DataPropertyName = "node_name";
-            this.project_items_node_name.HeaderText = "node_name";
-            this.project_items_node_name.Name = "project_items_node_name";
-            this.project_items_node_name.Visible = false;
-            // 
-            // project_items_parent_node_id
-            // 
-            this.project_items_parent_node_id.DataPropertyName = "parent_node_id";
-            this.project_items_parent_node_id.HeaderText = "parent_node_id";
-            this.project_items_parent_node_id.Name = "project_items_parent_node_id";
-            this.project_items_parent_node_id.Visible = false;
-            // 
-            // project_items_node_order
-            // 
-            this.project_items_node_order.DataPropertyName = "node_order";
-            this.project_items_node_order.HeaderText = "node_order";
-            this.project_items_node_order.Name = "project_items_node_order";
-            this.project_items_node_order.Visible = false;
-            // 
-            // project_items_node_type
-            // 
-            this.project_items_node_type.DataPropertyName = "node_type";
-            this.project_items_node_type.HeaderText = "node_type";
-            this.project_items_node_type.Name = "project_items_node_type";
-            this.project_items_node_type.Visible = false;
             // 
             // project_items_images
             // 
@@ -1407,17 +1385,17 @@ namespace smpc_sales_system.Pages.Sales
             this.label7.TabIndex = 162;
             this.label7.Text = "VOLTAGE";
             // 
-            // checkBox_Wiring
+            // chk_wiring
             // 
-            this.checkBox_Wiring.AutoSize = true;
-            this.checkBox_Wiring.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.checkBox_Wiring.Location = new System.Drawing.Point(20, 916);
-            this.checkBox_Wiring.Name = "checkBox_Wiring";
-            this.checkBox_Wiring.Size = new System.Drawing.Size(73, 17);
-            this.checkBox_Wiring.TabIndex = 165;
-            this.checkBox_Wiring.Text = "WIRING";
-            this.checkBox_Wiring.UseVisualStyleBackColor = true;
-            this.checkBox_Wiring.CheckedChanged += new System.EventHandler(this.checkBox_Wiring_CheckedChanged);
+            this.chk_wiring.AutoSize = true;
+            this.chk_wiring.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.chk_wiring.Location = new System.Drawing.Point(20, 916);
+            this.chk_wiring.Name = "chk_wiring";
+            this.chk_wiring.Size = new System.Drawing.Size(73, 17);
+            this.chk_wiring.TabIndex = 165;
+            this.chk_wiring.Text = "WIRING";
+            this.chk_wiring.UseVisualStyleBackColor = true;
+            this.chk_wiring.CheckedChanged += new System.EventHandler(this.checkBox_Wiring_CheckedChanged);
             // 
             // dgv_wiring
             // 
@@ -1619,12 +1597,21 @@ namespace smpc_sales_system.Pages.Sales
             this.cb_template_project.TabIndex = 166;
             this.cb_template_project.SelectedIndexChanged += new System.EventHandler(this.cb_template_project_SelectedIndexChanged);
             // 
+            // cmb_assign_engineer_user_id
+            // 
+            this.cmb_assign_engineer_user_id.FormattingEnabled = true;
+            this.cmb_assign_engineer_user_id.Location = new System.Drawing.Point(817, 937);
+            this.cmb_assign_engineer_user_id.Name = "cmb_assign_engineer_user_id";
+            this.cmb_assign_engineer_user_id.Size = new System.Drawing.Size(294, 21);
+            this.cmb_assign_engineer_user_id.TabIndex = 167;
+            // 
             // ItemSetUC
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.cmb_assign_engineer_user_id);
             this.Controls.Add(this.cb_template_project);
-            this.Controls.Add(this.checkBox_Wiring);
+            this.Controls.Add(this.chk_wiring);
             this.Controls.Add(this.checkBox1);
             this.Controls.Add(this.template_id);
             this.Controls.Add(this.label7);
@@ -1792,7 +1779,7 @@ namespace smpc_sales_system.Pages.Sales
         private System.Windows.Forms.Timer timer_update_conditions;
         private System.Windows.Forms.Timer timer_update_content;
         private System.Windows.Forms.CheckBox checkBox1;
-        private System.Windows.Forms.CheckBox checkBox_Wiring;
+        private System.Windows.Forms.CheckBox chk_wiring;
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.TextBox txt_VOLT;
         private System.Windows.Forms.Label label6;
@@ -1802,9 +1789,6 @@ namespace smpc_sales_system.Pages.Sales
         private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn21;
         private System.Windows.Forms.DataGridViewTextBoxColumn project_wiring_num_of_qty_set;
         private System.Windows.Forms.DataGridView dgv_final;
-        private System.Windows.Forms.DataGridViewTextBoxColumn Final;
-        private System.Windows.Forms.DataGridViewTextBoxColumn Fla;
-        private System.Windows.Forms.DataGridViewTextBoxColumn Voltage;
         private System.Windows.Forms.DataGridViewTextBoxColumn project_wiring_id;
         private System.Windows.Forms.DataGridViewTextBoxColumn project_wiring_based_id;
         private System.Windows.Forms.DataGridViewComboBoxColumn cmb_unit;
@@ -1825,16 +1809,17 @@ namespace smpc_sales_system.Pages.Sales
         private System.Windows.Forms.DataGridViewTextBoxColumn project_wiring_total_cost;
         private System.Windows.Forms.DataGridViewTextBoxColumn project_wiring_unit;
         private System.Windows.Forms.ComboBox cb_template_project;
+        private System.Windows.Forms.ComboBox cmb_assign_engineer_user_id;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Id;
+        private System.Windows.Forms.DataGridViewTextBoxColumn content_Id;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Final;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Fla;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Voltage;
         private System.Windows.Forms.DataGridViewTextBoxColumn project_items_id;
         private System.Windows.Forms.DataGridViewTextBoxColumn item_id;
         private System.Windows.Forms.DataGridViewTextBoxColumn project_items_based_id;
         private System.Windows.Forms.DataGridViewTextBoxColumn project_items_template_id;
         private System.Windows.Forms.DataGridViewTextBoxColumn project_items_bom_id;
-        private System.Windows.Forms.DataGridViewTextBoxColumn project_items_node_id;
-        private System.Windows.Forms.DataGridViewTextBoxColumn project_items_node_name;
-        private System.Windows.Forms.DataGridViewTextBoxColumn project_items_parent_node_id;
-        private System.Windows.Forms.DataGridViewTextBoxColumn project_items_node_order;
-        private System.Windows.Forms.DataGridViewTextBoxColumn project_items_node_type;
         private System.Windows.Forms.DataGridViewTextBoxColumn project_items_images;
         private System.Windows.Forms.DataGridViewTextBoxColumn reference_code;
         private System.Windows.Forms.DataGridViewTextBoxColumn project_items_components;

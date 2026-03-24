@@ -136,8 +136,6 @@ namespace smpc_sales_system.Pages.Sales
             timer_send_message_conditions.Start();
         }
 
-
-
         //
         //    TIMERS
         //
@@ -242,6 +240,33 @@ namespace smpc_sales_system.Pages.Sales
                 }
             }
 
+            var projectFinalSource = Helpers.ConvertDataGridViewToDataTable(dgv_final);
+            List<SalesProjectContentFinal> finals = new List<SalesProjectContentFinal>();
+
+            //added the datagridview
+            foreach (DataRow final in projectFinalSource.Rows)
+            {
+                if (final == null) continue;
+
+                var pfs = new SalesProjectContentFinal()
+                {
+                    id = int.TryParse(final["Id"]?.ToString(), out int tempId) ? tempId : 0,
+                    content_id = int.TryParse(final["content_id"]?.ToString(), out int tempContentId) ? tempContentId : 0,
+                    final = final["final"]?.ToString() ?? string.Empty,
+                    fla = decimal.TryParse(final["fla"]?.ToString(), out decimal tempFla) ? tempFla : 0,
+                    voltage = decimal.TryParse(final["voltage"]?.ToString(), out decimal tempVoltage) ? tempVoltage : 0,
+
+                };
+
+                finals.Add(pfs);
+
+            }
+
+            data["sales_project_content_final"] = finals;
+
+            //this is not include in panel but we need to get the value of wiring for the project
+            data["wiring"] = chk_wiring.Checked;
+            data["assign_engineer_user_id"] = cmb_assign_engineer_user_id.SelectedValue;
 
             return data;
         }
@@ -262,11 +287,11 @@ namespace smpc_sales_system.Pages.Sales
                     id = int.TryParse(item["project_wiring_id"]?.ToString(), out int idVal) ? idVal : 0,
                     based_id = int.TryParse(item["project_wiring_based_id"]?.ToString(), out int based_id_Val) ? based_id_Val : 0,
                     materials = item["project_wiring_materials"]?.ToString() ?? string.Empty,
-                    amp_req = item["project_wiring_amp_req"]?.ToString() ?? string.Empty,
+                    //amp_req = item["project_wiring_amp_req"]?.ToString() ?? string.Empty,
                     wire_amp = item["project_wiring_wire_amp"]?.ToString() ?? string.Empty,
                     description = item["project_wiring_description"]?.ToString() ?? string.Empty,
-                    num_of_wires_set = item["project_wiring_num_of_wires_set"]?.ToString() ?? string.Empty,
-                    num_of_qty_set = item["project_wiring_num_of_qty_set"]?.ToString() ?? string.Empty,
+                    //num_of_wires_set = item["project_wiring_num_of_wires_set"]?.ToString() ?? string.Empty,
+                    //num_of_qty_set = item["project_wiring_num_of_qty_set"]?.ToString() ?? string.Empty,
                     distance_travelled_set = item["project_wiring_distance_travelled"]?.ToString() ?? string.Empty,
                     allowance_wire_set = item["project_wiring_allowance"]?.ToString() ?? string.Empty,
                     qty = int.TryParse(item["project_wiring_qty"]?.ToString(), out int qtyVal) ? qtyVal : 0,
@@ -303,15 +328,19 @@ namespace smpc_sales_system.Pages.Sales
                     // PK
                     items_id = int.TryParse(item["project_items_id"]?.ToString(), out int tempItemsId) ? tempItemsId : 0,
 
-                    item_id = int.TryParse(item["project_items_item_id"]?.ToString(), out int tempItemId) ? tempItemId : 0,
+                    item_id = int.TryParse(item["item_id"]?.ToString(), out int tempItemId) ? tempItemId : 0,
                     based_id = int.TryParse(item["project_items_based_id"]?.ToString(), out int tempBasedId) ? tempBasedId : 0,
 
                     bom_id = int.TryParse(item["project_items_bom_id"]?.ToString(), out int tempBomId) ? tempBomId : 0,
-                    node_id = int.TryParse(item["project_items_node_id"]?.ToString(), out int tempNodeId) ? tempNodeId : 0,
-                    node_name = item["project_items_node_name"]?.ToString() ?? string.Empty,
-                    parent_node_id = int.TryParse(item["project_items_parent_node_id"]?.ToString(), out int tempParentNode) ? tempParentNode : 0,
-                    node_order = int.TryParse(item["project_items_node_order"]?.ToString(), out int tempNodeOrder) ? tempNodeOrder : 0,
-                    node_type = item["project_items_node_type"]?.ToString() ?? string.Empty,
+
+                    //node_id = int.TryParse(item["project_items_node_id"]?.ToString(), out int tempNodeId) ? tempNodeId : 0,
+                    //node_name = item["project_items_node_name"]?.ToString() ?? string.Empty,
+                    //parent_node_id = int.TryParse(item["project_items_parent_node_id"]?.ToString(), out int tempParentNode) ? tempParentNode : 0,
+                    //node_order = int.TryParse(item["project_items_node_order"]?.ToString(), out int tempNodeOrder) ? tempNodeOrder : 0,
+                    //node_type = item["project_items_node_type"]?.ToString() ?? string.Empty,
+                    reference_code = item["reference_code"]?.ToString() ?? string.Empty,
+                    man_days = int.TryParse(item["reference_code"]?.ToString(), out int manDays) ? manDays : 0,
+                    labor_rate = decimal.TryParse(item["reference_code"]?.ToString(), out decimal laborRate) ? laborRate : 0,
                     components = item["project_items_components"]?.ToString() ?? string.Empty,
                     model = item["project_items_model"]?.ToString() ?? string.Empty,
                     item_inv_type = item["project_items_item_inv_type"]?.ToString() ?? string.Empty,
@@ -491,7 +520,7 @@ namespace smpc_sales_system.Pages.Sales
 
         public Dictionary<string, dynamic> ProjectComputationLoop()
         {
-            dgv_project_items.EndEdit();
+            //dgv_project_items.EndEdit();
 
             ComputeByReferenceHierarchy(dgv_project_items);
             ComputeReferenceNonHierarchy(dgv_project_items);
@@ -555,8 +584,6 @@ namespace smpc_sales_system.Pages.Sales
 
             //dgv_project_items.EndEdit();
         }
-
-
         //
         // SETTERS
         //
@@ -616,57 +643,57 @@ namespace smpc_sales_system.Pages.Sales
 
             dgv_project_items.Rows.Clear();
 
-            dgv_project_items.Columns[8].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+            //dgv_project_items.Columns[8].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
 
-            Font boldFont = new Font(dgv_project_items.DefaultCellStyle.Font, FontStyle.Bold);
-            Font normalFont = new Font(dgv_project_items.DefaultCellStyle.Font, FontStyle.Regular);
+            //Font boldFont = new Font(dgv_project_items.DefaultCellStyle.Font, FontStyle.Bold);
+            //Font normalFont = new Font(dgv_project_items.DefaultCellStyle.Font, FontStyle.Regular);
 
-            // Build a dictionary that handles duplicate node_id values by grouping and taking the first row for each id.
-            var nodeLookup = dt.AsEnumerable()
-                               .GroupBy(row => row.Field<int>("node_id"))
-                               .ToDictionary(
-                                   g => g.Key,
-                                   g =>
-                                   {
-                                       var row = g.First();
-                                       return new ProjectTemplateChildModel
-                                       {
-                                           Id = row.Field<int>("id"),
-                                           ParentId = row.Field<int>("parent_id"),
-                                           ItemId = row.Field<int>("item_id"),
-                                           Components = row.Field<string>("components"),
-                                           Level = row.Field<int>("level")
-                                       };
-                                   });
+            //// Build a dictionary that handles duplicate node_id values by grouping and taking the first row for each id.
+            //var nodeLookup = dt.AsEnumerable()
+            //                   .GroupBy(row => row.Field<int>("node_id"))
+            //                   .ToDictionary(
+            //                       g => g.Key,
+            //                       g =>
+            //                       {
+            //                           var row = g.First();
+            //                           return new ProjectTemplateChildModel
+            //                           {
+            //                               Id = row.Field<int>("id"),
+            //                               ParentId = row.Field<int>("parent_id"),
+            //                               ItemId = row.Field<int>("item_id"),
+            //                               Components = row.Field<string>("components"),
+            //                               Level = row.Field<int>("level")
+            //                           };
+            //                       });
 
-            var rootNodes = dt.AsEnumerable()
-                              .Where(row => row.Field<int>("parent_node_id") == 0)
-                              .OrderBy(row => row.Field<int>("node_order"))
-                              .ToList();
+            //var rootNodes = dt.AsEnumerable()
+            //                  .Where(row => row.Field<int>("parent_node_id") == 0)
+            //                  .OrderBy(row => row.Field<int>("node_order"))
+            //                  .ToList();
 
-            foreach (var rootNode in rootNodes)
-            {
-                int parentRowIndex = dgv_project_items.Rows.Add();
+            //foreach (var rootNode in rootNodes)
+            //{
+            //    int parentRowIndex = dgv_project_items.Rows.Add();
 
-                DataGridViewRow newRow = dgv_project_items.Rows[parentRowIndex];
+            //    DataGridViewRow newRow = dgv_project_items.Rows[parentRowIndex];
 
-                newRow.Cells["project_items_node_name"].Value = rootNode.Field<string>("node_name");
-                newRow.Cells["project_items_node_id"].Value = rootNode.Field<int>("node_id");
-                newRow.Cells["project_items_parent_node_id"].Value = rootNode.Field<int>("parent_node_id");
-                newRow.Cells["project_items_node_order"].Value = rootNode.Field<int>("node_order");
-                newRow.Cells["project_items_node_type"].Value = rootNode.Field<string>("node_type");
-                newRow.Cells["project_items_components"].Value = "▶ " + rootNode.Field<string>("node_name");
+            //    newRow.Cells["project_items_node_name"].Value = rootNode.Field<string>("node_name");
+            //    newRow.Cells["project_items_node_id"].Value = rootNode.Field<int>("node_id");
+            //    newRow.Cells["project_items_parent_node_id"].Value = rootNode.Field<int>("parent_node_id");
+            //    newRow.Cells["project_items_node_order"].Value = rootNode.Field<int>("node_order");
+            //    newRow.Cells["project_items_node_type"].Value = rootNode.Field<string>("node_type");
+            //    newRow.Cells["project_items_components"].Value = "▶ " + rootNode.Field<string>("node_name");
 
 
-                newRow.Cells["project_items_components"].Style.BackColor = Color.LightCoral;
-                newRow.Cells["project_items_components"].Style.Font = boldFont;
+            //    newRow.Cells["project_items_components"].Style.BackColor = Color.LightCoral;
+            //    newRow.Cells["project_items_components"].Style.Font = boldFont;
 
-                // Recursively add child nodes
-                AddChildNodesFromDb(rootNode.Field<int>("node_id"), dt, nodeLookup, 1);
+            //    // Recursively add child nodes
+            //    //AddChildNodesFromDb(rootNode.Field<int>("node_id"), dt, nodeLookup, 1);
 
-            }
+            //}
 
-            dgv_project_items.Columns[1].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+            //dgv_project_items.Columns[1].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
             bondsTncReadOnly();
         }
 
@@ -720,16 +747,9 @@ namespace smpc_sales_system.Pages.Sales
         public void SetFetchedItemData(DataTable dt)
         {
 
-            if (!dt.Columns.Contains("node_type"))
-            {
-                MessageBox.Show("Column 'node_type' not found in DataTable.");
-                return;
-            }
-
-
             var stringTable = Helpers.ConvertDataTableToStringTable(dt);
 
-            foreach (DataRow row in stringTable.Rows)
+            foreach (DataRow row  in stringTable.Rows)
             {
                 string listprice = row["list_price_per_unit"].ToString();
                 string unitprice = row["unit_price"].ToString();
@@ -740,15 +760,55 @@ namespace smpc_sales_system.Pages.Sales
                 row["unit_price"] = Helpers.FormatAsCurrency(unitprice);
                 row["discount_price"] = Helpers.FormatAsCurrency(discountprice);
                 row["component_total"] = Helpers.FormatAsCurrency(componenttotal);
+                
             }
 
+            //MessageBox.Show(stringTable.Rows.Count.ToString());
+
             dgv_project_items.DataSource = stringTable;
-            dgv_project_items.ReadOnly = false;
-            dgv_project_items.EnableHeadersVisualStyles = false; // Allow styling
+            //dgv_project_items.ReadOnly = false;
+            //dgv_project_items.EnableHeadersVisualStyles = false; // Allow styling
 
             // Apply colors after data is fully loaded
             dgv_project_items.DataBindingComplete += (s, e) => ApplyRowStyles();
         }
+
+        public List<SalesProjectItems> MapDataTableToItems(DataTable dt)
+        {
+            var itemsList = new List<SalesProjectItems>();
+
+            var items = dgv_project_items.DataSource;
+
+            foreach (DataRow row in dt.Rows)
+            {
+                var item = new SalesProjectItems
+                {
+                    items_id = Convert.ToInt32(row["items_id"]),
+                    bom_id = Convert.ToInt32(row["bom_id"]),
+                    item_id = Convert.ToInt32(row["item_id"]),
+                    based_id = Convert.ToInt32(row["based_id"]),
+                    reference_code = row["reference_code"]?.ToString(),
+                    man_days = Convert.ToInt32(row["man_days"]),
+                    labor_rate = Convert.ToDecimal(row["labor_rate"]),
+                    components = row["components"]?.ToString(),
+                    model = row["model"]?.ToString(),
+                    item_inv_type = row["item_inv_type"]?.ToString(),
+                    qty = Convert.ToInt32(row["qty"]),
+                    list_price_per_unit = Convert.ToDecimal(row["list_price_per_unit"]),
+                    unit_price = Convert.ToDecimal(row["unit_price"]),
+                    multiplier = row["multiplier"]?.ToString(),
+                    discount_price = Convert.ToDecimal(row["discount_price"]),
+                    component_total = Convert.ToDecimal(row["component_total"]),
+                    notes = row["notes"]?.ToString(),
+                    template_id = Convert.ToInt32(row["template_id"])
+                };
+
+                //item hopefully added here
+            }
+
+            return itemsList;
+        }
+
 
         public void SetProjectWiring(DataTable dt)
         {
@@ -762,32 +822,32 @@ namespace smpc_sales_system.Pages.Sales
         {
             foreach (DataGridViewRow row in dgv_project_items.Rows)
             {
-                if (!row.IsNewRow)
-                {
-                    DataGridViewCell cell = row.Cells[9];
-                    int nodeTypeColumnIndex = dgv_project_items.Columns["project_items_node_type"].Index;
-                    string nodeType = row.Cells[nodeTypeColumnIndex].Value?.ToString().Trim();
+                //if (!row.IsNewRow)
+                //{
+                //    DataGridViewCell cell = row.Cells[9];
+                //    int nodeTypeColumnIndex = dgv_project_items.Columns["project_items_node_type"].Index;
+                //    string nodeType = row.Cells[nodeTypeColumnIndex].Value?.ToString().Trim();
 
-                    //MessageBox.Show($"Processing Row: {nodeType}");
+                //    //MessageBox.Show($"Processing Row: {nodeType}");
 
-                    row.DefaultCellStyle.BackColor = Color.White; // Reset
+                //    row.DefaultCellStyle.BackColor = Color.White; // Reset
 
-                    if (nodeType == "Parent")
-                    {
-                        cell.Style.BackColor = Color.Yellow;
-                        //MessageBox.Show("red");
-                    }
-                    else if (nodeType == "Leaf")
-                    {
-                        cell.Style.BackColor = Color.LightCoral;
-                        //MessageBox.Show("yellow");
-                    }
-                    else if (string.IsNullOrWhiteSpace(nodeType))
-                    {
-                        cell.Style.BackColor = Color.LightGreen;
-                        // MessageBox.Show("none");
-                    }
-                }
+                //    if (nodeType == "Parent")
+                //    {
+                //        cell.Style.BackColor = Color.Yellow;
+                //        //MessageBox.Show("red");
+                //    }
+                //    else if (nodeType == "Leaf")
+                //    {
+                //        cell.Style.BackColor = Color.LightCoral;
+                //        //MessageBox.Show("yellow");
+                //    }
+                //    else if (string.IsNullOrWhiteSpace(nodeType))
+                //    {
+                //        cell.Style.BackColor = Color.LightGreen;
+                //        // MessageBox.Show("none");
+                //    }
+                //}
             }
 
             dgv_project_items.Invalidate(); // Force UI update
@@ -840,8 +900,10 @@ namespace smpc_sales_system.Pages.Sales
 
         public void SetFinalPumpData(string FLA, string Voltage, string Final)
         {
+            //The first parameter is Id, the 2nd paramter ContentId
+            //When adding
 
-            dgv_final.Rows.Add(Final.ToString(), FLA.ToString(), Voltage.ToString());
+            dgv_final.Rows.Add(0,0, Final.ToString(), FLA.ToString(), Voltage.ToString());
 
             decimal fla_highest = 0;
             decimal voltage_highest = 0;
@@ -854,8 +916,8 @@ namespace smpc_sales_system.Pages.Sales
 
                 if (row.IsNewRow) continue;
 
-                decimal fla = decimal.Parse(row.Cells["fla"].Value.ToString());
-                decimal voltage = decimal.Parse(row.Cells["voltage"].Value.ToString());
+                decimal fla = decimal.TryParse(row.Cells["fla"].Value?.ToString() ?? "0", out var fl) ? fl : 0m;
+                decimal voltage = decimal.TryParse(row.Cells["voltage"].Value?.ToString() ?? "0", out var vol) ? vol : 0m;
 
                 if (fla > fla_highest)
                 {
@@ -889,7 +951,7 @@ namespace smpc_sales_system.Pages.Sales
 
             //ECB To Controller Value AMP REQ.
 
-            if (checkBox_Wiring.Checked)
+            if (chk_wiring.Checked)
                 dgv_wiring.Rows[0].Cells["project_wiring_wire_amp"].Value = fla_highest * Pump_Total_Qty * 1.25m;
 
         }
@@ -930,7 +992,7 @@ namespace smpc_sales_system.Pages.Sales
             //dgv_project_items.Rows.Insert(index);
             DataGridViewRow newRow = dgv_project_items.Rows[index - 1];
             newRow.Cells["project_items_bom_id"].Value = bomid;
-            newRow.Cells["project_items_item_id"].Value = itemid;
+            newRow.Cells["item_id"].Value = itemid;
             newRow.Cells["project_items_model"].Value = model;
             // add styles soon
         }
@@ -947,7 +1009,7 @@ namespace smpc_sales_system.Pages.Sales
 
             DataGridViewRow newRow = dgv_project_items.Rows[index];
 
-            newRow.Cells["project_items_item_id"].Value = itemid;
+            newRow.Cells["item_id"].Value = itemid;
             newRow.Cells["project_items_components"].Value = itemName;
             newRow.Cells["project_items_model"].Value = model;
 
@@ -970,7 +1032,7 @@ namespace smpc_sales_system.Pages.Sales
             newRow.Cells[4].Style = cellStyle2; // Style for size (Column 4)
         }
 
-        private DataTable stockQuickDataTable;
+        private DataTable stockProjectItemDataTable;
 
         public DataTable ItemList { get; set; } = new DataTable();
         public DataTable BomHead { get; set; } = new DataTable();
@@ -980,9 +1042,12 @@ namespace smpc_sales_system.Pages.Sales
         private async void ItemSetUC_Load(object sender, EventArgs e) 
         {
 
-            stockQuickDataTable = Helpers.GetDataTableFromUnboundGrid(dgv_project_items);
+            stockProjectItemDataTable = Helpers.GetDataTableFromUnboundGrid(dgv_project_items);
 
             var dt = await ProjectTemplatesService.GetProjectTemplates();
+
+            if (dt == null || dt.SalesProjectTemplate == null) return;
+
             DataTable listOfTemplates = JsonHelper.ToDataTable(dt.SalesProjectTemplate);
             DataTable templates = JsonHelper.ToDataTable(dt.sales_project_template_child);
 
@@ -1026,7 +1091,7 @@ namespace smpc_sales_system.Pages.Sales
                 dgv_project_items.Rows.Clear(); // fallback for unbound
             }
 
-            dgv_project_items.DataSource = stockQuickDataTable.Clone();
+            dgv_project_items.DataSource = stockProjectItemDataTable.Clone();
         }
 
         bool isLoadingTemplate = false;
@@ -1111,7 +1176,7 @@ namespace smpc_sales_system.Pages.Sales
                 else
                     LastRefInt = 0;
 
-                if (checkBox_Wiring.Checked)
+                if (chk_wiring.Checked)
                 {
                     AddWiringRowsComponent(LastRefInt);
                 }
@@ -1596,6 +1661,7 @@ namespace smpc_sales_system.Pages.Sales
             var parts = referenceCode.Split('.');
 
             // Parse and increment the last part
+            // Parse and increment the last part
             if (int.TryParse(parts[parts.Length - 1], out int lastNumber))
             {
                 lastNumber++;
@@ -1931,9 +1997,9 @@ namespace smpc_sales_system.Pages.Sales
 
         private void checkBox_Wiring_CheckedChanged(object sender, EventArgs e)
         {
-            WiringVisible(checkBox_Wiring.Checked);
+            WiringVisible(chk_wiring.Checked);
 
-            if (checkBox_Wiring.Checked)
+            if (chk_wiring.Checked)
                 AddWiringRowsComponent(LastRefInt);
             else
                 RemoveWiringRowsComponentByBaseReference();
@@ -1947,6 +2013,7 @@ namespace smpc_sales_system.Pages.Sales
             label7.Visible = checkBox;
             txt_VOLT.Visible = checkBox;
             label58.Visible = checkBox;
+            cmb_assign_engineer_user_id.Visible = checkBox;
 
         }
 
@@ -2161,9 +2228,82 @@ namespace smpc_sales_system.Pages.Sales
 
         private void dgv_project_items_CellValueChanged(object sender, DataGridViewCellEventArgs e)
         {
+
+            if (e.RowIndex < 0 || e.ColumnIndex < 0)
+                return;
             //ComputeByReferenceHierarchy(dgv_project_items);
             //ComputeReferenceNonHierarchy(dgv_project_items);
             //ProjectComputationLoop();
+        }
+
+        public static void HandleNumericColumns(DataGridView dgv, DataGridViewEditingControlShowingEventArgs e, string[] numericColumnNames, params char[] extraAllowedChars)
+        {
+            if (dgv.CurrentCell == null)
+                return;
+
+            string columnName = dgv.Columns[dgv.CurrentCell.ColumnIndex].Name;
+
+            // Always detach first
+            e.Control.KeyPress -= NumericColumn_KeyPress;
+
+            if (numericColumnNames.Contains(columnName))
+            {
+                // Pass allowed characters via Tag
+                if (e.Control is TextBox tb)
+                {
+                    tb.Tag = extraAllowedChars;
+                }
+
+                e.Control.KeyPress += NumericColumn_KeyPress;
+            }
+        }
+
+        private static void NumericColumn_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            var tb = sender as TextBox;
+            var extraAllowedChars = tb?.Tag as char[];
+
+            // Allow control keys
+            if (char.IsControl(e.KeyChar))
+                return;
+
+            // Allow digits
+            if (char.IsDigit(e.KeyChar))
+                return;
+
+            // Allow decimal point (only once)
+            if (e.KeyChar == '.' && tb != null && !tb.Text.Contains("."))
+                return;
+
+            // Allow extra characters
+            if (extraAllowedChars != null &&
+                extraAllowedChars.Contains(e.KeyChar))
+                return;
+
+            // Block everything else
+            e.Handled = true;
+        }
+
+        public List<SalesProjectHistory> GetHistoryList()
+        {
+            var historyList = new List<SalesProjectHistory>();
+
+            // Example: loop through your DataTable or whatever source
+            //foreach (DataRow row in historySource.Rows)
+            //{
+            //    historyList.Add(new SalesProjectHistory
+            //    {
+            //        HistoryID = Convert.ToUInt32(row["HistoryID"]),
+            //        BasedId = Convert.ToUInt32(row["BasedId"]),
+            //        User = row["User"].ToString(),
+            //        Date = row["Date"].ToString(),
+            //        Time = row["Time"].ToString(),
+            //        OldData = row["OldData"].ToString(),
+            //        NewData = row["NewData"].ToString()
+            //    });
+            //}
+
+            return historyList;
         }
     }
 }
