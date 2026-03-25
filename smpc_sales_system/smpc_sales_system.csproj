@@ -241,131 +241,195 @@
     <Compile Include="Models\SalesProject.cs" />
     <Compile Include="Models\SalesWiringModel.cs" />
     <Compile Include="Models\UserPermissionModel.cs" />
-    <Compile Include="Pages\CRMModal.cs" />
+    <Compile Include="Pages\CRMModal.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Pages\CRMModal.designer.cs">
       <DependentUpon>CRMModal.cs</DependentUpon>
     </Compile>
-    <Compile Include="Pages\ModelSelection.cs" />
+    <Compile Include="Pages\ModelSelection.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Pages\ModelSelection.Designer.cs">
       <DependentUpon>ModelSelection.cs</DependentUpon>
     </Compile>
-    <Compile Include="Pages\PRModal.cs" />
+    <Compile Include="Pages\PRModal.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Pages\PRModal.Designer.cs">
       <DependentUpon>PRModal.cs</DependentUpon>
     </Compile>
-    <Compile Include="Pages\ProjectTemplate.cs" />
+    <Compile Include="Pages\ProjectTemplate.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Include="Pages\ProjectTemplate.Designer.cs">
       <DependentUpon>ProjectTemplate.cs</DependentUpon>
     </Compile>
-    <Compile Include="Pages\ProjectTemplateSetup.cs" />
+    <Compile Include="Pages\ProjectTemplateSetup.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Pages\ProjectTemplateSetup.Designer.cs">
       <DependentUpon>ProjectTemplateSetup.cs</DependentUpon>
     </Compile>
-    <Compile Include="Pages\Sales\BomSelection.cs" />
+    <Compile Include="Pages\Sales\BomSelection.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Pages\Sales\BomSelection.Designer.cs">
       <DependentUpon>BomSelection.cs</DependentUpon>
     </Compile>
-    <Compile Include="Pages\Sales\CRM.cs" />
+    <Compile Include="Pages\Sales\CRM.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Include="Pages\Sales\CRM.Designer.cs">
       <DependentUpon>CRM.cs</DependentUpon>
     </Compile>
-    <Compile Include="Pages\Sales\frm_canvas_modal.cs" />
+    <Compile Include="Pages\Sales\frm_canvas_modal.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Pages\Sales\frm_canvas_modal.Designer.cs">
       <DependentUpon>frm_canvas_modal.cs</DependentUpon>
     </Compile>
-    <Compile Include="Pages\Sales\ItemImageModal.cs" />
+    <Compile Include="Pages\Sales\ItemImageModal.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Pages\Sales\ItemImageModal.Designer.cs">
       <DependentUpon>ItemImageModal.cs</DependentUpon>
     </Compile>
-    <Compile Include="Pages\Sales\ItemImagesModal.cs" />
+    <Compile Include="Pages\Sales\ItemImagesModal.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Pages\Sales\ItemImagesModal.Designer.cs">
       <DependentUpon>ItemImagesModal.cs</DependentUpon>
     </Compile>
-    <Compile Include="Pages\Sales\ItemImageUC.cs" />
+    <Compile Include="Pages\Sales\ItemImageUC.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Include="Pages\Sales\ItemImageUC.Designer.cs">
       <DependentUpon>ItemImageUC.cs</DependentUpon>
     </Compile>
-    <Compile Include="Pages\Sales\itemsetModal.cs" />
+    <Compile Include="Pages\Sales\itemsetModal.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Pages\Sales\itemsetModal.Designer.cs">
       <DependentUpon>itemsetModal.cs</DependentUpon>
     </Compile>
-    <Compile Include="Pages\Sales\ItemSetUC.cs" />
+    <Compile Include="Pages\Sales\ItemSetUC.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Include="Pages\Sales\ItemSetUC.Designer.cs">
       <DependentUpon>ItemSetUC.cs</DependentUpon>
     </Compile>
-    <Compile Include="Pages\ModelModal.cs" />
+    <Compile Include="Pages\ModelModal.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Pages\ModelModal.Designer.cs">
       <DependentUpon>ModelModal.cs</DependentUpon>
     </Compile>
-    <Compile Include="Pages\Sales\ProjectTest.cs" />
+    <Compile Include="Pages\Sales\ProjectTest.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Pages\Sales\ProjectTest.Designer.cs">
       <DependentUpon>ProjectTest.cs</DependentUpon>
     </Compile>
-    <Compile Include="Pages\Sales\PumpItemModal.cs" />
+    <Compile Include="Pages\Sales\PumpItemModal.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Pages\Sales\PumpItemModal.Designer.cs">
       <DependentUpon>PumpItemModal.cs</DependentUpon>
     </Compile>
-    <Compile Include="Pages\Sales\PurchaseRequisition.cs" />
+    <Compile Include="Pages\Sales\PurchaseRequisition.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Include="Pages\Sales\PurchaseRequisition.designer.cs">
       <DependentUpon>PurchaseRequisition.cs</DependentUpon>
     </Compile>
-    <Compile Include="Pages\Sales\SalesPrintModal.cs" />
+    <Compile Include="Pages\Sales\SalesPrintModal.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Pages\Sales\SalesPrintModal.Designer.cs">
       <DependentUpon>SalesPrintModal.cs</DependentUpon>
     </Compile>
-    <Compile Include="Pages\Sales\TemplateSelectionModal.cs" />
+    <Compile Include="Pages\Sales\TemplateSelectionModal.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Pages\Sales\TemplateSelectionModal.Designer.cs">
       <DependentUpon>TemplateSelectionModal.cs</DependentUpon>
     </Compile>
-    <Compile Include="Pages\Sales\UC_History.cs" />
+    <Compile Include="Pages\Sales\UC_History.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Include="Pages\Sales\UC_History.Designer.cs">
       <DependentUpon>UC_History.cs</DependentUpon>
     </Compile>
-    <Compile Include="Pages\SearchOrder.cs" />
+    <Compile Include="Pages\SearchOrder.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Pages\SearchOrder.Designer.cs">
       <DependentUpon>SearchOrder.cs</DependentUpon>
     </Compile>
-    <Compile Include="Pages\VersionModal.cs" />
+    <Compile Include="Pages\VersionModal.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Pages\VersionModal.Designer.cs">
       <DependentUpon>VersionModal.cs</DependentUpon>
     </Compile>
-    <Compile Include="Pages\ItemModal.cs" />
+    <Compile Include="Pages\ItemModal.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Pages\ItemModal.Designer.cs">
       <DependentUpon>ItemModal.cs</DependentUpon>
     </Compile>
-    <Compile Include="Pages\Layout.cs" />
+    <Compile Include="Pages\Layout.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Pages\Layout.Designer.cs">
       <DependentUpon>Layout.cs</DependentUpon>
     </Compile>
-    <Compile Include="Pages\Login.cs" />
+    <Compile Include="Pages\Login.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Pages\Login.Designer.cs">
       <DependentUpon>Login.cs</DependentUpon>
     </Compile>
-    <Compile Include="Pages\Sales\Applications.cs" />
+    <Compile Include="Pages\Sales\Applications.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Include="Pages\Sales\Applications.Designer.cs">
       <DependentUpon>Applications.cs</DependentUpon>
     </Compile>
-    <Compile Include="Pages\Sales\Opportunities.cs" />
+    <Compile Include="Pages\Sales\Opportunities.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Include="Pages\Sales\Opportunities.Designer.cs">
       <DependentUpon>Opportunities.cs</DependentUpon>
     </Compile>
-    <Compile Include="Pages\Sales\Orders.cs" />
+    <Compile Include="Pages\Sales\Orders.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Include="Pages\Sales\Orders.Designer.cs">
       <DependentUpon>Orders.cs</DependentUpon>
     </Compile>
-    <Compile Include="Pages\Sales\Quotation.cs" />
+    <Compile Include="Pages\Sales\Quotation.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Include="Pages\Sales\Quotation.designer.cs">
       <DependentUpon>Quotation.cs</DependentUpon>
     </Compile>
-    <Compile Include="Pages\Sales\SetupSelectionModal.cs" />
+    <Compile Include="Pages\Sales\SetupSelectionModal.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Pages\Sales\SetupSelectionModal.Designer.cs">
       <DependentUpon>SetupSelectionModal.cs</DependentUpon>
     </Compile>
-    <Compile Include="Pages\Sales\ShipTypeSetup.cs" />
+    <Compile Include="Pages\Sales\ShipTypeSetup.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Include="Pages\Sales\ShipTypeSetup.designer.cs">
       <DependentUpon>ShipTypeSetup.cs</DependentUpon>
     </Compile>
-    <Compile Include="Pages\SetupModal.cs" />
+    <Compile Include="Pages\SetupModal.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Pages\SetupModal.Designer.cs">
       <DependentUpon>SetupModal.cs</DependentUpon>
     </Compile>
