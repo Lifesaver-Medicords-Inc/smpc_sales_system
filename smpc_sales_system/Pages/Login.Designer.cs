@@ -53,7 +53,7 @@ namespace smpc_sales_app.Pages
             this.pnl_auth.Name = "pnl_auth";
             this.pnl_auth.Size = new System.Drawing.Size(296, 106);
             this.pnl_auth.TabIndex = 0;
-            this.pnl_auth.Paint += new System.Windows.Forms.PaintEventHandler(this.pnl_auth_Paint);
+            
             // 
             // btn_cancel
             // 
