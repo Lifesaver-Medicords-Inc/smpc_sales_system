@@ -483,7 +483,7 @@ namespace smpc_sales_app.Pages.Sales
             this.tabControl.SelectedIndex = 0;
             this.tabControl.Height = 600;
             this.tabControl.Width = System.Windows.Forms.Screen.AllScreens.Length;
-            //this.Size = new Size(1386 - 80, 950);
+            this.Size = new Size(1386 - 80, 950);
             isProject = false;
             IsEdit = false;
 
@@ -1147,8 +1147,27 @@ namespace smpc_sales_app.Pages.Sales
                 //var childData = Helpers.GetControlsValues(pnl_list);
                 int id;
                 bool isParsed = int.TryParse(txt_id.Text, out id);
-                var bill_to_id = int.Parse(cmb_bill_to.SelectedValue.ToString());
-                var ship_to_id = int.Parse(cmb_ship_to.SelectedValue.ToString());
+
+                int bill_to_id = 0;
+                int ship_to_id = 0;
+
+                if (cmb_bill_to.SelectedValue == null)
+                {
+                    MessageBox.Show("bill to is required.");
+                }
+                else
+                {
+                    bill_to_id = int.Parse(cmb_bill_to.SelectedValue.ToString());
+                }
+
+                if (cmb_ship_to.SelectedValue == null)
+                {
+                    MessageBox.Show("ship to is required.");
+                }
+                else
+                {
+                    ship_to_id = int.Parse(cmb_ship_to.SelectedValue.ToString());
+                }
 
                 parentData["id"] = id;
 
@@ -1157,7 +1176,7 @@ namespace smpc_sales_app.Pages.Sales
                     parentData.Remove("id");
                 }
 
-                parentData["bill_to_id"] = bill_to_id;
+                 
                 parentData["ship_to_id"] = ship_to_id;
                 parentData["isProject"] = false;
 
@@ -3009,6 +3028,7 @@ namespace smpc_sales_app.Pages.Sales
                 myControl.CellClickedModel += CellClickedModelUC;
                 myControl.CellEdited += Cell_EditedUC;
                 myControl.FinalTxtBoxClicked += FinalTxtBoxClicked;
+                myControl.setMultiplier(fetchMultiplierData());
 
                 // Add the UserControl to the new tab
                 newTabPage.Controls.Add(myControl);
@@ -3176,9 +3196,6 @@ namespace smpc_sales_app.Pages.Sales
                 ResetControls(pnl_footer);
 
                 await fetchSalesProject();
-
-
-
             }
             catch(Exception ex)
             {
@@ -3236,7 +3253,7 @@ namespace smpc_sales_app.Pages.Sales
         }
         private void btn_print_Click(object sender, EventArgs e)
         {
-            string documentNo = txt_document_no.Text.Trim();
+              string documentNo = txt_document_no.Text.Trim();
             string proj = txt_project_name.Text.Trim();
             if (string.IsNullOrEmpty(proj))
             {
@@ -3520,6 +3537,7 @@ namespace smpc_sales_app.Pages.Sales
 
             Panel[] panels = { pnl_header, pnl_footer };
             Helpers.ReadOnlyControls(panels);
+            Helpers.ResetControls(panels);
             //pnl_header.Enabled = false;
             //pnl_footer.Enabled = false;
 

@@ -297,7 +297,7 @@ namespace smpc_sales_app.Pages.Sales
                         DataRow[] itemRows = ItemList.Select($"id = '{itemId}'");
                         DataRow[] itemspecRows = ItemSpecs.Select($"based_id = '{itemId}'");
                         // Add item details to newRow
-                        if (itemRows.Length > 0)
+                        if (itemRows.Length > 0 && itemspecRows.Length > 0)
                         {
                             newRow["item_description"] = itemspecRows[0]["long_description"].ToString();
                             newRow["item_code"] = itemRows[0]["item_code"].ToString();

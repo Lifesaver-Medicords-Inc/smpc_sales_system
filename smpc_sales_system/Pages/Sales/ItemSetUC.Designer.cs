@@ -1599,6 +1599,7 @@ namespace smpc_sales_system.Pages.Sales
             // 
             // cmb_assign_engineer_user_id
             // 
+            this.cmb_assign_engineer_user_id.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmb_assign_engineer_user_id.FormattingEnabled = true;
             this.cmb_assign_engineer_user_id.Location = new System.Drawing.Point(817, 937);
             this.cmb_assign_engineer_user_id.Name = "cmb_assign_engineer_user_id";
