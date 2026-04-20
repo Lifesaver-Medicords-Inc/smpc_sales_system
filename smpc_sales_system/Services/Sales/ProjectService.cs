@@ -58,6 +58,12 @@ namespace smpc_sales_system.Services.Sales
             return response;
         }
 
+        public static async Task<ApiResponseModel> Update(Dictionary<string, dynamic> data)
+        {
+            var response = await RequestToApi<ApiResponseModel>.Put(url, data);
+            return response;
+        }
+
         public static async Task<ApiResponseModel> UpdateConditions(Dictionary<string, dynamic> data)
         {
             var response = await RequestToApi<ApiResponseModel>.Put(url_conditions, data);

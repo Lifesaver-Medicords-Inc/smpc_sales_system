@@ -40,6 +40,7 @@ namespace smpc_sales_system.Pages.Sales
         public event EventHandler CellClickedCanvas;
         public event EventHandler FinalTxtBoxClicked;
         public event EventHandler DeleteReferenceCode;
+        public event EventHandler GetEngineerUsers;
 
         public ItemSetUC()
         {
@@ -56,8 +57,8 @@ namespace smpc_sales_system.Pages.Sales
             //Default hide wiring
             WiringVisible(false);
 
-            // project template
-
+            //Get the User for Engineering
+            
         }
 
         public void SetUnitsOfMeasure(DataTable qty, DataTable qty_set)
@@ -161,8 +162,6 @@ namespace smpc_sales_system.Pages.Sales
             timer_send_message_cell_wiring.Stop();
             CellChangedWiring?.Invoke(this, EventArgs.Empty);
         }
-
-
         private void timer_update_conditions_Tick(object sender, EventArgs e)
         {
             timer_update_conditions.Stop();
@@ -251,7 +250,7 @@ namespace smpc_sales_system.Pages.Sales
                 var pfs = new SalesProjectContentFinal()
                 {
                     id = int.TryParse(final["Id"]?.ToString(), out int tempId) ? tempId : 0,
-                    content_id = int.TryParse(final["content_id"]?.ToString(), out int tempContentId) ? tempContentId : 0,
+                    sales_project_content_id = int.TryParse(final["content_id"]?.ToString(), out int tempContentId) ? tempContentId : 0,
                     final = final["final"]?.ToString() ?? string.Empty,
                     fla = decimal.TryParse(final["fla"]?.ToString(), out decimal tempFla) ? tempFla : 0,
                     voltage = decimal.TryParse(final["voltage"]?.ToString(), out decimal tempVoltage) ? tempVoltage : 0,
@@ -265,7 +264,8 @@ namespace smpc_sales_system.Pages.Sales
             data["sales_project_content_final"] = finals;
 
             //this is not include in panel but we need to get the value of wiring for the project
-            data["wiring"] = chk_wiring.Checked;
+            data["is_wiring"] = chk_wiring.Checked;
+            data["template_project_id"] = cmb_template_project.SelectedValue;
             data["assign_engineer_user_id"] = cmb_assign_engineer_user_id.SelectedValue;
 
             return data;
@@ -288,7 +288,7 @@ namespace smpc_sales_system.Pages.Sales
                     based_id = int.TryParse(item["project_wiring_based_id"]?.ToString(), out int based_id_Val) ? based_id_Val : 0,
                     materials = item["project_wiring_materials"]?.ToString() ?? string.Empty,
                     //amp_req = item["project_wiring_amp_req"]?.ToString() ?? string.Empty,
-                    wire_amp = item["project_wiring_wire_amp"]?.ToString() ?? string.Empty,
+                    wire_req = item["project_wiring_wire_amp"]?.ToString() ?? string.Empty,
                     description = item["project_wiring_description"]?.ToString() ?? string.Empty,
                     //num_of_wires_set = item["project_wiring_num_of_wires_set"]?.ToString() ?? string.Empty,
                     //num_of_qty_set = item["project_wiring_num_of_qty_set"]?.ToString() ?? string.Empty,
@@ -314,7 +314,7 @@ namespace smpc_sales_system.Pages.Sales
 
 
         // GETTING THE PROJECT ITEMS FROM THE DGV
-        public Dictionary<string, object> GetProjectItems()
+        public Dictionary<string, object>  GetProjectItems()
         {
             var projectSource = Helpers.ConvertDataGridViewToDataTable(dgv_project_items);
             List<SalesProjectItems> items = new List<SalesProjectItems>();
@@ -327,20 +327,12 @@ namespace smpc_sales_system.Pages.Sales
                 {
                     // PK
                     items_id = int.TryParse(item["project_items_id"]?.ToString(), out int tempItemsId) ? tempItemsId : 0,
-
                     item_id = int.TryParse(item["item_id"]?.ToString(), out int tempItemId) ? tempItemId : 0,
                     based_id = int.TryParse(item["project_items_based_id"]?.ToString(), out int tempBasedId) ? tempBasedId : 0,
-
                     bom_id = int.TryParse(item["project_items_bom_id"]?.ToString(), out int tempBomId) ? tempBomId : 0,
-
-                    //node_id = int.TryParse(item["project_items_node_id"]?.ToString(), out int tempNodeId) ? tempNodeId : 0,
-                    //node_name = item["project_items_node_name"]?.ToString() ?? string.Empty,
-                    //parent_node_id = int.TryParse(item["project_items_parent_node_id"]?.ToString(), out int tempParentNode) ? tempParentNode : 0,
-                    //node_order = int.TryParse(item["project_items_node_order"]?.ToString(), out int tempNodeOrder) ? tempNodeOrder : 0,
-                    //node_type = item["project_items_node_type"]?.ToString() ?? string.Empty,
                     reference_code = item["reference_code"]?.ToString() ?? string.Empty,
-                    man_days = int.TryParse(item["reference_code"]?.ToString(), out int manDays) ? manDays : 0,
-                    labor_rate = decimal.TryParse(item["reference_code"]?.ToString(), out decimal laborRate) ? laborRate : 0,
+                    man_days = int.TryParse(item["man_days"]?.ToString(), out int manDays) ? manDays : 0,
+                    labor_rate = decimal.TryParse(item["labor_rate"]?.ToString(), out decimal laborRate) ? laborRate : 0,
                     components = item["project_items_components"]?.ToString() ?? string.Empty,
                     model = item["project_items_model"]?.ToString() ?? string.Empty,
                     item_inv_type = item["project_items_item_inv_type"]?.ToString() ?? string.Empty,
@@ -354,7 +346,7 @@ namespace smpc_sales_system.Pages.Sales
                     discount_price = decimal.TryParse(Helpers.GetCleanedPriceValue(item["project_items_discount"]?.ToString()), out decimal discountPrice) ? discountPrice : 0.0m,
                     component_total = decimal.TryParse(Helpers.GetCleanedPriceValue(item["project_items_line_total"]?.ToString()), out decimal total) ? total : 0.0m,
                 };
-
+                 
 
                 items.Add(spi);
             }
@@ -595,8 +587,25 @@ namespace smpc_sales_system.Pages.Sales
 
         public void SetContentsPanelData(DataTable dt)
         {
-            Panel[] pnls = { pnl_project_content };
+            Panel[] pnls = { pnl_project_content,  };
             Helpers.BindControls(pnls, dt);
+        }
+
+        public void SetTemplateName(string template_id)
+        {
+            txt_template_id.Text = template_id;
+        }
+        public void SetFinalData(DataTable dt)
+        {
+            foreach (DataRow row in dt.Rows)
+            {
+                dgv_final.Rows.Add(row["id"], row["sales_project_content_id"], row["final"], row["fla"], row["voltage"]);
+            }
+        }
+
+        public void SetWiring(string Checked)
+        {
+            chk_wiring.Checked = bool.Parse(Checked);
         }
 
         public Dictionary<string, dynamic> GetSizeUpData()
@@ -618,7 +627,6 @@ namespace smpc_sales_system.Pages.Sales
                         values[key] = val;
                     }
                 }
-
             }
 
             return values;
@@ -641,7 +649,9 @@ namespace smpc_sales_system.Pages.Sales
 
             txt_template_name.Text = TemplateName;
 
-            dgv_project_items.Rows.Clear();
+            //dgv_project_items.Rows.Clear();
+
+            ClearProjectItemsDgv();
 
             //dgv_project_items.Columns[8].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
 
@@ -744,36 +754,75 @@ namespace smpc_sales_system.Pages.Sales
             }
         }
 
+        bool isViewProjectItem = false;
+
         public void SetFetchedItemData(DataTable dt)
         {
-
-            var stringTable = Helpers.ConvertDataTableToStringTable(dt);
-
-            foreach (DataRow row  in stringTable.Rows)
+            try
             {
-                string listprice = row["list_price_per_unit"].ToString();
-                string unitprice = row["unit_price"].ToString();
-                string discountprice = row["discount_price"].ToString();
-                string componenttotal = row["component_total"].ToString();
+                var stringTable = Helpers.ConvertDataTableToStringTable(dt);
 
-                row["list_price_per_unit"] = Helpers.FormatAsCurrency(listprice);
-                row["unit_price"] = Helpers.FormatAsCurrency(unitprice);
-                row["discount_price"] = Helpers.FormatAsCurrency(discountprice);
-                row["component_total"] = Helpers.FormatAsCurrency(componenttotal);
-                
+                string lastRef = null;
+
+                foreach (DataRow row in stringTable.Rows)
+                {
+                    string listprice = row["list_price_per_unit"].ToString();
+                    string unitprice = row["unit_price"].ToString();
+                    string discountprice = row["discount_price"].ToString();
+                    string componenttotal = row["component_total"].ToString();
+
+                    row["list_price_per_unit"] = Helpers.FormatAsCurrency(listprice);
+                    row["unit_price"] = Helpers.FormatAsCurrency(unitprice);
+                    row["discount_price"] = Helpers.FormatAsCurrency(discountprice);
+                    row["component_total"] = Helpers.FormatAsCurrency(componenttotal);
+
+                    string current = row["reference_code"].ToString();
+
+                    if (lastRef == null || CompareRef(current, lastRef) > 0)
+                    {
+                        lastRef = current;
+                    }
+
+                    
+
+                }
+
+                LastRefInt = int.Parse(lastRef);
+
+                int CompareRef(string a, string b)
+                {
+                    var aParts = a.Split('.').Select(int.Parse).ToArray();
+                    var bParts = b.Split('.').Select(int.Parse).ToArray();
+
+                    int length = Math.Max(aParts.Length, bParts.Length);
+
+                    for (int i = 0; i < length; i++)
+                    {
+                        int aVal = i < aParts.Length ? aParts[i] : 0;
+                        int bVal = i < bParts.Length ? bParts[i] : 0;
+
+                        if (aVal != bVal)
+                            return aVal.CompareTo(bVal);
+                    }
+
+                    return 0;
+                }
+
+                DgvProjectItems.DataSource = stringTable;
+
+                isViewProjectItem = true;
+
+
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error setting fetched item data: " + ex.Message);
             }
 
-            //MessageBox.Show(stringTable.Rows.Count.ToString());
-
-            dgv_project_items.DataSource = stringTable;
-            //dgv_project_items.ReadOnly = false;
-            //dgv_project_items.EnableHeadersVisualStyles = false; // Allow styling
-
-            // Apply colors after data is fully loaded
-            dgv_project_items.DataBindingComplete += (s, e) => ApplyRowStyles();
         }
 
-        public List<SalesProjectItems> MapDataTableToItems(DataTable dt)
+        public void MapDataTableToItems(DataTable dt)
         {
             var itemsList = new List<SalesProjectItems>();
 
@@ -804,16 +853,18 @@ namespace smpc_sales_system.Pages.Sales
                 };
 
                 //item hopefully added here
+                itemsList.Add(item);
+
             }
 
-            return itemsList;
+            dgv_project_items.DataSource = itemsList;
         }
 
 
         public void SetProjectWiring(DataTable dt)
         {
             var stringtable = Helpers.ConvertDataTableToStringTable(dt);
-            dgv_wiring.DataSource = stringtable;
+            dgv_wiring.DataSource = dt;
             dgv_wiring.ReadOnly = false;
 
         }
@@ -937,6 +988,7 @@ namespace smpc_sales_system.Pages.Sales
             foreach (DataGridViewRow row in dgv_project_items.Rows)
             {
                 if (row.IsNewRow) continue;
+
 
                 if (row.Cells["project_items_components"].Value == null || row.Cells["project_items_qty"].Value.ToString() == null || row.Cells["project_items_qty"].Value.ToString() == "")
                 {
@@ -1064,15 +1116,19 @@ namespace smpc_sales_system.Pages.Sales
             defaultRow["template_name"] = "-- No Template --";
             listOfTemplates.Rows.InsertAt(defaultRow, 0); // Insert at index 0
 
-            cb_template_project.DataSource = listOfTemplates;
-            cb_template_project.DisplayMember = "template_name";
-            cb_template_project.ValueMember = "template_id";
+            cmb_template_project.DataSource = listOfTemplates;
+            cmb_template_project.DisplayMember = "template_name";
+            cmb_template_project.ValueMember = "template_id";
 
-            cb_template_project.SelectedIndexChanged += cb_template_project_SelectedIndexChanged;
+            cmb_template_project.SelectedIndexChanged += cb_template_project_SelectedIndexChanged;
 
             var dtProjectTemplates = await ProjectService.GetProjects();
 
-            ClearProjectItemsDgv();
+            if (txt_template_id.Text != null && txt_template_id.Text != "")
+                cmb_template_project.SelectedValue = txt_template_id.Text;
+
+            if (!isViewProjectItem)
+                ClearProjectItemsDgv();
 
         }
 
@@ -1099,6 +1155,8 @@ namespace smpc_sales_system.Pages.Sales
 
         private async void cb_template_project_SelectedIndexChanged(object sender, EventArgs e)
         {
+            if (isViewProjectItem)
+                return;
 
             if (isLoadingTemplate)
                 return;
@@ -1109,12 +1167,14 @@ namespace smpc_sales_system.Pages.Sales
             {
                 isLoadingTemplate = true;
 
-                ClearProjectItemsDgv();
+                
+                if (!isViewProjectItem)
+                     ClearProjectItemsDgv();
 
-                if (cb_template_project.SelectedValue == null || cb_template_project.SelectedValue == DBNull.Value)
+                if (cmb_template_project.SelectedValue == null || cmb_template_project.SelectedValue == DBNull.Value)
                     return;
 
-                string templateId = cb_template_project.SelectedValue.ToString();
+                string templateId = cmb_template_project.SelectedValue.ToString();
                 if (templateId == "0")
                     return;
 
@@ -1188,46 +1248,50 @@ namespace smpc_sales_system.Pages.Sales
 
         private void AddWiringRowsComponent(int Reference)
         {
+
             int NewReference = Reference + 1;
 
             DataTable dataSource = dgv_project_items.DataSource as DataTable;
 
-            DataRow newRow = dataSource.NewRow();
+            if (dataSource != null)
+            {
+                DataRow newRow = dataSource.NewRow();
 
-            newRow["components"] = "WIRING MATERIALS";
-            newRow["item_id"] = 0;
-            newRow["reference_code"] = NewReference;
-            newRow["template_id"] = "wiring";
+                newRow["components"] = "WIRING MATERIALS";
+                newRow["item_id"] = 0;
+                newRow["reference_code"] = NewReference;
+                newRow["template_id"] = "wiring";
 
-            dataSource.Rows.Add(newRow);
+                dataSource.Rows.Add(newRow);
 
-            DataRow newRow2 = dataSource.NewRow();
+                DataRow newRow2 = dataSource.NewRow();
 
-            newRow2["components"] = "    CTL-MOTOR";
-            newRow2["item_id"] = 0;
-            newRow2["reference_code"] = NewReference.ToString() + ".1";
-            newRow2["template_id"] = "wiring";
+                newRow2["components"] = "    CTL-MOTOR";
+                newRow2["item_id"] = 0;
+                newRow2["reference_code"] = NewReference.ToString() + ".1";
+                newRow2["template_id"] = "wiring";
 
-            dataSource.Rows.Add(newRow2);
+                dataSource.Rows.Add(newRow2);
 
 
-            DataRow newRow3 = dataSource.NewRow();
+                DataRow newRow3 = dataSource.NewRow();
 
-            newRow3["components"] = "    CTL-ECB";
-            newRow3["item_id"] = 0;
-            newRow3["reference_code"] = NewReference.ToString() + ".2";
-            newRow3["template_id"] = "wiring";
+                newRow3["components"] = "    CTL-ECB";
+                newRow3["item_id"] = 0;
+                newRow3["reference_code"] = NewReference.ToString() + ".2";
+                newRow3["template_id"] = "wiring";
 
-            dataSource.Rows.Add(newRow3);
+                dataSource.Rows.Add(newRow3);
 
-            DataRow newRow4 = dataSource.NewRow();
+                DataRow newRow4 = dataSource.NewRow();
 
-            newRow4["components"] = "WIRING LABOR";
-            newRow4["item_id"] = 0;
-            newRow4["reference_code"] = NewReference + 1;
-            newRow4["template_id"] = "wiring";
+                newRow4["components"] = "WIRING LABOR";
+                newRow4["item_id"] = 0;
+                newRow4["reference_code"] = NewReference + 1;
+                newRow4["template_id"] = "wiring";
 
-            dataSource.Rows.Add(newRow4);
+                dataSource.Rows.Add(newRow4);
+            }
         }
 
         private void RemoveWiringRowsComponentByBaseReference()
@@ -1966,6 +2030,8 @@ namespace smpc_sales_system.Pages.Sales
         {
             ComputeWiringDGV(e);
             CellChangedWiring?.Invoke(this, EventArgs.Empty);
+
+            AddWiringRowsComponentProject();
         }
 
 
@@ -1999,12 +2065,23 @@ namespace smpc_sales_system.Pages.Sales
         {
             WiringVisible(chk_wiring.Checked);
 
+            AddWiringRowsComponentProject();
+        }
+
+        private void AddWiringRowsComponentProject()
+        {
+            //validate the duplication of wiring rows
+            if (dgv_project_items.Rows.Cast<DataGridViewRow>().Any(r => !r.IsNewRow && r.Cells["project_items_template_id"].Value?.ToString() == "wiring"))
+                return;
+
             if (chk_wiring.Checked)
                 AddWiringRowsComponent(LastRefInt);
             else
                 RemoveWiringRowsComponentByBaseReference();
         }
-         
+
+
+
         private void WiringVisible(bool checkBox)
         {
             dgv_wiring.Visible = checkBox;

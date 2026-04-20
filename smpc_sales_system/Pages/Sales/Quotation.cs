@@ -151,29 +151,29 @@ namespace smpc_sales_app.Pages.Sales
                 {
                     var item_data = currentControl.GetProjectItems();
 
-                    if (item_data != null && item_data.ContainsKey("items_id") && Convert.ToInt32(item_data["items_id"]) != 0)
-                    {
-                        MessageBox.Show("update");
-                        var isSuccess = await ProjectService.UpdateProjectItems(item_data);
+                    //if (item_data != null && item_data.ContainsKey("items_id") && Convert.ToInt32(item_data["items_id"]) != 0)
+                    //{
+                    //    MessageBox.Show("update");
+                    //    var isSuccess = await ProjectService.UpdateProjectItems(item_data);
 
-                        if (isSuccess.Success)
-                        {
-                            MessageBox.Show($"Item Updated successfully");
-                        }
-                    }
+                    //    if (isSuccess.Success)
+                    //    {
+                    //        MessageBox.Show($"Item Updated successfully");
+                    //    }
+                    //}
 
-                    if (item_data != null && item_data.ContainsKey("items_id") && Convert.ToInt32(item_data["items_id"]) == 0)
-                    {
-                        MessageBox.Show("add");
-                        item_data["items_id"] = "";
-                        item_data["based_id"] = CurrentProjectItemBasedID;
-                        var isSuccess = await ProjectService.InsertItems(item_data);
+                    //if (item_data != null && item_data.ContainsKey("items_id") && Convert.ToInt32(item_data["items_id"]) == 0)
+                    //{
+                    //    MessageBox.Show("add");
+                    //    item_data["items_id"] = "";
+                    //    item_data["based_id"] = CurrentProjectItemBasedID;
+                    //    var isSuccess = await ProjectService.InsertItems(item_data);
 
-                        if (isSuccess.Success)
-                        {
-                            MessageBox.Show($"Item Added successfully");
-                        }
-                    }
+                    //    if (isSuccess.Success)
+                    //    {
+                    //        MessageBox.Show($"Item Added successfully");
+                    //    }
+                    //}
                 }
             }
         }
@@ -184,46 +184,46 @@ namespace smpc_sales_app.Pages.Sales
             {
                 if (tabControl2.SelectedTab.Controls[0] is ItemSetUC currentControl)
                 {
-                    var item_data = currentControl.GetProjectItems();
-                    if (item_data != null && item_data.ContainsKey("sales_project_items"))
-                    {
-                        var salesProjectItems = (List<SalesProjectItems>)item_data["sales_project_items"];
+                    //var item_data = currentControl.GetProjectItems();
+                    //if (item_data != null && item_data.ContainsKey("sales_project_items"))
+                    //{
+                    //    var salesProjectItems = (List<SalesProjectItems>)item_data["sales_project_items"];
 
-                        var itemsToInsert = salesProjectItems
-                            .Where(item => item.items_id == 0)
-                            .ToList();
+                    //    var itemsToInsert = salesProjectItems
+                    //        .Where(item => item.items_id == 0)
+                    //        .ToList();
 
-                        var itemsToUpdate = salesProjectItems
-                            .Where(item => item.items_id != 0)
-                            .ToList();
+                    //    var itemsToUpdate = salesProjectItems
+                    //        .Where(item => item.items_id != 0)
+                    //        .ToList();
 
-                        if (itemsToUpdate.Any())
-                        {
-                            // prepare update
-                            item_data["sales_project_items"] = itemsToUpdate;
-                            var updateResult = await ProjectService.UpdateProjectItems(item_data);
-                            if (updateResult.Success)
-                                MessageBox.Show("Updated successfully");
-                            else
-                                MessageBox.Show(updateResult.message);
-                        }
+                    //    if (itemsToUpdate.Any())
+                    //    {
+                    //        // prepare update
+                    //        item_data["sales_project_items"] = itemsToUpdate;
+                    //        var updateResult = await ProjectService.UpdateProjectItems(item_data);
+                    //        if (updateResult.Success)
+                    //            MessageBox.Show("Updated successfully");
+                    //        else
+                    //            MessageBox.Show(updateResult.message);
+                    //    }
 
-                        if (itemsToInsert.Any())
-                        {
-                            foreach (var item in itemsToInsert)
-                            {
-                                item.based_id = CurrentProjectItemBasedID;
-                            }
+                    //    if (itemsToInsert.Any())
+                    //    {
+                    //        foreach (var item in itemsToInsert)
+                    //        {
+                    //            item.based_id = CurrentProjectItemBasedID;
+                    //        }
 
-                            item_data["sales_project_items"] = itemsToInsert;
-                            var insertResult = await ProjectService.InsertItems(item_data);
+                    //        item_data["sales_project_items"] = itemsToInsert;
+                    //        var insertResult = await ProjectService.InsertItems(item_data);
 
-                            if (insertResult.Success)
-                                MessageBox.Show("Added successfully");
-                            else
-                                MessageBox.Show(insertResult.message);
-                        }
-                    }
+                    //        if (insertResult.Success)
+                    //            MessageBox.Show("Added successfully");
+                    //        else
+                    //            MessageBox.Show(insertResult.message);
+                    //    }
+                    //}
                 }
             }
         }
@@ -248,36 +248,36 @@ namespace smpc_sales_app.Pages.Sales
                             .Where(item => item.id != 0)
                             .ToList();
 
-                        if (itemsToUpdate.Any())
-                        {
-                            item_data["sales_project_wiring"] = itemsToUpdate;
-                            var updateResult = await ProjectService.UpdateWiring(item_data);
+                        //if (itemsToUpdate.Any())
+                        //{
+                        //    item_data["sales_project_wiring"] = itemsToUpdate;
+                        //    var updateResult = await ProjectService.UpdateWiring(item_data);
 
-                            if (updateResult.Success)
-                                MessageBox.Show("Wiring Updated Successfully");
-                            else
-                                MessageBox.Show(updateResult.message);
-                        }
+                        //    if (updateResult.Success)
+                        //        MessageBox.Show("Wiring Updated Successfully");
+                        //    else
+                        //        MessageBox.Show(updateResult.message);
+                        //}
 
-                        if (itemsToInsert.Any())
-                        {
-                            item_data["sales_project_wiring"] = itemsToInsert;
-                            foreach (var item in itemsToInsert)
-                            {
-                                item.id = null;
-                                item.based_id = CurrentProjectItemBasedID;
-                            }
+                        //if (itemsToInsert.Any())
+                        //{
+                        //    item_data["sales_project_wiring"] = itemsToInsert;
+                        //    foreach (var item in itemsToInsert)
+                        //    {
+                        //        item.id = null;
+                        //        item.based_id = CurrentProjectItemBasedID;
+                        //    }
 
-                            item_data["sales_project_items"] = itemsToInsert;
-                            var insertResult = await ProjectService.InsertWiring(item_data);
+                        //    item_data["sales_project_items"] = itemsToInsert;
+                        //    var insertResult = await ProjectService.InsertWiring(item_data);
 
-                            if (insertResult.Success)
-                                MessageBox.Show("Wiring Added successfully");
-                            else
-                                MessageBox.Show(insertResult.message);
+                        //    if (insertResult.Success)
+                        //        MessageBox.Show("Wiring Added successfully");
+                        //    else
+                        //        MessageBox.Show(insertResult.message);
 
 
-                        }
+                        //}
                     }
                 }
             }
@@ -489,7 +489,7 @@ namespace smpc_sales_app.Pages.Sales
 
             fetchQuotationDetails();
 
-            bind();
+            //bind();
         }
         private void btn_project_Click(object sender, EventArgs e)
         {
@@ -509,7 +509,7 @@ namespace smpc_sales_app.Pages.Sales
             this.tabControl.Height = 600;
             this.Size = new Size(1386 - 80, 2354);
 
-            // set state 
+            // set state
             isProject = true;
 
             UC_History h = new UC_History();
@@ -629,6 +629,9 @@ namespace smpc_sales_app.Pages.Sales
 
                 await Task.Delay(2000); // optional wait
                 bind(true);
+
+                createFilterViewDgvQuickQouteDetails();
+
             }
             else
             {
@@ -644,9 +647,11 @@ namespace smpc_sales_app.Pages.Sales
         }
         public DataTable dt_multiplier { get; set; }
         public DataTable dt_content { get; set; }
+        public DataTable dt_content_final { get; set; }
         public DataTable dt_advanced_conditions { get; set; }
         public DataTable dt_items { get; set; }
         public DataTable dt_wiring { get; set; }
+
 
         public int CurrentProjectItemBasedID { get; set; }
 
@@ -745,17 +750,23 @@ namespace smpc_sales_app.Pages.Sales
                 return;
             }
 
-
             List<SalesProjectItemSet> fetchedTabs = data.sales_project_item_set;
+            
+            //get the content final
+            var allFinals = data.sales_project_content
+            .Where(c => c.sales_project_content_final != null)
+            .SelectMany(c => c.sales_project_content_final)
+            .ToList();
 
 
             dt_multiplier = JsonHelper.ToDataTable(data.sales_project_multiplier);
             dt_content = JsonHelper.ToDataTable(data.sales_project_content);
+            dt_content_final = JsonHelper.ToDataTable(allFinals);
             dt_advanced_conditions = JsonHelper.ToDataTable(data.sales_project_content_advanced_condition);
             dt_items = JsonHelper.ToDataTable(data.sales_project_items);
             dt_wiring = JsonHelper.ToDataTable(data.sales_project_wiring);
 
-            //Helpers.BindControls(pnls, dt2, selectedProject);s
+            //Helpers.BindControls(pnls, dt2, selectedProject);
 
             string selectedSalesQuotationId = project_quote.Rows[0]["id"]?.ToString() ?? null;
             this.selectedProjectID = selectedSalesQuotationId;
@@ -804,6 +815,9 @@ namespace smpc_sales_app.Pages.Sales
                 DataView contentView = new DataView(dt_content);
                 contentView.RowFilter = $"based_id = '{tab.itemset_id}'";
 
+                DataView contentFinalView = new DataView(dt_content_final);
+                contentFinalView.RowFilter = $"sales_project_content_id = '{tab.itemset_id}'";
+
                 DataView conditionsView = new DataView(dt_advanced_conditions);
                 conditionsView.RowFilter = $"based_id = '{tab.itemset_id}'";
 
@@ -817,6 +831,12 @@ namespace smpc_sales_app.Pages.Sales
 
                 UC.SetAdvancedPanelData(conditionsView.ToTable());
                 UC.SetContentsPanelData(contentView.ToTable());
+                UC.SetFinalData(contentFinalView.ToTable());
+
+                //this is not using any panel but just to set the value of template name and wiring for reference in saving and websocket updates
+                UC.SetTemplateName(contentView.ToTable().Rows[0]["template_project_id"]?.ToString() ?? "0");
+                UC.SetWiring(contentView.ToTable().Rows[0]["is_wiring"]?.ToString() ?? "false");
+
 
                 newTab.Controls.Add(UC);
                 tabControl2.TabPages.Add(newTab);
@@ -993,25 +1013,23 @@ namespace smpc_sales_app.Pages.Sales
                 IsProject();
             }
         }
-        public SalesProjectItemSet GetProjectItemSet()
+
+        private Dictionary<string, object> GetProjectItemSet(string tabNumber)
         {
-            TabPage selectedTab = this.tabControl2.SelectedTab;
-            if (selectedTab != null && !selectedTab.Text.StartsWith("+"))
-            {
-                return new SalesProjectItemSet
-                {
-                    tab_number = selectedTab.Text
-                };
-            }
-            return new SalesProjectItemSet();
+           return new Dictionary<string, object>
+                        {
+                            { "based_id", 0 },
+                            { "tab_number", tabNumber }
+                        };
         }
-        private async void IsProject()
+
+        private async void  IsProject()
         {
             Panel[] pnl_list = { pnl_header, pnl_footer, pnl_project_name };
             var pnl_quotation = Helpers.GetControlsValues(pnl_list);
 
             pnl_quotation["project_name"] = txt_project_name.Text.Trim();
-
+             
             //
             // Checker if project name is null or its empty it would not proceed.
             if (string.IsNullOrWhiteSpace(txt_project_name.Text))
@@ -1040,67 +1058,83 @@ namespace smpc_sales_app.Pages.Sales
                 multipliers.Add(mult);
             }
 
-            ItemSetUC UC = new ItemSetUC();
-            TabPage selectedTab = this.tabControl2.SelectedTab;
+                pnl_quotation["sales_project_multiplier"] = multipliers;
 
-            if (selectedTab != null && selectedTab.Controls.Count > 0)
+            var allTabsData = new List<Dictionary<string, object>>();
+
+            foreach (TabPage selectedTab in this.tabControl2.TabPages)
             {
-                var selectedControl = selectedTab.Controls[0] as ItemSetUC;
-
-                if (selectedControl != null)
+                if (selectedTab != null && selectedTab.Controls.Count > 0)
                 {
-                    pnl_quotation["sales_project_multiplier"] = multipliers;
-                    pnl_quotation["sales_project_history"] = selectedControl.GetHistoryList();
-                    pnl_quotation["sales_project_item_set"] = GetProjectItemSet();
-                    pnl_quotation["sales_project_content"] = selectedControl.GetProjectContentsData();
-                    pnl_quotation["sales_project_content_advanced_condition"] = selectedControl.GetAdvancedConditionsData();
-                    pnl_quotation["sales_project_items"] = selectedControl.GetProjectItems()["sales_project_items"];
-                    pnl_quotation["sales_project_wiring"] = selectedControl.GetProjectWiringData()["sales_project_wiring"];
+                    var selectedControl = selectedTab.Controls[0] as ItemSetUC;
 
-                    if (!ConvertToInt(pnl_quotation, "customer_id", "Invalid customer ID"))
+                    if (selectedControl != null)
                     {
-                        return;
-                    }
+                        var tabData = new Dictionary<string, object>();
 
-                    if (isNewRecord)
-                        pnl_quotation["id"] = 0;
-                    
-                    if (IsEdit)
-                        pnl_quotation["id"] = int.Parse(pnl_quotation["id"]);
-
-
-                    pnl_quotation["percent_discount"] = float.Parse(txt_additional_discount.Text);
-                    pnl_quotation["isProject"] = true;
-
-                    if (isNewRecord)
-                    {
-                        var post = await ProjectService.Insert(pnl_quotation);
-                        if (post.Success)
-                            {
-                                MessageBox.Show("Saved");
-
-                                SetNewFormMode(false);
-                            }
-                        else
-                            MessageBox.Show(post.message);
-                    }
-                    
-                    if (IsEdit)
-                    {
-                        var edit = await ProjectService.UpdateProjectItems(pnl_quotation);
-
-                        if (edit.Success)
+                        tabData["sales_project_item_set"] = new Dictionary<string, object>
                         {
-                            MessageBox.Show("Updated");
+                            { "based_id", 0 },
+                            { "tab_number", selectedTab.Text }
+                        };
+
+
+                        tabData["sales_project_history"] = selectedControl.GetHistoryList();
+                        tabData["sales_project_content"] = selectedControl.GetProjectContentsData();
+                        tabData["sales_project_content_advanced_condition"] = selectedControl.GetAdvancedConditionsData();
+                        tabData["sales_project_items"] = selectedControl.GetProjectItems()["sales_project_items"];
+                        tabData["sales_project_wiring"] = selectedControl.GetProjectWiringData()["sales_project_wiring"];
+
+                        allTabsData.Add(tabData);
+                    }
+                }
+            }
+
+            pnl_quotation["sales_project_all_tabs"] = allTabsData;
+
+            if (!ConvertToInt(pnl_quotation, "customer_id", "Invalid customer ID"))
+                {
+                    return;
+                }
+
+                if (isNewRecord)
+                    pnl_quotation["id"] = 0;
+                    
+                if (IsEdit)
+                    pnl_quotation["id"] = int.Parse(pnl_quotation["id"]);
+
+
+                pnl_quotation["percent_discount"] = float.Parse(txt_additional_discount.Text);
+
+                if (isNewRecord)
+                {
+                    var post = await ProjectService.Insert(pnl_quotation);
+                    if (post.Success)
+                        {
+                            MessageBox.Show("Saved");
 
                             SetNewFormMode(false);
                         }
-                        else
-                            MessageBox.Show(edit.message);
-                    }
-
+                    else
+                        MessageBox.Show(post.message);
                 }
-            }
+                    
+                if (IsEdit)
+                {
+                    var edit = await ProjectService.Update(pnl_quotation);
+
+                    if (edit.Success)
+                    {
+                        MessageBox.Show("Updated");
+
+                        SetNewFormMode(false);
+                    }
+                    else
+                        MessageBox.Show(edit.message);
+                }
+
+              
+            //}
         }
 
         public static bool ConvertToInt(Dictionary<string, dynamic> dict,string key,string errorMessage)
@@ -2050,8 +2084,6 @@ namespace smpc_sales_app.Pages.Sales
             //        dgv_quick_quote_details.BeginEdit(true);
             //    }));
             //}
-            
-
         }
         DataTable stockQuickDataTable = new DataTable();
         private async void Quotation_Load(object sender, EventArgs e)
@@ -2072,8 +2104,8 @@ namespace smpc_sales_app.Pages.Sales
             stockQuickDataTable = Helpers.GetDataTableFromUnboundGrid(dgv_quick_quote_details);
             await fetchItemData();
             await fetchBpiData();
-            tabControl2.DrawMode = TabDrawMode.OwnerDrawFixed;
-            tabControl2.DrawItem += tabControl2_DrawItem;
+            //tabControl2.DrawMode = TabDrawMode.OwnerDrawFixed;
+            //tabControl2.DrawItem += tabControl2_DrawItem;
             dtp_date.Format = DateTimePickerFormat.Custom;
             dtp_date.CustomFormat = "MMM dd yyyy";
             dtp_valid_until.Format = DateTimePickerFormat.Custom;
@@ -2220,7 +2252,6 @@ namespace smpc_sales_app.Pages.Sales
                     HeaderList.Rows.Add(newRow);
                 }
 
-
                 int sId = Convert.ToInt32(HeaderList.Rows[SelectedRow]["id"]);
                 int cId = Convert.ToInt32(HeaderList.Rows[SelectedRow]["customer_id"]);
                 int appId = Convert.ToInt32(HeaderList.Rows[SelectedRow]["application_id"]);
@@ -2277,27 +2308,31 @@ namespace smpc_sales_app.Pages.Sales
                         }
                     }
                 }
-
-                // Create filtered view
-                DataView dataview = new DataView(childList);
-                dataview.RowFilter = $"based_id = " + this.transactionList.Rows[this.SelectedRow]["id"].ToString();
-
-                //// Ensure quick_images column exists
-                //// It not existing on the childList DataTable that why we need to check and add it here
-                //if (dataview.Table != null && !dataview.Table.Columns.Contains("quick_images"))
-                //{
-                //    var col = new DataGridViewTextBoxColumn();
-                //    col.Name = "quick_images";
-                //    col.HeaderText = "IMAGES";
-
-                //    dgv_quick_quote_details.Columns.Insert(4, col);
-                //}
-
-                dgv_quick_quote_details.DataSource = dataview;
-
-                LoadQuickImageCounts();
             }
         }
+
+        private void createFilterViewDgvQuickQouteDetails()
+        {
+            // Create filtered view
+            DataView dataview = new DataView(childList);
+            dataview.RowFilter = $"based_id = " + this.transactionList.Rows[this.SelectedRow]["id"].ToString();
+
+            //// Ensure quick_images column exists
+            //// It not existing on the childList DataTable that why we need to check and add it here
+            //if (dataview.Table != null && !dataview.Table.Columns.Contains("quick_images"))
+            //{
+            //    var col = new DataGridViewTextBoxColumn();
+            //    col.Name = "quick_images";
+            //    col.HeaderText = "IMAGES";
+
+            //    dgv_quick_quote_details.Columns.Insert(4, col);
+            //}
+
+            dgv_quick_quote_details.DataSource = dataview;
+
+            LoadQuickImageCounts();
+        }
+
         private void LoadQuickImageCounts()
         {
             //// Ensure quick_images column exists
@@ -2451,12 +2486,11 @@ namespace smpc_sales_app.Pages.Sales
 
                 dgv_quick_quote_details.DataSource = stockQuickDataTable.Clone();
 
-
-
                 bind(false);
                 DocumentIncrementer();
 
                 txt_created_by.Text = CacheData.CurrentUser.first_name + " " + CacheData.CurrentUser.last_name;
+                
                 txt_vat_percent.Text = "12";
                 txt_vat_percent.ReadOnly = true;
                 btn_add_customer.Enabled = true;
@@ -3443,6 +3477,7 @@ namespace smpc_sales_app.Pages.Sales
 
             counterReference = 0;
             SelectedRowIndex = 0;
+            IsEdit = true;
 
         }
         private void GetLatestDate()

@@ -34,7 +34,7 @@ namespace smpc_sales_app.Pages.Sales
             btn_edit.Enabled = false;
             txt_id.Enabled = false;
             txt_ship_name.Enabled = false;
-            btn_save.Visible = false;
+            //btn_back.Visible = false;
         }
 
         private async void EnableTxtBtn()
@@ -80,7 +80,8 @@ namespace smpc_sales_app.Pages.Sales
             txt_id.ReadOnly = false;
             txt_ship_name.ReadOnly = false;
 
-            btn_save.Visible = true;
+            //btn_back.Visible = true;
+            btn_edit.Visible = false;
         }
 
         private async void btn_save_Click(object sender, EventArgs e)
@@ -134,7 +135,7 @@ namespace smpc_sales_app.Pages.Sales
 
         private async void btn_new_Click(object sender, EventArgs e)
         {
-            btn_save.Visible = true;
+            //btn_back.Visible = true;
             btn_new.Enabled = false;
 
             txt_ship_name.Enabled = true;
@@ -198,6 +199,11 @@ namespace smpc_sales_app.Pages.Sales
         }
 
         private void dgv_shiptype_setup_CellContentClick_1(object sender, DataGridViewCellEventArgs e)
+        {
+
+        }
+
+        private void btn_close_Click(object sender, EventArgs e)
         {
 
         }

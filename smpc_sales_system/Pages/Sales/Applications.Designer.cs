@@ -49,6 +49,7 @@ namespace smpc_sales_app.Pages.Sales
             this.btn_delete = new System.Windows.Forms.ToolStripButton();
             this.btn_edit = new System.Windows.Forms.ToolStripButton();
             this.btn_save = new System.Windows.Forms.ToolStripButton();
+            this.btn_close = new System.Windows.Forms.ToolStripButton();
             this.pnl_name.SuspendLayout();
             this.pnl_input.SuspendLayout();
             this.pnl_application_dgv.SuspendLayout();
@@ -95,9 +96,10 @@ namespace smpc_sales_app.Pages.Sales
             this.lbl_id.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lbl_id.Location = new System.Drawing.Point(342, 54);
             this.lbl_id.Name = "lbl_id";
-            this.lbl_id.Size = new System.Drawing.Size(19, 16);
+            this.lbl_id.Size = new System.Drawing.Size(18, 16);
             this.lbl_id.TabIndex = 5;
             this.lbl_id.Text = "Id";
+            this.lbl_id.Visible = false;
             // 
             // lbl_name
             // 
@@ -105,7 +107,7 @@ namespace smpc_sales_app.Pages.Sales
             this.lbl_name.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lbl_name.Location = new System.Drawing.Point(29, 81);
             this.lbl_name.Name = "lbl_name";
-            this.lbl_name.Size = new System.Drawing.Size(45, 16);
+            this.lbl_name.Size = new System.Drawing.Size(44, 16);
             this.lbl_name.TabIndex = 4;
             this.lbl_name.Text = "Name";
             // 
@@ -115,7 +117,7 @@ namespace smpc_sales_app.Pages.Sales
             this.lbl_code.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lbl_code.Location = new System.Drawing.Point(32, 55);
             this.lbl_code.Name = "lbl_code";
-            this.lbl_code.Size = new System.Drawing.Size(41, 16);
+            this.lbl_code.Size = new System.Drawing.Size(40, 16);
             this.lbl_code.TabIndex = 3;
             this.lbl_code.Text = "Code";
             // 
@@ -126,6 +128,7 @@ namespace smpc_sales_app.Pages.Sales
             this.txt_id.Name = "txt_id";
             this.txt_id.Size = new System.Drawing.Size(171, 20);
             this.txt_id.TabIndex = 2;
+            this.txt_id.Visible = false;
             // 
             // txt_name
             // 
@@ -195,7 +198,8 @@ namespace smpc_sales_app.Pages.Sales
             this.btn_new,
             this.btn_delete,
             this.btn_edit,
-            this.btn_save});
+            this.btn_save,
+            this.btn_close});
             this.toolStrip1.Location = new System.Drawing.Point(0, 67);
             this.toolStrip1.Name = "toolStrip1";
             this.toolStrip1.Size = new System.Drawing.Size(633, 25);
@@ -237,6 +241,15 @@ namespace smpc_sales_app.Pages.Sales
             this.btn_save.Size = new System.Drawing.Size(51, 22);
             this.btn_save.Text = "Save";
             this.btn_save.Click += new System.EventHandler(this.btn_save_Click);
+            // 
+            // btn_close
+            // 
+            this.btn_close.Image = ((System.Drawing.Image)(resources.GetObject("btn_close.Image")));
+            this.btn_close.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btn_close.Name = "btn_close";
+            this.btn_close.Size = new System.Drawing.Size(56, 22);
+            this.btn_close.Text = "Close";
+            this.btn_close.Visible = false;
             // 
             // Applications
             // 
@@ -283,5 +296,6 @@ namespace smpc_sales_app.Pages.Sales
         private System.Windows.Forms.DataGridViewTextBoxColumn Column1;
         private System.Windows.Forms.DataGridViewTextBoxColumn Column2;
         private System.Windows.Forms.DataGridViewTextBoxColumn Column3;
+        private System.Windows.Forms.ToolStripButton btn_close;
     }
 }

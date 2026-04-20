@@ -12,7 +12,7 @@ namespace smpc_sales_system.Models
         public int based_id { get; set; }
         public string materials { get; set; }
         public string amp_req { get; set; }
-        public string wire_amp { get; set; }
+        public string wire_req { get; set; }
         public string description {get; set;}
         public string num_of_wires_set { get; set; }
         public string num_of_qty_set { get; set; }

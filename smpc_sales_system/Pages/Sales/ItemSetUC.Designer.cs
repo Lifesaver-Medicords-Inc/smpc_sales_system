@@ -170,7 +170,7 @@ namespace smpc_sales_system.Pages.Sales
             this.button1 = new System.Windows.Forms.Button();
             this.errorProvider1 = new System.Windows.Forms.ErrorProvider(this.components);
             this.bs_units_qty = new System.Windows.Forms.BindingSource(this.components);
-            this.template_id = new System.Windows.Forms.TextBox();
+            this.txt_template_id = new System.Windows.Forms.TextBox();
             this.timer_update_conditions = new System.Windows.Forms.Timer(this.components);
             this.timer_update_content = new System.Windows.Forms.Timer(this.components);
             this.checkBox1 = new System.Windows.Forms.CheckBox();
@@ -198,7 +198,7 @@ namespace smpc_sales_system.Pages.Sales
             this.project_wiring_cost = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.project_wiring_total_cost = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.project_wiring_unit = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.cb_template_project = new System.Windows.Forms.ComboBox();
+            this.cmb_template_project = new System.Windows.Forms.ComboBox();
             this.cmb_assign_engineer_user_id = new System.Windows.Forms.ComboBox();
             this.pnl_project_content.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgv_final)).BeginInit();
@@ -282,7 +282,6 @@ namespace smpc_sales_system.Pages.Sales
             this.dgv_final.Location = new System.Drawing.Point(881, 128);
             this.dgv_final.Name = "dgv_final";
             this.dgv_final.ReadOnly = true;
-            this.dgv_final.RowHeadersVisible = false;
             this.dgv_final.RowHeadersWidthSizeMode = System.Windows.Forms.DataGridViewRowHeadersWidthSizeMode.AutoSizeToAllHeaders;
             this.dgv_final.Size = new System.Drawing.Size(235, 75);
             this.dgv_final.TabIndex = 171;
@@ -1311,13 +1310,13 @@ namespace smpc_sales_system.Pages.Sales
             this.bs_units_qty.DataMember = "tbl_unit_qty";
             this.bs_units_qty.DataSource = this.ds_project;
             // 
-            // template_id
+            // txt_template_id
             // 
-            this.template_id.Location = new System.Drawing.Point(377, 463);
-            this.template_id.Name = "template_id";
-            this.template_id.Size = new System.Drawing.Size(35, 20);
-            this.template_id.TabIndex = 163;
-            this.template_id.Visible = false;
+            this.txt_template_id.Location = new System.Drawing.Point(383, 464);
+            this.txt_template_id.Name = "txt_template_id";
+            this.txt_template_id.Size = new System.Drawing.Size(35, 20);
+            this.txt_template_id.TabIndex = 163;
+            this.txt_template_id.Visible = false;
             // 
             // timer_update_conditions
             // 
@@ -1585,17 +1584,17 @@ namespace smpc_sales_system.Pages.Sales
             this.project_wiring_unit.Name = "project_wiring_unit";
             this.project_wiring_unit.Visible = false;
             // 
-            // cb_template_project
+            // cmb_template_project
             // 
-            this.cb_template_project.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.cb_template_project.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.cb_template_project.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.cb_template_project.FormattingEnabled = true;
-            this.cb_template_project.Location = new System.Drawing.Point(99, 465);
-            this.cb_template_project.Name = "cb_template_project";
-            this.cb_template_project.Size = new System.Drawing.Size(215, 21);
-            this.cb_template_project.TabIndex = 166;
-            this.cb_template_project.SelectedIndexChanged += new System.EventHandler(this.cb_template_project_SelectedIndexChanged);
+            this.cmb_template_project.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.cmb_template_project.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmb_template_project.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.cmb_template_project.FormattingEnabled = true;
+            this.cmb_template_project.Location = new System.Drawing.Point(99, 465);
+            this.cmb_template_project.Name = "cmb_template_project";
+            this.cmb_template_project.Size = new System.Drawing.Size(215, 21);
+            this.cmb_template_project.TabIndex = 166;
+            this.cmb_template_project.SelectedIndexChanged += new System.EventHandler(this.cb_template_project_SelectedIndexChanged);
             // 
             // cmb_assign_engineer_user_id
             // 
@@ -1611,10 +1610,10 @@ namespace smpc_sales_system.Pages.Sales
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.Controls.Add(this.cmb_assign_engineer_user_id);
-            this.Controls.Add(this.cb_template_project);
+            this.Controls.Add(this.cmb_template_project);
             this.Controls.Add(this.chk_wiring);
             this.Controls.Add(this.checkBox1);
-            this.Controls.Add(this.template_id);
+            this.Controls.Add(this.txt_template_id);
             this.Controls.Add(this.label7);
             this.Controls.Add(this.txt_VOLT);
             this.Controls.Add(this.label6);
@@ -1758,7 +1757,7 @@ namespace smpc_sales_system.Pages.Sales
         private System.Windows.Forms.BindingSource bs_units_qty;
         private System.Data.DataTable dataTable3;
         private System.Data.DataTable dataTable4;
-        private System.Windows.Forms.TextBox template_id;
+        private System.Windows.Forms.TextBox txt_template_id;
         private System.Windows.Forms.Label label9;
         private System.Windows.Forms.TextBox txt_item_set_notes;
         private System.Windows.Forms.Label label8;
@@ -1809,7 +1808,7 @@ namespace smpc_sales_system.Pages.Sales
         private System.Windows.Forms.DataGridViewTextBoxColumn project_wiring_cost;
         private System.Windows.Forms.DataGridViewTextBoxColumn project_wiring_total_cost;
         private System.Windows.Forms.DataGridViewTextBoxColumn project_wiring_unit;
-        private System.Windows.Forms.ComboBox cb_template_project;
+        private System.Windows.Forms.ComboBox cmb_template_project;
         private System.Windows.Forms.ComboBox cmb_assign_engineer_user_id;
         private System.Windows.Forms.DataGridViewTextBoxColumn Id;
         private System.Windows.Forms.DataGridViewTextBoxColumn content_Id;

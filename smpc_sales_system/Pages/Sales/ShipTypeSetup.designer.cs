@@ -37,9 +37,10 @@ namespace smpc_sales_app.Pages.Sales
             this.btn_new = new System.Windows.Forms.ToolStripButton();
             this.btn_delete = new System.Windows.Forms.ToolStripButton();
             this.btn_edit = new System.Windows.Forms.ToolStripButton();
-            this.btn_save = new System.Windows.Forms.ToolStripButton();
             this.ID = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.ship_name = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.toolStripButton1 = new System.Windows.Forms.ToolStripButton();
+            this.btn_close = new System.Windows.Forms.ToolStripButton();
             this.pnl_name.SuspendLayout();
             this.pnl_input.SuspendLayout();
             this.pnl_shiptype_dgv.SuspendLayout();
@@ -85,9 +86,10 @@ namespace smpc_sales_app.Pages.Sales
             this.lbl_id.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lbl_id.Location = new System.Drawing.Point(352, 54);
             this.lbl_id.Name = "lbl_id";
-            this.lbl_id.Size = new System.Drawing.Size(19, 16);
+            this.lbl_id.Size = new System.Drawing.Size(18, 16);
             this.lbl_id.TabIndex = 5;
             this.lbl_id.Text = "Id";
+            this.lbl_id.Visible = false;
             // 
             // lbl_name
             // 
@@ -95,7 +97,7 @@ namespace smpc_sales_app.Pages.Sales
             this.lbl_name.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lbl_name.Location = new System.Drawing.Point(40, 55);
             this.lbl_name.Name = "lbl_name";
-            this.lbl_name.Size = new System.Drawing.Size(45, 16);
+            this.lbl_name.Size = new System.Drawing.Size(44, 16);
             this.lbl_name.TabIndex = 4;
             this.lbl_name.Text = "Name";
             // 
@@ -106,6 +108,7 @@ namespace smpc_sales_app.Pages.Sales
             this.txt_id.Name = "txt_id";
             this.txt_id.Size = new System.Drawing.Size(171, 20);
             this.txt_id.TabIndex = 2;
+            this.txt_id.Visible = false;
             // 
             // txt_ship_name
             // 
@@ -146,7 +149,8 @@ namespace smpc_sales_app.Pages.Sales
             this.btn_new,
             this.btn_delete,
             this.btn_edit,
-            this.btn_save});
+            this.toolStripButton1,
+            this.btn_close});
             this.toolStrip1.Location = new System.Drawing.Point(0, 67);
             this.toolStrip1.Name = "toolStrip1";
             this.toolStrip1.Size = new System.Drawing.Size(633, 25);
@@ -180,20 +184,12 @@ namespace smpc_sales_app.Pages.Sales
             this.btn_edit.Text = "Edit";
             this.btn_edit.Click += new System.EventHandler(this.btn_edit_Click);
             // 
-            // btn_save
-            // 
-            this.btn_save.Image = ((System.Drawing.Image)(resources.GetObject("btn_save.Image")));
-            this.btn_save.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.btn_save.Name = "btn_save";
-            this.btn_save.Size = new System.Drawing.Size(51, 22);
-            this.btn_save.Text = "Save";
-            this.btn_save.Click += new System.EventHandler(this.btn_save_Click);
-            // 
             // ID
             // 
             this.ID.DataPropertyName = "id";
             this.ID.HeaderText = "ID";
             this.ID.Name = "ID";
+            this.ID.Visible = false;
             // 
             // ship_name
             // 
@@ -201,6 +197,25 @@ namespace smpc_sales_app.Pages.Sales
             this.ship_name.DataPropertyName = "ship_name";
             this.ship_name.HeaderText = "SHIPNAME";
             this.ship_name.Name = "ship_name";
+            this.ship_name.ReadOnly = true;
+            // 
+            // toolStripButton1
+            // 
+            this.toolStripButton1.Image = ((System.Drawing.Image)(resources.GetObject("toolStripButton1.Image")));
+            this.toolStripButton1.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.toolStripButton1.Name = "toolStripButton1";
+            this.toolStripButton1.Size = new System.Drawing.Size(51, 22);
+            this.toolStripButton1.Text = "Save";
+            // 
+            // btn_close
+            // 
+            this.btn_close.Image = ((System.Drawing.Image)(resources.GetObject("btn_close.Image")));
+            this.btn_close.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btn_close.Name = "btn_close";
+            this.btn_close.Size = new System.Drawing.Size(56, 22);
+            this.btn_close.Text = "Close";
+            this.btn_close.Visible = false;
+            this.btn_close.Click += new System.EventHandler(this.btn_close_Click);
             // 
             // ShipTypeSetup
             // 
@@ -240,10 +255,11 @@ namespace smpc_sales_app.Pages.Sales
         private System.Windows.Forms.ToolStripButton btn_new;
         private System.Windows.Forms.ToolStripButton btn_delete;
         private System.Windows.Forms.ToolStripButton btn_edit;
-        private System.Windows.Forms.ToolStripButton btn_save;
         private System.Windows.Forms.DataGridViewTextBoxColumn NAME;
         private System.Windows.Forms.DataGridViewTextBoxColumn ID;
         private System.Windows.Forms.DataGridViewTextBoxColumn ship_name;
+        private System.Windows.Forms.ToolStripButton toolStripButton1;
+        private System.Windows.Forms.ToolStripButton btn_close;
     }
 }
 
