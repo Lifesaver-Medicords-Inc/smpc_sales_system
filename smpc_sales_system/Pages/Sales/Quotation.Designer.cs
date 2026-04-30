@@ -113,8 +113,8 @@
             this.btn_prev = new System.Windows.Forms.ToolStripButton();
             this.btn_next = new System.Windows.Forms.ToolStripButton();
             this.btn_new = new System.Windows.Forms.ToolStripButton();
-            this.btn_duplicate = new System.Windows.Forms.ToolStripButton();
             this.btn_edit = new System.Windows.Forms.ToolStripButton();
+            this.btn_duplicate = new System.Windows.Forms.ToolStripButton();
             this.btn_new_version = new System.Windows.Forms.ToolStripButton();
             this.btn_savee = new System.Windows.Forms.ToolStripButton();
             this.btn_print = new System.Windows.Forms.ToolStripButton();
@@ -736,6 +736,16 @@
             this.btn_new.Text = "New Quote";
             this.btn_new.Click += new System.EventHandler(this.btn_new_Click);
             // 
+            // btn_edit
+            // 
+            this.btn_edit.Image = ((System.Drawing.Image)(resources.GetObject("btn_edit.Image")));
+            this.btn_edit.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btn_edit.Name = "btn_edit";
+            this.btn_edit.Size = new System.Drawing.Size(47, 22);
+            this.btn_edit.Text = "Edit";
+            this.btn_edit.Visible = false;
+            this.btn_edit.Click += new System.EventHandler(this.btn_edit_Click);
+            // 
             // btn_duplicate
             // 
             this.btn_duplicate.Image = ((System.Drawing.Image)(resources.GetObject("btn_duplicate.Image")));
@@ -744,15 +754,6 @@
             this.btn_duplicate.Size = new System.Drawing.Size(77, 22);
             this.btn_duplicate.Text = "Duplicate";
             this.btn_duplicate.Click += new System.EventHandler(this.btn_duplicate_Click);
-            // 
-            // btn_edit
-            // 
-            this.btn_edit.Image = ((System.Drawing.Image)(resources.GetObject("btn_edit.Image")));
-            this.btn_edit.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.btn_edit.Name = "btn_edit";
-            this.btn_edit.Size = new System.Drawing.Size(47, 22);
-            this.btn_edit.Text = "Edit";
-            this.btn_edit.Click += new System.EventHandler(this.btn_edit_Click);
             // 
             // btn_new_version
             // 
@@ -969,7 +970,7 @@
             // label16
             // 
             this.label16.AutoSize = true;
-            this.label16.Location = new System.Drawing.Point(18, 165);
+            this.label16.Location = new System.Drawing.Point(18, 150);
             this.label16.Name = "label16";
             this.label16.Size = new System.Drawing.Size(63, 13);
             this.label16.TabIndex = 74;
@@ -1116,7 +1117,7 @@
             this.cmb_ship_type.DataSource = this.bs_ship_type;
             this.cmb_ship_type.DisplayMember = "ship_name";
             this.cmb_ship_type.FormattingEnabled = true;
-            this.cmb_ship_type.Location = new System.Drawing.Point(87, 162);
+            this.cmb_ship_type.Location = new System.Drawing.Point(87, 147);
             this.cmb_ship_type.Name = "cmb_ship_type";
             this.cmb_ship_type.Size = new System.Drawing.Size(147, 21);
             this.cmb_ship_type.TabIndex = 91;

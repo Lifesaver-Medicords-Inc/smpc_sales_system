@@ -290,7 +290,7 @@ namespace smpc_sales_system.Pages.Sales
                     //amp_req = item["project_wiring_amp_req"]?.ToString() ?? string.Empty,
                     wire_req = item["project_wiring_wire_amp"]?.ToString() ?? string.Empty,
                     description = item["project_wiring_description"]?.ToString() ?? string.Empty,
-                    //num_of_wires_set = item["project_wiring_num_of_wires_set"]?.ToString() ?? string.Empty,
+                    num_of_wires_set = item["project_wiring_num_of_wiring_set"]?.ToString() ?? string.Empty,
                     //num_of_qty_set = item["project_wiring_num_of_qty_set"]?.ToString() ?? string.Empty,
                     distance_travelled_set = item["project_wiring_distance_travelled"]?.ToString() ?? string.Empty,
                     allowance_wire_set = item["project_wiring_allowance"]?.ToString() ?? string.Empty,
@@ -331,6 +331,7 @@ namespace smpc_sales_system.Pages.Sales
                     based_id = int.TryParse(item["project_items_based_id"]?.ToString(), out int tempBasedId) ? tempBasedId : 0,
                     bom_id = int.TryParse(item["project_items_bom_id"]?.ToString(), out int tempBomId) ? tempBomId : 0,
                     reference_code = item["reference_code"]?.ToString() ?? string.Empty,
+                    template_id = int.TryParse(item["project_items_template_id"]?.ToString(), out int templateId) ? templateId : 0,
                     man_days = int.TryParse(item["man_days"]?.ToString(), out int manDays) ? manDays : 0,
                     labor_rate = decimal.TryParse(item["labor_rate"]?.ToString(), out decimal laborRate) ? laborRate : 0,
                     components = item["project_items_components"]?.ToString() ?? string.Empty,
@@ -587,7 +588,7 @@ namespace smpc_sales_system.Pages.Sales
 
         public void SetContentsPanelData(DataTable dt)
         {
-            Panel[] pnls = { pnl_project_content,  };
+            Panel[] pnls = { pnl_project_content };
             Helpers.BindControls(pnls, dt);
         }
 
@@ -597,9 +598,13 @@ namespace smpc_sales_system.Pages.Sales
         }
         public void SetFinalData(DataTable dt)
         {
-            foreach (DataRow row in dt.Rows)
+
+            if(dt.Rows.Count > 0)
             {
-                dgv_final.Rows.Add(row["id"], row["sales_project_content_id"], row["final"], row["fla"], row["voltage"]);
+                foreach (DataRow row in dt.Rows)
+                {
+                    dgv_final.Rows.Add(row["id"], row["sales_project_content_id"], row["final"], row["fla"], row["voltage"]);
+                }
             }
         }
 
@@ -782,9 +787,6 @@ namespace smpc_sales_system.Pages.Sales
                     {
                         lastRef = current;
                     }
-
-                    
-
                 }
 
                 LastRefInt = int.Parse(lastRef);
@@ -821,52 +823,41 @@ namespace smpc_sales_system.Pages.Sales
             }
 
         }
-
-        public void MapDataTableToItems(DataTable dt)
+        public void SetProjectWiring(DataTable dt)
         {
-            var itemsList = new List<SalesProjectItems>();
+            dgv_wiring.DataSource = null;
 
-            var items = dgv_project_items.DataSource;
+            int i = 0;
 
             foreach (DataRow row in dt.Rows)
             {
-                var item = new SalesProjectItems
+                int rowIndex = dgv_wiring.Rows.Add();
+                DataGridViewRow dgvRow = dgv_wiring.Rows[rowIndex];
+
+                if (dt.Columns.Contains("Id"))
                 {
-                    items_id = Convert.ToInt32(row["items_id"]),
-                    bom_id = Convert.ToInt32(row["bom_id"]),
-                    item_id = Convert.ToInt32(row["item_id"]),
-                    based_id = Convert.ToInt32(row["based_id"]),
-                    reference_code = row["reference_code"]?.ToString(),
-                    man_days = Convert.ToInt32(row["man_days"]),
-                    labor_rate = Convert.ToDecimal(row["labor_rate"]),
-                    components = row["components"]?.ToString(),
-                    model = row["model"]?.ToString(),
-                    item_inv_type = row["item_inv_type"]?.ToString(),
-                    qty = Convert.ToInt32(row["qty"]),
-                    list_price_per_unit = Convert.ToDecimal(row["list_price_per_unit"]),
-                    unit_price = Convert.ToDecimal(row["unit_price"]),
-                    multiplier = row["multiplier"]?.ToString(),
-                    discount_price = Convert.ToDecimal(row["discount_price"]),
-                    component_total = Convert.ToDecimal(row["component_total"]),
-                    notes = row["notes"]?.ToString(),
-                    template_id = Convert.ToInt32(row["template_id"])
-                };
+                    dgvRow.Cells["project_wiring_id"].Value = row["id"];
+                    dgvRow.Cells["project_wiring_based_id"].Value = row["based_id"];
+                    dgvRow.Cells["project_wiring_materials"].Value = defaultWiring[i];
+                    dgvRow.Cells["project_wiring_wire_amp"].Value = row["wire_req"];
+                    dgvRow.Cells["project_wiring_description"].Value = row["description"];
+                    dgvRow.Cells["project_wiring_num_of_wiring_set"].Value = row["num_of_wires_set"];
+                    dgvRow.Cells["project_wiring_distance_travelled"].Value = row["distance_travelled_set"];
+                    dgvRow.Cells["project_wiring_allowance"].Value = row["allowance_wire_set"];
+                    dgvRow.Cells["project_wiring_qty"].Value = row["qty"];
+                    dgvRow.Cells["project_wiring_num_of_sets"].Value = row["num_of_sets"];
+                    dgvRow.Cells["project_wiring_num_of_wiring_set_format"].Value = defaultQTYFormat[i];
+                    dgvRow.Cells["project_wiring_total_qty"].Value = row["total_qty"];
+                    dgvRow.Cells["project_wiring_qty_format"].Value = defaultQTYFormat[i];
+                    dgvRow.Cells["project_wiring_cost"].Value = row["cost"];
+                    dgvRow.Cells["project_wiring_total_cost"].Value = row["total_cost"];
 
-                //item hopefully added here
-                itemsList.Add(item);
 
+
+                }
+
+                i++;
             }
-
-            dgv_project_items.DataSource = itemsList;
-        }
-
-
-        public void SetProjectWiring(DataTable dt)
-        {
-            var stringtable = Helpers.ConvertDataTableToStringTable(dt);
-            dgv_wiring.DataSource = dt;
-            dgv_wiring.ReadOnly = false;
-
         }
 
         private void ApplyRowStyles()
@@ -1809,6 +1800,11 @@ namespace smpc_sales_system.Pages.Sales
 
         //bool isInsertControllerToMotor = false;
         DataTable wiringTable = new DataTable();
+
+        private string[] defaultWiring = { "ECB To Controller", "Conduit Pipe", "Elbow", "Coupling", "Flexible Conduit", "Straight Connector", "Controller to motor", "Ground" };
+        private string[] defaultQTYFormat = { "m", "pcs", "pcs", "pcs", "m", "pcs", "m", "m" };
+        private string[] defaultNumberOfWiresSet = { "3", "", "", "", "", "", "3", "1" };
+
         private void setProjectWirings()
         {
 
@@ -1820,9 +1816,6 @@ namespace smpc_sales_system.Pages.Sales
             wiringTable.Columns.Add("AMPREQ", typeof(string));
 
             int counter = 1;
-            string[] defaultWiring = { "ECB To Controller", "Conduit Pipe", "Elbow", "Coupling", "Flexible Conduit", "Straight Connector", "Controller to motor", "Ground" };
-            string[] defaultQTYFormat = { "m", "pcs", "pcs", "pcs", "m", "pcs", "m", "m" };
-            string[] defaultNumberOfWiresSet = { "3", "", "", "", "", "", "3", "1" };
 
             for (int i = 0; i < defaultWiring.Length; i++)
             {
@@ -2302,6 +2295,7 @@ namespace smpc_sales_system.Pages.Sales
 
             return TotalAmount;
         }
+
 
         private void dgv_project_items_CellValueChanged(object sender, DataGridViewCellEventArgs e)
         {

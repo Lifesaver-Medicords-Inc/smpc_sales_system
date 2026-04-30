@@ -22,26 +22,64 @@ namespace smpc_sales_app.Pages
         public Layout()
         {
             InitializeComponent();
+            InitializeTabEvents();
         }
 
         private void Form1_Load(object sender, EventArgs e)
         {
 
         }
-        
+
+        private void InitializeTabEvents()
+        {
+            tabContainer.DrawMode = TabDrawMode.OwnerDrawFixed;
+
+            tabContainer.DrawItem += (sender, e) =>
+            {
+                var tab = tabContainer.TabPages[e.Index];
+                var rect = tabContainer.GetTabRect(e.Index);
+
+                TextRenderer.DrawText(
+                    e.Graphics,
+                    tab.Text,
+                    e.Font,
+                    new Point(rect.X + 5, rect.Y + 4),
+                    Color.Black
+                );
+
+                TextRenderer.DrawText(
+                    e.Graphics,
+                    "×",
+                    e.Font,
+                    new Point(rect.Right - 12, rect.Y + 2),
+                    Color.Red
+                );
+            };
+
+            tabContainer.MouseDown += (sender, e) =>
+            {
+                for (int i = 0; i < tabContainer.TabPages.Count; i++)
+                {
+                    var rect = tabContainer.GetTabRect(i);
+                    var closeArea = new Rectangle(rect.Right - 15, rect.Top + 4, 14, 14);
+
+                    if (closeArea.Contains(e.Location))
+                    {
+                        tabContainer.TabPages.RemoveAt(i);
+                        break; // ✅ Only remove one tab
+                    }
+                }
+            };
+        }
+
+
         private void showForm(string tabTitle, Control control)
         {
             tabCount++;
-            Button closeButton = new Button();
-            closeButton.Text = "X";
-            closeButton.Size = new Size(20, 20);
-            closeButton.Click += removeTab;
-            closeButton.ForeColor = Color.Red;
 
             TabPage newTab = new TabPage(tabTitle);
-            newTab.Controls.Add(closeButton);
-            closeButton.Location = new Point(newTab.Width, 10); // Adjust position as needed
 
+            //closeButton.Location = new Point(newTab.Width, 10); // Adjust position as needed
             if (control is Opportunities)
             {
                 Opportunities OpportunitiesControl = (Opportunities)control;
@@ -57,6 +95,7 @@ namespace smpc_sales_app.Pages
             tabContainer.TabPages.Add(newTab);
             tabContainer.SelectTab(newTab);
         }
+
         private void removeTab(object sender, EventArgs e)
         {
             tabContainer.TabPages.Remove(tabContainer.SelectedTab);

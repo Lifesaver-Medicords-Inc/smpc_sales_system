@@ -1,14 +1,11 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Newtonsoft.Json.Linq;
 using smpc_app.Data;
 using smpc_app.Services.Helpers;
 using smpc_inventory_app.Pages;
-using smpc_inventory_app.Services.Setup.Model.Item;
 using smpc_sales_app.Data;
 using smpc_sales_app.Services.Helpers;
 using smpc_sales_app.Services.Sales;
-using smpc_sales_app.Utils;
 using smpc_sales_system.Models;
 using smpc_sales_system.Pages;
 using smpc_sales_system.Pages.Sales;
@@ -17,16 +14,11 @@ using smpc_sales_system.Services.Sales.Models;
 using smpc_sales_system.Services.Setup;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Net.WebSockets;
 using System.Reflection;
-using System.Reflection.Emit;
-using System.Runtime.CompilerServices;
-using System.Security.Cryptography;
-using System.Security.Policy;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -247,37 +239,6 @@ namespace smpc_sales_app.Pages.Sales
                         var itemsToUpdate = salesProjectWirings
                             .Where(item => item.id != 0)
                             .ToList();
-
-                        //if (itemsToUpdate.Any())
-                        //{
-                        //    item_data["sales_project_wiring"] = itemsToUpdate;
-                        //    var updateResult = await ProjectService.UpdateWiring(item_data);
-
-                        //    if (updateResult.Success)
-                        //        MessageBox.Show("Wiring Updated Successfully");
-                        //    else
-                        //        MessageBox.Show(updateResult.message);
-                        //}
-
-                        //if (itemsToInsert.Any())
-                        //{
-                        //    item_data["sales_project_wiring"] = itemsToInsert;
-                        //    foreach (var item in itemsToInsert)
-                        //    {
-                        //        item.id = null;
-                        //        item.based_id = CurrentProjectItemBasedID;
-                        //    }
-
-                        //    item_data["sales_project_items"] = itemsToInsert;
-                        //    var insertResult = await ProjectService.InsertWiring(item_data);
-
-                        //    if (insertResult.Success)
-                        //        MessageBox.Show("Wiring Added successfully");
-                        //    else
-                        //        MessageBox.Show(insertResult.message);
-
-
-                        //}
                     }
                 }
             }
@@ -493,7 +454,6 @@ namespace smpc_sales_app.Pages.Sales
         }
         private void btn_project_Click(object sender, EventArgs e)
         {
-
             if (_websocket != null && _websocket.State == System.Net.WebSockets.WebSocketState.Open)
             {
                 _websocket.Dispose();
@@ -769,14 +729,14 @@ namespace smpc_sales_app.Pages.Sales
             //Helpers.BindControls(pnls, dt2, selectedProject);
 
             string selectedSalesQuotationId = project_quote.Rows[0]["id"]?.ToString() ?? null;
-            this.selectedProjectID = selectedSalesQuotationId;
+             this.selectedProjectID = selectedSalesQuotationId;
             txt_project_name.Text = project_quote.Rows[0]["project_name"].ToString();
 
             //DataView dataview = new DataView(dt_multiplier);
             //dataview.RowFilter = "based_id = '" + this.allTransactionList.Rows[this.selectedProject]["id"].ToString() + "'";
             //dgv_project_multiplier.DataSource = dataview;
 
-            tabControl2.TabPages.Clear();
+             tabControl2.TabPages.Clear();
 
             var filteredtabs = fetchedTabs.Where(tab => tab.based_id.ToString() == selectedSalesQuotationId).ToList();
             foreach (var tab in filteredtabs)
@@ -1014,36 +974,23 @@ namespace smpc_sales_app.Pages.Sales
             }
         }
 
-        private Dictionary<string, object> GetProjectItemSet(string tabNumber)
-        {
-           return new Dictionary<string, object>
-                        {
-                            { "based_id", 0 },
-                            { "tab_number", tabNumber }
-                        };
-        }
-
-        private async void  IsProject()
+        private async void IsProject()
         {
             Panel[] pnl_list = { pnl_header, pnl_footer, pnl_project_name };
             var pnl_quotation = Helpers.GetControlsValues(pnl_list);
 
             pnl_quotation["project_name"] = txt_project_name.Text.Trim();
-             
-            //
-            // Checker if project name is null or its empty it would not proceed.
+
             if (string.IsNullOrWhiteSpace(txt_project_name.Text))
             {
                 MessageBox.Show("Please enter a valid project name. The project name cannot be empty or consist only of spaces.",
                                 "Invalid Project Name", MessageBoxButtons.OK, MessageBoxIcon.Error);
-
                 txt_project_name.Focus();
                 return;
             }
 
             var multiplierSource = Helpers.ConvertDataGridViewToDataTable(dgv_project_multiplier);
 
-            // multiplier child
             List<SalesProjectMultiplier> multipliers = new List<SalesProjectMultiplier>();
             foreach (DataRow item in multiplierSource.Rows)
             {
@@ -1053,12 +1000,11 @@ namespace smpc_sales_app.Pages.Sales
                     component = item[1].ToString(),
                     description = item[2].ToString(),
                     multiplier = item[3].ToString(),
-
                 };
                 multipliers.Add(mult);
             }
 
-                pnl_quotation["sales_project_multiplier"] = multipliers;
+            pnl_quotation["sales_project_multiplier"] = multipliers;
 
             var allTabsData = new List<Dictionary<string, object>>();
 
@@ -1072,13 +1018,17 @@ namespace smpc_sales_app.Pages.Sales
                     {
                         var tabData = new Dictionary<string, object>();
 
+                        int basedId;
+                        if (pnl_quotation["id"] is long)
+                            basedId = (int)(long)pnl_quotation["id"];
+                        else
+                            int.TryParse(pnl_quotation["id"].ToString(), out basedId);
+
                         tabData["sales_project_item_set"] = new Dictionary<string, object>
                         {
-                            { "based_id", 0 },
+                            { "based_id",   basedId },
                             { "tab_number", selectedTab.Text }
                         };
-
-
                         tabData["sales_project_history"] = selectedControl.GetHistoryList();
                         tabData["sales_project_content"] = selectedControl.GetProjectContentsData();
                         tabData["sales_project_content_advanced_condition"] = selectedControl.GetAdvancedConditionsData();
@@ -1093,49 +1043,686 @@ namespace smpc_sales_app.Pages.Sales
             pnl_quotation["sales_project_all_tabs"] = allTabsData;
 
             if (!ConvertToInt(pnl_quotation, "customer_id", "Invalid customer ID"))
+                return;
+
+            if (isNewRecord)
+                pnl_quotation["id"] = 0;
+
+            if (IsEdit)
+                pnl_quotation["id"] = int.Parse(pnl_quotation["id"].ToString());
+
+            pnl_quotation["percent_discount"] = float.TryParse(txt_additional_discount.Text, out float discount) ? discount : 0;
+
+            // ── Insert ──────────────────────────────────────────────────────────────
+            if (isNewRecord)
+            {
+                var post = await ProjectService.Insert(pnl_quotation);
+                if (post.Success)
                 {
+                    MessageBox.Show("Saved");
+                    SetNewFormMode(false);
+                }
+                else
+                    MessageBox.Show(post.message);
+            }
+            // ── Update ──────────────────────────────────────────────────────────────
+            if (IsEdit)
+            {
+                SalesProjectList dbData = await ProjectService.GetProjects();
+                FullProjectDiff changes = GetFullDiff(dbData, pnl_quotation);
+
+                var debug = JsonConvert.SerializeObject(changes, Formatting.Indented);
+
+                if (!changes.HasChanges())
+                {
+                    MessageBox.Show("No changes detected. Nothing was updated.");
                     return;
                 }
 
-                if (isNewRecord)
-                    pnl_quotation["id"] = 0;
-                    
-                if (IsEdit)
-                    pnl_quotation["id"] = int.Parse(pnl_quotation["id"]);
 
-
-                pnl_quotation["percent_discount"] = float.Parse(txt_additional_discount.Text);
-
-                if (isNewRecord)
-                {
-                    var post = await ProjectService.Insert(pnl_quotation);
-                    if (post.Success)
-                        {
-                            MessageBox.Show("Saved");
-
-                            SetNewFormMode(false);
-                        }
-                    else
-                        MessageBox.Show(post.message);
-                }
-                    
-                if (IsEdit)
-                {
-                    var edit = await ProjectService.Update(pnl_quotation);
-
-                    if (edit.Success)
-                    {
-                        MessageBox.Show("Updated");
-
-                        SetNewFormMode(false);
-                    }
-                    else
-                        MessageBox.Show(edit.message);
-                }
-
-              
-            //}
+                //await ProjectService.Update(changes);
+                MessageBox.Show("Updated successfully.");
+                SetNewFormMode(false);
+            }
         }
+        // ─── Extended diff models ───────────────────────────────────────────────────
+
+        public class FieldChange
+        {
+            public object OldValue { get; set; }
+            public object NewValue { get; set; }
+        }
+
+        public class ModelDiff<T>
+        {
+            public List<T> Added { get; set; } = new List<T>();
+            public List<T> Removed { get; set; } = new List<T>();
+
+            public bool HasChanges()
+            {
+                return Added.Any() || Removed.Any();
+            }
+        }
+
+        public class UpdatedModel<T>
+        {
+            public T Item { get; set; }
+            public Dictionary<string, FieldChange> Changes { get; set; } = new Dictionary<string, FieldChange>();
+        }
+
+        public class ModelUpdateDiff<T>
+        {
+            public List<T> Added { get; set; } = new List<T>();
+            public List<T> Removed { get; set; } = new List<T>();
+            public List<UpdatedModel<T>> Updated { get; set; } = new List<UpdatedModel<T>>();
+
+            public bool HasChanges()
+            {
+                return Added.Any() || Removed.Any() || Updated.Any();
+            }
+        }
+
+        // ─── TabDiff ────────────────────────────────────────────────────────────────
+
+        public class TabDiff
+        {
+            public int BasedId { get; set; }
+
+            public ModelUpdateDiff<SalesProjectItems> Items { get; set; } = new ModelUpdateDiff<SalesProjectItems>();
+            public ModelUpdateDiff<SalesProjectContent> Contents { get; set; } = new ModelUpdateDiff<SalesProjectContent>();
+            public ModelUpdateDiff<SalesProjectAdvancedConditions> AdvancedConditions { get; set; } = new ModelUpdateDiff<SalesProjectAdvancedConditions>();
+            public ModelUpdateDiff<SalesWiringModel> Wiring { get; set; } = new ModelUpdateDiff<SalesWiringModel>();
+            public ModelUpdateDiff<SalesProjectItemSet> ItemSets { get; set; } = new ModelUpdateDiff<SalesProjectItemSet>();
+            public ModelUpdateDiff<SalesProjectHistory> History { get; set; } = new ModelUpdateDiff<SalesProjectHistory>();
+
+            public bool HasChanges()
+            {
+                return Items.HasChanges()
+                    || Contents.HasChanges()
+                    || AdvancedConditions.HasChanges()
+                    || Wiring.HasChanges()
+                    || ItemSets.HasChanges()
+                    || History.HasChanges();
+            }
+        }
+
+        // ─── Header-level diff ──────────────────────────────────────────────────────
+
+        public class HeaderDiff
+        {
+            public Dictionary<string, FieldChange> QuotationFields { get; set; } = new Dictionary<string, FieldChange>();
+            public ModelUpdateDiff<SalesProjectMultiplier> Multipliers { get; set; } = new ModelUpdateDiff<SalesProjectMultiplier>();
+
+            public bool HasChanges()
+            {
+                return QuotationFields.Any() || Multipliers.HasChanges();
+            }
+        }
+
+        // ─── Root ───────────────────────────────────────────────────────────────────
+
+        public class FullProjectDiff
+        {
+            public HeaderDiff Header { get; set; } = new HeaderDiff();
+            public List<TabDiff> Tabs { get; set; } = new List<TabDiff>();
+
+            public bool HasChanges()
+            {
+                return Header.HasChanges() || Tabs.Any(t => t.HasChanges());
+            }
+        }
+
+        // ─── Tab data container (replaces anonymous tuple) ──────────────────────────
+
+        private class TabDbData
+        {
+            public List<SalesProjectItemSet> ItemSets { get; set; } = new List<SalesProjectItemSet>();
+            public List<SalesProjectContent> Contents { get; set; } = new List<SalesProjectContent>();
+            public List<SalesProjectAdvancedConditions> Conditions { get; set; } = new List<SalesProjectAdvancedConditions>();
+            public List<SalesProjectItems> Items { get; set; } = new List<SalesProjectItems>();
+            public List<SalesWiringModel> Wiring { get; set; } = new List<SalesWiringModel>();
+            public List<SalesProjectHistory> History { get; set; } = new List<SalesProjectHistory>();
+        }
+
+        // ─── Diff builder ───────────────────────────────────────────────────────────
+
+        public FullProjectDiff GetFullDiff(SalesProjectList dbData, Dictionary<string, object> pnlQuotation)
+        {
+            var result = new FullProjectDiff();
+
+            var firstQuotation = dbData.SalesQuotation != null && dbData.SalesQuotation.Count > 0
+                ? dbData.SalesQuotation[0]
+                : null;
+
+            result.Header.QuotationFields = GetQuotationFieldChanges(firstQuotation, pnlQuotation);
+
+            var newMultipliers = pnlQuotation.ContainsKey("sales_project_multiplier")
+                ? pnlQuotation["sales_project_multiplier"] as List<SalesProjectMultiplier>
+                : null;
+
+            if (newMultipliers == null)
+                newMultipliers = new List<SalesProjectMultiplier>();
+
+            result.Header.Multipliers = DiffByIndex(dbData.sales_project_multiplier, newMultipliers, GetMultiplierChanges);
+
+            var dbByTab = new Dictionary<int, TabDbData>();
+
+            if (dbData.sales_project_item_set != null)
+            {
+                foreach (var itemSet in dbData.sales_project_item_set)
+                {
+                    int bid = ToInt(itemSet.based_id);
+                    if (!dbByTab.ContainsKey(bid))
+                        dbByTab[bid] = new TabDbData();
+
+                    dbByTab[bid].ItemSets.Add(itemSet);
+                }
+            }
+
+            if (dbData.sales_project_content != null)
+            {
+                foreach (var item in dbData.sales_project_content)
+                {
+                    int bid = ToInt(item.based_id);
+                    if (dbByTab.ContainsKey(bid))
+                        dbByTab[bid].Contents.Add(item);
+                }
+            }
+
+            if (dbData.sales_project_content_advanced_condition != null)
+            {
+                foreach (var item in dbData.sales_project_content_advanced_condition)
+                {
+                    int bid = ToInt(item.based_id);
+                    if (dbByTab.ContainsKey(bid))
+                        dbByTab[bid].Conditions.Add(item);
+                }
+            }
+
+            if (dbData.sales_project_items != null)
+            {
+                foreach (var item in dbData.sales_project_items)
+                {
+                    int bid = ToInt(item.based_id);
+                    if (dbByTab.ContainsKey(bid))
+                        dbByTab[bid].Items.Add(item);
+                }
+            }
+
+            if (dbData.sales_project_wiring != null)
+            {
+                foreach (var item in dbData.sales_project_wiring)
+                {
+                    int bid = ToInt(item.based_id);
+                    if (dbByTab.ContainsKey(bid))
+                        dbByTab[bid].Wiring.Add(item);
+                }
+            }
+
+            if (dbData.sales_project_history != null)
+            {
+                foreach (var item in dbData.sales_project_history)
+                {
+                    int bid = (int)item.based_id;
+                    if (dbByTab.ContainsKey(bid))
+                        dbByTab[bid].History.Add(item);
+                }
+            }
+
+            var allTabs = pnlQuotation.ContainsKey("sales_project_all_tabs")
+                ? pnlQuotation["sales_project_all_tabs"] as List<Dictionary<string, object>>
+                : null;
+
+            if (allTabs == null)
+                allTabs = new List<Dictionary<string, object>>();
+
+            var newTabIds = new HashSet<int>();
+            foreach (var tab in allTabs)
+            {
+                int bid = GetBasedIdFromTab(tab);
+                if (bid > 0)
+                    newTabIds.Add(bid);
+            }
+
+            var allBasedIds = new HashSet<int>(dbByTab.Keys);
+            allBasedIds.UnionWith(newTabIds);
+
+            foreach (int basedId in allBasedIds)
+            {
+                var db = dbByTab.ContainsKey(basedId)
+                    ? dbByTab[basedId]
+                    : new TabDbData();
+
+                Dictionary<string, object> matchedTab = null;
+                foreach (var tab in allTabs)
+                {
+                    int bid = GetBasedIdFromTab(tab);
+                    if (bid == basedId)
+                    {
+                        matchedTab = tab;
+                        break;
+                    }
+                }
+
+                var newItemSets = matchedTab != null
+                    ? new List<SalesProjectItemSet> { BuildItemSet(matchedTab, basedId) }
+                    : new List<SalesProjectItemSet>();
+
+                var newContents = matchedTab != null && matchedTab.ContainsKey("sales_project_content")
+                    ? matchedTab["sales_project_content"] as List<SalesProjectContent>
+                    : null;
+                if (newContents == null) newContents = new List<SalesProjectContent>();
+
+                var newConditions = matchedTab != null && matchedTab.ContainsKey("sales_project_content_advanced_condition")
+                    ? matchedTab["sales_project_content_advanced_condition"] as List<SalesProjectAdvancedConditions>
+                    : null;
+                if (newConditions == null) newConditions = new List<SalesProjectAdvancedConditions>();
+
+                var newItems = matchedTab != null && matchedTab.ContainsKey("sales_project_items")
+                    ? matchedTab["sales_project_items"] as List<SalesProjectItems>
+                    : null;
+                if (newItems == null) newItems = new List<SalesProjectItems>();
+
+                var newWiring = matchedTab != null && matchedTab.ContainsKey("sales_project_wiring")
+                    ? matchedTab["sales_project_wiring"] as List<SalesWiringModel>
+                    : null;
+                if (newWiring == null) newWiring = new List<SalesWiringModel>();
+
+                var newHistory = matchedTab != null && matchedTab.ContainsKey("sales_project_history")
+                    ? matchedTab["sales_project_history"] as List<SalesProjectHistory>
+                    : null;
+                if (newHistory == null) newHistory = new List<SalesProjectHistory>();
+
+                var tabDiff = new TabDiff { BasedId = basedId };
+
+                tabDiff.ItemSets = DiffModels(db.ItemSets, newItemSets, x => x.based_id, GetItemSetChanges);
+                tabDiff.Contents = DiffByIndex(db.Contents, newContents, GetContentChanges);
+                tabDiff.AdvancedConditions = DiffByIndex(db.Conditions, newConditions, GetAdvancedConditionsChanges);
+                tabDiff.Items = DiffModels(db.Items, newItems, x => x.items_id, GetItemFieldChanges);
+                tabDiff.Wiring = DiffModels(db.Wiring, newWiring, x => x.id, GetWiringChanges);
+                tabDiff.History = DiffModels(db.History, newHistory,x => x.id, GetHistoryChanges);
+
+                if (tabDiff.HasChanges())
+                    result.Tabs.Add(tabDiff);
+            }
+
+            return result;
+        }
+
+        private int GetBasedIdFromTab(Dictionary<string, object> tab)
+        {
+            if (tab == null || !tab.ContainsKey("sales_project_item_set"))
+                return 0;
+
+            var setDict = tab["sales_project_item_set"] as Dictionary<string, object>;
+            if (setDict == null || !setDict.ContainsKey("based_id"))
+                return 0;
+
+            return ToInt(setDict["based_id"]);
+        }
+        private int ToInt(object value)
+        {
+            if (value == null) return 0;
+            if (value is int) return (int)value;
+            if (value is long) return (int)(long)value;
+
+            int result;
+            int.TryParse(value.ToString(), out result);
+            return result;
+        }
+
+        private Dictionary<string, FieldChange> GetItemFieldChanges(SalesProjectItems db, SalesProjectItems upd)
+        {
+            var changes = new Dictionary<string, FieldChange>();
+
+            Compare(changes, "components", db.components, upd.components);
+            Compare(changes, "model", db.model, upd.model);
+            Compare(changes, "item_inv_type", db.item_inv_type, upd.item_inv_type);
+            Compare(changes, "reference_code", db.reference_code, upd.reference_code);
+
+            Compare(changes, "qty", db.qty, upd.qty);
+            Compare(changes, "list_price_per_unit", db.list_price_per_unit, upd.list_price_per_unit);
+            Compare(changes, "unit_price", db.unit_price, upd.unit_price);
+            Compare(changes, "discount_price", db.discount_price, upd.discount_price);
+            Compare(changes, "component_total", db.component_total, upd.component_total);
+
+            Compare(changes, "multiplier", db.multiplier, upd.multiplier);
+            Compare(changes, "notes", db.notes, upd.notes);
+
+            Compare(changes, "man_days", db.man_days, upd.man_days);
+            Compare(changes, "labor_rate", db.labor_rate, upd.labor_rate);
+
+            return changes;
+        }
+
+        // ─── Generic diff helpers ────────────────────────────────────────────────────
+
+        // ── Strategy 1: DiffSingle ───────────────────────────────────────────────────
+        // For models where there is exactly ONE record per tab (AdvancedConditions, etc.)
+        // Just compare fields directly, no key matching needed.
+
+        private ModelUpdateDiff<T> DiffSingle<T>(
+            T dbItem,
+            T newItem,
+            Func<T, T, Dictionary<string, FieldChange>> fieldComparer) where T : class
+        {
+            var diff = new ModelUpdateDiff<T>();
+
+            if (dbItem == null && newItem == null)
+                return diff;
+
+            if (dbItem == null && newItem != null)
+            {
+                diff.Added.Add(newItem);
+                return diff;
+            }
+
+            if (dbItem != null && newItem == null)
+            {
+                diff.Removed.Add(dbItem);
+                return diff;
+            }
+
+            var changes = fieldComparer(dbItem, newItem);
+            if (changes.Count > 0)
+            {
+                diff.Updated.Add(new UpdatedModel<T>
+                {
+                    Item = newItem,
+                    Changes = changes
+                });
+            }
+
+            return diff;
+        }
+
+        // ── Strategy 2: DiffByIndex ──────────────────────────────────────────────────
+        // For lists where rows have no stable unique key (multipliers, content rows).
+        // Matches row-by-row by position, then compares each field.
+
+        private ModelUpdateDiff<T> DiffByIndex<T>(List<T> dbList, List<T> newList, Func<T, T, Dictionary<string, FieldChange>> fieldComparer)
+        {
+            var diff = new ModelUpdateDiff<T>();
+
+            if (dbList == null) dbList = new List<T>();
+            if (newList == null) newList = new List<T>();
+
+            int dbCount = dbList.Count;
+            int newCount = newList.Count;
+            int minCount = dbCount < newCount ? dbCount : newCount;
+
+            // compare overlapping rows field by field
+            for (int i = 0; i < minCount; i++)
+            {
+                var changes = fieldComparer(dbList[i], newList[i]);
+                if (changes.Count > 0)
+                {
+                    diff.Updated.Add(new UpdatedModel<T>
+                    {
+                        Item = newList[i],
+                        Changes = changes
+                    });
+                }
+            }
+
+            // new list has more rows — they are added
+            for (int i = minCount; i < newCount; i++)
+                diff.Added.Add(newList[i]);
+
+            // db list has more rows — they are removed
+            for (int i = minCount; i < dbCount; i++)
+                diff.Removed.Add(dbList[i]);
+
+            return diff;
+        }
+
+        // ── Strategy 3: DiffModels (by int id) ──────────────────────────────────────
+        // For lists where each row has a stable DB-generated id (items, wiring, history).
+        // Only use this when the new rows carry their original DB id.
+
+        private ModelUpdateDiff<T> DiffModels<T>(
+            List<T> dbList,
+            List<T> newList,
+            Func<T, int> keySelector,
+            Func<T, T, Dictionary<string, FieldChange>> fieldComparer)
+        {
+            var diff = new ModelUpdateDiff<T>();
+
+            if (dbList == null) dbList = new List<T>();
+            if (newList == null) newList = new List<T>();
+
+            var dbDict = new Dictionary<int, T>();
+            var newDict = new Dictionary<int, T>();
+
+            foreach (var item in dbList)
+            {
+                int key = keySelector(item);
+                if (!dbDict.ContainsKey(key))
+                    dbDict[key] = item;
+            }
+
+            foreach (var item in newList)
+            {
+                int key = keySelector(item);
+                if (!newDict.ContainsKey(key))
+                    newDict[key] = item;
+            }
+
+            foreach (var kvp in newDict)
+            {
+                if (!dbDict.ContainsKey(kvp.Key))
+                    diff.Added.Add(kvp.Value);
+            }
+
+            foreach (var kvp in dbDict)
+            {
+                if (!newDict.ContainsKey(kvp.Key))
+                    diff.Removed.Add(kvp.Value);
+            }
+
+            foreach (var kvp in dbDict)
+            {
+                if (!newDict.ContainsKey(kvp.Key))
+                    continue;
+
+                var changes = fieldComparer(kvp.Value, newDict[kvp.Key]);
+                if (changes.Count > 0)
+                {
+                    diff.Updated.Add(new UpdatedModel<T>
+                    {
+                        Item = newDict[kvp.Key],
+                        Changes = changes
+                    });
+                }
+            }
+
+            return diff;
+        }
+
+        // ─── Per-model field comparers ───────────────────────────────────────────────
+
+        private Dictionary<string, FieldChange> GetItemSetChanges(SalesProjectItemSet db, SalesProjectItemSet newItem)
+        {
+            var changes = new Dictionary<string, FieldChange>();
+
+            Compare(changes, "tab_number", db.tab_number, newItem.tab_number);
+
+            return changes;
+        }
+
+        private Dictionary<string, FieldChange> GetQuotationFieldChanges(
+            SalesQuotationModel db,
+            Dictionary<string, object> upd)
+        {
+            var c = new Dictionary<string, FieldChange>();
+            if (db == null) return c;
+
+            object val;
+            Compare(c, "project_name", db.project_name, upd.TryGetValue("project_name", out val) ? val : null);
+            Compare(c, "customer_id", db.customer_id, upd.TryGetValue("customer_id", out val) ? val : null);
+            Compare(c, "application_id", db.application_id, upd.TryGetValue("application_id", out val) ? val : null);
+            Compare(c, "payment_terms_id", db.payment_terms_id, upd.TryGetValue("payment_terms_id", out val) ? val : null);
+            Compare(c, "ship_to_id", db.ship_to_id, upd.TryGetValue("ship_to_id", out val) ? val : null);
+            Compare(c, "bill_to_id", db.bill_to_id, upd.TryGetValue("bill_to_id", out val) ? val : null);
+            Compare(c, "ship_type_id", db.ship_type_id, upd.TryGetValue("ship_type_id", out val) ? val : null);
+            Compare(c, "purpose", db.purpose, upd.TryGetValue("purpose", out val) ? val : null);
+            Compare(c, "date", db.bill_to_id, upd.TryGetValue("date", out val) ? val : null);
+            Compare(c, "validity_days", db.validity_days, upd.TryGetValue("validity_days", out val) ? val : null);
+            Compare(c, "warranty", db.warranty, upd.TryGetValue("warranty", out val) ? val : null);
+            Compare(c, "address_to", db.address_to, upd.TryGetValue("address_to", out val) ? val : null);
+            Compare(c, "thru", db.thru, upd.TryGetValue("thru", out val) ? val : null);
+            Compare(c, "gross_sales", db.gross_sales, upd.TryGetValue("gross_sales", out val) ? val : null);
+            Compare(c, "vat_amount", db.vat_amount, upd.TryGetValue("vat_amount", out val) ? val : null);
+            Compare(c, "net_sales", db.net_sales, upd.TryGetValue("net_sales", out val) ? val : null);
+            Compare(c, "percent_discount", db.percent_discount, upd.TryGetValue("percent_discount", out val) ? val : null);
+            Compare(c, "discounted_amount", db.discounted_amount, upd.TryGetValue("discounted_amount", out val) ? val : null);
+            Compare(c, "additional_discounted", db.additional_discounted_amount, upd.TryGetValue("additional_discounted", out val) ? val : null); // possible have issue here with additional discount field name
+            Compare(c, "cash_discount", db.cash_discount, upd.TryGetValue("cash_discount", out val) ? val : null);
+            Compare(c, "net_amount_due", db.net_amount_due, upd.TryGetValue("net_amount_due", out val) ? val : null);
+            Compare(c, "total_amount_due", db.total_amount_due, upd.TryGetValue("total_amount_due", out val) ? val : null);
+            Compare(c, "contact_1", db.contact_1, upd.TryGetValue("contact_1", out val) ? val : null);
+            Compare(c, "contact_2", db.contact_2, upd.TryGetValue("contact_2", out val) ? val : null);
+            Compare(c, "document_no", db.document_no, upd.TryGetValue("document_no", out val) ? val : null);
+            Compare(c, "version_no", db.version_no, upd.TryGetValue("version_no", out val) ? val : null);
+            Compare(c, "sub_version_no", db.sub_version_no, upd.TryGetValue("sub_version_no", out val) ? val : null);
+            Compare(c, "created_by", db.created_by, upd.TryGetValue("created_by", out val) ? val : null);
+            Compare(c, "final_ref_no", db.final_ref_no, upd.TryGetValue("final_ref_no", out val) ? val : null);
+            Compare(c, "is_finalized", db.is_finalized, upd.TryGetValue("is_finalized", out val) ? val : null);
+            Compare(c, "is_project", db.is_project, upd.TryGetValue("is_project", out val) ? val : null);
+            return c;
+        }
+
+        private Dictionary<string, FieldChange> GetMultiplierChanges(
+            SalesProjectMultiplier db,
+            SalesProjectMultiplier upd)
+        {
+            var c = new Dictionary<string, FieldChange>();
+            Compare(c, "brand", db.brand, upd.brand);
+            Compare(c, "component", db.component, upd.component);
+            Compare(c, "description", db.description, upd.description);
+            Compare(c, "multiplier", db.multiplier, upd.multiplier);
+            return c;
+        }
+
+        private Dictionary<string, FieldChange> GetContentChanges(
+            SalesProjectContent db,
+            SalesProjectContent upd)
+        {
+            var c = new Dictionary<string, FieldChange>();
+            Compare(c, "item_designation", db.item_designation, upd.item_designation);
+            Compare(c, "item_set_description", db.item_set_description, upd.item_set_description);
+            Compare(c, "application", db.application, upd.application);
+            Compare(c, "additional", db.additional, upd.additional);
+            Compare(c, "flow", db.flow, upd.flow);
+            Compare(c, "head", db.head, upd.head);
+            Compare(c, "voltage", db.voltage, upd.voltage);
+            Compare(c, "rpm", db.rpm, upd.rpm);
+            Compare(c, "hp", db.hp, upd.hp);
+            Compare(c, "phase", db.phase, upd.phase);
+            Compare(c, "no_of_sets", db.no_of_sets, upd.no_of_sets);
+            Compare(c, "no_of_pump_set", db.no_of_pump_set, upd.no_of_pump_set);
+            Compare(c, "item_set_notes", db.item_set_notes, upd.item_set_notes);
+            Compare(c, "is_wiring", db.is_wiring, upd.is_wiring);
+            return c;
+        }
+
+        private Dictionary<string, FieldChange> GetAdvancedConditionsChanges(
+            SalesProjectAdvancedConditions db,
+            SalesProjectAdvancedConditions upd)
+        {
+            var c = new Dictionary<string, FieldChange>();
+            Compare(c, "pump_brand", db.pump_brand, upd.pump_brand);
+            Compare(c, "driver_type", db.driver_type, upd.driver_type);
+            Compare(c, "pressure", db.pressure, upd.pressure);
+            Compare(c, "motor_enclosure", db.motor_enclosure, upd.motor_enclosure);
+            Compare(c, "motor_manufacturer", db.motor_manufacturer, upd.motor_manufacturer);
+            Compare(c, "liquid_type", db.liquid_type, upd.liquid_type);
+            Compare(c, "controller_manufacturer", db.controller_manufacturer, upd.controller_manufacturer);
+            Compare(c, "starting_method", db.starting_method, upd.starting_method);
+            Compare(c, "suction_size", db.suction_size, upd.suction_size);
+            Compare(c, "discharge_size", db.discharge_size, upd.discharge_size);
+            return c;
+        }
+
+        private Dictionary<string, FieldChange> GetWiringChanges(SalesWiringModel db, SalesWiringModel upd)
+        {
+            var c = new Dictionary<string, FieldChange>();
+            // replace these with actual SalesWiringModel field names
+            Compare(c, "description", db.description, upd.description);
+            Compare(c, "qty", db.qty, upd.qty);
+            return c;
+        }
+        private Dictionary<string, FieldChange> GetHistoryChanges(
+            SalesProjectHistory db,
+            SalesProjectHistory upd)
+        {
+            var c = new Dictionary<string, FieldChange>();
+            Compare(c, "old_data", db.old_data, upd.old_data);
+            Compare(c, "new_data", db.new_data, upd.new_data);
+            return c;
+        }
+
+        // ─── Existing helpers (unchanged) ───────────────────────────────────────────
+
+        private void Compare(Dictionary<string, FieldChange> changes, string field, object oldVal, object newVal)
+        {
+            if (AreEqual(oldVal, newVal))
+                return;
+
+            changes[field] = new FieldChange
+            {
+                OldValue = oldVal,
+                NewValue = newVal
+            };
+        }
+
+        private bool AreEqual(object oldVal, object newVal)
+        {
+            var oldNorm = Normalize(oldVal);
+            var newNorm = Normalize(newVal);
+
+            if (oldNorm == newNorm) return true;
+
+            if (IsNumeric(oldVal) && IsNumeric(newVal))
+            {
+                decimal d1 = Math.Round(Convert.ToDecimal(oldVal), 2, MidpointRounding.AwayFromZero);
+                decimal d2 = Math.Round(Convert.ToDecimal(newVal), 2, MidpointRounding.AwayFromZero);
+                return d1 == d2;
+            }
+
+            return false;
+        }
+
+        private bool IsNumeric(object value)
+        {
+            decimal dummy;
+            return value != null && decimal.TryParse(value.ToString(), out dummy);
+        }
+
+        private string Normalize(object value)
+        {
+            if (value == null) return string.Empty;
+            return value.ToString().Trim();
+        }
+
+        // ─── ItemSet builder ─────────────────────────────────────────────────────────
+
+        private SalesProjectItemSet BuildItemSet(Dictionary<string, object> tab, int basedId)
+        {
+            var raw = tab.ContainsKey("sales_project_item_set")
+                ? tab["sales_project_item_set"] as Dictionary<string, object>
+                : null;
+
+            return new SalesProjectItemSet
+            {
+                based_id = basedId,
+                tab_number = raw != null && raw.ContainsKey("tab_number")
+                    ? raw["tab_number"].ToString()
+                    : string.Empty
+            };
+        }
+
+        //Here is the end for updates
 
         public static bool ConvertToInt(Dictionary<string, dynamic> dict,string key,string errorMessage)
         {
@@ -1212,7 +1799,7 @@ namespace smpc_sales_app.Pages.Sales
 
                  
                 parentData["ship_to_id"] = ship_to_id;
-                parentData["isProject"] = false;
+                //parentData["isProject"] = false;
 
 
                 var dataSource = Helpers.ConvertDataGridViewToDataTable(dgv_quick_quote_details);

@@ -1,5 +1,6 @@
 ﻿using smpc_app.Services.Helpers;
 using smpc_inventory_app.Services.Helpers;
+using smpc_sales_app.Pages.Sales;
 using smpc_sales_app.Services.Helpers;
 using smpc_sales_system.Models;
 using smpc_sales_system.Services.Sales.Models;
@@ -123,5 +124,9 @@ namespace smpc_sales_system.Services.Sales
             return pumpsData;
         }
 
+        internal static async Task Update(Quotation.FullProjectDiff changes)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

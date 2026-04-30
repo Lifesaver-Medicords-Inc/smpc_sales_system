@@ -8,7 +8,7 @@ namespace smpc_sales_system.Models
 {
     public class SalesWiringModel
     {
-        public dynamic id { get; set; }
+        public int id { get; set; }
         public int based_id { get; set; }
         public string materials { get; set; }
         public string amp_req { get; set; }

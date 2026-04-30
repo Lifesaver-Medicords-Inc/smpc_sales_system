@@ -43,5 +43,6 @@ namespace smpc_sales_system.Services.Sales.Models
         public string version_remarks { get; set; }
         public string created_by { get; set; }
         public double discounted_amount { get; set; }
+        public bool is_project { get; set; }
     }
 }

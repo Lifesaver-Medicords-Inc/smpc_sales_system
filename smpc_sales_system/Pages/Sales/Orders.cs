@@ -140,7 +140,7 @@ namespace smpc_sales_app.Pages.Sales
                     HandleProjectNameVisibility(quotation[0]);
                 }
 
-                string customerID = quotation[0]["customer_id"].ToString();
+                string customerID = parentRow["customer_id"].ToString();
                 string ShipID = parentRow["ship_to_id"].ToString();
                 string BillID = parentRow["bill_to_id"].ToString();
                 PopulateCustomerAndAddressInfo(customerID, ShipID, BillID, newRow);
@@ -193,10 +193,10 @@ namespace smpc_sales_app.Pages.Sales
                     {
                         HandleProjectNameVisibility(quotation[0]);
                     }
-                    string customerID = quotation[0]["customer_id"].ToString();
-                    newRow["vat_amount"] = quotation[0]["vat_amount"].ToString();
-                    newRow["gross_sales"] = quotation[0]["gross_sales"].ToString();
-                    newRow["total_amount_due"] = quotation[0]["total_amount_due"].ToString();
+                    string customerID = parentRow["customer_id"].ToString();
+                    newRow["vat_amount"] = parentRow["vat_amount"].ToString();
+                    newRow["gross_sales"] = parentRow["gross_sales"].ToString();
+                    newRow["total_amount_due"] = parentRow["total_amount_due"].ToString();
 
                     string ShipID = parentRow["ship_to_id"].ToString();
                     string BillID = parentRow["bill_to_id"].ToString();
@@ -1393,7 +1393,7 @@ namespace smpc_sales_app.Pages.Sales
             txt_contact_no.ReadOnly = isStatusCancelled;
             txt_remarks.ReadOnly = isStatusCancelled;
             txt_approved_by.ReadOnly = isStatusCancelled;
-            btn_save.Enabled = !isStatusCancelled;
+            btn_save.Enabled = isStatusCancelled;
             btn_print.Enabled = isStatusActive || !isStatusCancelled;
 
             foreach (DataGridViewColumn column in dgv_order_sales.Columns)
@@ -1410,7 +1410,7 @@ namespace smpc_sales_app.Pages.Sales
 
                 if (string.IsNullOrWhiteSpace(txt_receiver.Text)) missingFields.Add("Receiver");
                 if (string.IsNullOrWhiteSpace(txt_contact_no.Text)) missingFields.Add("Contact Number");
-                if (string.IsNullOrWhiteSpace(txt_ref_po.Text)) missingFields.Add("Reference PO");
+                //if (string.IsNullOrWhiteSpace(txt_ref_po.Text)) missingFields.Add("Reference PO");
                 txt_status.Text = SetDefaultIfEmpty(txt_status.Text);
 
                 if (missingFields.Count > 0)
@@ -1550,18 +1550,29 @@ namespace smpc_sales_app.Pages.Sales
                     {
                         if (isExistingDoc)
                         {
-                            await OrderService.Update(parentData);
-                            MessageBox.Show("Data updated successfully");
-                            await FetchSalesOrder(true);
-                            bindOrderByDocNo(docno, true);
-                            CheckStatus();
+                            var success = await OrderService.Update(parentData);
+
+                            if (success != null)
+                            {
+                                MessageBox.Show("Data updated successfully");
+                                await FetchSalesOrder(true);
+                                bindOrderByDocNo(docno, true);
+                                CheckStatus();
+                            }
+
                         }
                         else
                         {
-                            await OrderService.Insert(parentData);
-                            MessageBox.Show("Data added successfully");
-                            await FetchSalesOrder(true);
-                            CheckStatus();
+                            
+                            var success = await OrderService.Insert(parentData);
+
+                            if (success != null)
+                            {
+                                MessageBox.Show("Data added successfully");
+                                await FetchSalesOrder(true);
+                                CheckStatus();
+                            }
+
                         }
                         TV1_preview.Visible = false;
                         TV2_preview.Visible = false;
@@ -1572,6 +1583,13 @@ namespace smpc_sales_app.Pages.Sales
             {
                 MessageBox.Show("Error: " + ex.Message + "\n\n" + "Stack Trace: " + ex.StackTrace);
             }
+        }
+
+        public void ViewEnable()
+        {
+            btn_save.Visible = false;
+            btn_back.Visible = false;
+            btn_new.Visible = true;
         }
 
         private void dgv_order_sales_CellMouseClick(object sender, DataGridViewCellMouseEventArgs e)
