@@ -2873,6 +2873,7 @@ namespace smpc_sales_app.Pages.Sales
                 btn_duplicate.Visible = !isFinalized;
 
                 btn_edit.Visible = !isFinalized;
+                btn_add_customer.Visible = !isFinalized;
 
                 // Label DocNumber
                 foreach (var pnl in pnlList)
@@ -3295,8 +3296,8 @@ namespace smpc_sales_app.Pages.Sales
                 if (SelectedRow < rowCount - 1)
                 {
                     SelectedRow++;
-
                     bind(true);
+                    createFilterViewDgvQuickQouteDetails();
                 }
             }
             else
@@ -3319,6 +3320,7 @@ namespace smpc_sales_app.Pages.Sales
                 {
                     SelectedRow--;
                     bind(true);
+                    createFilterViewDgvQuickQouteDetails();
                 }
             }
             else
@@ -4088,10 +4090,11 @@ namespace smpc_sales_app.Pages.Sales
             btn_update.Visible = !isTrue;
             btn_print.Visible = !isTrue;
             btn_finalize.Enabled = !isTrue;
-
+            
             // Show action button
             btn_savee.Visible = isTrue;
             btn_close.Visible = isTrue;
+            btn_add_customer.Visible = isTrue;
             dgv_quick_quote_details.Enabled = isTrue;
 
         }
@@ -4111,6 +4114,7 @@ namespace smpc_sales_app.Pages.Sales
             // Enable editing controls
             btn_savee.Visible = true;
             btn_close.Visible = true;
+            btn_add_customer.Visible = true;
 
             Panel[] panels = { pnl_header, pnl_footer };
             Helpers.ResetReadOnlyControls(panels);
