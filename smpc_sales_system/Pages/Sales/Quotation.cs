@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Serialization;
 using smpc_app.Data;
 using smpc_app.Services.Helpers;
 using smpc_inventory_app.Pages;
@@ -9,6 +10,7 @@ using smpc_sales_app.Services.Sales;
 using smpc_sales_system.Models;
 using smpc_sales_system.Pages;
 using smpc_sales_system.Pages.Sales;
+using smpc_sales_system.Properties;
 using smpc_sales_system.Services.Sales;
 using smpc_sales_system.Services.Sales.Models;
 using smpc_sales_system.Services.Setup;
@@ -21,6 +23,7 @@ using System.Net.WebSockets;
 using System.Reflection;
 using System.Text;
 using System.Threading;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using WebSocketSharp;
@@ -480,7 +483,7 @@ namespace smpc_sales_app.Pages.Sales
                 ctrl.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Bottom;
             }
 
-            fetchSalesProject();
+            fetchSalesProjectData();
         }
         private void setProjectMultiplier()
         {
@@ -588,7 +591,7 @@ namespace smpc_sales_app.Pages.Sales
                 dgv_quick_quote_details.Enabled = true;
 
                 await Task.Delay(2000); // optional wait
-                bind(true);
+                bind(transactionList, SelectedRow, true);
 
                 createFilterViewDgvQuickQouteDetails();
 
@@ -615,7 +618,7 @@ namespace smpc_sales_app.Pages.Sales
 
         public int CurrentProjectItemBasedID { get; set; }
 
-        private int selectedProject = 0;
+        private int selectedProjectRow = 0;
         private string selectedProjectID = "0";
 
         public static DataTable ToDataTable<T>(List<T> items)
@@ -648,27 +651,48 @@ namespace smpc_sales_app.Pages.Sales
 
             return dataTable;
         }
-
-        private async Task fetchSalesProject()
+        private DataTable ConvertToDataTable<T>(List<T> items)
         {
-            // 1. Fetch data
-            SalesProjectList data = await ProjectService.GetProjects();
+            DataTable table = new DataTable();
+            PropertyInfo[] properties = typeof(T).GetProperties();
 
-            // 2. Add null-check before accessing 'data.SalesQuotation'
-            if (data?.SalesQuotation == null) return;
+            foreach (PropertyInfo prop in properties)
+                table.Columns.Add(prop.Name, Nullable.GetUnderlyingType(prop.PropertyType) ?? prop.PropertyType);
 
-            // 3. Convert to DataTable
+            foreach (T item in items)
+            {
+                DataRow row = table.NewRow();
+                foreach (PropertyInfo prop in properties)
+                    row[prop.Name] = prop.GetValue(item) ?? DBNull.Value;
+                table.Rows.Add(row);
+            }
 
-            DataTable project_quote = JsonHelper.ToDataTable(data.SalesQuotation);
+            return table;
+        }
 
-            transactionList = JsonHelper.ToDataTable(data.SalesQuotation);
+        SalesProjectList SalesProjectListData = new SalesProjectList();
+        DataTable transactionProjectDataTable = new DataTable();
 
-            // 4. Validate the resulting DataTable
-            if (project_quote == null || project_quote.Rows.Count == 0) return;
+        private async Task fetchSalesProjectData()
+        {
+            Helpers.ResetControls(pnl_header);
+            ResetControls(pnl_footer);
 
-            bind(true);
 
-            if (data == null || (data.sales_project_item_set == null || !data.sales_project_item_set.Any()))
+            SalesProjectListData = await ProjectService.GetProjects();
+
+            if (SalesProjectListData?.SalesQuotation == null) return;
+
+            var latestQuotations = SalesProjectListData.SalesQuotation
+            //.GroupBy(q => q.document_no)
+            .Select(group => group)
+            .OrderByDescending(q => q.version_no)
+            .ToList();
+
+            transactionProjectDataTable = JsonHelper.ToDataTable(latestQuotations);
+
+
+            if (SalesProjectListData == null || (SalesProjectListData.sales_project_item_set == null || !SalesProjectListData.sales_project_item_set.Any()))
             {
                 MessageBox.Show("No project data found. Creating a new entry.", "Empty Data", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
@@ -676,6 +700,7 @@ namespace smpc_sales_app.Pages.Sales
                 var lastIndex = this.tabControl2.TabCount - 1;
                 // Create a new TabPage
                 TabPage newTab = new TabPage("New Project 1");
+
                 // Create an instance of ItemSetUC
                 ItemSetUC UC = new ItemSetUC
                 {
@@ -710,27 +735,45 @@ namespace smpc_sales_app.Pages.Sales
                 return;
             }
 
-            List<SalesProjectItemSet> fetchedTabs = data.sales_project_item_set;
+            fetchSalesProject();
+        }
+
+        private async void fetchSalesProject()
+        {
+            if (transactionProjectDataTable.Rows.Count == 0) return;
+
+            string selectedId = this.transactionProjectDataTable.Rows[this.selectedProjectRow]["id"].ToString();
+            int selectedIdInt = int.Parse(selectedId);
+
+            // Filter each list using LINQ Where()
+            List<SalesQuotationModel> filtered = SalesProjectListData.SalesQuotation
+            .Where(x => x.id == selectedIdInt)
+            .ToList();
+
+            DataTable transactionData = ConvertToDataTable(filtered);
+
+            if (transactionData == null || transactionData.Rows.Count == 0) return;
+
+            bind(transactionProjectDataTable, selectedProjectRow, true);
+
+            List<SalesProjectItemSet> fetchedTabs = SalesProjectListData.sales_project_item_set;
             
             //get the content final
-            var allFinals = data.sales_project_content
+            var allFinals = SalesProjectListData.sales_project_content
             .Where(c => c.sales_project_content_final != null)
             .SelectMany(c => c.sales_project_content_final)
             .ToList();
 
-
-            dt_multiplier = JsonHelper.ToDataTable(data.sales_project_multiplier);
-            dt_content = JsonHelper.ToDataTable(data.sales_project_content);
+            dt_multiplier = JsonHelper.ToDataTable(SalesProjectListData.sales_project_multiplier);
+            dt_content = JsonHelper.ToDataTable(SalesProjectListData.sales_project_content);
             dt_content_final = JsonHelper.ToDataTable(allFinals);
-            dt_advanced_conditions = JsonHelper.ToDataTable(data.sales_project_content_advanced_condition);
-            dt_items = JsonHelper.ToDataTable(data.sales_project_items);
-            dt_wiring = JsonHelper.ToDataTable(data.sales_project_wiring);
+            dt_advanced_conditions = JsonHelper.ToDataTable(SalesProjectListData.sales_project_content_advanced_condition);
+            dt_items = JsonHelper.ToDataTable(SalesProjectListData.sales_project_items);
+            dt_wiring = JsonHelper.ToDataTable(SalesProjectListData.sales_project_wiring);
 
             //Helpers.BindControls(pnls, dt2, selectedProject);
 
-            string selectedSalesQuotationId = project_quote.Rows[0]["id"]?.ToString() ?? null;
-             this.selectedProjectID = selectedSalesQuotationId;
-            txt_project_name.Text = project_quote.Rows[0]["project_name"].ToString();
+            txt_project_name.Text = transactionData.Rows[0]["project_name"].ToString();
 
             //DataView dataview = new DataView(dt_multiplier);
             //dataview.RowFilter = "based_id = '" + this.allTransactionList.Rows[this.selectedProject]["id"].ToString() + "'";
@@ -738,10 +781,11 @@ namespace smpc_sales_app.Pages.Sales
 
              tabControl2.TabPages.Clear();
 
-            var filteredtabs = fetchedTabs.Where(tab => tab.based_id.ToString() == selectedSalesQuotationId).ToList();
+            var filteredtabs = fetchedTabs.Where(tab => tab.based_id.ToString() == selectedId).ToList();
             foreach (var tab in filteredtabs)
             {
                 TabPage newTab = new TabPage(tab.tab_number);
+                newTab.Tag = tab.itemset_id;
 
                 ItemSetUC UC = new ItemSetUC
                 {
@@ -914,7 +958,7 @@ namespace smpc_sales_app.Pages.Sales
                 // If filtered data exists, bind it to the DataGridView
                 if (filteredSalesQuotation.Any() || filteredSalesQuotationQuick.Any())
                 {
-                    bind(true);
+                    bind(transactionList, selectedProjectRow, true);
                 }
                 else
                 {
@@ -974,7 +1018,7 @@ namespace smpc_sales_app.Pages.Sales
             }
         }
 
-        private async void IsProject()
+        private async void  IsProject()
         {
             Panel[] pnl_list = { pnl_header, pnl_footer, pnl_project_name };
             var pnl_quotation = Helpers.GetControlsValues(pnl_list);
@@ -1023,12 +1067,14 @@ namespace smpc_sales_app.Pages.Sales
                             basedId = (int)(long)pnl_quotation["id"];
                         else
                             int.TryParse(pnl_quotation["id"].ToString(), out basedId);
-
+                        
                         tabData["sales_project_item_set"] = new Dictionary<string, object>
                         {
                             { "based_id",   basedId },
-                            { "tab_number", selectedTab.Text }
+                            { "tab_number", selectedTab.Text },
+                            { "itemset_id", selectedTab.Tag }
                         };
+
                         tabData["sales_project_history"] = selectedControl.GetHistoryList();
                         tabData["sales_project_content"] = selectedControl.GetProjectContentsData();
                         tabData["sales_project_content_advanced_condition"] = selectedControl.GetAdvancedConditionsData();
@@ -1051,38 +1097,57 @@ namespace smpc_sales_app.Pages.Sales
             if (IsEdit)
                 pnl_quotation["id"] = int.Parse(pnl_quotation["id"].ToString());
 
+            // trims the Q# from the input
+            if (pnl_quotation.ContainsKey("document_no") && pnl_quotation["document_no"] is string documentNo)
+            {
+                pnl_quotation["document_no"] = documentNo.StartsWith("Q#")
+                    ? documentNo.Substring(2)
+                    : documentNo;
+            }
+
             pnl_quotation["percent_discount"] = float.TryParse(txt_additional_discount.Text, out float discount) ? discount : 0;
 
-            // ── Insert ──────────────────────────────────────────────────────────────
+            var quotation = JsonConvert.SerializeObject(pnl_quotation, Formatting.Indented);
+
             if (isNewRecord)
             {
-                var post = await ProjectService.Insert(pnl_quotation);
-                if (post.Success)
+                var response = await ProjectService.Insert(pnl_quotation);
+                if (response.Success)
                 {
                     MessageBox.Show("Saved");
                     SetNewFormMode(false);
                 }
                 else
-                    MessageBox.Show(post.message);
+                    MessageBox.Show($"Insert error: {response.message}");
             }
-            // ── Update ──────────────────────────────────────────────────────────────
             if (IsEdit)
             {
-                SalesProjectList dbData = await ProjectService.GetProjects();
-                FullProjectDiff changes = GetFullDiff(dbData, pnl_quotation);
+                SalesProjectList dbData = SalesProjectListData;
 
-                var debug = JsonConvert.SerializeObject(changes, Formatting.Indented);
+                Dictionary<string, dynamic> changes = GetFullDiff(dbData, pnl_quotation);
 
-                if (!changes.HasChanges())
+                changes["id"] = (int)pnl_quotation["id"];
+
+                // for checking to get the cleanJson for testing purpose
+
+                string json = JsonConvert.SerializeObject(changes);
+
+                var jsonObject = JsonConvert.DeserializeObject(json);
+
+                string cleanJson = JsonConvert.SerializeObject(jsonObject);
+
+                // testing purpose
+
+                var response = await ProjectService.UpdateChange(changes);
+
+                if(response.Success)
                 {
-                    MessageBox.Show("No changes detected. Nothing was updated.");
-                    return;
+                    MessageBox.Show("Updated successfully.");
+                    SetNewFormMode(false);
                 }
+                else
+                    MessageBox.Show($"Update error: {response.message}");
 
-
-                //await ProjectService.Update(changes);
-                MessageBox.Show("Updated successfully.");
-                SetNewFormMode(false);
             }
         }
         // ─── Extended diff models ───────────────────────────────────────────────────
@@ -1128,21 +1193,21 @@ namespace smpc_sales_app.Pages.Sales
         {
             public int BasedId { get; set; }
 
-            public ModelUpdateDiff<SalesProjectItems> Items { get; set; } = new ModelUpdateDiff<SalesProjectItems>();
-            public ModelUpdateDiff<SalesProjectContent> Contents { get; set; } = new ModelUpdateDiff<SalesProjectContent>();
-            public ModelUpdateDiff<SalesProjectAdvancedConditions> AdvancedConditions { get; set; } = new ModelUpdateDiff<SalesProjectAdvancedConditions>();
-            public ModelUpdateDiff<SalesWiringModel> Wiring { get; set; } = new ModelUpdateDiff<SalesWiringModel>();
-            public ModelUpdateDiff<SalesProjectItemSet> ItemSets { get; set; } = new ModelUpdateDiff<SalesProjectItemSet>();
-            public ModelUpdateDiff<SalesProjectHistory> History { get; set; } = new ModelUpdateDiff<SalesProjectHistory>();
+            public ModelUpdateDiff<SalesProjectItems> SalesProjectItems { get; set; } = new ModelUpdateDiff<SalesProjectItems>();
+            public ModelUpdateDiff<SalesProjectContent> SalesProjectContent { get; set; } = new ModelUpdateDiff<SalesProjectContent>();
+            public ModelUpdateDiff<SalesProjectAdvancedConditions> SalesProjectContentAdvancedCondition { get; set; } = new ModelUpdateDiff<SalesProjectAdvancedConditions>();
+            public ModelUpdateDiff<SalesWiringModel> SalesProjectWirings { get; set; } = new ModelUpdateDiff<SalesWiringModel>();
+            public ModelUpdateDiff<SalesProjectItemSet> SalesProjectItemSet { get; set; } = new ModelUpdateDiff<SalesProjectItemSet>();
+            public ModelUpdateDiff<SalesProjectHistory> SalesProjectHistory { get; set; } = new ModelUpdateDiff<SalesProjectHistory>();
 
             public bool HasChanges()
             {
-                return Items.HasChanges()
-                    || Contents.HasChanges()
-                    || AdvancedConditions.HasChanges()
-                    || Wiring.HasChanges()
-                    || ItemSets.HasChanges()
-                    || History.HasChanges();
+                return SalesProjectItems.HasChanges()
+                    || SalesProjectContent.HasChanges()
+                    || SalesProjectContentAdvancedCondition.HasChanges()
+                    || SalesProjectWirings.HasChanges()
+                    || SalesProjectItemSet.HasChanges()
+                    || SalesProjectHistory.HasChanges();
             }
         }
 
@@ -1186,179 +1251,504 @@ namespace smpc_sales_app.Pages.Sales
 
         // ─── Diff builder ───────────────────────────────────────────────────────────
 
-        public FullProjectDiff GetFullDiff(SalesProjectList dbData, Dictionary<string, object> pnlQuotation)
+        public Dictionary<string, dynamic> GetFullDiff(SalesProjectList dbData, Dictionary<string, object> pnlQuotation)
         {
-            var result = new FullProjectDiff();
+            var result = new Dictionary<string, dynamic>();
 
-            var firstQuotation = dbData.SalesQuotation != null && dbData.SalesQuotation.Count > 0
-                ? dbData.SalesQuotation[0]
-                : null;
+            int ProjectQuotationId = (int)pnlQuotation["id"];
 
-            result.Header.QuotationFields = GetQuotationFieldChanges(firstQuotation, pnlQuotation);
+            SalesQuotationModel firstQuotation = dbData.SalesQuotation
+                .FirstOrDefault(q => q.id == ProjectQuotationId);
 
-            var newMultipliers = pnlQuotation.ContainsKey("sales_project_multiplier")
-                ? pnlQuotation["sales_project_multiplier"] as List<SalesProjectMultiplier>
-                : null;
+            List<SalesProjectMultiplier> projectMultiplier = dbData.sales_project_multiplier
+                .Where(m => m.based_id == ProjectQuotationId)
+                .ToList();
 
-            if (newMultipliers == null)
-                newMultipliers = new List<SalesProjectMultiplier>();
 
-            result.Header.Multipliers = DiffByIndex(dbData.sales_project_multiplier, newMultipliers, GetMultiplierChanges);
+            result["Header"] = new Dictionary<string, dynamic>
+            {
+                { 
+                    "QuotationFields", GetQuotationFieldChanges(firstQuotation, pnlQuotation) 
+                },
+                {
+                    "Multipliers", DiffByIndex(projectMultiplier,
+                        DeserializeList<SalesProjectMultiplier>(pnlQuotation, "sales_project_multiplier"),
+                        GetMultiplierChanges
+                    )
+                }
+            };
 
             var dbByTab = new Dictionary<int, TabDbData>();
+            PopulateDbByTab(dbData, dbByTab, ProjectQuotationId);
 
-            if (dbData.sales_project_item_set != null)
-            {
-                foreach (var itemSet in dbData.sales_project_item_set)
-                {
-                    int bid = ToInt(itemSet.based_id);
-                    if (!dbByTab.ContainsKey(bid))
-                        dbByTab[bid] = new TabDbData();
-
-                    dbByTab[bid].ItemSets.Add(itemSet);
-                }
-            }
-
-            if (dbData.sales_project_content != null)
-            {
-                foreach (var item in dbData.sales_project_content)
-                {
-                    int bid = ToInt(item.based_id);
-                    if (dbByTab.ContainsKey(bid))
-                        dbByTab[bid].Contents.Add(item);
-                }
-            }
-
-            if (dbData.sales_project_content_advanced_condition != null)
-            {
-                foreach (var item in dbData.sales_project_content_advanced_condition)
-                {
-                    int bid = ToInt(item.based_id);
-                    if (dbByTab.ContainsKey(bid))
-                        dbByTab[bid].Conditions.Add(item);
-                }
-            }
-
-            if (dbData.sales_project_items != null)
-            {
-                foreach (var item in dbData.sales_project_items)
-                {
-                    int bid = ToInt(item.based_id);
-                    if (dbByTab.ContainsKey(bid))
-                        dbByTab[bid].Items.Add(item);
-                }
-            }
-
-            if (dbData.sales_project_wiring != null)
-            {
-                foreach (var item in dbData.sales_project_wiring)
-                {
-                    int bid = ToInt(item.based_id);
-                    if (dbByTab.ContainsKey(bid))
-                        dbByTab[bid].Wiring.Add(item);
-                }
-            }
-
-            if (dbData.sales_project_history != null)
-            {
-                foreach (var item in dbData.sales_project_history)
-                {
-                    int bid = (int)item.based_id;
-                    if (dbByTab.ContainsKey(bid))
-                        dbByTab[bid].History.Add(item);
-                }
-            }
-
-            var allTabs = pnlQuotation.ContainsKey("sales_project_all_tabs")
-                ? pnlQuotation["sales_project_all_tabs"] as List<Dictionary<string, object>>
-                : null;
-
-            if (allTabs == null)
-                allTabs = new List<Dictionary<string, object>>();
+            var allTabs = DeserializeList<Dictionary<string, object>>(pnlQuotation, "sales_project_all_tabs");
 
             var newTabIds = new HashSet<int>();
             foreach (var tab in allTabs)
             {
-                int bid = GetBasedIdFromTab(tab);
+                int bid = GetItemSetIdFromTab(tab);
                 if (bid > 0)
                     newTabIds.Add(bid);
             }
 
-            var allBasedIds = new HashSet<int>(dbByTab.Keys);
-            allBasedIds.UnionWith(newTabIds);
+            var allItemSetIds = new HashSet<int>(dbByTab.Keys);
+            allItemSetIds.UnionWith(newTabIds);
 
-            foreach (int basedId in allBasedIds)
+            foreach (int itemSetId in allItemSetIds)
             {
-                var db = dbByTab.ContainsKey(basedId)
-                    ? dbByTab[basedId]
-                    : new TabDbData();
+                var db = dbByTab.ContainsKey(itemSetId) ? dbByTab[itemSetId] : new TabDbData();
 
                 Dictionary<string, object> matchedTab = null;
                 foreach (var tab in allTabs)
                 {
-                    int bid = GetBasedIdFromTab(tab);
-                    if (bid == basedId)
+                    if (GetItemSetIdFromTab(tab) == itemSetId) 
                     {
                         matchedTab = tab;
                         break;
                     }
                 }
 
-                var newItemSets = matchedTab != null
-                    ? new List<SalesProjectItemSet> { BuildItemSet(matchedTab, basedId) }
-                    : new List<SalesProjectItemSet>();
+                var newItemSets = new List<SalesProjectItemSet>();
+                if (matchedTab != null && matchedTab.ContainsKey("sales_project_item_set")
+                    && matchedTab["sales_project_item_set"] != null)
+                { 
+                    newItemSets.Add(BuildItemSet(matchedTab, itemSetId));
+                }
+                 
+                var tabDiff = new TabDiff { BasedId = itemSetId };
 
-                var newContents = matchedTab != null && matchedTab.ContainsKey("sales_project_content")
-                    ? matchedTab["sales_project_content"] as List<SalesProjectContent>
-                    : null;
-                if (newContents == null) newContents = new List<SalesProjectContent>();
+                List<SalesProjectContent> ContentMatchedTab = new List<SalesProjectContent>();
+                List<SalesProjectAdvancedConditions> AdvanceConditionMatchedTab = new List<SalesProjectAdvancedConditions>();
 
-                var newConditions = matchedTab != null && matchedTab.ContainsKey("sales_project_content_advanced_condition")
-                    ? matchedTab["sales_project_content_advanced_condition"] as List<SalesProjectAdvancedConditions>
-                    : null;
-                if (newConditions == null) newConditions = new List<SalesProjectAdvancedConditions>();
+                if (matchedTab != null)
+                {
+                    var content = DeserializeSingleFromTab<SalesProjectContent>(matchedTab, "sales_project_content");
+                    if (content != null)
+                    {
+                        content.based_id = itemSetId;
+                        ContentMatchedTab.Add(content);
+                    }
 
-                var newItems = matchedTab != null && matchedTab.ContainsKey("sales_project_items")
-                    ? matchedTab["sales_project_items"] as List<SalesProjectItems>
-                    : null;
-                if (newItems == null) newItems = new List<SalesProjectItems>();
+                    var advCondition = DeserializeSingleFromTab<SalesProjectAdvancedConditions>(matchedTab, "sales_project_content_advanced_condition");
+                    if (advCondition != null)
+                    {
+                        advCondition.based_id = itemSetId;
+                        AdvanceConditionMatchedTab.Add(advCondition);
+                    }
+                }
 
-                var newWiring = matchedTab != null && matchedTab.ContainsKey("sales_project_wiring")
-                    ? matchedTab["sales_project_wiring"] as List<SalesWiringModel>
-                    : null;
-                if (newWiring == null) newWiring = new List<SalesWiringModel>();
+                List<SalesProjectItems> ItemsMatchedTab = DeserializeFromTab<SalesProjectItems>(matchedTab, "sales_project_items");
+                List<SalesWiringModel> WiringMatchedTab = DeserializeFromTab<SalesWiringModel>(matchedTab, "sales_project_wiring");
+                List<SalesProjectHistory> HistoryMatchedTab = DeserializeFromTab<SalesProjectHistory>(matchedTab, "sales_project_history");
 
-                var newHistory = matchedTab != null && matchedTab.ContainsKey("sales_project_history")
-                    ? matchedTab["sales_project_history"] as List<SalesProjectHistory>
-                    : null;
-                if (newHistory == null) newHistory = new List<SalesProjectHistory>();
-
-                var tabDiff = new TabDiff { BasedId = basedId };
-
-                tabDiff.ItemSets = DiffModels(db.ItemSets, newItemSets, x => x.based_id, GetItemSetChanges);
-                tabDiff.Contents = DiffByIndex(db.Contents, newContents, GetContentChanges);
-                tabDiff.AdvancedConditions = DiffByIndex(db.Conditions, newConditions, GetAdvancedConditionsChanges);
-                tabDiff.Items = DiffModels(db.Items, newItems, x => x.items_id, GetItemFieldChanges);
-                tabDiff.Wiring = DiffModels(db.Wiring, newWiring, x => x.id, GetWiringChanges);
-                tabDiff.History = DiffModels(db.History, newHistory,x => x.id, GetHistoryChanges);
+                tabDiff.SalesProjectItemSet = DiffModels(db.ItemSets, newItemSets, x => x.itemset_id, GetItemSetChanges);
+                tabDiff.SalesProjectContent = DiffModels(db.Contents, ContentMatchedTab, x => x.content_id, GetContentChanges);
+                tabDiff.SalesProjectContentAdvancedCondition = DiffModels(db.Conditions, AdvanceConditionMatchedTab, x => x.conditions_id, GetAdvancedConditionsChanges);
+                tabDiff.SalesProjectItems = DiffModels(db.Items, ItemsMatchedTab, x => x.items_id, GetItemFieldChanges);
+                tabDiff.SalesProjectWirings = DiffModels(db.Wiring, WiringMatchedTab, x => x.id, GetWiringChanges);
+                tabDiff.SalesProjectHistory = DiffModels(db.History, HistoryMatchedTab, x => x.id, GetHistoryChanges);
 
                 if (tabDiff.HasChanges())
-                    result.Tabs.Add(tabDiff);
+                {
+                    if (!result.ContainsKey("Tabs")) result["Tabs"] = new List<Dictionary<string, dynamic>>();
+
+                    ((List<Dictionary<string, dynamic>>)result["Tabs"]).Add(JsonConvert.DeserializeObject<Dictionary<string, dynamic>>(JsonConvert.SerializeObject(tabDiff)));
+                }
             }
 
             return result;
         }
 
-        private int GetBasedIdFromTab(Dictionary<string, object> tab)
+        private T DeserializeSingleFromTab<T>(Dictionary<string, object> tab, string key) where T : class, new()
+        {
+            if (tab == null || !tab.ContainsKey(key) || tab[key] == null)
+                return new T();
+
+            var raw = tab[key];
+
+            // Already a JObject
+            if (raw is JObject jObj)
+                return jObj.ToObject<T>() ?? new T();
+
+            // Dictionary<string, object>
+            if (raw is Dictionary<string, object> dict)
+                return JObject.FromObject(dict).ToObject<T>() ?? new T();
+
+            // JSON string
+            if (raw is string json)
+            {
+                try
+                {
+                    return JObject.Parse(json).ToObject<T>() ?? new T();
+                }
+                catch
+                {
+                    return new T();
+                }
+            }
+
+            return new T();
+        }
+
+        // Converts [{fieldName, value}, {fieldName, value}...] → Dictionary<string, object>
+        private Dictionary<string, object> FlattenIndexedFieldPairs(Dictionary<string, object> tab, string key)
+        {
+            var result = new Dictionary<string, object>();
+
+            // Get the indexed entries for this key
+            Dictionary<string, object> indexed = null;
+
+            if (tab.ContainsKey(key) && tab[key] is Dictionary<string, object> direct)
+                indexed = direct;
+            else
+            {
+                // Search inside numeric-keyed outer tab
+                foreach (var kvp in tab)
+                {
+                    var inner = kvp.Value as Dictionary<string, object>;
+                    if (inner != null && inner.ContainsKey(key))
+                    {
+                        indexed = inner[key] as Dictionary<string, object>;
+                        break;
+                    }
+
+                    var jObj = kvp.Value as JObject;
+                    if (jObj != null && jObj.ContainsKey(key))
+                    {
+                        indexed = jObj[key].ToObject<Dictionary<string, object>>();
+                        break;
+                    }
+                }
+            }
+
+            if (indexed == null) return result;
+
+            // Each entry is like [0] = {size_up_5, }, [1] = {item_set_notes, }
+            // Extract the field name (key) and value from each pair
+            foreach (var kvp in indexed)
+            {
+                if (!int.TryParse(kvp.Key, out _)) continue;
+
+                var inner = kvp.Value as Dictionary<string, object>;
+                if (inner != null)
+                {
+                    foreach (var field in inner)
+                        result[field.Key] = field.Value;
+                    continue;
+                }
+
+                var jObj = kvp.Value as JObject;
+                if (jObj != null)
+                {
+                    foreach (var field in jObj)
+                        result[field.Key] = field.Value;
+                }
+            }
+
+            return result;
+        }
+        private SalesProjectContent BuildContent(Dictionary<string, object> tab)
+        {
+            var fields = FlattenIndexedFieldPairs(tab, "sales_project_content");
+            if (fields.Count == 0)
+                return new SalesProjectContent();
+
+            try
+            {
+                return JObject.FromObject(fields).ToObject<SalesProjectContent>()
+                       ?? new SalesProjectContent();
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException(
+                    string.Format("Failed to deserialize SalesProjectContent. Fields: {0}",
+                        string.Join(", ", fields.Keys)), ex);
+            }
+        }
+        private SalesProjectAdvancedConditions BuildAdvancedConditions(Dictionary<string, object> tab)
+        {
+            var fields = FlattenIndexedFieldPairs(tab, "sales_project_content_advanced_condition");
+            if (fields.Count == 0)
+                return new SalesProjectAdvancedConditions();
+
+            try
+            {
+                return JObject.FromObject(fields).ToObject<SalesProjectAdvancedConditions>()
+                       ?? new SalesProjectAdvancedConditions();
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException(
+                    string.Format("Failed to deserialize SalesProjectAdvancedConditions. Fields: {0}",
+                        string.Join(", ", fields.Keys)), ex);
+            }
+        }
+
+        // ---- NEW OVERLOAD — won't break the 3 existing callers ----
+        private static object DiffById<T>(List<T> oldList, List<T> newList, Func<T, int> keySelector, Func<T, T, Dictionary<string, FieldChange>> getChanges)
+        {
+            // ---- safe dictionary, last one wins on duplicate ----
+            var oldDict = oldList
+                .GroupBy(keySelector)
+                .ToDictionary(g => g.Key, g => g.Last());
+
+            var newDict = newList
+                .GroupBy(keySelector)
+                .ToDictionary(g => g.Key, g => g.Last());
+
+            var added = newList.Where(n => !oldDict.ContainsKey(keySelector(n))).ToList();
+            var removed = oldList.Where(o => !newDict.ContainsKey(keySelector(o))).ToList();
+
+            var updated = new List<object>();
+            foreach (var newItem in newList)
+            {
+                var id = keySelector(newItem);
+                if (!oldDict.TryGetValue(id, out var oldItem)) continue;
+
+                var changes = getChanges(oldItem, newItem);
+                if (changes.Count == 0) continue;
+
+                updated.Add(new { Item = newItem, Changes = changes });
+            }
+
+            return new { Added = added, Removed = removed, Updated = updated };
+        }
+
+
+        // For top-level dictionary keys
+        //private List<T> DeserializeList<T>(Dictionary<string, object> dict, string key)
+        //{
+        //    if (dict == null || !dict.ContainsKey(key) || dict[key] == null)
+        //        return new List<T>();
+
+        //    var raw = dict[key];
+
+        //    // ---- DEBUG: see what's actually coming in ----
+        //    Console.WriteLine($"DeserializeList key={key} type={raw.GetType().Name}");
+        //    Console.WriteLine($"DeserializeList value={JsonConvert.SerializeObject(raw)}");
+        //    // -----------------------------------------------
+
+        //    if (raw is List<T> typed)
+        //        return typed;
+
+        //    if (raw is JArray jArr)
+        //        return jArr.ToObject<List<T>>() ?? new List<T>();
+
+        //    if (raw is IEnumerable<object> enumerable)
+        //        return enumerable
+        //            .Select(x => JObject.FromObject(x).ToObject<T>())
+        //            .ToList();
+
+        //    if (raw is Dictionary<string, object> d && d.Keys.All(k => int.TryParse(k, out _)))
+        //    {
+        //        var list = d
+        //            .OrderBy(kv => int.Parse(kv.Key))
+        //            .Select(kv => kv.Value)
+        //            .ToList();
+
+        //        return list
+        //            .Select(x => JObject.FromObject(x).ToObject<T>())
+        //            .ToList();
+        //    }
+
+        //    return new List<T>();
+        //}
+
+        private List<T> DeserializeList<T>(Dictionary<string, object> dict, string key, bool preserveCase = false)
+        {
+            if (dict == null || !dict.ContainsKey(key) || dict[key] == null)
+                return new List<T>();
+
+            var raw = dict[key];
+
+            Console.WriteLine($"DeserializeList key={key} type={raw.GetType().Name}");
+            Console.WriteLine($"DeserializeList value={JsonConvert.SerializeObject(raw)}");
+
+            // use DefaultContractResolver only when preserveCase is true
+            var serializer = preserveCase
+                ? Newtonsoft.Json.JsonSerializer.Create(new JsonSerializerSettings
+                {
+                    ContractResolver = new DefaultContractResolver()
+                })
+                : Newtonsoft.Json.JsonSerializer.CreateDefault();
+
+            if (raw is List<T> typed)
+                return typed;
+
+            if (raw is JArray jArr)
+                return jArr.ToObject<List<T>>(serializer) ?? new List<T>();
+
+            if (raw is IEnumerable<object> enumerable)
+                return enumerable
+                    .Select(x => JObject.FromObject(x).ToObject<T>(serializer))
+                    .Where(x => x != null)
+                    .ToList();
+
+            if (raw is Dictionary<string, object> d && d.Keys.All(k => int.TryParse(k, out _)))
+                return d.OrderBy(kv => int.Parse(kv.Key))
+                        .Select(kv => JObject.FromObject(kv.Value).ToObject<T>(serializer))
+                        .Where(x => x != null)
+                        .ToList();
+
+            return new List<T>();
+        }
+
+        // For tab-level keys (matchedTab can be null)
+        private List<T> DeserializeFromTab<T>(Dictionary<string, object> tab, string key)
+        {
+            if (tab == null)
+                return new List<T>();
+
+            if (tab.ContainsKey(key))
+                return DeserializeList<T>(tab, key);
+
+            //System.Diagnostics.Debug.WriteLine($"[DeserializeFromTab] key={key} not found directly. Tab keys: {string.Join(", ", tab.Keys)}");
+
+            var collectedItems = new List<object>();
+
+            foreach (var kvp in tab)
+            {
+                //System.Diagnostics.Debug.WriteLine($"[DeserializeFromTab] checking kvp.Key={kvp.Key} valueType={kvp.Value?.GetType().FullName ?? "null"}");
+
+                var inner = kvp.Value as Dictionary<string, object>;
+                if (inner != null)
+                {
+                    //System.Diagnostics.Debug.WriteLine($"[DeserializeFromTab] inner dict keys: {string.Join(", ", inner.Keys)}");
+                    if (inner.ContainsKey(key))
+                    {
+                        CollectItems(inner[key], collectedItems);
+                        continue;
+                    }
+                }
+
+                var jObj = kvp.Value as JObject;
+                if (jObj != null)
+                {
+                    //System.Diagnostics.Debug.WriteLine($"[DeserializeFromTab] jObj keys: {string.Join(", ", jObj.Properties().Select(p => p.Name))}");
+                    if (jObj.ContainsKey(key))
+                    {
+                        CollectItems(jObj[key], collectedItems);
+                        continue;
+                    }
+                }
+            }
+
+            //System.Diagnostics.Debug.WriteLine($"[DeserializeFromTab] collectedItems count={collectedItems.Count}");
+
+            if (collectedItems.Count > 0)
+            {
+                return collectedItems
+                    .Select(x =>
+                    {
+                        try
+                        {
+                            if (x is JObject j)
+                                return j.ToObject<T>();
+                            if (x is T direct)
+                                return direct;
+                            return JObject.FromObject(x).ToObject<T>();
+                        }
+                        catch { return default(T); }
+                    })
+                    .Where(x => x != null)
+                    .ToList();
+            }
+
+            return new List<T>();
+        }
+
+        // Helper: flattens a value into individual items
+        private void CollectItems(object val, List<object> target)
+        {
+            if (val == null) return;
+
+            // It's already a list/array
+            if (val is JArray jArr)
+            {
+                target.AddRange(jArr.Cast<object>());
+                return;
+            }
+
+            if (val is IEnumerable<object> enumerable)
+            {
+                target.AddRange(enumerable);
+                return;
+            }
+
+            // It's a single object — wrap it
+            if (val is JObject || val is Dictionary<string, object>)
+            {
+                target.Add(val);
+                return;
+            }
+
+            // Numeric-keyed dictionary (PHP-style array)
+            if (val is Dictionary<string, object> d && d.Keys.All(k => int.TryParse(k, out _)))
+            {
+                var ordered = d.OrderBy(kv => int.Parse(kv.Key))
+                               .Select(kv => kv.Value);
+                target.AddRange(ordered);
+                return;
+            }
+
+            target.Add(val);
+        }
+        // Extract to reduce clutter in GetFullDiff
+        private void PopulateDbByTab(SalesProjectList dbData, Dictionary<int, TabDbData> dbByTab, int quotationId)
+        {
+            // Filter each list by based_id == quotationId's item sets
+            // First get the valid itemset IDs for this quotation
+            var validItemSetIds = new HashSet<int>(
+                dbData.sales_project_item_set
+                    .Where(s => s.based_id == quotationId)
+                    .Select(s => s.itemset_id)
+            );
+
+            foreach (int itemSetId in validItemSetIds)
+            {
+                if (!dbByTab.ContainsKey(itemSetId))
+                    dbByTab[itemSetId] = new TabDbData();
+
+                var tab = dbByTab[itemSetId];
+
+                tab.ItemSets = dbData.sales_project_item_set
+                    .Where(s => s.itemset_id == itemSetId)
+                    .ToList();
+
+                tab.Contents = dbData.sales_project_content
+                    .Where(c => c.based_id == itemSetId)
+                    .ToList();
+
+                tab.Conditions = dbData.sales_project_content_advanced_condition
+                    .Where(a => a.based_id == itemSetId)
+                    .ToList();
+
+                tab.Items = dbData.sales_project_items
+                    .Where(i => i.based_id == itemSetId)
+                    .ToList();
+
+                tab.Wiring = dbData.sales_project_wiring
+                    .Where(w => w.based_id == itemSetId)
+                    .ToList();
+
+                tab.History = dbData.sales_project_history
+                    .Where(h => h.based_id == itemSetId)
+                    .ToList();
+            }
+        }
+
+        private int GetItemSetIdFromTab(Dictionary<string, object> tab)
         {
             if (tab == null || !tab.ContainsKey("sales_project_item_set"))
                 return 0;
 
             var setDict = tab["sales_project_item_set"] as Dictionary<string, object>;
-            if (setDict == null || !setDict.ContainsKey("based_id"))
+            if (setDict == null || !setDict.ContainsKey("itemset_id"))
                 return 0;
 
-            return ToInt(setDict["based_id"]);
+            int itemsetId = ToInt(setDict["itemset_id"]);
+
+            return itemsetId;
         }
         private int ToInt(object value)
         {
@@ -1395,12 +1785,6 @@ namespace smpc_sales_app.Pages.Sales
             return changes;
         }
 
-        // ─── Generic diff helpers ────────────────────────────────────────────────────
-
-        // ── Strategy 1: DiffSingle ───────────────────────────────────────────────────
-        // For models where there is exactly ONE record per tab (AdvancedConditions, etc.)
-        // Just compare fields directly, no key matching needed.
-
         private ModelUpdateDiff<T> DiffSingle<T>(
             T dbItem,
             T newItem,
@@ -1436,55 +1820,42 @@ namespace smpc_sales_app.Pages.Sales
             return diff;
         }
 
-        // ── Strategy 2: DiffByIndex ──────────────────────────────────────────────────
-        // For lists where rows have no stable unique key (multipliers, content rows).
-        // Matches row-by-row by position, then compares each field.
-
-        private ModelUpdateDiff<T> DiffByIndex<T>(List<T> dbList, List<T> newList, Func<T, T, Dictionary<string, FieldChange>> fieldComparer)
+        private static object DiffByIndex(
+            List<SalesProjectMultiplier> oldList,
+            List<SalesProjectMultiplier> newList,
+            Func<SalesProjectMultiplier, SalesProjectMultiplier, Dictionary<string, FieldChange>> getChanges)
         {
-            var diff = new ModelUpdateDiff<T>();
+            var added = new List<object>();
+            var removed = new List<object>();
+            var updated = new List<object>();
 
-            if (dbList == null) dbList = new List<T>();
-            if (newList == null) newList = new List<T>();
+            var minCount = Math.Min(oldList.Count, newList.Count);
 
-            int dbCount = dbList.Count;
-            int newCount = newList.Count;
-            int minCount = dbCount < newCount ? dbCount : newCount;
-
-            // compare overlapping rows field by field
             for (int i = 0; i < minCount; i++)
             {
-                var changes = fieldComparer(dbList[i], newList[i]);
-                if (changes.Count > 0)
-                {
-                    diff.Updated.Add(new UpdatedModel<T>
-                    {
-                        Item = newList[i],
-                        Changes = changes
-                    });
-                }
+                var oldItem = oldList[i];
+                var newItem = newList[i];
+
+                var changes = getChanges(oldItem, newItem);
+                if (changes.Count == 0) continue;
+
+                // ---- carry real IDs from DB, use new values for content ----
+                newItem.multiplier_id = oldItem.multiplier_id;
+                newItem.based_id = oldItem.based_id;
+
+                updated.Add(new { Item = newItem, Changes = changes });
             }
 
-            // new list has more rows — they are added
-            for (int i = minCount; i < newCount; i++)
-                diff.Added.Add(newList[i]);
+            for (int i = minCount; i < newList.Count; i++)
+                added.Add(newList[i]);
 
-            // db list has more rows — they are removed
-            for (int i = minCount; i < dbCount; i++)
-                diff.Removed.Add(dbList[i]);
+            for (int i = minCount; i < oldList.Count; i++)
+                removed.Add(oldList[i]);
 
-            return diff;
+            return new { Added = added, Removed = removed, Updated = updated };
         }
 
-        // ── Strategy 3: DiffModels (by int id) ──────────────────────────────────────
-        // For lists where each row has a stable DB-generated id (items, wiring, history).
-        // Only use this when the new rows carry their original DB id.
-
-        private ModelUpdateDiff<T> DiffModels<T>(
-            List<T> dbList,
-            List<T> newList,
-            Func<T, int> keySelector,
-            Func<T, T, Dictionary<string, FieldChange>> fieldComparer)
+        private ModelUpdateDiff<T> DiffModels<T>(List<T> dbList, List<T> newList, Func<T, int> keySelector, Func<T, T, Dictionary<string, FieldChange>> fieldComparer)
         {
             var diff = new ModelUpdateDiff<T>();
 
@@ -1560,13 +1931,13 @@ namespace smpc_sales_app.Pages.Sales
             object val;
             Compare(c, "project_name", db.project_name, upd.TryGetValue("project_name", out val) ? val : null);
             Compare(c, "customer_id", db.customer_id, upd.TryGetValue("customer_id", out val) ? val : null);
-            Compare(c, "application_id", db.application_id, upd.TryGetValue("application_id", out val) ? val : null);
+            Compare(c, "application_id", db.application_id, upd.TryGetValue(" ", out val) ? val : null);
             Compare(c, "payment_terms_id", db.payment_terms_id, upd.TryGetValue("payment_terms_id", out val) ? val : null);
             Compare(c, "ship_to_id", db.ship_to_id, upd.TryGetValue("ship_to_id", out val) ? val : null);
             Compare(c, "bill_to_id", db.bill_to_id, upd.TryGetValue("bill_to_id", out val) ? val : null);
             Compare(c, "ship_type_id", db.ship_type_id, upd.TryGetValue("ship_type_id", out val) ? val : null);
             Compare(c, "purpose", db.purpose, upd.TryGetValue("purpose", out val) ? val : null);
-            Compare(c, "date", db.bill_to_id, upd.TryGetValue("date", out val) ? val : null);
+            Compare(c, "date", db.date, upd.TryGetValue("date", out val) ? val : null);
             Compare(c, "validity_days", db.validity_days, upd.TryGetValue("validity_days", out val) ? val : null);
             Compare(c, "warranty", db.warranty, upd.TryGetValue("warranty", out val) ? val : null);
             Compare(c, "address_to", db.address_to, upd.TryGetValue("address_to", out val) ? val : null);
@@ -1576,7 +1947,7 @@ namespace smpc_sales_app.Pages.Sales
             Compare(c, "net_sales", db.net_sales, upd.TryGetValue("net_sales", out val) ? val : null);
             Compare(c, "percent_discount", db.percent_discount, upd.TryGetValue("percent_discount", out val) ? val : null);
             Compare(c, "discounted_amount", db.discounted_amount, upd.TryGetValue("discounted_amount", out val) ? val : null);
-            Compare(c, "additional_discounted", db.additional_discounted_amount, upd.TryGetValue("additional_discounted", out val) ? val : null); // possible have issue here with additional discount field name
+            Compare(c, "additional_discounted", db.additional_discounted_amount, upd.TryGetValue("additional_discounted", out val) ? val : null);
             Compare(c, "cash_discount", db.cash_discount, upd.TryGetValue("cash_discount", out val) ? val : null);
             Compare(c, "net_amount_due", db.net_amount_due, upd.TryGetValue("net_amount_due", out val) ? val : null);
             Compare(c, "total_amount_due", db.total_amount_due, upd.TryGetValue("total_amount_due", out val) ? val : null);
@@ -1592,9 +1963,7 @@ namespace smpc_sales_app.Pages.Sales
             return c;
         }
 
-        private Dictionary<string, FieldChange> GetMultiplierChanges(
-            SalesProjectMultiplier db,
-            SalesProjectMultiplier upd)
+        private Dictionary<string, FieldChange> GetMultiplierChanges(SalesProjectMultiplier db, SalesProjectMultiplier upd)
         {
             var c = new Dictionary<string, FieldChange>();
             Compare(c, "brand", db.brand, upd.brand);
@@ -1604,9 +1973,7 @@ namespace smpc_sales_app.Pages.Sales
             return c;
         }
 
-        private Dictionary<string, FieldChange> GetContentChanges(
-            SalesProjectContent db,
-            SalesProjectContent upd)
+        private Dictionary<string, FieldChange> GetContentChanges(SalesProjectContent db, SalesProjectContent upd)
         {
             var c = new Dictionary<string, FieldChange>();
             Compare(c, "item_designation", db.item_designation, upd.item_designation);
@@ -1666,7 +2033,11 @@ namespace smpc_sales_app.Pages.Sales
 
         private void Compare(Dictionary<string, FieldChange> changes, string field, object oldVal, object newVal)
         {
-            if (AreEqual(oldVal, newVal))
+            // Treat 0 and null as equivalent
+            var normalizedOld = IsZeroOrNull(oldVal) ? null : oldVal;
+            var normalizedNew = IsZeroOrNull(newVal) ? null : newVal;
+
+            if (AreEqual(normalizedOld, normalizedNew))
                 return;
 
             changes[field] = new FieldChange
@@ -1674,6 +2045,19 @@ namespace smpc_sales_app.Pages.Sales
                 OldValue = oldVal,
                 NewValue = newVal
             };
+        }
+
+        private bool IsZeroOrNull(object val)
+        {
+            if (val == null) return true;
+            if (val is int i) return i == 0;
+            if (val is long l) return l == 0;
+            if (val is decimal d) return d == 0;
+            if (val is double db) return db == 0;
+            if (val is float f) return f == 0;
+            if (val is short s) return s == 0;
+            if (val is byte b) return b == 0;
+            return false;
         }
 
         private bool AreEqual(object oldVal, object newVal)
@@ -1706,22 +2090,86 @@ namespace smpc_sales_app.Pages.Sales
         }
 
         // ─── ItemSet builder ─────────────────────────────────────────────────────────
+        private static readonly HashSet<Type> SafeTypes = new HashSet<Type>
+{
+    typeof(string), typeof(bool), typeof(byte), typeof(short), typeof(int), typeof(long),
+    typeof(float), typeof(double), typeof(decimal), typeof(DateTime), typeof(Guid),
+    typeof(bool?), typeof(byte?), typeof(short?), typeof(int?), typeof(long?),
+    typeof(float?), typeof(double?), typeof(decimal?), typeof(DateTime?), typeof(Guid?)
+};
+
+        private static Dictionary<string, object> StripUnsafeValues(Dictionary<string, object> dict)
+        {
+            var clean = new Dictionary<string, object>();
+            foreach (var kvp in dict)
+            {
+                if (kvp.Value == null)
+                {
+                    clean[kvp.Key] = null;
+                    continue;
+                }
+
+                var type = kvp.Value.GetType();
+
+                if (SafeTypes.Contains(type))
+                {
+                    clean[kvp.Key] = kvp.Value;
+                }
+                else if (kvp.Value is JObject || kvp.Value is JArray || kvp.Value is JToken)
+                {
+                    clean[kvp.Key] = kvp.Value;
+                }
+                else if (kvp.Value is Dictionary<string, object> nested)
+                {
+                    clean[kvp.Key] = StripUnsafeValues(nested);
+                }
+                else if (type.IsEnum)
+                {
+                    clean[kvp.Key] = kvp.Value;
+                }
+                // Skip DataRowView, BindingContext, and any other UI/binding objects
+            }
+            return clean;
+        }
 
         private SalesProjectItemSet BuildItemSet(Dictionary<string, object> tab, int basedId)
         {
-            var raw = tab.ContainsKey("sales_project_item_set")
-                ? tab["sales_project_item_set"] as Dictionary<string, object>
-                : null;
+            if (basedId < 0)
+                throw new ArgumentOutOfRangeException("basedId", string.Format("basedId must be >= 0, got {0}", basedId));
 
-            return new SalesProjectItemSet
+            if (!tab.ContainsKey("sales_project_item_set") || tab["sales_project_item_set"] == null)
+                return new SalesProjectItemSet { based_id = basedId };
+
+            var rawValue = tab["sales_project_item_set"];
+
+            JObject raw = null;
+            if (rawValue is JObject jObj)
+                raw = jObj;
+            else if (rawValue is Dictionary<string, object> dict)
             {
-                based_id = basedId,
-                tab_number = raw != null && raw.ContainsKey("tab_number")
-                    ? raw["tab_number"].ToString()
-                    : string.Empty
-            };
-        }
+                var clean = StripUnsafeValues(dict);
+                raw = JObject.FromObject(clean);
+            }
+            else if (rawValue is string json)
+                raw = JObject.Parse(json);
 
+            if (raw == null)
+                return new SalesProjectItemSet { based_id = basedId };
+
+            SalesProjectItemSet result;
+            try
+            {
+                result = raw.ToObject<SalesProjectItemSet>() ?? new SalesProjectItemSet();
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException(
+                    string.Format("Failed to deserialize SalesProjectItemSet. Raw JSON: {0}", raw), ex);
+            }
+
+            result.based_id = basedId;
+            return result;
+        }
         //Here is the end for updates
 
         public static bool ConvertToInt(Dictionary<string, dynamic> dict,string key,string errorMessage)
@@ -1903,6 +2351,8 @@ namespace smpc_sales_app.Pages.Sales
 
                             SetNewFormMode(false);
                         }
+                        else
+                            MessageBox.Show(isSuccess.message);
                     }
                 }
             }
@@ -2722,6 +3172,8 @@ namespace smpc_sales_app.Pages.Sales
 
                 // overload, added version
                 FetchQuotationDetailsByDocumentNo(documentNo, versionNo, subVersionNo);
+                FetchProjectDetailsByDocumentNo(documentNo, versionNo, subVersionNo);
+
                 bs_unit.DataSource = CacheData.UoM;
             }
             else
@@ -2743,9 +3195,9 @@ namespace smpc_sales_app.Pages.Sales
                 LoadShipTypeSetup();
                 // ----
 
-                //cmb_application.DataSource = CacheData.ApplicationSetup;
-                //cmb_application.DisplayMember = "code";
-                //cmb_application.ValueMember = "id";
+                cmb_application.DataSource = CacheData.ApplicationSetup;
+                cmb_application.DisplayMember = "code";
+                cmb_application.ValueMember = "id";
 
                 //cmb_purpose.DataSource = STATIC_QUOTATION_PURPOSE.LIST();
                 //cmb_purpose.DisplayMember = "code";
@@ -2782,11 +3234,9 @@ namespace smpc_sales_app.Pages.Sales
                 //combobox.ValueMember = "id";
 
                 await fetchQuotationDetails();
-            }
 
-        }
-        private void GetCMBValues()
-        {
+                await fetchSalesProjectData();
+            }
 
         }
         // PSEUDOCODE / PLAN
@@ -2795,12 +3245,12 @@ namespace smpc_sales_app.Pages.Sales
         // - This guarantees the column exists (designer or runtime) and LoadQuickImageCounts can populate it.
         // - Keep the rest of the bind logic unchanged.
 
-        private void bind(bool isBind = false)
+        private void bind(DataTable transactionList, int SelectedRow, bool isBind = false)
         {
             if (isBind)
             {
                 Panel[] pnlList = { pnl_header, pnl_footer };
-                DataTable HeaderList = this.transactionList.Clone();
+                DataTable HeaderList = transactionList.Clone();
                 HeaderList.Columns.Add("branch_name", typeof(string));
                 HeaderList.Columns.Add("customer_code", typeof(string));
                 HeaderList.Columns.Add("number", typeof(string));
@@ -2809,10 +3259,10 @@ namespace smpc_sales_app.Pages.Sales
                 //bs_bill_to.DataSource = bpi_address;
 
 
-                foreach (DataRow parentRow in this.transactionList.Rows)
+                foreach (DataRow parentRow in transactionList.Rows)
                 {
                     DataRow newRow = HeaderList.NewRow();
-                    foreach (DataColumn col in this.transactionList.Columns)
+                    foreach (DataColumn col in transactionList.Columns)
                     {
                         newRow[col.ColumnName] = parentRow[col.ColumnName];
                     }
@@ -2855,14 +3305,11 @@ namespace smpc_sales_app.Pages.Sales
 
                 cmb_bill_to.SelectedItem = billId;
                 cmb_bill_to.SelectedValue = billId;
-
+                 
                 cmb_ship_to.SelectedItem = shipId;
                 cmb_ship_to.SelectedValue = shipId;
 
-                GetCMBValues();
                 Helpers.BindControls(pnlList, HeaderList, SelectedRow);
-
-
 
                 // LEM - Button visibility condition
                 isFinalized = Convert.ToBoolean(HeaderList.Rows[SelectedRow]["is_finalized"]);
@@ -3022,16 +3469,14 @@ namespace smpc_sales_app.Pages.Sales
             SetNewFormMode(true);
             isNewRecord = true;
 
+            Helpers.ResetControls(pnl_header);
+            ResetControls(pnl_footer);
+
+            txt_version_no.Text = GetNextVersionNo(allTransactionList, txt_document_no.Text);
+
             // New Quick Quote
             if (!isProject)
             {
-
-
-                Helpers.ResetControls(pnl_header);
-                ResetControls(pnl_footer);
-                
-              
-
                 //Helpers.ResetControls(panel);
 
                 // resets the datasource so that only customers would specific address would be seen.
@@ -3043,7 +3488,6 @@ namespace smpc_sales_app.Pages.Sales
                 Helpers.ReadOnlyControls(pnls);
                 dgv_quick_quote_details.ReadOnly = false;
                 txt_cash_discount.ReadOnly = false;
-
 
                 foreach (Control ctrl in pnl_footer.Controls)
                 {
@@ -3074,7 +3518,7 @@ namespace smpc_sales_app.Pages.Sales
 
                 dgv_quick_quote_details.DataSource = stockQuickDataTable.Clone();
 
-                bind(false);
+                bind(transactionList, SelectedRow, false);
                 DocumentIncrementer();
 
                 txt_created_by.Text = CacheData.CurrentUser.first_name + " " + CacheData.CurrentUser.last_name;
@@ -3296,18 +3740,18 @@ namespace smpc_sales_app.Pages.Sales
                 if (SelectedRow < rowCount - 1)
                 {
                     SelectedRow++;
-                    bind(true);
+                    bind(transactionList, SelectedRow, true);
                     createFilterViewDgvQuickQouteDetails();
                 }
             }
             else
             {
-                if (dt_multiplier == null) return;
+                int rowCount = transactionProjectDataTable.Rows.Count;
 
-                int rowCount = dt_multiplier.Rows.Count;
-                if (selectedProject < rowCount - 1)
+                if (selectedProjectRow < rowCount - 1)
                 {
-                    selectedProject++;
+                    selectedProjectRow++;
+                    bind(transactionProjectDataTable, selectedProjectRow, true);
                     fetchSalesProject();
                 }
             }
@@ -3319,15 +3763,16 @@ namespace smpc_sales_app.Pages.Sales
                 if (SelectedRow >= 1)
                 {
                     SelectedRow--;
-                    bind(true);
+                    bind(transactionList, SelectedRow, true);
                     createFilterViewDgvQuickQouteDetails();
                 }
             }
             else
             {
-                if (selectedProject >= 1)
+                if (selectedProjectRow >= 1)
                 {
-                    selectedProject--;
+                    selectedProjectRow--;
+                    bind(transactionProjectDataTable, selectedProjectRow, true);
                     fetchSalesProject();
                 }
             }
@@ -3550,7 +3995,7 @@ namespace smpc_sales_app.Pages.Sales
                 if (result != -1)
                 {
                     SelectedRow = result;
-                    bind(true);
+                    bind(transactionList, SelectedRow, true);
                 }
             }
         }
@@ -3788,8 +4233,6 @@ namespace smpc_sales_app.Pages.Sales
             }
         }
 
-
-
         private void btn_finalize_Click(object sender, EventArgs e)
         {
             if (MessageBox.Show("Are you sure you want to finalize?", "Confirm", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
@@ -3818,7 +4261,7 @@ namespace smpc_sales_app.Pages.Sales
                 Helpers.ResetControls(pnl_header);
                 ResetControls(pnl_footer);
 
-                await fetchSalesProject();
+                fetchSalesProject();
             }
             catch(Exception ex)
             {
@@ -3935,7 +4378,55 @@ namespace smpc_sales_app.Pages.Sales
                 toolstrip_quotation.Enabled = true;
                 if (filteredSalesQuotation.Any() || filteredSalesQuotationQuick.Any())
                 {
-                    bind(true);
+                    bind(transactionList, SelectedRow, true);
+                }
+                else
+                {
+                    MessageBox.Show("No records found for the provided document number.");
+                }
+            }
+            else
+            {
+                MessageBox.Show("No SalesQuotation found for the provided document number.");
+            }
+        }
+
+        private async void FetchProjectDetailsByDocumentNo(string documentNo, string version_no = null, string sub_version_no = null)
+        {
+            SalesProjectList data = await ProjectService.GetProjects();
+
+            if (data == null || string.IsNullOrEmpty(documentNo))
+            {
+                return;
+            }
+
+            var filteredSalesQuotation = data.SalesQuotation
+                .Where(q => q.document_no == documentNo &&
+                           (version_no == null || q.version_no == version_no) &&
+                           (sub_version_no == null || q.sub_version_no == sub_version_no))
+                .ToList();
+
+            var quotationId = filteredSalesQuotation.FirstOrDefault()?.id;
+
+            if (quotationId != null)
+            {
+                var filteredSalesQuotationQuick = data.SalesQuotation
+                    .Where(q => q.id == quotationId)
+                    .ToList();
+
+                transactionProjectDataTable = JsonHelper.ToDataTable(filteredSalesQuotation);
+
+
+                Panel[] panels = { pnl_header, pnl_footer };
+                Helpers.ResetReadOnlyControls(panels);
+
+                toolstrip_quotation.Enabled = false;
+                dgv_quick_quote_details.Enabled = true;
+
+                toolstrip_quotation.Enabled = true;
+                if (filteredSalesQuotation.Any() || filteredSalesQuotationQuick.Any())
+                {
+                    bind(transactionProjectDataTable, selectedProjectRow, true);
                 }
                 else
                 {
@@ -4028,7 +4519,6 @@ namespace smpc_sales_app.Pages.Sales
             {
 
                 // resets the datasource so that only customers would specific address would be seen.
-
                 bs_bill_to.DataSource = null;
                 bs_ship_to.DataSource = null;
                 bs_unit.DataSource = CacheData.UoM;

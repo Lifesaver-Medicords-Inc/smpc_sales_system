@@ -41,8 +41,8 @@ namespace smpc_sales_app.Pages
 
         private void frm_login_Load(object sender, EventArgs e)
         {
-            txt_employee_id.Text = "IT-WD-1";
-            txt_password.Text = "IT-WD-1";
+            //txt_employee_id.Text = "IT-WD-1";
+            //txt_password.Text = "IT-WD-1";
             //btn_login_Click_1(sender, e);
         }
 

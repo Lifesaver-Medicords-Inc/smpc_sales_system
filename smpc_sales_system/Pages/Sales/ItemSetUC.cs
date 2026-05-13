@@ -221,7 +221,7 @@ namespace smpc_sales_system.Pages.Sales
             return data;
         }
 
-        public Dictionary<string, dynamic> GetProjectContentsData()
+        public Dictionary<string, dynamic>  GetProjectContentsData()
         {
             Panel[] pnl_content = { pnl_project_content };
             var data = Helpers.GetControlsValues(pnl_content);

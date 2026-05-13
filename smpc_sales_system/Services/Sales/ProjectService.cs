@@ -58,6 +58,11 @@ namespace smpc_sales_system.Services.Sales
             var response = await RequestToApi<ApiResponseModel>.Post(url, data);
             return response;
         }
+        public static async Task<ApiResponseModel> UpdateChange(Dictionary<string, dynamic> data)
+        {
+            var response = await RequestToApi<ApiResponseModel>.Put(url, data);
+            return response;
+        }
 
         public static async Task<ApiResponseModel> Update(Dictionary<string, dynamic> data)
         {
@@ -122,11 +127,6 @@ namespace smpc_sales_system.Services.Sales
             var response = await RequestToApi<ApiResponseModel<ItemPumpsViewList>>.Get(url_pumps);
             ItemPumpsViewList pumpsData = response.Data;
             return pumpsData;
-        }
-
-        internal static async Task Update(Quotation.FullProjectDiff changes)
-        {
-            throw new NotImplementedException();
         }
     }
 }

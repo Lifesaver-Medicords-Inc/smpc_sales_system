@@ -743,7 +743,6 @@
             this.btn_edit.Name = "btn_edit";
             this.btn_edit.Size = new System.Drawing.Size(47, 22);
             this.btn_edit.Text = "Edit";
-            this.btn_edit.Visible = false;
             this.btn_edit.Click += new System.EventHandler(this.btn_edit_Click);
             // 
             // btn_duplicate
@@ -771,7 +770,6 @@
             this.btn_savee.Name = "btn_savee";
             this.btn_savee.Size = new System.Drawing.Size(51, 22);
             this.btn_savee.Text = "Save";
-            this.btn_savee.Visible = false;
             this.btn_savee.Click += new System.EventHandler(this.btn_save_Click);
             // 
             // btn_print
@@ -1100,7 +1098,7 @@
             this.cmb_application.Name = "cmb_application";
             this.cmb_application.Size = new System.Drawing.Size(200, 21);
             this.cmb_application.TabIndex = 89;
-            this.cmb_application.Tag = "";
+            this.cmb_application.Tag = "DYNAMIC";
             // 
             // dtp_date
             // 
@@ -1227,7 +1225,7 @@
             this.cmb_payment_terms.DisplayMember = "code";
             this.cmb_payment_terms.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmb_payment_terms.FormattingEnabled = true;
-            this.cmb_payment_terms.Location = new System.Drawing.Point(104, 122);
+            this.cmb_payment_terms.Location = new System.Drawing.Point(105, 122);
             this.cmb_payment_terms.Name = "cmb_payment_terms";
             this.cmb_payment_terms.Size = new System.Drawing.Size(147, 21);
             this.cmb_payment_terms.TabIndex = 111;

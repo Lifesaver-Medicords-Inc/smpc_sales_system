@@ -1,4 +1,5 @@
-﻿using smpc_sales_system.Services.Sales.Models;
+﻿using Newtonsoft.Json;
+using smpc_sales_system.Services.Sales.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
