@@ -12,15 +12,26 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Configuration;
 
 namespace smpc_sales_app.Services.Helpers
 {
-    //static string baseUrl = "http://127.0.0.1:3000/api";
     internal class RequestToApi<T> where T : class
     {
-        static string baseUrl => Program.ApiBaseUrl ?? "http://127.0.0.1:3000/api";
+        static string baseUrl
+        {
+            get
+            {
+                string env =
+                    ConfigurationManager.AppSettings["Environment"]
+                    ?? "Development";
 
-        
+                return ConfigurationManager.AppSettings[$"ApiBaseUrl.{env}"]
+                    ?? "http://127.0.0.1:3000/api";
+            }
+        }
+
+
         static CookieContainer cookieContainer = new CookieContainer();
 
         static private async Task<T> SendRequestAsync(string url, HttpMethod method, string body = null)
@@ -79,7 +90,7 @@ namespace smpc_sales_app.Services.Helpers
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show("Exception: " + "Call Senior Lem" + ex.Message, "Error ");
+                    MessageBox.Show("Exception: " + ex.Message, "Error ");
                     return default(T);  // Return default value of T in case of exception
                 }
             }
@@ -102,6 +113,11 @@ namespace smpc_sales_app.Services.Helpers
             return await SendRequestAsync(url, HttpMethod.Put, jsonContent);
         }
         static internal async Task<T> Put(string url, Dictionary<string, object> data)
+        {
+            string jsonContent = JsonConvert.SerializeObject(data);
+            return await SendRequestAsync(url, HttpMethod.Put, jsonContent);
+        }
+        static internal async Task<T> Put(string url, List<Dictionary<string, object>> data)
         {
             string jsonContent = JsonConvert.SerializeObject(data);
             return await SendRequestAsync(url, HttpMethod.Put, jsonContent);

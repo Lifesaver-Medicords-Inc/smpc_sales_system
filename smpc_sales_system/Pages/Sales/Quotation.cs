@@ -3,6 +3,7 @@ using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 using smpc_app.Data;
 using smpc_app.Services.Helpers;
+using smpc_inventory_app.Model;
 using smpc_inventory_app.Pages;
 using smpc_sales_app.Data;
 using smpc_sales_app.Services.Helpers;
@@ -453,7 +454,8 @@ namespace smpc_sales_app.Pages.Sales
 
             fetchQuotationDetails();
 
-            //bind();
+            Helpers.ResetControls(pnl_header);
+            ResetControls(pnl_footer);
         }
         private void btn_project_Click(object sender, EventArgs e)
         {
@@ -977,32 +979,31 @@ namespace smpc_sales_app.Pages.Sales
         private void DocumentIncrementer()
         {
             string docNum;
+            int maxDocNum = 0;
 
-            if (transactionList.Rows.Count > 0)
+            // Check BOTH DataTables to find the global maximum document number
+            foreach (DataTable table in new[] { transactionList, transactionProjectDataTable })
             {
-                int latestIndex = transactionList.Rows.Count - 1;
-                DataRow latestRow = transactionList.Rows[latestIndex];
-                // Check if "document_no" is not null or DBNull
-                if (latestRow["document_no"] != DBNull.Value && !string.IsNullOrEmpty(latestRow["document_no"].ToString()))
+                if (table.Rows.Count > 0)
                 {
-                    if (int.TryParse(latestRow["document_no"].ToString(), out int documentNumber))
+                    foreach (DataRow row in table.Rows)
                     {
-                        docNum = (documentNumber + 1).ToString().PadLeft(4, '0');
-                    }
-                    else
-                    {
-                        docNum = "0001";
+                        if (row["document_no"] != DBNull.Value && !string.IsNullOrEmpty(row["document_no"].ToString()))
+                        {
+                            if (int.TryParse(row["document_no"].ToString(), out int documentNumber))
+                            {
+                                if (documentNumber > maxDocNum)
+                                {
+                                    maxDocNum = documentNumber;
+                                }
+                            }
+                        }
                     }
                 }
-                else
-                {
-                    docNum = "0001";
-                }
             }
-            else
-            {
-                docNum = "0001";
-            }
+
+            // Increment the max number found across both tables
+            docNum = (maxDocNum + 1).ToString().PadLeft(4, '0');
             txt_document_no.Text = "Q#" + docNum;
         }
 
@@ -2396,7 +2397,7 @@ namespace smpc_sales_app.Pages.Sales
                 //    getItemShortDescription(itemID);
                 //}
                 // Image Column
-                if (dgv_quick_quote_details.Columns[e.ColumnIndex].Name == "quick_images")
+                if (dgv_quick_quote_details.Columns[e.ColumnIndex].Name == "quick_images" && !IsView)
                 {
                     var row = dgv_quick_quote_details.Rows[e.RowIndex];
                     var cellQuickId = row.Cells["quick_id"].Value?.ToString();
@@ -2412,13 +2413,13 @@ namespace smpc_sales_app.Pages.Sales
                     }
                 }
                 // Components Column
-                if (dgv_quick_quote_details.Columns[e.ColumnIndex].Name == "quick_item_code")
+                if (dgv_quick_quote_details.Columns[e.ColumnIndex].Name == "quick_item_code" && !IsView)
                 {
                     HandleItemSelectionClick(e.RowIndex, dgv_quick_quote_details);
                 }
 
                 //Model Column
-                if (dgv_quick_quote_details.Columns[e.ColumnIndex].Name == "quick_item_name" && e.RowIndex >= 0)
+                if (dgv_quick_quote_details.Columns[e.ColumnIndex].Name == "quick_item_name" && e.RowIndex >= 0 && !IsView)
                 {
                     //if (dgv_quick_quote_details.Rows[e.RowIndex].IsNewRow)
                     //    return;
@@ -3123,6 +3124,7 @@ namespace smpc_sales_app.Pages.Sales
             //}
         }
         DataTable stockQuickDataTable = new DataTable();
+        bool IsView = true;
         private async void Quotation_Load(object sender, EventArgs e)
         {
             //int dgvWidth = dgv_quick_quote_details.Width;
@@ -3130,17 +3132,22 @@ namespace smpc_sales_app.Pages.Sales
 
             Panel[] panels = { pnl_header, pnl_footer };
             Helpers.ReadOnlyControls(panels);
-
+ 
             SetNewFormMode(false);
+
+            IsView = true;
 
             await LoadExistingRecord();
 
         }
+        CurrentUserModel CurrentUser { get; set; }
         private async Task LoadExistingRecord()
         {
             stockQuickDataTable = Helpers.GetDataTableFromUnboundGrid(dgv_quick_quote_details);
             await fetchItemData();
             await fetchBpiData();
+            CurrentUser = CacheData.CurrentUser;
+
             //tabControl2.DrawMode = TabDrawMode.OwnerDrawFixed;
             //tabControl2.DrawItem += tabControl2_DrawItem;
             dtp_date.Format = DateTimePickerFormat.Custom;
@@ -3234,8 +3241,6 @@ namespace smpc_sales_app.Pages.Sales
                 //combobox.ValueMember = "id";
 
                 await fetchQuotationDetails();
-
-                await fetchSalesProjectData();
             }
 
         }
@@ -3468,6 +3473,7 @@ namespace smpc_sales_app.Pages.Sales
             GetLatestDate();
             SetNewFormMode(true);
             isNewRecord = true;
+            IsView = false;
 
             Helpers.ResetControls(pnl_header);
             ResetControls(pnl_footer);
@@ -3477,6 +3483,7 @@ namespace smpc_sales_app.Pages.Sales
             // New Quick Quote
             if (!isProject)
             {
+                DocumentIncrementer();
                 //Helpers.ResetControls(panel);
 
                 // resets the datasource so that only customers would specific address would be seen.
@@ -3519,7 +3526,7 @@ namespace smpc_sales_app.Pages.Sales
                 dgv_quick_quote_details.DataSource = stockQuickDataTable.Clone();
 
                 bind(transactionList, SelectedRow, false);
-                DocumentIncrementer();
+
 
                 txt_created_by.Text = CacheData.CurrentUser.first_name + " " + CacheData.CurrentUser.last_name;
                 
@@ -3537,7 +3544,6 @@ namespace smpc_sales_app.Pages.Sales
 
                 //DataTable dt = (DataTable)bs_quick_quotes_details.DataSource;
             }
-            // New Project
             else
             {
                 DocumentIncrementer();
@@ -4262,6 +4268,8 @@ namespace smpc_sales_app.Pages.Sales
                 ResetControls(pnl_footer);
 
                 fetchSalesProject();
+
+                SetFormEditMode("Close");
             }
             catch(Exception ex)
             {
@@ -4494,6 +4502,7 @@ namespace smpc_sales_app.Pages.Sales
 
         private void btn_edit_Click(object sender, EventArgs e)
         {
+            IsView = false;
             string customerId = txt_customer_id.Text;
 
             GetLatestDate();
@@ -4586,7 +4595,7 @@ namespace smpc_sales_app.Pages.Sales
             btn_close.Visible = isTrue;
             btn_add_customer.Visible = isTrue;
             dgv_quick_quote_details.Enabled = isTrue;
-
+            dgv_quick_quote_details.ReadOnly = !isTrue;
         }
         private void SetFormEditMode(string mode)
         {
@@ -4646,6 +4655,7 @@ namespace smpc_sales_app.Pages.Sales
         }
         private async void btn_close_Click(object sender, EventArgs e)
         {
+            IsView = true;
             SetNewFormMode(false);
             SetFormEditMode("Close");
 

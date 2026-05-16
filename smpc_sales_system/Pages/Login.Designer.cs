@@ -53,7 +53,6 @@ namespace smpc_sales_app.Pages
             this.pnl_auth.Name = "pnl_auth";
             this.pnl_auth.Size = new System.Drawing.Size(296, 106);
             this.pnl_auth.TabIndex = 0;
-            
             // 
             // btn_cancel
             // 
@@ -67,6 +66,7 @@ namespace smpc_sales_app.Pages
             this.btn_cancel.TabIndex = 12;
             this.btn_cancel.Text = "Cancel";
             this.btn_cancel.UseVisualStyleBackColor = false;
+            this.btn_cancel.Click += new System.EventHandler(this.btn_cancel_Click);
             // 
             // label2
             // 
@@ -101,7 +101,7 @@ namespace smpc_sales_app.Pages
             this.btn_login.TabIndex = 9;
             this.btn_login.Text = "Login";
             this.btn_login.UseVisualStyleBackColor = false;
-            this.btn_login.Click += new System.EventHandler(this.btn_login_Click_1);
+            this.btn_login.Click += new System.EventHandler(this.btn_login_Click);
             // 
             // txt_password
             // 
@@ -134,6 +134,7 @@ namespace smpc_sales_app.Pages
             this.TopMost = true;
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.frm_login_FormClosing);
             this.Load += new System.EventHandler(this.frm_login_Load);
+            this.Enter += new System.EventHandler(this.btn_login_Click);
             this.pnl_auth.ResumeLayout(false);
             this.pnl_auth.PerformLayout();
             this.ResumeLayout(false);

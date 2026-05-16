@@ -1,4 +1,5 @@
-﻿using smpc_sales_app.Pages.Sales;
+﻿using Inventory_SMPC.Pages.Business_Partner_Info;
+using smpc_sales_app.Pages.Sales;
 using smpc_sales_system.Pages;
 using smpc_sales_system.Pages.Sales;
 using System;
@@ -45,7 +46,7 @@ namespace smpc_sales_app.Services
 
 
             //inventory
-
+            { "Business Partners", new smpc_inventory_app.Pages.Business_Partner_Info.BusinessPartnerInfo(string.Empty) },
             { "Item Entry", new smpc_inventory_app.Pages.Item.frm_Item_Entry() },
 
         };

@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Text;
@@ -36,34 +37,21 @@ namespace smpc_sales_app.Pages
 
         private async void btn_login_Click(object sender, EventArgs e)
         {
-        
-        }
-
-        private void frm_login_Load(object sender, EventArgs e)
-        {
-            //txt_employee_id.Text = "IT-WD-1";
-            //txt_password.Text = "IT-WD-1";
-            //btn_login_Click_1(sender, e);
-        }
-
-        private void txt_password_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private async void btn_login_Click_1(object sender, EventArgs e)
-        {
             try
             {
                 var data = Helpers.GetControlsValues(pnl_auth);
                 data.Add("motherboard_serial_no", Helpers.GetSerialNumber());
-                data.Add("machine_name", Environment.MachineName); 
+                data.Add("machine_name", Environment.MachineName);
 
                 var currentUser = await AuthServices.Login(data);
                 if (currentUser != null && currentUser.Success)
                 {
                     smpc_sales_app.Data.CacheData.CurrentUser = currentUser.Data;
-                    smpc_inventory_app.Data.CacheData.CurrentUser = currentUser.Data; // now same type, no mapping needed
+                    smpc_inventory_app.Data.CacheData.CurrentUser = currentUser.Data;
+
+                    var inventoryLogin = new smpc_inventory_app.Pages.Login();
+
+                    inventoryLogin.LoginFromSales(data);
 
                     CacheData.PaymentTerms = await PaymentTermsServices.GetAsDatatable();
                     CacheData.ApplicationSetup = await ApplicationService.GetAsDatatable();
@@ -81,6 +69,18 @@ namespace smpc_sales_app.Pages
             {
                 MessageBox.Show("" + ex);
             }
+        }
+
+        private void frm_login_Load(object sender, EventArgs e)
+        {
+            //txt_employee_id.Text = "IT-WD-1";
+            //txt_password.Text = "IT-WD-1";
+            //btn_login_Click_1(sender, e);
+        }
+
+        private void txt_password_TextChanged(object sender, EventArgs e)
+        {
+
         }
     }
 }

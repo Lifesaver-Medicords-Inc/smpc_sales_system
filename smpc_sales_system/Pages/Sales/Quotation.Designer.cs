@@ -960,6 +960,7 @@
             // 
             // txt_created_by
             // 
+            this.txt_created_by.Enabled = false;
             this.txt_created_by.Location = new System.Drawing.Point(854, 82);
             this.txt_created_by.Name = "txt_created_by";
             this.txt_created_by.Size = new System.Drawing.Size(170, 20);

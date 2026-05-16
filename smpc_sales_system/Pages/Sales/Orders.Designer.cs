@@ -194,9 +194,9 @@ namespace smpc_sales_app.Pages.Sales
             this.btn_search = new System.Windows.Forms.ToolStripButton();
             this.btn_prev = new System.Windows.Forms.ToolStripButton();
             this.btn_next = new System.Windows.Forms.ToolStripButton();
+            this.Save = new System.Windows.Forms.ToolStripButton();
             this.btn_print = new System.Windows.Forms.ToolStripButton();
             this.toolStripButton6 = new System.Windows.Forms.ToolStripButton();
-            this.Save = new System.Windows.Forms.ToolStripButton();
             this.toolStripButton2 = new System.Windows.Forms.ToolStripButton();
             this.panel6 = new System.Windows.Forms.Panel();
             this.label1 = new System.Windows.Forms.Label();
@@ -1479,13 +1479,13 @@ namespace smpc_sales_app.Pages.Sales
             // 
             this.toolStrip1.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
             this.toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.btn_back,
             this.toolStripButton1,
             this.btn_new,
             this.btn_search,
             this.btn_prev,
             this.btn_next,
             this.Save,
+            this.btn_back,
             this.btn_print,
             this.toolStripButton6,
             this.toolStripButton2});
@@ -1552,6 +1552,16 @@ namespace smpc_sales_app.Pages.Sales
             this.btn_next.Text = "Next";
             this.btn_next.Click += new System.EventHandler(this.btn_next_Click);
             // 
+            // Save
+            // 
+            this.Save.Image = ((System.Drawing.Image)(resources.GetObject("Save.Image")));
+            this.Save.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.Save.Name = "Save";
+            this.Save.Size = new System.Drawing.Size(51, 22);
+            this.Save.Text = "Save";
+            this.Save.ToolTipText = "Save";
+            this.Save.Click += new System.EventHandler(this.Save_Click);
+            // 
             // btn_print
             // 
             this.btn_print.Image = ((System.Drawing.Image)(resources.GetObject("btn_print.Image")));
@@ -1570,16 +1580,6 @@ namespace smpc_sales_app.Pages.Sales
             this.toolStripButton6.Size = new System.Drawing.Size(23, 22);
             this.toolStripButton6.Text = "toolStripButton6";
             this.toolStripButton6.Visible = false;
-            // 
-            // Save
-            // 
-            this.Save.Image = ((System.Drawing.Image)(resources.GetObject("Save.Image")));
-            this.Save.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.Save.Name = "Save";
-            this.Save.Size = new System.Drawing.Size(51, 22);
-            this.Save.Text = "Save";
-            this.Save.ToolTipText = "Save";
-            this.Save.Click += new System.EventHandler(this.Save_Click);
             // 
             // toolStripButton2
             // 

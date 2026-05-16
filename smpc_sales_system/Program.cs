@@ -13,9 +13,10 @@ using System.Configuration;
 
 namespace smpc_sales_system
 {
-    static class Program
+    public static class Program
     {
         public static string ApiBaseUrl { get; private set; }
+        public static string WssBaseUrl { get; private set; }
 
         /// <summary>
         /// The main entry point for the application.

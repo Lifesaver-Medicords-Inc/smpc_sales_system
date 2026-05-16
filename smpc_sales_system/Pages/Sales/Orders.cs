@@ -60,6 +60,7 @@ namespace smpc_sales_app.Pages.Sales
         public DataTable OrderList { get; set; } = new DataTable();
         public DataTable DetailsList { get; set; } = new DataTable();
         public DataTable transactionList { get; set; } = new DataTable();
+        public DataTable transactionProjectList { get; set; } = new DataTable();
         public DataTable childList { get; set; } = new DataTable();
         public DataTable ItemList { get; set; } = new DataTable();
         public DataTable ItemSpecs { get; set; } = new DataTable();
@@ -109,6 +110,7 @@ namespace smpc_sales_app.Pages.Sales
         private async Task FetchProject()
         {
             SalesProjectList data = await ProjectService.GetProjects();
+            transactionProjectList = JsonHelper.ToDataTable(data.SalesQuotation);
             ItemSets = JsonHelper.ToDataTable(data.sales_project_item_set);
             ProjectItemList = JsonHelper.ToDataTable(data.sales_project_items);
         }
@@ -238,6 +240,11 @@ namespace smpc_sales_app.Pages.Sales
 
                 DataRow[] filteredRows = this.transactionList.Select($"document_no = '{documentNo}'");
 
+                if (filteredRows.Length == 0)
+                {
+                    filteredRows = this.transactionProjectList.Select($"document_no = '{documentNo}'");
+                }
+
                 if (filteredRows.Length > 0)
                 {
                     foreach (DataRow parentRow in filteredRows)
@@ -325,21 +332,21 @@ namespace smpc_sales_app.Pages.Sales
             if (isBind)
             {
                 Panel[] pnlList = { pnl_header, pnl_header_2, pnl_footer, pnl_footer_2 };
-                DataTable HeaderList = this.transactionList.Clone();
+                DataTable HeaderList = this.transactionProjectList.Clone();
                 HeaderList.Columns.Add("branch_name", typeof(string));
                 HeaderList.Columns.Add("customer_code", typeof(string));
                 HeaderList.Columns.Add("bill_to", typeof(string));
                 HeaderList.Columns.Add("ship_to", typeof(string));
                 HeaderList.Columns.Add("tin", typeof(string));
 
-                DataRow[] filteredRows = this.transactionList.Select($"document_no = '{documentNo}'");
+                DataRow[] filteredRows = this.transactionProjectList.Select($"document_no = '{documentNo}'");
 
                 if (filteredRows.Length > 0)
                 {
                     foreach (DataRow parentRow in filteredRows)
                     {
                         DataRow newRow = HeaderList.NewRow();
-                        foreach (DataColumn col in this.transactionList.Columns)
+                        foreach (DataColumn col in this.transactionProjectList.Columns)
                         {
                             newRow[col.ColumnName] = parentRow[col.ColumnName];
                         }
@@ -359,8 +366,10 @@ namespace smpc_sales_app.Pages.Sales
                 UpdateTextBoxes(pnlList);
 
                 // Filter ItemSets based on the "based_id" of the first filtered row
+                int basedId = Convert.ToInt32(filteredRows[0]["id"]);
+
                 DataView itemSetView = new DataView(ItemSets);
-                itemSetView.RowFilter = "based_id = '" + Convert.ToInt32(filteredRows[0]["id"]) + "'";
+                itemSetView.RowFilter = "based_id = '" + basedId + "'";
                 var ids = itemSetView.Cast<DataRowView>().Select(rowView => Convert.ToInt32(rowView["itemset_id"])).ToList();
 
                 double bomCounter = 0;
@@ -373,80 +382,263 @@ namespace smpc_sales_app.Pages.Sales
                     DataView projectItemView = new DataView(ProjectItemList);
                     projectItemView.RowFilter = $"based_id IN ('{idFilter}')";
                     DataTable transformedTable = projectItemView.ToTable();
+
                     // Create a new DataTable to store processed rows
                     DataTable withItemListTwo = transformedTable.Clone();
                     withItemListTwo.Columns.Add("short_desc", typeof(string));
                     withItemListTwo.Columns.Add("item_code", typeof(string));
                     withItemListTwo.Columns.Add("number", typeof(string));
+                    withItemListTwo.Columns.Add("level", typeof(int));
+                    withItemListTwo.Columns.Add("itemset_header", typeof(int));
 
-                    foreach (DataRow row in transformedTable.Rows)
+                    var uniqueItemsets = ids.Distinct().ToList();
+
+                    foreach (DataRowView itemSetRow in itemSetView)
                     {
-                        DataRow newRow = withItemListTwo.NewRow();
+                        int itemsetId = (int)itemSetRow["itemset_id"];
+
+                        // ADD ITEMSET HEADER
+                        DataRow headerRow = withItemListTwo.NewRow();
                         foreach (DataColumn col in transformedTable.Columns)
                         {
-                            newRow[col.ColumnName] = row[col.ColumnName];
+                            headerRow[col.ColumnName] = DBNull.Value;
                         }
-                        int itemId = Convert.ToInt32(row["item_id"]);
-                        int bomId = Convert.ToInt32(row["bom_id"]);
-                        string model = row["model"].ToString();
-                        // CHECKER IF THE ROW IS HEAD OF BOM THAT HAS EXISTING ITEMS
-                        if (itemId == 0 && bomId == 0 && !string.IsNullOrEmpty(model))
-                        {
-                            bomCounter += 1;
-                            newRow["number"] = bomCounter;
-                            newRow["item_code"] = row["components"].ToString();
-                            withItemListTwo.Rows.Add(newRow);
+                        headerRow["level"] = 0;
+                        headerRow["itemset_header"] = itemsetId;
+                        headerRow["item_code"] = itemSetRow["tab_number"];
+                        headerRow["number"] = "";
 
-                            if (bomDetailIndex > 1)
-                            {
-                                bomDetailIndex = 1;
-                            }
-                        }    
-                        // CHECKER IF THE ROW IS AN ITEM / ACCESSORIES
-                        if (itemId > 0 && bomId == 0)
-                        {
-                            bomCounter += 1;
-                            DataRow[] itemRows = ItemList.Select($"id = {itemId}");
-                            if (itemRows.Length > 0)
-                            {
-                                string itemCode = itemRows[0]["item_code"].ToString();
-                                string shortDesc = itemRows[0]["short_desc"].ToString();
+                        // update the transformedTable
+                        headerRow["qty"] = 0;
+                        headerRow["list_price_per_unit"] = 0m;
+                        headerRow["component_total"] = 0m;
+                        headerRow["based_id"] = basedId;
+                        headerRow["item_id"] = 0;
 
-                                newRow["short_desc"] = shortDesc;
-                                newRow["item_code"] = itemCode;
-                            }
-                            else
-                            {
-                                newRow["short_desc"] = "Unknown";
-                                newRow["item_code"] = "Unknown";
-                            }
-                            newRow["number"] = bomCounter;
-                            withItemListTwo.Rows.Add(newRow);
-                            
-                        }
-                        // CHECKER IF THE ROW IS AN ITEM OF A BOM
-                        else if (bomId > 0 && itemId > 0)
+                        withItemListTwo.Rows.Add(headerRow);
+
+                        bomCounter = 0;
+                        bomDetailIndex = 1;
+
+                        // Process rows for this itemset
+                        foreach (DataRow row in transformedTable.Rows)
                         {
-                            DataRow[] itemRows = ItemList.Select($"id = {itemId}");
-                            if (itemRows.Length > 0)
+                            int rowItemsetId = Convert.ToInt32(row["based_id"]);
+                            if (rowItemsetId != itemsetId)
+                                continue;  // Skip rows from other itemsets
+
+                            DataRow newRow = withItemListTwo.NewRow();
+
+                            foreach (DataColumn col in transformedTable.Columns)
                             {
-                                string itemCode = itemRows[0]["item_code"].ToString();
-                                newRow["number"] = $"{bomCounter}.{bomDetailIndex}";
-                                newRow["item_code"] = itemCode;
+                                newRow[col.ColumnName] = row[col.ColumnName];
                             }
-                            else
+                            int itemId = Convert.ToInt32(row["item_id"]);
+                            int bomId = Convert.ToInt32(row["bom_id"]);
+                            string model = row["model"].ToString();
+                            // CHECKER IF THE ROW IS HEAD OF BOM THAT HAS EXISTING ITEMS
+                            if (itemId == 0 && bomId == 0 && !string.IsNullOrEmpty(model))
                             {
-                                newRow["number"] = $"{bomCounter}.{bomDetailIndex}";
-                                newRow["item_code"] = "Unknown";
+                                bomCounter += 1;
+                                newRow["level"] = 1;
+                                newRow["number"] = bomCounter;
+                                newRow["item_code"] = row["components"].ToString();
+                                newRow["itemset_header"] = itemsetId;
+                                withItemListTwo.Rows.Add(newRow);
+
+                                if (bomDetailIndex > 1)
+                                {
+                                    bomDetailIndex = 1;
+                                }
                             }
-                            withItemListTwo.Rows.Add(newRow);
-                            bomDetailIndex += 1;
+                            // CHECKER IF THE ROW IS AN ITEM / ACCESSORIES
+                            if (itemId > 0 && bomId == 0)
+                            {
+                                bomCounter += 1;
+                                DataRow[] itemRows = ItemList.Select($"id = {itemId}");
+                                if (itemRows.Length > 0)
+                                {
+                                    string itemCode = itemRows[0]["item_code"].ToString();
+                                    string shortDesc = itemRows[0]["short_desc"].ToString();
+
+                                    newRow["short_desc"] = shortDesc;
+                                    newRow["item_code"] = itemCode;
+                                }
+                                else
+                                {
+                                    newRow["short_desc"] = "Unknown";
+                                    newRow["item_code"] = "Unknown";
+                                }
+                                newRow["level"] = 1;
+                                newRow["number"] = bomCounter;
+                                newRow["itemset_header"] = itemsetId;
+                                withItemListTwo.Rows.Add(newRow);
+                            }
+                            // CHECKER IF THE ROW IS AN ITEM OF A BOM
+                            else if (bomId > 0 && itemId > 0)
+                            {
+                                DataRow[] itemRows = ItemList.Select($"id = {itemId}");
+                                if (itemRows.Length > 0)
+                                {
+                                    string itemCode = itemRows[0]["item_code"].ToString();
+                                    newRow["number"] = $"{bomCounter}.{bomDetailIndex}";
+                                    newRow["level"] = 1;
+                                    newRow["item_code"] = itemCode;
+                                }
+                                else
+                                {
+                                    newRow["number"] = $"{bomCounter}.{bomDetailIndex}";
+                                    newRow["level"] = 1;
+                                    newRow["item_code"] = "Unknown";
+                                }
+                                newRow["itemset_header"] = itemsetId;
+                                withItemListTwo.Rows.Add(newRow);
+                                bomDetailIndex += 1;
+                            }
                         }
                     }
+
                     dgv_project.DataSource = withItemListTwo;
+
+
+                    // Format the DataGridView with colors/styles
+                    FormatHierarchicalGrid();
                 }
             }
         }
+
+        private void DebugGridViewBindings()
+        {
+            try
+            {
+                string debugInfo = "DataGridView Column Bindings:\n\n";
+
+                foreach (DataGridViewColumn col in dgv_project.Columns)
+                {
+                    debugInfo += $"Column Name: {col.Name}\n";
+                    debugInfo += $"  Header Text: {col.HeaderText}\n";
+                    debugInfo += $"  DataPropertyName: {col.DataPropertyName}\n";
+                    debugInfo += $"  Visible: {col.Visible}\n";
+                    debugInfo += "\n";
+                }
+
+                MessageBox.Show(debugInfo);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error: " + ex.Message);
+            }
+        }
+
+        private void FormatHierarchicalGrid()
+        {
+            try
+            {
+                string columnsList = "Columns in grid:\n";
+                foreach (DataGridViewColumn col in dgv_project.Columns)
+                {
+                    columnsList += "- " + col.Name + "\n";
+                }
+
+                string rowData = "First 3 rows data:\n\n";
+                for (int i = 0; i < Math.Min(3, dgv_project.Rows.Count); i++)
+                {
+                    DataGridViewRow row = dgv_project.Rows[i];
+
+                    string numberValue = row.Cells["number"].Value?.ToString() ?? "[NULL]";
+
+                    rowData += $"Row {i}:\n";
+                    rowData += $"  number = '{numberValue}'\n";
+                }
+
+                int headerCount = 0;
+                int detailCount = 0;
+
+                foreach (DataGridViewRow row in dgv_project.Rows)
+                {
+                    try
+                    {
+                        object numberValue = row.Cells["number"].Value;
+                        string number = numberValue?.ToString() ?? "";
+
+                        // If number is empty, it's a HEADER
+                        if (string.IsNullOrEmpty(number))
+                        {
+                            row.DefaultCellStyle.BackColor = Color.FromArgb(30, 58, 138);  // Dark blue
+                            row.DefaultCellStyle.ForeColor = Color.White;
+                            row.DefaultCellStyle.Font = new Font("Arial", 11, FontStyle.Bold);
+                            row.Height = 30;
+                            headerCount++;
+                        }
+                        else
+                        {
+                            row.DefaultCellStyle.BackColor = Color.White;
+                            row.DefaultCellStyle.ForeColor = Color.Black;
+                            row.DefaultCellStyle.Font = new Font("Arial", 10, FontStyle.Regular);
+                            row.Height = 22;
+                            detailCount++;
+                        }
+                    }
+                    catch (Exception rowEx)
+                    {
+                        MessageBox.Show($"Error on row {row.Index}: {rowEx.Message}");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error in FormatHierarchicalGrid:\n" + ex.Message + "\n\n" + ex.StackTrace);
+            }
+        }
+
+        // ALTERNATIVE: Add click event to make headers collapsible (optional)
+        private void dgv_project_CellClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex >= 0)
+            {
+                int level = (int)dgv_project.Rows[e.RowIndex].Cells["level"].Value;
+
+                // Only toggle on header rows
+                if (level == 0)
+                {
+                    int itemsetId = (int)dgv_project.Rows[e.RowIndex].Cells["itemset_id"].Value;
+                    bool isCollapsed = dgv_project.Rows[e.RowIndex].Cells["item_code"].Value.ToString().StartsWith("▶");
+
+                    if (isCollapsed)
+                    {
+                        // Expand - show detail rows
+                        for (int i = e.RowIndex + 1; i < dgv_project.Rows.Count; i++)
+                        {
+                            int nextLevel = (int)dgv_project.Rows[i].Cells["level"].Value;
+                            int nextItemset = (int)dgv_project.Rows[i].Cells["itemset_id"].Value;
+
+                            if (nextLevel == 0)  // Next header found
+                                break;
+
+                            if (nextItemset == itemsetId)
+                                dgv_project.Rows[i].Visible = true;
+                        }
+                    }
+                    else
+                    {
+                        // Collapse - hide detail rows
+                        for (int i = e.RowIndex + 1; i < dgv_project.Rows.Count; i++)
+                        {
+                            int nextLevel = (int)dgv_project.Rows[i].Cells["level"].Value;
+                            int nextItemset = (int)dgv_project.Rows[i].Cells["itemset_id"].Value;
+
+                            if (nextLevel == 0)  // Next header found
+                                break;
+
+                            if (nextItemset == itemsetId)
+                                dgv_project.Rows[i].Visible = false;
+                        }
+                    }
+                }
+            }
+        }
+
+
         //ON LOAD OF ORDER
         private async void Orders_Load(object sender, EventArgs e)
         {
@@ -508,6 +700,9 @@ namespace smpc_sales_app.Pages.Sales
             }
             LoadDirectory(AFTERSALES_TV, AfterSalesPath);
             LoadDirectory(SALES_TV, SalesPath);
+
+
+
         }
         //ACTIONS METHOD (BUTTONS, CLICKS)
         private void btn_search_Click(object sender, EventArgs e)
