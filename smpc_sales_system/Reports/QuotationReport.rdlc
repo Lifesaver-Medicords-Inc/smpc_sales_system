@@ -1876,16 +1876,7 @@
                           <Paragraph>
                             <TextRuns>
                               <TextRun>
-                                <Value>1. Delivery at (place), unloading at (specific area) of the building/ site/ warehouse
-2. Testing and Commissioning at (place)
-- Validate compliance to Pre-Start-Up and Safety Checklist
-- Configuration of Motor Voltage
-- Termination of Load Side Wires (Motor to Controller)
-- Placement of Sensors
-- Prime the pump if necessary
-- Initial and Final Testing
-- Training and Orientatoin
-3. For Testing and Commissioning, there is an allowance of (1 VISIT TO (place) - 2 DAYS VISIT TO SITE) to be conducted during company regular working hours only. If you want more than the allowable and beyond working hours, additional chargers will be applied.</Value>
+                                <Value>=Parameters!Inclusion.Value</Value>
                                 <Style>
                                   <FontStyle>Normal</FontStyle>
                                   <FontFamily>Calibri</FontFamily>
@@ -1975,111 +1966,27 @@
                   </Rectangle>
                   <Rectangle Name="Rectangle9">
                     <ReportItems>
-                      <Textbox Name="Textbox47">
+                      <Textbox Name="Exclusion">
                         <CanGrow>true</CanGrow>
                         <KeepTogether>true</KeepTogether>
                         <Paragraphs>
                           <Paragraph>
                             <TextRuns>
                               <TextRun>
-                                <Value>1. Installation, piping works, and electrical</Value>
+                                <Value>=Parameters!Exclusion.Value</Value>
                                 <Style>
-                                  <FontStyle>Normal</FontStyle>
-                                  <FontFamily>Calibri</FontFamily>
                                   <FontSize>9pt</FontSize>
-                                  <FontWeight>Normal</FontWeight>
-                                  <TextDecoration>None</TextDecoration>
-                                  <Color>#000000</Color>
-                                </Style>
-                              </TextRun>
-                            </TextRuns>
-                            <Style />
-                          </Paragraph>
-                          <Paragraph>
-                            <TextRuns>
-                              <TextRun>
-                                <Value>2. Factory/ manufacturer's test certificates or other similar documents</Value>
-                                <Style>
-                                  <FontStyle>Normal</FontStyle>
-                                  <FontFamily>Calibri</FontFamily>
-                                  <FontSize>9pt</FontSize>
-                                  <FontWeight>Normal</FontWeight>
-                                  <TextDecoration>None</TextDecoration>
-                                  <Color>#000000</Color>
-                                </Style>
-                              </TextRun>
-                            </TextRuns>
-                            <Style />
-                          </Paragraph>
-                          <Paragraph>
-                            <TextRuns>
-                              <TextRun>
-                                <Value>3. Supply of other services, materials, consumables, and accessories not mentioned in the offer</Value>
-                                <Style>
-                                  <FontStyle>Normal</FontStyle>
-                                  <FontFamily>Calibri</FontFamily>
-                                  <FontSize>9pt</FontSize>
-                                  <FontWeight>Normal</FontWeight>
-                                  <TextDecoration>None</TextDecoration>
-                                  <Color>#000000</Color>
-                                </Style>
-                              </TextRun>
-                            </TextRuns>
-                            <Style />
-                          </Paragraph>
-                          <Paragraph>
-                            <TextRuns>
-                              <TextRun>
-                                <Value>4. Permits and Bonds</Value>
-                                <Style>
-                                  <FontStyle>Normal</FontStyle>
-                                  <FontFamily>Calibri</FontFamily>
-                                  <FontSize>9pt</FontSize>
-                                  <FontWeight>Normal</FontWeight>
-                                  <TextDecoration>None</TextDecoration>
-                                  <Color>#000000</Color>
-                                </Style>
-                              </TextRun>
-                            </TextRuns>
-                            <Style />
-                          </Paragraph>
-                          <Paragraph>
-                            <TextRuns>
-                              <TextRun>
-                                <Value>5. Hauling of Equipment</Value>
-                                <Style>
-                                  <FontStyle>Normal</FontStyle>
-                                  <FontFamily>Calibri</FontFamily>
-                                  <FontSize>9pt</FontSize>
-                                  <FontWeight>Normal</FontWeight>
-                                  <TextDecoration>None</TextDecoration>
-                                  <Color>#000000</Color>
-                                </Style>
-                              </TextRun>
-                            </TextRuns>
-                            <Style />
-                          </Paragraph>
-                          <Paragraph>
-                            <TextRuns>
-                              <TextRun>
-                                <Value>6. Processing and Delivery Permits Fee to Site</Value>
-                                <Style>
-                                  <FontStyle>Normal</FontStyle>
-                                  <FontFamily>Calibri</FontFamily>
-                                  <FontSize>9pt</FontSize>
-                                  <FontWeight>Normal</FontWeight>
-                                  <TextDecoration>None</TextDecoration>
-                                  <Color>#000000</Color>
                                 </Style>
                               </TextRun>
                             </TextRuns>
                             <Style />
                           </Paragraph>
                         </Paragraphs>
-                        <rd:DefaultName>Textbox46</rd:DefaultName>
-                        <Left>0.00002cm</Left>
-                        <Height>0.90833in</Height>
-                        <Width>7.3245in</Width>
+                        <rd:DefaultName>Exclusion</rd:DefaultName>
+                        <Top>0.1059cm</Top>
+                        <Left>0.00004cm</Left>
+                        <Height>2.20126cm</Height>
+                        <Width>18.73517cm</Width>
                         <Style>
                           <Border>
                             <Style>None</Style>
@@ -2153,184 +2060,27 @@
                   </Rectangle>
                   <Rectangle Name="Rectangle10">
                     <ReportItems>
-                      <Textbox Name="Textbox48">
+                      <Textbox Name="TermsAndConditions">
                         <CanGrow>true</CanGrow>
                         <KeepTogether>true</KeepTogether>
                         <Paragraphs>
                           <Paragraph>
                             <TextRuns>
                               <TextRun>
-                                <Value>PAYMENT TERMS: The Buyer agrees to pay for the products according to the agreed payment terms with Sunshine Multi Plus Corporation. The agreed upon payment terms is CASH ON DELIVERY.</Value>
+                                <Value>=Parameters!TermsAndConditions.Value</Value>
                                 <Style>
-                                  <FontStyle>Normal</FontStyle>
-                                  <FontFamily>Calibri</FontFamily>
                                   <FontSize>9pt</FontSize>
-                                  <FontWeight>Normal</FontWeight>
-                                  <TextDecoration>None</TextDecoration>
-                                  <Color>#000000</Color>
-                                </Style>
-                              </TextRun>
-                            </TextRuns>
-                            <Style />
-                          </Paragraph>
-                          <Paragraph>
-                            <TextRuns>
-                              <TextRun>
-                                <Value>
-QUOTATION VALIDITY: Quote is valid 30 DAYS from date hereon; thereafter, it shall be subject to reconfirmation (On price validity, due to uncertainty, prices may change without prior notice).</Value>
-                                <Style>
-                                  <FontStyle>Normal</FontStyle>
-                                  <FontFamily>Calibri</FontFamily>
-                                  <FontSize>9pt</FontSize>
-                                  <FontWeight>Normal</FontWeight>
-                                  <TextDecoration>None</TextDecoration>
-                                  <Color>#000000</Color>
-                                </Style>
-                              </TextRun>
-                            </TextRuns>
-                            <Style />
-                          </Paragraph>
-                          <Paragraph>
-                            <TextRuns>
-                              <TextRun>
-                                <Value>
-AVAILABILITY OF STOCK(S) AND/OR SERVICE(S): 4-6 MONTHS upon receipt of purchase order and approval of setting plan (Due to uncertainty, delivery lead time may change without prior notice).</Value>
-                                <Style>
-                                  <FontStyle>Normal</FontStyle>
-                                  <FontFamily>Calibri</FontFamily>
-                                  <FontSize>9pt</FontSize>
-                                  <FontWeight>Normal</FontWeight>
-                                  <TextDecoration>None</TextDecoration>
-                                  <Color>#000000</Color>
-                                </Style>
-                              </TextRun>
-                            </TextRuns>
-                            <Style />
-                          </Paragraph>
-                          <Paragraph>
-                            <TextRuns>
-                              <TextRun>
-                                <Value>
-DELIVERY TERMS: Delivery terms are all ex-warehouse or as otherwise agreed to as evidenced by Sunshine Multi Plus Corporation's order acknowledgement. Delivery instruction is WAREHOUSE TO SITE VIA SEA (w/o HAULING).</Value>
-                                <Style>
-                                  <FontStyle>Normal</FontStyle>
-                                  <FontFamily>Calibri</FontFamily>
-                                  <FontSize>9pt</FontSize>
-                                  <FontWeight>Normal</FontWeight>
-                                  <TextDecoration>None</TextDecoration>
-                                  <Color>#000000</Color>
-                                </Style>
-                              </TextRun>
-                            </TextRuns>
-                            <Style />
-                          </Paragraph>
-                          <Paragraph>
-                            <TextRuns>
-                              <TextRun>
-                                <Value>
-OTHER CHARGES, TITLE, RISK OF LOSS: Shipping, handling, hauling, testing, installation, and maintenance activities are additional charges unless otherwise expressly indicated at the time of sale. Once the goods are delivered, the buyer assumes all risk of loss or damage. The Buyer must notify Sunshine Multi Plus Corporation within three (3) days of the date of the invoice or acknowledge if the Buyer believes any part of the purchase is missing, incorrect, or damaged.</Value>
-                                <Style>
-                                  <FontStyle>Normal</FontStyle>
-                                  <FontFamily>Calibri</FontFamily>
-                                  <FontSize>9pt</FontSize>
-                                  <FontWeight>Normal</FontWeight>
-                                  <TextDecoration>None</TextDecoration>
-                                  <Color>#000000</Color>
-                                </Style>
-                              </TextRun>
-                            </TextRuns>
-                            <Style />
-                          </Paragraph>
-                          <Paragraph>
-                            <TextRuns>
-                              <TextRun>
-                                <Value>
-STORAGE: It is the Buyer's responsibility to ensure the safekeeping of the products. Any loss or damage that occurs during storage is the Buyer's liability.</Value>
-                                <Style>
-                                  <FontStyle>Normal</FontStyle>
-                                  <FontFamily>Calibri</FontFamily>
-                                  <FontSize>9pt</FontSize>
-                                  <FontWeight>Normal</FontWeight>
-                                  <TextDecoration>None</TextDecoration>
-                                  <Color>#000000</Color>
-                                </Style>
-                              </TextRun>
-                            </TextRuns>
-                            <Style />
-                          </Paragraph>
-                          <Paragraph>
-                            <TextRuns>
-                              <TextRun>
-                                <Value>
-SALES RETURN/ CANCELLATION POLICY: The exchange of purchased items within seven (7) days from the purchase date shall be allowed at no charge but only to goods that have sales receipts, boxes, manuals, and if the product is in good condition or unused shall it be honored for excahange or cancellation. Items that have been dented, burnt, or tampered with shall not be honored. If it has gone beyond seven (7) days but has not exceeded thirty (30) days, a restocking fee (%) of the total amount returned would be charged to the Buyer. In case of cancellation, theres is a cancellation fee (%) of the total amount purchase for regular items; cancellation for customized items is not allowed. Cancellation is allowed for goods that are not used and a maximum of seven (7) days fom the date of purchase.</Value>
-                                <Style>
-                                  <FontStyle>Normal</FontStyle>
-                                  <FontFamily>Calibri</FontFamily>
-                                  <FontSize>9pt</FontSize>
-                                  <FontWeight>Normal</FontWeight>
-                                  <TextDecoration>None</TextDecoration>
-                                  <Color>#000000</Color>
-                                </Style>
-                              </TextRun>
-                            </TextRuns>
-                            <Style />
-                          </Paragraph>
-                          <Paragraph>
-                            <TextRuns>
-                              <TextRun>
-                                <Value>
-WARRANTY: Sunshine Multi Plus Corporation's standard warranty shall cover all of the company's products for THREE (3) YEARS or against factory defects and service workmanship after the delivery of the item. The warranty is only valid to the Buyer who bought the item from Sunshine Multi Plus Corporation.</Value>
-                                <Style>
-                                  <FontStyle>Normal</FontStyle>
-                                  <FontFamily>Calibri</FontFamily>
-                                  <FontSize>9pt</FontSize>
-                                  <FontWeight>Normal</FontWeight>
-                                  <TextDecoration>None</TextDecoration>
-                                  <Color>#000000</Color>
-                                </Style>
-                              </TextRun>
-                            </TextRuns>
-                            <Style />
-                          </Paragraph>
-                          <Paragraph>
-                            <TextRuns>
-                              <TextRun>
-                                <Value>
-IMPLEMENTATION OF SERVICES: Sunshine Multi Plus Corporation will provide the Services in a competent and skilled manner provided that the working environment is safe and healthy. Sunshine Multi Plus Corporation will provide the Services within regular business hours in compliance with Sunshine Multi Plus Corporation's rules and regulations at the time of performace and delivery.</Value>
-                                <Style>
-                                  <FontStyle>Normal</FontStyle>
-                                  <FontFamily>Calibri</FontFamily>
-                                  <FontSize>9pt</FontSize>
-                                  <FontWeight>Normal</FontWeight>
-                                  <TextDecoration>None</TextDecoration>
-                                  <Color>#000000</Color>
-                                </Style>
-                              </TextRun>
-                            </TextRuns>
-                            <Style />
-                          </Paragraph>
-                          <Paragraph>
-                            <TextRuns>
-                              <TextRun>
-                                <Value>
-LIABILITY: Sunshine Multi Plus Corporation's liability under, for the breach of, or arising out of this agreement and/or sale will be limited to repair or replacement of any defective products or a refund of the purchase price of the products as Sunshine Multi Plus Corporation's sole option as outlined above.</Value>
-                                <Style>
-                                  <FontStyle>Normal</FontStyle>
-                                  <FontFamily>Calibri</FontFamily>
-                                  <FontSize>9pt</FontSize>
-                                  <FontWeight>Normal</FontWeight>
-                                  <TextDecoration>None</TextDecoration>
-                                  <Color>#000000</Color>
                                 </Style>
                               </TextRun>
                             </TextRuns>
                             <Style />
                           </Paragraph>
                         </Paragraphs>
-                        <rd:DefaultName>Textbox46</rd:DefaultName>
-                        <Top>0.00006cm</Top>
-                        <Height>5.90311in</Height>
-                        <Width>7.3245in</Width>
+                        <rd:DefaultName>TermsAndConditions</rd:DefaultName>
+                        <Top>0.10589cm</Top>
+                        <Left>0.02152cm</Left>
+                        <Height>14.88809cm</Height>
+                        <Width>18.79207cm</Width>
                         <Style>
                           <Border>
                             <Style>None</Style>
@@ -2346,7 +2096,7 @@ LIABILITY: Sunshine Multi Plus Corporation's liability under, for the breach of,
                     <Top>3.5764in</Top>
                     <Left>0.24733cm</Left>
                     <Height>5.90314in</Height>
-                    <Width>7.40692in</Width>
+                    <Width>7.40693in</Width>
                     <ZIndex>5</ZIndex>
                     <Style>
                       <Border>
@@ -2598,6 +2348,18 @@ LIABILITY: Sunshine Multi Plus Corporation's liability under, for the breach of,
       <Prompt>ReportParameter1</Prompt>
       <MultiValue>true</MultiValue>
     </ReportParameter>
+    <ReportParameter Name="Inclusion">
+      <DataType>String</DataType>
+      <Prompt>ReportParameter1</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="Exclusion">
+      <DataType>String</DataType>
+      <Prompt>ReportParameter1</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="TermsAndConditions">
+      <DataType>String</DataType>
+      <Prompt>ReportParameter1</Prompt>
+    </ReportParameter>
   </ReportParameters>
   <ReportParametersLayout>
     <GridLayoutDefinition>
@@ -2618,6 +2380,21 @@ LIABILITY: Sunshine Multi Plus Corporation's liability under, for the breach of,
           <ColumnIndex>2</ColumnIndex>
           <RowIndex>0</RowIndex>
           <ParameterName>ItemDescriptions</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>3</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>Inclusion</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>1</RowIndex>
+          <ParameterName>Exclusion</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>1</ColumnIndex>
+          <RowIndex>1</RowIndex>
+          <ParameterName>TermsAndConditions</ParameterName>
         </CellDefinition>
       </CellDefinitions>
     </GridLayoutDefinition>

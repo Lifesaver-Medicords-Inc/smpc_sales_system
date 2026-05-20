@@ -24,12 +24,14 @@ namespace smpc_sales_system.Pages.Sales
         private string documentNo;
         private bool isQuotation;
         private bool isProject;
+        private string inclusion;
+        private string exclusion;
+        private string termsAndCondition;
         string branchName = "Branch not found";
         List<string> unitprices = new List<string>();
         string addressName = "Address not found";
 
-
-        public SalesPrintModal(bool isQuotation = false, bool isProject = false, string documentNo = null)
+        public SalesPrintModal(bool isQuotation = false, bool isProject = false, string documentNo = null, string inclusion = null, string exclusion = null, string termsAndCondition = null)
         {
             InitializeComponent();
             fetchBpiData();
@@ -37,6 +39,9 @@ namespace smpc_sales_system.Pages.Sales
             this.documentNo = documentNo;
             this.isQuotation = isQuotation;
             this.isProject = isProject;
+            this.inclusion = inclusion;
+            this.exclusion = exclusion;
+            this.termsAndCondition = termsAndCondition;
         }
         public DataTable OrderList { get; set; } = new DataTable();
         public DataTable DetailsList { get; set; } = new DataTable();
@@ -203,7 +208,12 @@ namespace smpc_sales_system.Pages.Sales
                     {
                         int Id = (int)filteredRows[0]["id"];
                         int customerId = (int)filteredRows[0]["customer_id"];
-                        int shiptoId = (int)filteredRows[0]["ship_to_id"];  
+                        int shiptoId = (int)filteredRows[0]["ship_to_id"];
+
+                        if (bpi_general == null && bpi_address == null)
+                        {
+                            return;
+                        }
 
                         DataRow[] bpiRows = bpi_general.Select($"general_based_id = '{customerId}'");
                         DataRow[] bpiaddrows = bpi_address.Select($"address_ids = '{shiptoId}'");
@@ -260,7 +270,7 @@ namespace smpc_sales_system.Pages.Sales
 
                         List<string> itemDescriptions = new List<string>();
                         List<string> details = new List<string>();
-                        List<string> qty = new List<string>();
+                        List<int> qty = new List<int>();
                         if (componentitemRows.Length > 0)
                         {
                             foreach (DataRow componentRow in componentitemRows)
@@ -279,7 +289,7 @@ namespace smpc_sales_system.Pages.Sales
 
                                     foreach (DataRow itemRow in itemrows)
                                     {
-                                        string shortDesc = itemRow["short_desc"].ToString();
+                                        string shortDesc = string.IsNullOrEmpty(itemRow["short_desc"].ToString()) ? "none" : itemRow["short_desc"].ToString();
                                         string itemModel = itemRow["item_model"].ToString();
 
                                         // Concatenate the item_model and short_desc in the desired format
@@ -290,7 +300,11 @@ namespace smpc_sales_system.Pages.Sales
                                 }
                             }
 
+                            foreach (DataRow componentdetailRow in componentitemRows)
+                            { 
                             
+                            }
+
                             foreach (DataRow componentdetailRow in componentitemRows)
                             {
                                 int itemid = (int)componentdetailRow["based_id"];
@@ -298,7 +312,7 @@ namespace smpc_sales_system.Pages.Sales
 
                                     foreach (DataRow itemRow in itemrows)
                                     {
-                                        string shortDesc = itemRow["item_set_description"].ToString();
+                                        string shortDesc = itemRow["item_set_description"].ToString() == "" ? "none" : itemRow["item_set_description"].ToString();
                                         string detail = $"{shortDesc}";
                                         details.Add(detail);
                                     }
@@ -312,16 +326,16 @@ namespace smpc_sales_system.Pages.Sales
 
                                 if (itemrows.Length > 0 || componentitemRows.Length > 0)
                                 {
-                                    string qtys;
+                                    int qtys;
 
                                     if (templateId == 0)
                                     {
-                                        qtys = Convert.ToString(componentdetailRow["qty"]);
+                                        qtys = int.Parse(componentdetailRow["qty"].ToString());
                                         qty.Add(qtys);
                                     }
                                     else
                                     {
-                                        qtys = itemrows[0]["no_of_sets"].ToString();
+                                        qtys = int.Parse(itemrows[0]["no_of_sets"].ToString() == "" ? "0" : itemrows[0]["no_of_sets"].ToString());
                                         qty.Add(qtys);
                                     }
                                 }
@@ -330,15 +344,15 @@ namespace smpc_sales_system.Pages.Sales
 
                         string[] detailsArray = details.ToArray();
                         string[] itemDescriptionArray = itemDescriptions.ToArray();
-                        string[] qtyArray = qty.ToArray();
+                        int[] qtyArray = qty.ToArray();
                         string[] unitpricesArray = unitprices.ToArray();
                         float[] unitpricesFloatArray = unitpricesArray.Select(x => float.Parse(x)).ToArray();
                         float unitpricesSum = unitpricesFloatArray.Sum();
-                        int[] qtytotalArray = qtyArray.Select(x => int.Parse(x)).ToArray();
+                        int[] qtytotalArray = qtyArray.Select(x => x).ToArray();
                         int qtySum = qtytotalArray.Sum();
 
                         ReportParameter detailParameter = new ReportParameter("details", detailsArray);
-                        ReportParameter qtyParameter = new ReportParameter("qty", qtyArray);
+                        ReportParameter qtyParameter = new ReportParameter("qty", qtyArray.ToString());
                         ReportParameter itemDescriptionParameter = new ReportParameter("ItemDescriptions", itemDescriptionArray);
                         ReportParameter unitpricesParameter = new ReportParameter("unitprices", unitpricesArray);
                         ReportParameter unitpricesSumParameter = new ReportParameter("unitpricesSum", unitpricesSum.ToString()); 
@@ -348,13 +362,16 @@ namespace smpc_sales_system.Pages.Sales
                         ReportParameter addressNameParameter = new ReportParameter("AddressName", addressName);
                         ReportDataSource headerReportDataSource = new ReportDataSource("DataSet1", transactionList);
                         ReportDataSource childReportDataSource = new ReportDataSource("DataSet2", ItemSetContent);
-                        ReportDataSource ComponentsReportDataSource = new ReportDataSource("DataSet3", ProjectItemList);
+                        //ReportDataSource ComponentsReportDataSource = new ReportDataSource("DataSet3", ProjectItemList);
+                        //ReportDataSource itemSetDataSource = new ReportDataSource("DataSet4", ItemSets);
 
                         reportViewer1.LocalReport.ReportPath = Path.Combine(Settings.Default.REPORTPATH, "ProjectReport.rdlc");
                         reportViewer1.LocalReport.DataSources.Clear();
                         reportViewer1.LocalReport.DataSources.Add(headerReportDataSource);
                         reportViewer1.LocalReport.DataSources.Add(childReportDataSource);
-                        reportViewer1.LocalReport.DataSources.Add(ComponentsReportDataSource);
+                        //reportViewer1.LocalReport.DataSources.Add(ComponentsReportDataSource);
+                        //reportViewer1.LocalReport.DataSources.Add(itemSetDataSource);
+                        reportViewer1.LocalReport.SubreportProcessing += new SubreportProcessingEventHandler(MapSubreportData);
                         reportViewer1.LocalReport.SetParameters(new ReportParameter[] { branchNameParameter, qtySumParameter, qtyParameter, addressNameParameter, unitpricesParameter, unitpricesSumParameter, itemDescriptionParameter, detailParameter });
                         reportViewer1.RefreshReport();
                     }
@@ -405,7 +422,7 @@ namespace smpc_sales_system.Pages.Sales
 
                                 foreach (DataRow itemRow in itemrows)
                                 {
-                                    string shortDesc = itemRow["short_desc"].ToString();
+                                    string shortDesc = string.IsNullOrEmpty(itemRow["short_desc"].ToString()) ? "none" : itemRow["short_desc"].ToString();
                                     string itemModel = itemRow["item_model"].ToString();
                                     string itemDescription = $"{shortDesc}";
 
@@ -418,6 +435,9 @@ namespace smpc_sales_system.Pages.Sales
                         ReportParameter itemDescriptionParameter = new ReportParameter("ItemDescriptions", itemDescriptionArray);
                         ReportParameter branchNameParameter = new ReportParameter("BranchName", branchName);
                         ReportParameter addressNameParameter = new ReportParameter("AddressName", addressName);
+                        ReportParameter inclusionParameter = new ReportParameter("Inclusion", inclusion);
+                        ReportParameter exclusionParameter = new ReportParameter("Exclusion", exclusion);
+                        ReportParameter termAndConditionsParameter = new ReportParameter("TermsAndConditions", termsAndCondition);
                         ReportDataSource headerReportDataSource = new ReportDataSource("DataSet1", transactionList);
                         ReportDataSource childReportDataSource = new ReportDataSource("DataSet2", childList);
 
@@ -425,7 +445,8 @@ namespace smpc_sales_system.Pages.Sales
                         reportViewer1.LocalReport.DataSources.Clear();
                         reportViewer1.LocalReport.DataSources.Add(headerReportDataSource);
                         reportViewer1.LocalReport.DataSources.Add(childReportDataSource);
-                        reportViewer1.LocalReport.SetParameters(new ReportParameter[] { branchNameParameter, addressNameParameter, itemDescriptionParameter });
+                        reportViewer1.LocalReport.SetParameters(new ReportParameter[] { branchNameParameter, addressNameParameter, itemDescriptionParameter, inclusionParameter, exclusionParameter, termAndConditionsParameter });
+                        //reportViewer1.LocalReport.SetParameters(parameters.ToArray());
                         reportViewer1.RefreshReport();
 
                         if (AutoExport && !string.IsNullOrWhiteSpace(ExportPath))
@@ -503,6 +524,19 @@ namespace smpc_sales_system.Pages.Sales
                     }
                 }
             }
+        }
+        void MapSubreportData(object sender, SubreportProcessingEventArgs e)
+        {
+            // 1. Get the parameter passed from the main report row
+            int parentId = Convert.ToInt32(e.Parameters["ParentID"].Values[0]);
+
+            // 2. Fetch ONLY the details that match this specific ParentID
+            DataTable detailData = ProjectItemList.AsEnumerable().
+                                Where(x => x.Field<int>("based_id") == parentId).
+                                CopyToDataTable();
+
+            // 3. Bind it to the subreport (Must match the dataset name inside the subreport RDLC)
+            e.DataSources.Add(new ReportDataSource("DetailsDataSetName", detailData));
         }
         private void btn_prev_Click(object sender, EventArgs e)
         {

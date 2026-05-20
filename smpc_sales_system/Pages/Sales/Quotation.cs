@@ -28,6 +28,7 @@ using System.Threading.Channels;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using WebSocketSharp;
+using System.Text.RegularExpressions;
 
 namespace smpc_sales_app.Pages.Sales
 {
@@ -449,6 +450,8 @@ namespace smpc_sales_app.Pages.Sales
             this.tabControl.Height = 600;
             this.tabControl.Width = System.Windows.Forms.Screen.AllScreens.Length;
             this.Size = new Size(1386 - 80, 950);
+
+            //use state
             isProject = false;
             IsEdit = false;
 
@@ -4327,11 +4330,10 @@ namespace smpc_sales_app.Pages.Sales
         }
         private void btn_print_Click(object sender, EventArgs e)
         {
-              string documentNo = txt_document_no.Text.Trim();
-            string proj = txt_project_name.Text.Trim();
-            if (string.IsNullOrEmpty(proj))
+            string documentNo = Regex.Replace(txt_document_no.Text, @"FQ#|Q#", "").Trim();
+            if (isProject)
             {
-                SalesPrintModal printPage = new SalesPrintModal(true, false, documentNo);
+                SalesPrintModal printPage = new SalesPrintModal(false, true, documentNo, InclusionsRichTextBox.Text, ExclusionsRichTextBox.Text, TermAndConditionsRichTextBox.Text);
                 int screenHeight = Screen.PrimaryScreen.Bounds.Height;
                 printPage.Height = (int)(screenHeight);
                 printPage.StartPosition = FormStartPosition.CenterParent;
@@ -4339,7 +4341,7 @@ namespace smpc_sales_app.Pages.Sales
             }
             else
             {
-                SalesPrintModal printPage = new SalesPrintModal(false, true, documentNo);
+                SalesPrintModal printPage = new SalesPrintModal(true, false, documentNo, InclusionsRichTextBox.Text, ExclusionsRichTextBox.Text, TermAndConditionsRichTextBox.Text);
                 int screenHeight = Screen.PrimaryScreen.Bounds.Height;
                 printPage.Height = (int)(screenHeight);
                 printPage.StartPosition = FormStartPosition.CenterParent;
@@ -5050,7 +5052,7 @@ namespace smpc_sales_app.Pages.Sales
             BoldWords(TermAndConditionsRichTextBox, "WARRANTY:");
             ColorSelectedAndUnderlineWordsAndBold(TermAndConditionsRichTextBox, "ONE (1) YEAR", Color.Blue);
             BoldWords(TermAndConditionsRichTextBox, "SERVICES:");
-            BoldWords(TermAndConditionsRichTextBox, "WARRANTY:");
+            BoldWords(TermAndConditionsRichTextBox, "LIABILITY:");
 
         }
 
