@@ -21,6 +21,7 @@ namespace smpc_sales_app.Services.Sales.Models
         public string numbering { get; set; }
         public float list_price { get; set; }
         public float total_price { get; set; }
+        public float AllocationQty { get; set; }
 
     }
 }

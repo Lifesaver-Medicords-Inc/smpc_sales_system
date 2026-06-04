@@ -51,7 +51,7 @@ namespace smpc_sales_app.Pages
                     e.Graphics,
                     "×",
                     e.Font,
-                    new Point(rect.Right - 12, rect.Y + 2),
+                    new Point(rect.Right - 18, rect.Y + 2),
                     Color.Red
                 );
             };
@@ -66,7 +66,7 @@ namespace smpc_sales_app.Pages
                     if (closeArea.Contains(e.Location))
                     {
                         tabContainer.TabPages.RemoveAt(i);
-                        break; // ✅ Only remove one tab
+                        break;
                     }
                 }
             };
@@ -94,6 +94,7 @@ namespace smpc_sales_app.Pages
             newTab.AutoScroll = true;
             tabContainer.TabPages.Add(newTab);
             tabContainer.SelectTab(newTab);
+            tabContainer.ItemSize = new Size(200, 28);
         }
 
         private void removeTab(object sender, EventArgs e)

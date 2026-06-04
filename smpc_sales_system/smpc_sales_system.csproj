@@ -1,5 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\FastReport.Net.Demo.2026.2.1\build\net462\FastReport.Net.Demo.props" Condition="Exists('..\packages\FastReport.Net.Demo.2026.2.1\build\net462\FastReport.Net.Demo.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -73,6 +74,28 @@
     <StartupObject>smpc_sales_system.Program</StartupObject>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Accessibility" />
+    <Reference Include="FastReport, Version=2026.2.1.0, Culture=neutral, PublicKeyToken=db7e5ce63278458c, processorArchitecture=MSIL">
+      <HintPath>..\packages\FastReport.Net.Demo.2026.2.1\lib\net462\FastReport.dll</HintPath>
+    </Reference>
+    <Reference Include="FastReport.Bars, Version=2026.2.1.0, Culture=neutral, PublicKeyToken=db7e5ce63278458c, processorArchitecture=MSIL">
+      <HintPath>..\packages\FastReport.Net.Demo.2026.2.1\lib\net462\FastReport.Bars.dll</HintPath>
+    </Reference>
+    <Reference Include="FastReport.Compat, Version=2026.2.1.0, Culture=neutral, PublicKeyToken=5ceb240df42bf6e8, processorArchitecture=MSIL">
+      <HintPath>..\packages\FastReport.Compat.2026.2.1\lib\net462\FastReport.Compat.dll</HintPath>
+    </Reference>
+    <Reference Include="FastReport.DataVisualization, Version=2026.2.1.0, Culture=neutral, PublicKeyToken=5ceb240df42bf6e8, processorArchitecture=MSIL">
+      <HintPath>..\packages\FastReport.DataVisualization.2026.2.1\lib\net462\FastReport.DataVisualization.dll</HintPath>
+    </Reference>
+    <Reference Include="FastReport.Editor, Version=2026.2.1.0, Culture=neutral, PublicKeyToken=db7e5ce63278458c, processorArchitecture=MSIL">
+      <HintPath>..\packages\FastReport.Net.Demo.2026.2.1\lib\net462\FastReport.Editor.dll</HintPath>
+    </Reference>
+    <Reference Include="FastReport.VSDesign, Version=2026.2.1.0, Culture=neutral, PublicKeyToken=db7e5ce63278458c, processorArchitecture=MSIL">
+      <HintPath>..\packages\FastReport.Net.Demo.2026.2.1\lib\net462\FastReport.VSDesign.dll</HintPath>
+    </Reference>
+    <Reference Include="FastReport.Web, Version=2026.2.1.0, Culture=neutral, PublicKeyToken=db7e5ce63278458c, processorArchitecture=MSIL">
+      <HintPath>..\packages\FastReport.Net.Demo.2026.2.1\lib\net462\FastReport.Web.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.Bcl.AsyncInterfaces, Version=10.0.0.4, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Bcl.AsyncInterfaces.10.0.4\lib\net462\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
     </Reference>
@@ -164,9 +187,8 @@
     <Reference Include="Serilog.Sinks.File, Version=7.0.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
       <HintPath>..\packages\Serilog.Sinks.File.7.0.0\lib\net471\Serilog.Sinks.File.dll</HintPath>
     </Reference>
-    <Reference Include="smpc_inventory_app, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\smpc_inventory\smpc_inventory_app\bin\Debug\smpc_inventory_app.exe</HintPath>
+    <Reference Include="smpc_inventory_app">
+      <HintPath>C:\Users\Jhoanne\Desktop\latest quotation\smpc_sales_system\smpc_inventory_system\smpc_inventory_app\bin\Debug\smpc_inventory_app.exe</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Buffers, Version=4.0.5.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
@@ -198,6 +220,7 @@
     <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=6.0.3.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.6.1.2\lib\net462\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
     </Reference>
+    <Reference Include="System.Security" />
     <Reference Include="System.Text.Encodings.Web, Version=10.0.0.4, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Text.Encodings.Web.10.0.4\lib\net462\System.Text.Encodings.Web.dll</HintPath>
     </Reference>
@@ -242,11 +265,13 @@
     <Compile Include="Models\bpi_list.cs" />
     <Compile Include="Models\ItemParent.cs" />
     <Compile Include="Models\ItemPumpsView.cs" />
+    <Compile Include="Models\ItemReport.cs" />
     <Compile Include="Models\PaymentTermsModel.cs" />
     <Compile Include="Models\PositionAccessModel.cs" />
     <Compile Include="Models\PositionModel.cs" />
     <Compile Include="Models\ProjectTemplateModel.cs" />
     <Compile Include="Models\SalesCanvasModel.cs" />
+    <Compile Include="Models\SalesPrintModel.cs" />
     <Compile Include="Models\SalesProject.cs" />
     <Compile Include="Models\SalesWiringModel.cs" />
     <Compile Include="Models\UserPermissionModel.cs" />
@@ -351,6 +376,12 @@
     </Compile>
     <Compile Include="Pages\Sales\PurchaseRequisition.designer.cs">
       <DependentUpon>PurchaseRequisition.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\Sales\SalesPrint.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Pages\Sales\SalesPrint.Designer.cs">
+      <DependentUpon>SalesPrint.cs</DependentUpon>
     </Compile>
     <Compile Include="Pages\Sales\SalesPrintModal.cs">
       <SubType>Form</SubType>
@@ -568,6 +599,9 @@
     <EmbeddedResource Include="Pages\Sales\Quotation.resx">
       <DependentUpon>Quotation.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Pages\Sales\SalesPrint.resx">
+      <DependentUpon>SalesPrint.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Pages\Sales\SalesPrintModal.resx">
       <DependentUpon>SalesPrintModal.cs</DependentUpon>
     </EmbeddedResource>
@@ -617,6 +651,8 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
+    <None Include="Reports\QuotationReport.frx" />
+    <None Include="smpc_sales_system.Models.SalesPrintModel+SalesProjectQuotationDetailsReportModel.datasource" />
     <None Include="smpc_sales_system_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
@@ -663,6 +699,7 @@
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\Serilog.4.3.0\build\Serilog.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Serilog.4.3.0\build\Serilog.targets'))" />
     <Error Condition="!Exists('..\packages\System.ValueTuple.4.6.1\build\net471\System.ValueTuple.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\System.ValueTuple.4.6.1\build\net471\System.ValueTuple.targets'))" />
+    <Error Condition="!Exists('..\packages\FastReport.Net.Demo.2026.2.1\build\net462\FastReport.Net.Demo.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\FastReport.Net.Demo.2026.2.1\build\net462\FastReport.Net.Demo.props'))" />
   </Target>
   <Import Project="..\packages\System.ValueTuple.4.6.1\build\net471\System.ValueTuple.targets" Condition="Exists('..\packages\System.ValueTuple.4.6.1\build\net471\System.ValueTuple.targets')" />
 </Project>

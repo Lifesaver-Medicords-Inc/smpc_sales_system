@@ -13,9 +13,12 @@ using System.Data;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using static smpc_sales_system.Models.SalesPrintModel;
 
 namespace smpc_sales_system.Pages.Sales
 {
@@ -31,7 +34,8 @@ namespace smpc_sales_system.Pages.Sales
         List<string> unitprices = new List<string>();
         string addressName = "Address not found";
 
-        public SalesPrintModal(bool isQuotation = false, bool isProject = false, string documentNo = null, string inclusion = null, string exclusion = null, string termsAndCondition = null)
+        public SalesPrintModal(bool isQuotation = false, bool isProject = false, string documentNo = null, 
+            string inclusion = null, string exclusion = null, string termsAndCondition = null)
         {
             InitializeComponent();
             fetchBpiData();
@@ -48,6 +52,8 @@ namespace smpc_sales_system.Pages.Sales
         public DataTable allTransactionList { get; set; } = new DataTable();
         public DataTable transactionList { get; set; } = new DataTable();
         public DataTable childList { get; set; } = new DataTable();
+        public DataTable selectedImageList { get; set; } = new DataTable();
+        public DataTable ImageList { get; set; } = new DataTable();
         public DataTable ItemList { get; set; } = new DataTable();
         public DataTable ItemSets { get; set; } = new DataTable();
         public DataTable ItemSetContent { get; set; } = new DataTable();
@@ -60,6 +66,7 @@ namespace smpc_sales_system.Pages.Sales
         {
             var itemData = await ItemService.GetItem();
             ItemList = JsonHelper.ToDataTable(itemData.items);
+            ImageList = JsonHelper.ToDataTable(itemData.ItemImages);
         }
         private async void fetchBpiData()
         {
@@ -70,6 +77,8 @@ namespace smpc_sales_system.Pages.Sales
         private async Task fetchQuotationDetailsByDocumentNo(string documentNo)
         {
             SalesQuotationList data = await QuotationService.GetQuotations();
+
+            //SalesQuotationSelectedImageModel imageData = await QuotationService.GetItems();
             if (data == null || string.IsNullOrEmpty(documentNo))
             {
                 MessageBox.Show("No document number received");
@@ -85,8 +94,18 @@ namespace smpc_sales_system.Pages.Sales
                 var filteredSalesQuotationQuick = data.SalesQuotationQuick
                     .Where(q => q.based_id == quotationId)
                     .ToList();
+
+                var idsQuotationQuick = filteredSalesQuotationQuick.Select(q => q.id).ToList();
+
+                var filteredSalesQuotationImage = data.SalesQuotationSelectedImages
+                    .Where(q => idsQuotationQuick.Contains(q.quotation_quick_id))
+                    .ToList();
+
                 transactionList = JsonHelper.ToDataTable(filteredSalesQuotation);
                 childList = JsonHelper.ToDataTable(filteredSalesQuotationQuick);
+                selectedImageList = JsonHelper.ToDataTable(filteredSalesQuotationImage);
+
+
 
                 if (filteredSalesQuotation.Any() || filteredSalesQuotationQuick.Any())
                 {
@@ -141,7 +160,7 @@ namespace smpc_sales_system.Pages.Sales
                     .ToList();
 
                 var templateZero = filteredProjectItems
-                    .Where(item => item.template_id == 0) // Filter rows where template_id == 0
+                    .Where(item => item.template_id == 0)
                     .ToList();
 
                 var filteredProjectItems2 = templateGreaterThanZero.Concat(templateZero).ToList();
@@ -289,7 +308,7 @@ namespace smpc_sales_system.Pages.Sales
 
                                     foreach (DataRow itemRow in itemrows)
                                     {
-                                        string shortDesc = string.IsNullOrEmpty(itemRow["short_desc"].ToString()) ? "none" : itemRow["short_desc"].ToString();
+                                        string shortDesc = string.IsNullOrEmpty(itemRow["short_desc"].ToString()) ? " " : itemRow["short_desc"].ToString();
                                         string itemModel = itemRow["item_model"].ToString();
 
                                         // Concatenate the item_model and short_desc in the desired format
@@ -298,11 +317,6 @@ namespace smpc_sales_system.Pages.Sales
                                         itemDescriptions.Add(itemDescription);
                                     }
                                 }
-                            }
-
-                            foreach (DataRow componentdetailRow in componentitemRows)
-                            { 
-                            
                             }
 
                             foreach (DataRow componentdetailRow in componentitemRows)
@@ -342,6 +356,66 @@ namespace smpc_sales_system.Pages.Sales
                             }
                         }
 
+                        List<SalesProjectQuotationDetailsReportModel> QuotationDetails = new List<SalesProjectQuotationDetailsReportModel>();
+
+                        foreach (DataRow itemSetRow in ItemList.Select())
+                        {
+
+                            int itemSetId = (int)itemSetRow["item_set_id"];
+                            var filterComponentItemRows = ProjectItemList.Select($"based_id = '{itemSetId}' ");
+
+                            QuotationDetails.Add(new SalesProjectQuotationDetailsReportModel
+                            {
+                                items_id = 0,
+                                bom_id = 0,
+                                item_id = 0,
+                                based_id = 0,
+                                reference_code = "0",
+                                man_days = 0,
+                                labor_rate = 0,
+                                components = itemSetRow["tab_number"].ToString(),
+                                model = " ",
+                                item_inv_type = " ",
+                                qty = 0,
+                                list_price_per_unit = 0,
+                                unit_price = 0,
+                                multiplier = " ",
+                                discount_price = 0,
+                                component_total = 0,
+                                notes = " ",
+                                template_id = 0
+                            });
+
+
+                            foreach (DataRow componentItemRow in filterComponentItemRows)
+                            {
+                                QuotationDetails.Add(new SalesProjectQuotationDetailsReportModel
+                                {
+                                    items_id = (int)componentItemRow["items_id"],
+                                    bom_id = (int)componentItemRow["bom_id"],
+                                    item_id = (int)componentItemRow["bom_id"],
+                                    based_id = (int)componentItemRow["based_id"],
+                                    reference_code = componentItemRow["reference_code"].ToString(),
+                                    man_days = (int)componentItemRow["man_days"],
+                                    labor_rate = (decimal)componentItemRow["labor_rate"],
+                                    components = componentItemRow["components"].ToString(),
+                                    model = componentItemRow["model"].ToString(),
+                                    item_inv_type = componentItemRow["item_inv_type"].ToString(),
+                                    qty = (int)componentItemRow["qty"],
+                                    list_price_per_unit = (decimal)componentItemRow["list_price_per_unit"],
+                                    unit_price = (decimal)componentItemRow["unit_price"],
+                                    multiplier = componentItemRow["multiplier"].ToString(),
+                                    discount_price = (decimal)componentItemRow["discount_price"],
+                                    component_total = (decimal)componentItemRow["component_total"],
+                                    notes = componentItemRow["notes"].ToString(),
+                                    template_id = (int)componentItemRow["template_id"]
+                                });
+
+
+                            }
+
+                        }
+
                         string[] detailsArray = details.ToArray();
                         string[] itemDescriptionArray = itemDescriptions.ToArray();
                         int[] qtyArray = qty.ToArray();
@@ -362,8 +436,7 @@ namespace smpc_sales_system.Pages.Sales
                         ReportParameter addressNameParameter = new ReportParameter("AddressName", addressName);
                         ReportDataSource headerReportDataSource = new ReportDataSource("DataSet1", transactionList);
                         ReportDataSource childReportDataSource = new ReportDataSource("DataSet2", ItemSetContent);
-                        //ReportDataSource ComponentsReportDataSource = new ReportDataSource("DataSet3", ProjectItemList);
-                        //ReportDataSource itemSetDataSource = new ReportDataSource("DataSet4", ItemSets);
+                        ReportDataSource ComponentsReportDataSource = new ReportDataSource("DataSet3", QuotationDetails);
 
                         reportViewer1.LocalReport.ReportPath = Path.Combine(Settings.Default.REPORTPATH, "ProjectReport.rdlc");
                         reportViewer1.LocalReport.DataSources.Clear();
@@ -375,10 +448,11 @@ namespace smpc_sales_system.Pages.Sales
                         reportViewer1.LocalReport.SetParameters(new ReportParameter[] { branchNameParameter, qtySumParameter, qtyParameter, addressNameParameter, unitpricesParameter, unitpricesSumParameter, itemDescriptionParameter, detailParameter });
                         reportViewer1.RefreshReport();
                     }
-                    else
-                    {
-                        MessageBox.Show("No quotation data available for the report.");
-                    }
+
+                }
+                else
+                {
+                    MessageBox.Show("No quotation data available for the report.");
                 }
             }
             else if (isQuotation)
@@ -395,6 +469,12 @@ namespace smpc_sales_system.Pages.Sales
                         int Id = (int)filteredRows[0]["id"];
                         int customerId = (int)filteredRows[0]["customer_id"];
                         int shiptoId = (int)filteredRows[0]["ship_to_id"];
+
+                        if(bpi_general == null || bpi_general.Rows.Count == 0 
+                           || bpi_address == null || bpi_address.Rows.Count == 0)
+                        {
+                            return;
+                        }
 
                         DataRow[] bpiRows = bpi_general.Select($"general_based_id = '{customerId}'");
                         DataRow[] bpiaddrows = bpi_address.Select($"address_ids = '{shiptoId}'");
@@ -420,16 +500,62 @@ namespace smpc_sales_system.Pages.Sales
                                 int itemid = (int)quoteRow["item_id"];
                                 DataRow[] itemrows = ItemList.Select($"id = '{itemid}'");
 
-                                foreach (DataRow itemRow in itemrows)
-                                {
-                                    string shortDesc = string.IsNullOrEmpty(itemRow["short_desc"].ToString()) ? "none" : itemRow["short_desc"].ToString();
-                                    string itemModel = itemRow["item_model"].ToString();
-                                    string itemDescription = $"{shortDesc}";
+                                string shortDesc = quoteRow["short_description"].ToString();
 
-                                    itemDescriptions.Add(itemDescription);
+                                if (shortDesc != "")
+                                {
+                                    itemDescriptions.Add(shortDesc);
                                 }
+                                else
+                                {
+                                    foreach (DataRow itemRow in itemrows)
+                                    {
+                                        shortDesc = string.IsNullOrEmpty(itemRow["short_desc"].ToString()) ? " " : itemRow["short_desc"].ToString();
+                                        string itemModel = itemRow["item_model"].ToString();
+                                        string itemDescription = $"{shortDesc}";
+
+                                        itemDescriptions.Add(itemDescription);
+                                    }
+                                }
+
                             }
                         }
+
+                        // Add Image column with appropriate type
+                        if (!childList.Columns.Contains("Image"))
+                        {
+                            childList.Columns.Add("Image", typeof(byte[]));
+                        }
+
+                        foreach (DataRow childRow in childList.Rows)
+                        {
+                            
+                            if (selectedImageList != null && selectedImageList.Rows.Count > 0)
+                            {
+                                int ImageId = (int)selectedImageList.Rows[0]["image_id"];
+
+                                string imageName = ImageList.AsEnumerable()
+                                    .Where(row => row.Field<int>("id") == ImageId)
+                                    .Select(row => row.Field<string>("image"))
+                                    .FirstOrDefault();
+
+                                if(imageName != null)
+                                {
+                                    byte[] imageBytes = LoadImageAsBytes(imageName);
+                                    childRow["Image"] = imageBytes;
+                                }
+                                else
+                                {
+                                    childRow["Image"] = DBNull.Value;
+                                }
+                            }
+                            else
+                            {
+                                childRow["Image"] = DBNull.Value;
+                            }
+
+                        }
+
 
                         string[] itemDescriptionArray = itemDescriptions.ToArray();
                         ReportParameter itemDescriptionParameter = new ReportParameter("ItemDescriptions", itemDescriptionArray);
@@ -464,8 +590,12 @@ namespace smpc_sales_system.Pages.Sales
                     }
                     else
                     {
-                        MessageBox.Show("No quotation data available for the report.");
+                        MessageBox.Show("Document not found in this quotation for the report.");
                     }
+                }
+                else
+                {
+                    MessageBox.Show("No quotation data available for the report.");
                 }
             }
             else
@@ -525,6 +655,34 @@ namespace smpc_sales_system.Pages.Sales
                 }
             }
         }
+
+        private byte[] LoadImageAsBytes(string imageName)
+        {
+            if (string.IsNullOrEmpty(imageName))
+                return null;
+
+            string imagePath = Path.Combine(Properties.Settings.Default.imagePath,imageName);
+
+            if (imagePath.StartsWith("http://") || imagePath.StartsWith("https://"))
+            {
+                try
+                {
+                    using (HttpClient client = new HttpClient())
+                    {
+                        byte[] imageBytes = client.GetByteArrayAsync(imagePath).Result;
+                        return imageBytes;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error downloading image from URL: {ex.Message}");
+                    return null;
+                }
+            }
+
+            return null;
+        }
+
         void MapSubreportData(object sender, SubreportProcessingEventArgs e)
         {
             // 1. Get the parameter passed from the main report row

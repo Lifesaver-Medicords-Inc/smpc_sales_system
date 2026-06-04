@@ -255,7 +255,7 @@
         </Field>
         <Field Name="component_total">
           <DataField>component_total</DataField>
-          <rd:TypeName>System.Double</rd:TypeName>
+          <rd:TypeName>System.Decimal</rd:TypeName>
         </Field>
         <Field Name="components">
           <DataField>components</DataField>
@@ -263,7 +263,11 @@
         </Field>
         <Field Name="discount_price">
           <DataField>discount_price</DataField>
-          <rd:TypeName>System.Double</rd:TypeName>
+          <rd:TypeName>System.Decimal</rd:TypeName>
+        </Field>
+        <Field Name="Image">
+          <DataField>Image</DataField>
+          <rd:TypeName>System.Byte[]</rd:TypeName>
         </Field>
         <Field Name="item_id">
           <DataField>item_id</DataField>
@@ -277,9 +281,17 @@
           <DataField>items_id</DataField>
           <rd:TypeName>System.Int32</rd:TypeName>
         </Field>
+        <Field Name="labor_rate">
+          <DataField>labor_rate</DataField>
+          <rd:TypeName>System.Decimal</rd:TypeName>
+        </Field>
         <Field Name="list_price_per_unit">
           <DataField>list_price_per_unit</DataField>
-          <rd:TypeName>System.Double</rd:TypeName>
+          <rd:TypeName>System.Decimal</rd:TypeName>
+        </Field>
+        <Field Name="man_days">
+          <DataField>man_days</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
         </Field>
         <Field Name="model">
           <DataField>model</DataField>
@@ -297,15 +309,23 @@
           <DataField>qty</DataField>
           <rd:TypeName>System.Int32</rd:TypeName>
         </Field>
+        <Field Name="reference_code">
+          <DataField>reference_code</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
         <Field Name="template_id">
           <DataField>template_id</DataField>
           <rd:TypeName>System.Int32</rd:TypeName>
         </Field>
+        <Field Name="unit_price">
+          <DataField>unit_price</DataField>
+          <rd:TypeName>System.Decimal</rd:TypeName>
+        </Field>
       </Fields>
       <rd:DataSetInfo>
         <rd:DataSetName>smpc_sales_system.Models</rd:DataSetName>
-        <rd:TableName>SalesProjectItems</rd:TableName>
-        <rd:ObjectDataSourceType>smpc_sales_system.Models.SalesProjectItems, smpc_sales_system, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null</rd:ObjectDataSourceType>
+        <rd:TableName>SalesProjectQuotationDetailsReportModel</rd:TableName>
+        <rd:ObjectDataSourceType>smpc_sales_system.Models.SalesPrintModel+SalesProjectQuotationDetailsReportModel, smpc_sales_system, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null</rd:ObjectDataSourceType>
       </rd:DataSetInfo>
     </DataSet>
   </DataSets>
@@ -922,7 +942,6 @@
                       </Textbox>
                     </ReportItems>
                     <KeepTogether>true</KeepTogether>
-                    <Top>0.14923cm</Top>
                     <Left>0.09738in</Left>
                     <Height>0.2198in</Height>
                     <Width>7.40691in</Width>
@@ -941,16 +960,7 @@
                           <Paragraph>
                             <TextRuns>
                               <TextRun>
-                                <Value>1. Delivery at (place), unloading at (specific area) of the building/ site/ warehouse
-2. Testing and Commissioning at (place)
-- Validate compliance to Pre-Start-Up and Safety Checklist
-- Configuration of Motor Voltage
-- Termination of Load Side Wires (Motor to Controller)
-- Placement of Sensors
-- Prime the pump if necessary
-- Initial and Final Testing
-- Training and Orientatoin
-3. For Testing and Commissioning, there is an allowance of (1 VISIT TO (place) - 2 DAYS VISIT TO SITE) to be conducted during company regular working hours only. If you want more than the allowable and beyond working hours, additional chargers will be applied.</Value>
+                                <Value />
                                 <Style>
                                   <FontStyle>Normal</FontStyle>
                                   <FontFamily>Calibri</FontFamily>
@@ -965,6 +975,7 @@
                           </Paragraph>
                         </Paragraphs>
                         <rd:DefaultName>Textbox46</rd:DefaultName>
+                        <Left>0.00004cm</Left>
                         <Height>1.80068in</Height>
                         <Width>7.3245in</Width>
                         <Style>
@@ -979,7 +990,7 @@
                       </Textbox>
                     </ReportItems>
                     <KeepTogether>true</KeepTogether>
-                    <Top>0.27853in</Top>
+                    <Top>0.21978in</Top>
                     <Left>0.24733cm</Left>
                     <Height>1.80068in</Height>
                     <Width>7.40691in</Width>
@@ -1027,7 +1038,7 @@
                       </Textbox>
                     </ReportItems>
                     <KeepTogether>true</KeepTogether>
-                    <Top>5.45759cm</Top>
+                    <Top>5.30836cm</Top>
                     <Left>0.09738in</Left>
                     <Height>0.2198in</Height>
                     <Width>7.40691in</Width>
@@ -1156,7 +1167,7 @@
                       </Textbox>
                     </ReportItems>
                     <KeepTogether>true</KeepTogether>
-                    <Top>2.36843in</Top>
+                    <Top>2.30968in</Top>
                     <Left>0.24733cm</Left>
                     <Height>0.91874in</Height>
                     <Width>7.40691in</Width>
@@ -1204,7 +1215,7 @@
                       </Textbox>
                     </ReportItems>
                     <KeepTogether>true</KeepTogether>
-                    <Top>8.52582cm</Top>
+                    <Top>8.37659cm</Top>
                     <Left>0.09739in</Left>
                     <Height>0.2198in</Height>
                     <Width>7.40691in</Width>
@@ -1392,7 +1403,7 @@ LIABILITY: Sunshine Multi Plus Corporation's liability under, for the breach of,
                           </Paragraph>
                         </Paragraphs>
                         <rd:DefaultName>Textbox46</rd:DefaultName>
-                        <Height>5.88228in</Height>
+                        <Height>5.94478in</Height>
                         <Width>7.3245in</Width>
                         <Style>
                           <Border>
@@ -1406,9 +1417,9 @@ LIABILITY: Sunshine Multi Plus Corporation's liability under, for the breach of,
                       </Textbox>
                     </ReportItems>
                     <KeepTogether>true</KeepTogether>
-                    <Top>3.5764in</Top>
+                    <Top>3.51765in</Top>
                     <Left>0.24735cm</Left>
-                    <Height>5.88228in</Height>
+                    <Height>5.94478in</Height>
                     <Width>7.40691in</Width>
                     <ZIndex>5</ZIndex>
                     <Style>
@@ -1419,9 +1430,9 @@ LIABILITY: Sunshine Multi Plus Corporation's liability under, for the breach of,
                   </Rectangle>
                 </ReportItems>
                 <KeepTogether>true</KeepTogether>
-                <Top>11.47784cm</Top>
-                <Left>0.32725cm</Left>
-                <Height>24.02505cm</Height>
+                <Top>15.25971cm</Top>
+                <Left>0.34101cm</Left>
+                <Height>24.11394cm</Height>
                 <Width>19.06092cm</Width>
                 <ZIndex>1</ZIndex>
                 <Style>
@@ -1431,7 +1442,7 @@ LIABILITY: Sunshine Multi Plus Corporation's liability under, for the breach of,
                 </Style>
               </Rectangle>
               <Line Name="Line1">
-                <Top>36.71561cm</Top>
+                <Top>40.84311cm</Top>
                 <Left>13.39144cm</Left>
                 <Height>0cm</Height>
                 <Width>5.80113cm</Width>
@@ -1461,7 +1472,7 @@ LIABILITY: Sunshine Multi Plus Corporation's liability under, for the breach of,
                   </Paragraph>
                 </Paragraphs>
                 <rd:DefaultName>Textbox7</rd:DefaultName>
-                <Top>36.71561cm</Top>
+                <Top>40.84311cm</Top>
                 <Left>15.00229cm</Left>
                 <Height>0.48976cm</Height>
                 <Width>2.56614cm</Width>
@@ -1485,7 +1496,7 @@ LIABILITY: Sunshine Multi Plus Corporation's liability under, for the breach of,
                           <Width>1.229cm</Width>
                         </TablixColumn>
                         <TablixColumn>
-                          <Width>8.8112cm</Width>
+                          <Width>11.54654cm</Width>
                         </TablixColumn>
                         <TablixColumn>
                           <Width>1.06393cm</Width>
@@ -1745,7 +1756,7 @@ LIABILITY: Sunshine Multi Plus Corporation's liability under, for the breach of,
                                       <Style>Solid</Style>
                                       <Width>1.5pt</Width>
                                     </BottomBorder>
-                                    <BackgroundColor>Gainsboro</BackgroundColor>
+                                    <BackgroundColor>WhiteSmoke</BackgroundColor>
                                     <VerticalAlign>Bottom</VerticalAlign>
                                     <PaddingLeft>2pt</PaddingLeft>
                                     <PaddingRight>2pt</PaddingRight>
@@ -1758,11 +1769,11 @@ LIABILITY: Sunshine Multi Plus Corporation's liability under, for the breach of,
                           </TablixCells>
                         </TablixRow>
                         <TablixRow>
-                          <Height>0.6cm</Height>
+                          <Height>2.78666cm</Height>
                           <TablixCells>
                             <TablixCell>
                               <CellContents>
-                                <Textbox Name="Textbox57">
+                                <Textbox Name="Textbox4">
                                   <CanGrow>true</CanGrow>
                                   <KeepTogether>true</KeepTogether>
                                   <Paragraphs>
@@ -1782,42 +1793,7 @@ LIABILITY: Sunshine Multi Plus Corporation's liability under, for the breach of,
                                       </Style>
                                     </Paragraph>
                                   </Paragraphs>
-                                  <rd:DefaultName>Textbox57</rd:DefaultName>
-                                  <Style>
-                                    <Border>
-                                      <Style>None</Style>
-                                    </Border>
-                                    <TopBorder>
-                                      <Color>Black</Color>
-                                      <Style>Solid</Style>
-                                      <Width>1.5pt</Width>
-                                    </TopBorder>
-                                    <VerticalAlign>Middle</VerticalAlign>
-                                    <PaddingLeft>2pt</PaddingLeft>
-                                    <PaddingRight>2pt</PaddingRight>
-                                    <PaddingTop>2pt</PaddingTop>
-                                    <PaddingBottom>2pt</PaddingBottom>
-                                  </Style>
-                                </Textbox>
-                              </CellContents>
-                            </TablixCell>
-                            <TablixCell>
-                              <CellContents>
-                                <Textbox Name="Textbox23">
-                                  <CanGrow>true</CanGrow>
-                                  <KeepTogether>true</KeepTogether>
-                                  <Paragraphs>
-                                    <Paragraph>
-                                      <TextRuns>
-                                        <TextRun>
-                                          <Value />
-                                          <Style />
-                                        </TextRun>
-                                      </TextRuns>
-                                      <Style />
-                                    </Paragraph>
-                                  </Paragraphs>
-                                  <rd:DefaultName>Textbox23</rd:DefaultName>
+                                  <rd:DefaultName>Textbox4</rd:DefaultName>
                                   <Style>
                                     <Border>
                                       <Style>None</Style>
@@ -1827,6 +1803,8 @@ LIABILITY: Sunshine Multi Plus Corporation's liability under, for the breach of,
                                       <Style>Solid</Style>
                                       <Width>1.5pt</Width>
                                     </BottomBorder>
+                                    <BackgroundColor>WhiteSmoke</BackgroundColor>
+                                    <VerticalAlign>Bottom</VerticalAlign>
                                     <PaddingLeft>2pt</PaddingLeft>
                                     <PaddingRight>2pt</PaddingRight>
                                     <PaddingTop>2pt</PaddingTop>
@@ -1837,7 +1815,31 @@ LIABILITY: Sunshine Multi Plus Corporation's liability under, for the breach of,
                             </TablixCell>
                             <TablixCell>
                               <CellContents>
-                                <Textbox Name="Textbox59">
+                                <Rectangle Name="Rectangle7">
+                                  <ReportItems>
+                                    <Rectangle Name="Rectangle12">
+                                      <KeepTogether>true</KeepTogether>
+                                      <Height>2.73192cm</Height>
+                                      <Width>11.54654cm</Width>
+                                      <Style>
+                                        <Border>
+                                          <Style>None</Style>
+                                        </Border>
+                                      </Style>
+                                    </Rectangle>
+                                  </ReportItems>
+                                  <KeepTogether>true</KeepTogether>
+                                  <Style>
+                                    <Border>
+                                      <Style>None</Style>
+                                    </Border>
+                                  </Style>
+                                </Rectangle>
+                              </CellContents>
+                            </TablixCell>
+                            <TablixCell>
+                              <CellContents>
+                                <Textbox Name="Textbox24">
                                   <CanGrow>true</CanGrow>
                                   <KeepTogether>true</KeepTogether>
                                   <Paragraphs>
@@ -1857,16 +1859,18 @@ LIABILITY: Sunshine Multi Plus Corporation's liability under, for the breach of,
                                       </Style>
                                     </Paragraph>
                                   </Paragraphs>
-                                  <rd:DefaultName>Textbox59</rd:DefaultName>
+                                  <rd:DefaultName>Textbox24</rd:DefaultName>
                                   <Style>
                                     <Border>
                                       <Style>None</Style>
                                     </Border>
-                                    <TopBorder>
+                                    <BottomBorder>
+                                      <Color>Black</Color>
                                       <Style>Solid</Style>
                                       <Width>1.5pt</Width>
-                                    </TopBorder>
-                                    <VerticalAlign>Middle</VerticalAlign>
+                                    </BottomBorder>
+                                    <BackgroundColor>WhiteSmoke</BackgroundColor>
+                                    <VerticalAlign>Bottom</VerticalAlign>
                                     <PaddingLeft>2pt</PaddingLeft>
                                     <PaddingRight>2pt</PaddingRight>
                                     <PaddingTop>2pt</PaddingTop>
@@ -1877,7 +1881,7 @@ LIABILITY: Sunshine Multi Plus Corporation's liability under, for the breach of,
                             </TablixCell>
                             <TablixCell>
                               <CellContents>
-                                <Textbox Name="Textbox60">
+                                <Textbox Name="Textbox25">
                                   <CanGrow>true</CanGrow>
                                   <KeepTogether>true</KeepTogether>
                                   <Paragraphs>
@@ -1893,20 +1897,22 @@ LIABILITY: Sunshine Multi Plus Corporation's liability under, for the breach of,
                                         </TextRun>
                                       </TextRuns>
                                       <Style>
-                                        <TextAlign>Left</TextAlign>
+                                        <TextAlign>Center</TextAlign>
                                       </Style>
                                     </Paragraph>
                                   </Paragraphs>
-                                  <rd:DefaultName>Textbox60</rd:DefaultName>
+                                  <rd:DefaultName>Textbox25</rd:DefaultName>
                                   <Style>
                                     <Border>
                                       <Style>None</Style>
                                     </Border>
-                                    <TopBorder>
+                                    <BottomBorder>
+                                      <Color>Black</Color>
                                       <Style>Solid</Style>
                                       <Width>1.5pt</Width>
-                                    </TopBorder>
-                                    <VerticalAlign>Middle</VerticalAlign>
+                                    </BottomBorder>
+                                    <BackgroundColor>WhiteSmoke</BackgroundColor>
+                                    <VerticalAlign>Bottom</VerticalAlign>
                                     <PaddingLeft>2pt</PaddingLeft>
                                     <PaddingRight>2pt</PaddingRight>
                                     <PaddingTop>2pt</PaddingTop>
@@ -1917,7 +1923,7 @@ LIABILITY: Sunshine Multi Plus Corporation's liability under, for the breach of,
                             </TablixCell>
                             <TablixCell>
                               <CellContents>
-                                <Textbox Name="Textbox61">
+                                <Textbox Name="Textbox28">
                                   <CanGrow>true</CanGrow>
                                   <KeepTogether>true</KeepTogether>
                                   <Paragraphs>
@@ -1933,19 +1939,22 @@ LIABILITY: Sunshine Multi Plus Corporation's liability under, for the breach of,
                                         </TextRun>
                                       </TextRuns>
                                       <Style>
-                                        <TextAlign>Left</TextAlign>
+                                        <TextAlign>Center</TextAlign>
                                       </Style>
                                     </Paragraph>
                                   </Paragraphs>
-                                  <rd:DefaultName>Textbox61</rd:DefaultName>
+                                  <rd:DefaultName>Textbox28</rd:DefaultName>
                                   <Style>
                                     <Border>
                                       <Style>None</Style>
                                     </Border>
-                                    <TopBorder>
+                                    <BottomBorder>
+                                      <Color>Black</Color>
                                       <Style>Solid</Style>
                                       <Width>1.5pt</Width>
-                                    </TopBorder>
+                                    </BottomBorder>
+                                    <BackgroundColor>WhiteSmoke</BackgroundColor>
+                                    <VerticalAlign>Bottom</VerticalAlign>
                                     <PaddingLeft>2pt</PaddingLeft>
                                     <PaddingRight>2pt</PaddingRight>
                                     <PaddingTop>2pt</PaddingTop>
@@ -1956,7 +1965,7 @@ LIABILITY: Sunshine Multi Plus Corporation's liability under, for the breach of,
                             </TablixCell>
                             <TablixCell>
                               <CellContents>
-                                <Textbox Name="Textbox62">
+                                <Textbox Name="Textbox29">
                                   <CanGrow>true</CanGrow>
                                   <KeepTogether>true</KeepTogether>
                                   <Paragraphs>
@@ -1972,20 +1981,22 @@ LIABILITY: Sunshine Multi Plus Corporation's liability under, for the breach of,
                                         </TextRun>
                                       </TextRuns>
                                       <Style>
-                                        <TextAlign>Left</TextAlign>
+                                        <TextAlign>Center</TextAlign>
                                       </Style>
                                     </Paragraph>
                                   </Paragraphs>
-                                  <rd:DefaultName>Textbox62</rd:DefaultName>
+                                  <rd:DefaultName>Textbox29</rd:DefaultName>
                                   <Style>
                                     <Border>
                                       <Style>None</Style>
                                     </Border>
-                                    <TopBorder>
+                                    <BottomBorder>
+                                      <Color>Black</Color>
                                       <Style>Solid</Style>
                                       <Width>1.5pt</Width>
-                                    </TopBorder>
-                                    <VerticalAlign>Middle</VerticalAlign>
+                                    </BottomBorder>
+                                    <BackgroundColor>WhiteSmoke</BackgroundColor>
+                                    <VerticalAlign>Bottom</VerticalAlign>
                                     <PaddingLeft>2pt</PaddingLeft>
                                     <PaddingRight>2pt</PaddingRight>
                                     <PaddingTop>2pt</PaddingTop>
@@ -2252,11 +2263,11 @@ LIABILITY: Sunshine Multi Plus Corporation's liability under, for the breach of,
                         <TablixMember />
                       </TablixMembers>
                     </TablixRowHierarchy>
-                    <DataSetName>DataSet4</DataSetName>
-                    <Top>0.30868cm</Top>
+                    <DataSetName>DataSet3</DataSetName>
+                    <Top>0.62618cm</Top>
                     <Left>0.47106cm</Left>
-                    <Height>1.835cm</Height>
-                    <Width>18.7215cm</Width>
+                    <Height>4.02166cm</Height>
+                    <Width>21.45684cm</Width>
                     <Style>
                       <Border>
                         <Style>None</Style>
@@ -2282,7 +2293,7 @@ LIABILITY: Sunshine Multi Plus Corporation's liability under, for the breach of,
                       </Paragraph>
                     </Paragraphs>
                     <rd:DefaultName>Textbox7</rd:DefaultName>
-                    <Top>3.19494cm</Top>
+                    <Top>6.36994cm</Top>
                     <Left>13.05116cm</Left>
                     <Height>0.44566cm</Height>
                     <Width>2.07595cm</Width>
@@ -2316,7 +2327,7 @@ LIABILITY: Sunshine Multi Plus Corporation's liability under, for the breach of,
                       </Paragraph>
                     </Paragraphs>
                     <rd:DefaultName>Textbox7</rd:DefaultName>
-                    <Top>3.6406cm</Top>
+                    <Top>6.8156cm</Top>
                     <Left>13.05116cm</Left>
                     <Height>0.48976cm</Height>
                     <Width>2.85206cm</Width>
@@ -2350,7 +2361,7 @@ LIABILITY: Sunshine Multi Plus Corporation's liability under, for the breach of,
                       </Paragraph>
                     </Paragraphs>
                     <rd:DefaultName>Textbox7</rd:DefaultName>
-                    <Top>4.6554cm</Top>
+                    <Top>7.8304cm</Top>
                     <Left>13.05116cm</Left>
                     <Height>0.48976cm</Height>
                     <Width>2.85206cm</Width>
@@ -2384,7 +2395,7 @@ LIABILITY: Sunshine Multi Plus Corporation's liability under, for the breach of,
                       </Paragraph>
                     </Paragraphs>
                     <rd:DefaultName>Textbox7</rd:DefaultName>
-                    <Top>4.16564cm</Top>
+                    <Top>7.34064cm</Top>
                     <Left>13.05116cm</Left>
                     <Height>0.48976cm</Height>
                     <Width>2.85206cm</Width>
@@ -2420,7 +2431,7 @@ LIABILITY: Sunshine Multi Plus Corporation's liability under, for the breach of,
                         </Style>
                       </Paragraph>
                     </Paragraphs>
-                    <Top>3.19495cm</Top>
+                    <Top>6.36995cm</Top>
                     <Left>16.42223cm</Left>
                     <Height>0.44566cm</Height>
                     <Width>2.07595cm</Width>
@@ -2457,7 +2468,7 @@ LIABILITY: Sunshine Multi Plus Corporation's liability under, for the breach of,
                         </Style>
                       </Paragraph>
                     </Paragraphs>
-                    <Top>3.64061cm</Top>
+                    <Top>6.81561cm</Top>
                     <Left>16.42223cm</Left>
                     <Height>0.48976cm</Height>
                     <Width>2.56102cm</Width>
@@ -2494,7 +2505,7 @@ LIABILITY: Sunshine Multi Plus Corporation's liability under, for the breach of,
                         </Style>
                       </Paragraph>
                     </Paragraphs>
-                    <Top>4.16564cm</Top>
+                    <Top>7.34064cm</Top>
                     <Left>16.42223cm</Left>
                     <Height>0.48976cm</Height>
                     <Width>2.56102cm</Width>
@@ -2532,7 +2543,7 @@ LIABILITY: Sunshine Multi Plus Corporation's liability under, for the breach of,
                       </Paragraph>
                     </Paragraphs>
                     <rd:DefaultName>Textbox7</rd:DefaultName>
-                    <Top>4.6554cm</Top>
+                    <Top>7.8304cm</Top>
                     <Left>16.42223cm</Left>
                     <Height>0.48976cm</Height>
                     <Width>2.56102cm</Width>
@@ -2553,9 +2564,9 @@ LIABILITY: Sunshine Multi Plus Corporation's liability under, for the breach of,
                   <BreakLocation>End</BreakLocation>
                 </PageBreak>
                 <KeepTogether>true</KeepTogether>
-                <Top>5.92752cm</Top>
-                <Height>5.40921cm</Height>
-                <Width>19.38817cm</Width>
+                <Top>5.92753cm</Top>
+                <Height>8.32016cm</Height>
+                <Width>21.9279cm</Width>
                 <ZIndex>4</ZIndex>
                 <Style>
                   <Border>
@@ -2582,7 +2593,7 @@ LIABILITY: Sunshine Multi Plus Corporation's liability under, for the breach of,
                   </Paragraph>
                 </Paragraphs>
                 <rd:DefaultName>created_by</rd:DefaultName>
-                <Top>36.25672cm</Top>
+                <Top>40.38422cm</Top>
                 <Left>15.00229cm</Left>
                 <Height>0.45889cm</Height>
                 <Width>2.5cm</Width>
@@ -2601,8 +2612,8 @@ LIABILITY: Sunshine Multi Plus Corporation's liability under, for the breach of,
             <KeepTogether>true</KeepTogether>
             <Top>0.01899in</Top>
             <Left>0.17914in</Left>
-            <Height>14.73112in</Height>
-            <Width>8.54038in</Width>
+            <Height>16.41384in</Height>
+            <Width>8.63303in</Width>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -2610,10 +2621,10 @@ LIABILITY: Sunshine Multi Plus Corporation's liability under, for the breach of,
             </Style>
           </Rectangle>
         </ReportItems>
-        <Height>14.81955in</Height>
+        <Height>16.43283in</Height>
         <Style />
       </Body>
-      <Width>8.71952in</Width>
+      <Width>9.05176in</Width>
       <Page>
         <PageHeader>
           <Height>2.7476cm</Height>

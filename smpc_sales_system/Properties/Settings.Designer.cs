@@ -12,7 +12,7 @@ namespace smpc_sales_system.Properties {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "16.10.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "17.14.0.0")]
     internal sealed partial class Settings : global::System.Configuration.ApplicationSettingsBase {
         
         private static Settings defaultInstance = ((Settings)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new Settings())));
@@ -43,20 +43,19 @@ namespace smpc_sales_system.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("C:\\Users\\SMPC\\source\\repos\\smpc_sales_system\\smpc_sales_system2\\smpc_sales_system" +
-            "\\Reports")]
-        public string REPORTPATH {
+        [global::System.Configuration.DefaultSettingValueAttribute("http://localhost:3000/api/vfile/")]
+        public string imagePath {
             get {
-                return ((string)(this["REPORTPATH"]));
+                return ((string)(this["imagePath"]));
             }
         }
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("http://localhost:3000/api/vfile/")]
-        public string imagePath {
+        [global::System.Configuration.DefaultSettingValueAttribute("C:\\Users\\SMPC\\source\\repos\\smpc_sales_system\\smpc_sales_system\\Reports")]
+        public string REPORTPATH {
             get {
-                return ((string)(this["imagePath"]));
+                return ((string)(this["REPORTPATH"]));
             }
         }
     }

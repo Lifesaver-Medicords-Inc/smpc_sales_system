@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Report ScriptLanguage="CSharp">
+  <Dictionary/>
+  <ReportPage Name="Page1" PaperWidth="210" PaperHeight="297" LeftMargin="8" TopMargin="8" RightMargin="8" BottomMargin="15">
+    
+    <!-- COMPANY HEADER -->
+    <ReportTitleBand Name="CompanyHeader" Height="50">
+      <TextObject Name="CompanyName" Left="10" Top="5" Width="140" Height="12" Text="SUNSHINE MULTIPLUS CORPORATION" Font="Arial, 11pt, style=Bold"/>
+      <TextObject Name="Address" Left="10" Top="17" Width="140" Height="8" Text="644 RAJA MATANDA STREET TONDO, MANILA, PHILIPPINES 1012" Font="Arial, 7pt"/>
+      <TextObject Name="Phone" Left="10" Top="24" Width="140" Height="8" Text="Tel: +63282477015 to 17 Fax: +6328245203" Font="Arial, 7pt"/>
+      <TextObject Name="Email" Left="10" Top="31" Width="140" Height="8" Text="sales@sunshinemultiplus.com www.sunshinemultiplus.com" Font="Arial, 7pt"/>
+    </ReportTitleBand>
+    
+    <!-- QUOTATION TITLE -->
+    <ReportTitleBand Name="QuotationTitle" Height="20">
+      <TextObject Name="Title" Left="10" Top="2" Width="180" Height="16" Text="QUOTATION" Font="Arial, 14pt, style=Bold" HorzAlign="Center"/>
+    </ReportTitleBand>
+    
+    <!-- QUOTATION HEADER -->
+    <PageHeaderBand Name="QuotationHeaderBand" Height="50">
+      <TextObject Name="CompanyLabel" Left="10" Top="2" Width="35" Height="10" Text="COMPANY:" Font="Arial, 8pt, style=Bold"/>
+      <TextObject Name="CompanyValue" Left="10" Top="12" Width="60" Height="28" Text="" Font="Arial, 8pt" WordWrap="true"/>
+      
+      <TextObject Name="BranchLabel" Left="75" Top="2" Width="40" Height="8" Text="Branch Name" Font="Arial, 8pt" Border.Lines="Bottom"/>
+      <TextObject Name="BranchValue" Left="75" Top="10" Width="60" Height="10" Text="" Font="Arial, 8pt"/>
+      
+      <TextObject Name="AddressLabel" Left="75" Top="20" Width="40" Height="8" Text="Address Name" Font="Arial, 8pt" Border.Lines="Bottom"/>
+      <TextObject Name="AddressValue" Left="75" Top="28" Width="60" Height="10" Text="" Font="Arial, 8pt" WordWrap="true"/>
+      
+      <TextObject Name="QuotationNoLabel" Left="145" Top="2" Width="45" Height="8" Text="QUOTATION NO:" Font="Arial, 8pt, style=Bold" HorzAlign="Right"/>
+      <TextObject Name="QuotationNoValue" Left="145" Top="10" Width="45" Height="8" Text="" Font="Arial, 8pt" HorzAlign="Right" Border.Lines="Bottom"/>
+      
+      <TextObject Name="DateLabel" Left="145" Top="20" Width="45" Height="8" Text="DATE:" Font="Arial, 8pt, style=Bold" HorzAlign="Right"/>
+      <TextObject Name="DateValue" Left="145" Top="28" Width="45" Height="8" Text="" Font="Arial, 8pt" HorzAlign="Right" Border.Lines="Bottom"/>
+    </PageHeaderBand>
+    
+    <!-- GREETING TEXT -->
+    <PageHeaderBand Name="GreetingBand" Height="25">
+      <TextObject Name="Greeting" Left="10" Top="0" Width="190" Height="10" Text="Dear Sir / Ma'am," Font="Arial, 9pt, style=Bold"/>
+      <TextObject Name="GreetingText" Left="10" Top="10" Width="190" Height="15" Text="In compliance to your request, we are pleased to submit our price quotation listed below:" Font="Arial, 8pt" WordWrap="true"/>
+    </PageHeaderBand>
+    
+    <!-- ITEMS TABLE HEADER -->
+    <PageHeaderBand Name="ItemsTableHeader" Height="16">
+      <TextObject Name="ItemHeader" Left="12" Top="2" Width="20" Height="12" Text="ITEM" Font="Arial, 8pt, style=Bold"/>
+      <TextObject Name="DescriptionHeader" Left="35" Top="2" Width="85" Height="12" Text="DESCRIPTION" Font="Arial, 8pt, style=Bold"/>
+      <TextObject Name="QtyHeader" Left="122" Top="2" Width="20" Height="12" Text="QTY" Font="Arial, 8pt, style=Bold" HorzAlign="Center"/>
+      <TextObject Name="UnitPriceHeader" Left="145" Top="2" Width="25" Height="12" Text="UNIT PRICE" Font="Arial, 8pt, style=Bold" HorzAlign="Right"/>
+      <TextObject Name="DiscountHeader" Left="172" Top="2" Width="20" Height="12" Text="DISCOUNT" Font="Arial, 8pt, style=Bold" HorzAlign="Right"/>
+      <TextObject Name="AmountHeader" Left="195" Top="2" Width="25" Height="12" Text="AMOUNT" Font="Arial, 8pt, style=Bold" HorzAlign="Right"/>
+    </PageHeaderBand>
+    
+    <!-- SAMPLE ITEM ROW (will be replaced with real data) -->
+    <PageHeaderBand Name="SampleItemBand" Height="14">
+      <TextObject Name="SampleItemNo" Left="12" Top="1" Width="20" Height="11" Text="1" Font="Arial, 8pt"/>
+      <TextObject Name="SampleItemDesc" Left="35" Top="1" Width="85" Height="11" Text="Sample Item" Font="Arial, 8pt"/>
+      <TextObject Name="SampleItemQty" Left="122" Top="1" Width="20" Height="11" Text="1" Font="Arial, 8pt" HorzAlign="Center"/>
+      <TextObject Name="SampleItemPrice" Left="145" Top="1" Width="25" Height="11" Text="0.00" Font="Arial, 8pt" HorzAlign="Right"/>
+      <TextObject Name="SampleItemDiscount" Left="172" Top="1" Width="20" Height="11" Text="0" Font="Arial, 8pt" HorzAlign="Right"/>
+      <TextObject Name="SampleItemTotal" Left="195" Top="1" Width="25" Height="11" Text="0.00" Font="Arial, 8pt" HorzAlign="Right"/>
+    </PageHeaderBand>
+    
+    <!-- TOTALS SECTION -->
+    <ReportSummaryBand Name="TotalsBand" Height="50">
+      <TextObject Name="SubTotalLabel" Left="145" Top="2" Width="50" Height="10" Text="SUB-TOTAL:" Font="Arial, 8pt, style=Bold" HorzAlign="Right"/>
+      <TextObject Name="SubTotalValue" Left="195" Top="2" Width="25" Height="10" Text="0.00" Font="Arial, 8pt" HorzAlign="Right"/>
+      
+      <TextObject Name="AddDiscountLabel" Left="145" Top="12" Width="50" Height="10" Text="ADD. DISCOUNT:" Font="Arial, 8pt, style=Bold" HorzAlign="Right"/>
+      <TextObject Name="AddDiscountValue" Left="195" Top="12" Width="25" Height="10" Text="0.00" Font="Arial, 8pt" HorzAlign="Right"/>
+      
+      <TextObject Name="CashDiscountLabel" Left="145" Top="22" Width="50" Height="10" Text="CASH DISCOUNT:" Font="Arial, 8pt, style=Bold" HorzAlign="Right"/>
+      <TextObject Name="CashDiscountValue" Left="195" Top="22" Width="25" Height="10" Text="0.00" Font="Arial, 8pt" HorzAlign="Right"/>
+      
+      <Line Name="TotalLine" Left="145" Top="33" Width="75" Height="0" Border.Width="2"/>
+      <TextObject Name="GrandTotalLabel" Left="145" Top="35" Width="50" Height="12" Text="GRAND TOTAL:" Font="Arial, 9pt, style=Bold" HorzAlign="Right"/>
+      <TextObject Name="GrandTotalValue" Left="195" Top="35" Width="25" Height="12" Text="0.00" Font="Arial, 9pt, style=Bold" HorzAlign="Right"/>
+    </ReportSummaryBand>
+    
+    <!-- INCLUSION SECTION -->
+    <ReportSummaryBand Name="InclusionSection" Height="25">
+      <TextObject Name="InclusionLabel" Left="10" Top="0" Width="190" Height="8" Text="INCLUSION" Font="Arial, 8pt, style=Bold" HorzAlign="Center" Border.Lines="Bottom"/>
+      <TextObject Name="InclusionContent" Left="12" Top="8" Width="186" Height="15" Text="" Font="Arial, 7pt" WordWrap="true"/>
+    </ReportSummaryBand>
+    
+    <!-- EXCLUSION SECTION -->
+    <ReportSummaryBand Name="ExclusionSection" Height="25">
+      <TextObject Name="ExclusionLabel" Left="10" Top="0" Width="190" Height="8" Text="EXCLUSION" Font="Arial, 8pt, style=Bold" HorzAlign="Center" Border.Lines="Bottom"/>
+      <TextObject Name="ExclusionContent" Left="12" Top="8" Width="186" Height="15" Text="" Font="Arial, 7pt" WordWrap="true"/>
+    </ReportSummaryBand>
+    
+    <!-- TERMS AND CONDITIONS SECTION -->
+    <ReportSummaryBand Name="TermsSection" Height="30">
+      <TextObject Name="TermsLabel" Left="10" Top="0" Width="190" Height="8" Text="TERMS AND CONDITIONS" Font="Arial, 8pt, style=Bold" HorzAlign="Center" Border.Lines="Bottom"/>
+      <TextObject Name="TermsContent" Left="12" Top="8" Width="186" Height="20" Text="" Font="Arial, 7pt" WordWrap="true"/>
+    </ReportSummaryBand>
+    
+    <!-- SIGNATURE SECTION -->
+    <ReportSummaryBand Name="SignatureSection" Height="30">
+      <TextObject Name="SignatureLabel" Left="145" Top="5" Width="50" Height="8" Text="SALES EXECUTIVE" Font="Arial, 7pt, style=Bold" HorzAlign="Center"/>
+      <Line Name="SignatureLine" Left="145" Top="20" Width="50" Height="0" Border.Width="1"/>
+    </ReportSummaryBand>
+    
+    <!-- PAGE FOOTER -->
+    <PageFooterBand Name="PageFooter" Height="20">
+      <TextObject Name="FooterText" Left="10" Top="2" Width="190" Height="16" Text="Manila Main Office, 644 Raja Matanda St. Tondo, Manila, 1012 Tel: (02)8-245-2277/19, (02)8-2457015/16 Fax: 8-245-0287" Font="Arial, 6pt" HorzAlign="Center" WordWrap="true"/>
+    </PageFooterBand>
+    
+  </ReportPage>
+</Report>

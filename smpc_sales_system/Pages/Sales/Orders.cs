@@ -21,6 +21,7 @@ using smpc_sales_system.Services.Sales;
 using smpc_sales_system.Pages.Sales;
 using System.Configuration;
 using smpc_sales_system.Properties;
+using System.Linq.Expressions;
 
 namespace smpc_sales_app.Pages.Sales
 {
@@ -68,6 +69,7 @@ namespace smpc_sales_app.Pages.Sales
         public DataTable ProjectItemList { get; set; } = new DataTable();
         public DataTable bom { get; set; } = new DataTable();
         public DataTable bomdetail { get; set; } = new DataTable();
+
         //FETCH METHODS
         private async Task FetchSalesOrder(bool isReload)
         {
@@ -159,6 +161,9 @@ namespace smpc_sales_app.Pages.Sales
                 cmb_ship_type.SelectedItem = this.OrderList.Rows[this.SelectedRow]["ship_type_id"].ToString();
 
                 string orderId = this.OrderList.Rows[this.SelectedRow]["order_id"].ToString();
+
+
+
                 DataView filteredDetailsView = new DataView(this.DetailsList);
                 filteredDetailsView.RowFilter = $"based_id = '{orderId}'";
                 dgv_order_sales.DataSource = filteredDetailsView;
@@ -287,6 +292,8 @@ namespace smpc_sales_app.Pages.Sales
                     withItemList.Columns.Add("item_description", typeof(string));
                     withItemList.Columns.Add("item_code", typeof(string));
                     withItemList.Columns.Add("numbering", typeof(string));
+                    withItemList.Columns.Add("has_stocks", typeof(bool));
+
                     int itemcounter = 1;
 
                     // Loop through the filtered rows
@@ -303,6 +310,14 @@ namespace smpc_sales_app.Pages.Sales
                         string itemId = childRow["item_id"].ToString();
                         DataRow[] itemRows = ItemList.Select($"id = '{itemId}'");
                         DataRow[] itemspecRows = ItemSpecs.Select($"based_id = '{itemId}'");
+
+
+                        //string allocationQty = string.IsNullOrEmpty(childRow["allocation_qty"].ToString()) ? "0" : childRow["allocation_qty"].ToString();
+                        string qty = string.IsNullOrEmpty(childRow["qty"].ToString()) ? "0" : childRow["qty"].ToString();
+
+
+                        newRow["has_stocks"] = int.Parse(qty) > 0 ? false : true;
+
                         // Add item details to newRow
                         if (itemRows.Length > 0 && itemspecRows.Length > 0)
                         {
@@ -500,7 +515,6 @@ namespace smpc_sales_app.Pages.Sales
 
                     dgv_project.DataSource = withItemListTwo;
 
-
                     // Format the DataGridView with colors/styles
                     FormatHierarchicalGrid();
                 }
@@ -545,45 +559,49 @@ namespace smpc_sales_app.Pages.Sales
                 {
                     DataGridViewRow row = dgv_project.Rows[i];
 
-                    string numberValue = row.Cells["number"].Value?.ToString() ?? "[NULL]";
+                    string val = row.Cells["number"].Value?.ToString();
+                    string numberValue = string.IsNullOrWhiteSpace(val) ? "0" : val;
 
                     rowData += $"Row {i}:\n";
-                    rowData += $"  number = '{numberValue}'\n";
+                    rowData += $"number = '{numberValue}'\n";
                 }
 
-                int headerCount = 0;
-                int detailCount = 0;
 
-                foreach (DataGridViewRow row in dgv_project.Rows)
-                {
-                    try
-                    {
-                        object numberValue = row.Cells["number"].Value;
-                        string number = numberValue?.ToString() ?? "";
+                //Just design
+                //int headerCount = 0;
+                //int detailCount = 0;
 
-                        // If number is empty, it's a HEADER
-                        if (string.IsNullOrEmpty(number))
-                        {
-                            row.DefaultCellStyle.BackColor = Color.FromArgb(30, 58, 138);  // Dark blue
-                            row.DefaultCellStyle.ForeColor = Color.White;
-                            row.DefaultCellStyle.Font = new Font("Arial", 11, FontStyle.Bold);
-                            row.Height = 30;
-                            headerCount++;
-                        }
-                        else
-                        {
-                            row.DefaultCellStyle.BackColor = Color.White;
-                            row.DefaultCellStyle.ForeColor = Color.Black;
-                            row.DefaultCellStyle.Font = new Font("Arial", 10, FontStyle.Regular);
-                            row.Height = 22;
-                            detailCount++;
-                        }
-                    }
-                    catch (Exception rowEx)
-                    {
-                        MessageBox.Show($"Error on row {row.Index}: {rowEx.Message}");
-                    }
-                }
+                //foreach (DataGridViewRow row in dgv_project.Rows)
+                //{
+                //    try
+                //    {
+                //        object numberValue = row.Cells["number"].Value;
+                //        string numVal = numberValue.ToString();
+                //        string number = string.IsNullOrWhiteSpace(numVal) ? "0" : numVal;
+                
+                //        // If number is empty, it's a HEADER
+                //        if (string.IsNullOrEmpty(number))
+                //        {
+                //            row.DefaultCellStyle.BackColor = Color.FromArgb(30, 58, 138);  // Dark blue
+                //            row.DefaultCellStyle.ForeColor = Color.White;
+                //            row.DefaultCellStyle.Font = new Font("Arial", 11, FontStyle.Bold);
+                //            row.Height = 30;
+                //            headerCount++;
+                //        }
+                //        else
+                //        {
+                //            row.DefaultCellStyle.BackColor = Color.White;
+                //            row.DefaultCellStyle.ForeColor = Color.Black;
+                //            row.DefaultCellStyle.Font = new Font("Arial", 10, FontStyle.Regular);
+                //            row.Height = 22;
+                //            detailCount++;
+                //        }
+                //    }
+                //    catch (Exception rowEx)
+                //    {
+                //        MessageBox.Show($"Error on row {row.Index}: {rowEx.Message}");
+                //    }
+                //}
             }
             catch (Exception ex)
             {
@@ -744,12 +762,73 @@ namespace smpc_sales_app.Pages.Sales
                     var parentDataHeader = new Dictionary<string, dynamic>
                         {
                             { "doc", selectedOrder["doc"] },
+                            {"order_id", selectedOrder["order_id"] },
                             { "status", "ACTIVE" }
                         };
-                    await OrderService.Update(parentDataHeader);
-                    MessageBox.Show("Order status updated to ACTIVE.");
-                    FetchSalesOrder(false);
-                    CheckStatus();
+
+                        var dataSource = Helpers.ConvertDataGridViewToDataTable(dgv_order_sales);
+                        string projectName = txt_project_name.Text;
+
+                        List<Dictionary<string, dynamic>> orderDetailsList = new List<Dictionary<string, dynamic>>();
+                        string docNumber = txt_doc.Text.StartsWith("SO#") ? txt_doc.Text.Substring(3) : txt_doc.Text;
+                        bool isExistingDoc = OrderList.Rows.Cast<DataRow>().Any(row => row["doc"].ToString() == docNumber);
+                        bool InSalesOrderDGV = false;
+
+                        if (isExistingDoc)
+                        {
+                            dataSource = Helpers.ConvertDataGridViewToDataTable(dgv_order_sales);
+                            InSalesOrderDGV = true;
+                        }
+
+
+                        foreach (DataRow item in dataSource.Rows)
+                        {
+                            Dictionary<string, object> data = new Dictionary<string, object>();
+
+                            if (int.Parse(string.IsNullOrEmpty(item["qtydgv"].ToString()) ? "0" : item["qtydgv"].ToString()) <=
+                                int.Parse(string.IsNullOrEmpty(item["qty_allocation"].ToString()) ? "0" : item["qty_allocation"].ToString()))
+                            {
+                                data.Add("status", "IN STOCK");
+                            }
+                            else
+                            {
+                                data.Add("status", "CANVASS");
+                            }
+
+                            data.Add("order_details_id", int.Parse(item["order_details_id"].ToString()));
+                            data.Add("based_id", int.Parse(item["basedid"].ToString()));
+                         
+                            orderDetailsList.Add(data);
+
+                        }
+
+                        if (orderDetailsList != null)
+                        {
+                            List<Dictionary<string, dynamic>> childCollection = new List<Dictionary<string, dynamic>>();
+                            foreach (var childData in orderDetailsList)
+                            {
+                                childCollection.Add(childData);
+                            }
+                            parentDataHeader["sales_order_details"] = childCollection;
+
+                            if (parentDataHeader.ContainsKey("sales_order_details"))
+                            {
+                                parentDataHeader["sales_order_details"] = childCollection;
+
+                               var response = await OrderService.Update(parentDataHeader);
+
+                                if(response.Success)
+                                {
+                                    MessageBox.Show("Order status updated to ACTIVE.");
+                                    FetchSalesOrder(false);
+                                    CheckStatus();
+                                }
+                                else
+                                {
+                                    MessageBox.Show("Failed to update order status. Please try again. this is possible cause " + response.Message);
+                                }
+                            }
+                        }
                 }
                 else
                 {
@@ -1600,7 +1679,6 @@ namespace smpc_sales_app.Pages.Sales
         {
             try
             {
-                
                 List<string> missingFields = new List<string>();
 
                 if (string.IsNullOrWhiteSpace(txt_receiver.Text)) missingFields.Add("Receiver");
@@ -1664,6 +1742,7 @@ namespace smpc_sales_app.Pages.Sales
                 }
                
                 var parentData = MergeDictionaries(parentDataHeader, parentDataHeader2, parentDataFooter, parentDataFooter2);
+
                 string projectName = parentDataHeader["project_name"]?.ToString();
                 var dataSource = Helpers.ConvertDataGridViewToDataTable(dgv_order_sales);
                 if (!string.IsNullOrEmpty(projectName))
@@ -1691,8 +1770,12 @@ namespace smpc_sales_app.Pages.Sales
                             data.Add("quotation_quick_id", int.Parse(item["quick_quote_id"].ToString()));
                         }
 
+                        data.Add("order_details_id", int.Parse(item["order_details_id"].ToString()));
                         data.Add("numbering", (item["number1"].ToString()));
                         data.Add("qty", int.Parse(item["qtydgv"].ToString()));
+
+                        Console.WriteLine("Number: " + item["number1"].ToString() +" Item Code:" + item["itemcodedgv"].ToString() + " QTY:" + item["qtydgv"].ToString());
+
                         data.Add("item_code", (item["itemcodedgv"].ToString()));
                         data.Add("item_description", (item["shortdesc"].ToString()));
                         data.Add("delivery_preference", (item["delivery_preference"].ToString()));
@@ -1700,6 +1783,7 @@ namespace smpc_sales_app.Pages.Sales
                         data.Add("total_price", float.Parse(item["linetotal"].ToString()));
                         data.Add("item_id", int.Parse(item["itemid"].ToString()));
                         data.Add("status", item["status"].ToString());
+                        data.Add("has_stocks", bool.Parse(item["checkHasStock"].ToString()));
                     }
                     else if (!string.IsNullOrEmpty(projectName))
                     {
@@ -1713,6 +1797,7 @@ namespace smpc_sales_app.Pages.Sales
                         data.Add("total_price", float.Parse(item["componenttotalproject"].ToString()));
                         data.Add("item_id", int.Parse(item["itemiddgv"].ToString()));
                         data.Add("status", item["statusproject"].ToString());
+                        data.Add("has_stocks", bool.Parse(item["checkHasStock"].ToString()));
                     }
                     else
                     {
@@ -1730,9 +1815,11 @@ namespace smpc_sales_app.Pages.Sales
                         data.Add("total_price", float.Parse(item["linetotal"].ToString()));
                         data.Add("item_id", int.Parse(item["itemid"].ToString()));
                         data.Add("status", item["status"].ToString());
+                        data.Add("has_stocks", bool.Parse(item["checkHasStock"].ToString()));
                     }
                     orderDetailsList.Add(data);
                 }
+
                 if (orderDetailsList != null)
                 {
                     List<Dictionary<string, dynamic>> childCollection = new List<Dictionary<string, dynamic>>();
@@ -1741,6 +1828,7 @@ namespace smpc_sales_app.Pages.Sales
                         childCollection.Add(childData);
                     }
                     parentData["sales_order_details"] = childCollection;
+
                     if (parentData.ContainsKey("sales_order_details"))
                     {
                         if (isExistingDoc)
@@ -1754,7 +1842,6 @@ namespace smpc_sales_app.Pages.Sales
                                 bindOrderByDocNo(docno, true);
                                 CheckStatus();
                             }
-
                         }
                         else
                         {
@@ -1790,6 +1877,39 @@ namespace smpc_sales_app.Pages.Sales
         private void dgv_order_sales_CellMouseClick(object sender, DataGridViewCellMouseEventArgs e)
         {
             //Console.WriteLine(dgv_order_sales.Rows[e.RowIndex].Cells["delivery_preference"].Value.ToString());
+        }
+
+        private void dgv_order_sales_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
+        {
+            if ((dgv_order_sales.Columns[e.ColumnIndex].Name == "checkHasStock" && e.Value != null))
+            {
+                bool hasStock = Convert.ToBoolean(e.Value);
+
+                e.Value = hasStock ? "" : "!";
+                e.CellStyle.ForeColor = hasStock ? dgv_order_sales.DefaultCellStyle.ForeColor : Color.Red;
+                e.CellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+                e.CellStyle.Font = new Font(dgv_order_sales.Font, FontStyle.Bold);
+                e.FormattingApplied = true;
+            }
+        }
+
+        private void dgv_order_sales_CellEndEdit(object sender, DataGridViewCellEventArgs e)
+        {
+            if (dgv_order_sales.Columns[e.ColumnIndex].Name == "qtydgv")
+            {
+                DataGridViewRow row = dgv_order_sales.Rows[e.RowIndex];
+
+                if (int.TryParse(row.Cells["qtydgv"].Value?.ToString(), out int qty))
+                {
+                    bool hasStock = qty <= 0;
+                    row.Cells["checkHasStock"].Value = hasStock;
+
+                    dgv_order_sales.InvalidateCell(
+                        dgv_order_sales.Columns["checkHasStock"].Index,
+                        e.RowIndex
+                    );
+                }
+            }
         }
 
         private void BindControlsForNewOrderORexisting()

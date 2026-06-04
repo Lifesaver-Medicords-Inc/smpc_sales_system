@@ -1134,11 +1134,11 @@ namespace smpc_sales_app.Pages.Sales
 
                 // for checking to get the cleanJson for testing purpose
 
-                string json = JsonConvert.SerializeObject(changes);
+                //string json = JsonConvert.SerializeObject(changes);
 
-                var jsonObject = JsonConvert.DeserializeObject(json);
+                //var jsonObject = JsonConvert.DeserializeObject(json);
 
-                string cleanJson = JsonConvert.SerializeObject(jsonObject);
+                //string cleanJson = JsonConvert.SerializeObject(jsonObject);
 
                 // testing purpose
 
@@ -2256,9 +2256,10 @@ namespace smpc_sales_app.Pages.Sales
 
                 var dataSource = Helpers.ConvertDataGridViewToDataTable(dgv_quick_quote_details);
                 var newDatasource = Helpers.ConvertDataTableToStringTable(dataSource);
+
                 List<Dictionary<string, dynamic>> quickQuoteList = new List<Dictionary<string, dynamic>>();
 
-                for (int i = 0; i < newDatasource.Rows.Count - 1; i++)
+                for (int i = 0; i < newDatasource.Rows.Count; i++)
                 {
                     DataRow item = newDatasource.Rows[i];
 
@@ -2275,7 +2276,7 @@ namespace smpc_sales_app.Pages.Sales
                     data.Add("model", item["quick_item_name"]);
                     data.Add("qty", int.TryParse(item["quick_qty"].ToString(), out int val) ? val : 0);
                     data.Add("unit_of_measure", item["quick_unit_of_measure"]);
-                    data.Add("unit_price", decimal.Parse((item["quick_unit_price"].ToString())));
+                    data.Add("unit_price", decimal.TryParse(item["quick_unit_price"].ToString(), out decimal unitPrice) ? unitPrice : 0);
                     data.Add("percent_discount", item["quick_discount"].ToString());
                     data.Add("net_discount", decimal.Parse(Helpers.GetCleanedPriceValue(item["quick_net_discount"].ToString())));
                     data.Add("net_total", decimal.Parse(Helpers.GetCleanedPriceValue(item["quick_net_total"].ToString())));
@@ -2295,12 +2296,8 @@ namespace smpc_sales_app.Pages.Sales
                     // loops thru the items
                     foreach (var childData in quickQuoteList)
                     {
-                        //childCollection.Add(childData);
-
-                        // ensure it's a dictionary (clone or cast if necessary)
                         var dict = new Dictionary<string, dynamic>(childData);
 
-                        // attach quick_selected_image here
                         dict["quick_selected_image"] = SelectedImages;
 
                         childCollection.Add(dict);
@@ -2424,13 +2421,6 @@ namespace smpc_sales_app.Pages.Sales
                 //Model Column
                 if (dgv_quick_quote_details.Columns[e.ColumnIndex].Name == "quick_item_name" && e.RowIndex >= 0 && !IsView)
                 {
-                    //if (dgv_quick_quote_details.Rows[e.RowIndex].IsNewRow)
-                    //    return;
-                    //if (dgv_quick_quote_details.Rows[e.RowIndex].Cells["quick_item_name"].Value == null || string.IsNullOrWhiteSpace(dgv_quick_quote_details.Rows[e.RowIndex].Cells["quick_item_name"].Value.ToString())
-                    //    || dgv_quick_quote_details.Rows[e.RowIndex].Cells["quick_item_id"].Value == null || string.IsNullOrWhiteSpace(dgv_quick_quote_details.Rows[e.RowIndex].Cells["quick_item_id"].Value.ToString()))
-                    //    return;
-
-                    //string id = dgv_quick_quote_details.Rows[e.RowIndex].Cells["quick_item_id"].Value.ToString();
                     HandleModelSelectionClick(e.RowIndex, dgv_quick_quote_details);
                 }
 
@@ -3360,17 +3350,6 @@ namespace smpc_sales_app.Pages.Sales
             DataView dataview = new DataView(childList);
             dataview.RowFilter = $"based_id = " + this.transactionList.Rows[this.SelectedRow]["id"].ToString();
 
-            //// Ensure quick_images column exists
-            //// It not existing on the childList DataTable that why we need to check and add it here
-            //if (dataview.Table != null && !dataview.Table.Columns.Contains("quick_images"))
-            //{
-            //    var col = new DataGridViewTextBoxColumn();
-            //    col.Name = "quick_images";
-            //    col.HeaderText = "IMAGES";
-
-            //    dgv_quick_quote_details.Columns.Insert(4, col);
-            //}
-
             dgv_quick_quote_details.DataSource = dataview;
 
             LoadQuickImageCounts();
@@ -3379,15 +3358,15 @@ namespace smpc_sales_app.Pages.Sales
         private void LoadQuickImageCounts()
         {
             //// Ensure quick_images column exists
-            if (!dgv_quick_quote_details.Columns.Contains("quick_images"))
+            if (!dgv_quick_quote_details.Columns.Contains("quick_images") || dgv_quick_quote_details.Columns.Contains("IMAGES"))
             {
                 // TO BE CHANGED/FIND INSIDE DGV COLUMN INSTEAD OF CREATING
                 var col = new DataGridViewTextBoxColumn();
                 col.Name = "quick_images";
                 col.HeaderText = "IMAGES";
 
-                if (dgv_quick_quote_details.Columns.Count > 6)
-                    dgv_quick_quote_details.Columns.Insert(6, col);
+                if (dgv_quick_quote_details.Columns.Count > 1)
+                    dgv_quick_quote_details.Columns.Insert(1, col);
                 else
                     dgv_quick_quote_details.Columns.Add(col);
             }
@@ -4534,14 +4513,20 @@ namespace smpc_sales_app.Pages.Sales
                 bs_ship_to.DataSource = null;
                 bs_unit.DataSource = CacheData.UoM;
                 Panel[] pnls = { pnl_header, pnl_footer };
-                Helpers.ReadOnlyControls(pnls);
+                //Helpers.ReadOnlyControls(pnls);
                 dgv_quick_quote_details.ReadOnly = false;
                 txt_cash_discount.ReadOnly = false;
                 txt_additional_discount.ReadOnly = false;
+                EnableDescription(true);
 
 
                 foreach (Control ctrl in pnl_footer.Controls)
                 {
+                    if(ctrl.Name == "txt_short_description" || ctrl.Name == "txt_long_description")
+                    {
+                        continue;
+                    }
+
                     if (ctrl is TextBox)
                     {
                         TextBox txtBox = (TextBox)ctrl;
@@ -4589,9 +4574,9 @@ namespace smpc_sales_app.Pages.Sales
             btn_next.Visible = !isTrue;
             btn_edit.Visible = !isTrue;
             btn_update.Visible = !isTrue;
-            btn_print.Visible = !isTrue;
+            tssb_Print.Visible = !isTrue;
             btn_finalize.Enabled = !isTrue;
-            
+
             // Show action button
             btn_savee.Visible = isTrue;
             btn_close.Visible = isTrue;
@@ -4610,7 +4595,7 @@ namespace smpc_sales_app.Pages.Sales
             btn_next.Visible = false;
             btn_edit.Visible = false;
             btn_update.Visible = false;
-            btn_print.Visible = false;
+            tssb_Print.Visible = false;
 
             // Enable editing controls
             btn_savee.Visible = true;
@@ -4644,7 +4629,7 @@ namespace smpc_sales_app.Pages.Sales
                 btn_next.Visible = true;
                 btn_edit.Visible = true;
                 btn_update.Visible = true;
-                btn_print.Visible = true;
+                tssb_Print.Visible = true;
 
                 btn_savee.Visible = false;
                 btn_close.Visible = false;
@@ -5294,10 +5279,63 @@ namespace smpc_sales_app.Pages.Sales
             var historyList = pnlQuotation["sales_project_history"] as List<Dictionary<string, object>>;
             historyList.Add(historyEntry);
         }
+        private void printShow()
+        {
+            string documentNo = Regex.Replace(txt_document_no.Text, @"FQ#|Q#", "").Trim();
+            if (isProject)
+            {
+                SalesPrintModal printPage = new SalesPrintModal(false, true, documentNo, InclusionsRichTextBox.Text, ExclusionsRichTextBox.Text, TermAndConditionsRichTextBox.Text);
+                int screenHeight = Screen.PrimaryScreen.Bounds.Height;
+                printPage.Height = (int)(screenHeight);
+                printPage.StartPosition = FormStartPosition.CenterParent;
+                printPage.ShowDialog();
+            }
+            else
+            {
+                SalesPrintModal printPage = new SalesPrintModal(true, false, documentNo, InclusionsRichTextBox.Text, ExclusionsRichTextBox.Text, TermAndConditionsRichTextBox.Text);
+                int screenHeight = Screen.PrimaryScreen.Bounds.Height;
+                printPage.Height = (int)(screenHeight);
+                printPage.StartPosition = FormStartPosition.CenterParent;
+                printPage.ShowDialog();
+            }
+        }
+
+        private void advancePrintToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            string documentNo = Regex.Replace(txt_document_no.Text, @"FQ#|Q#", "").Trim();
+            if (isProject)
+            {
+                SalesPrint printPage = new SalesPrint(true, documentNo, InclusionsRichTextBox.Text, ExclusionsRichTextBox.Text, TermAndConditionsRichTextBox.Text);
+                int screenHeight = Screen.PrimaryScreen.Bounds.Height;
+                printPage.Height = (int)(screenHeight);
+                printPage.StartPosition = FormStartPosition.CenterParent;
+                printPage.ShowDialog();
+            }
+            else
+            {
+                SalesPrint printPage = new SalesPrint(false, documentNo, InclusionsRichTextBox.Text, ExclusionsRichTextBox.Text, TermAndConditionsRichTextBox.Text);
+                int screenHeight = Screen.PrimaryScreen.Bounds.Height;
+                printPage.Height = (int)(screenHeight);
+                printPage.StartPosition = FormStartPosition.CenterParent;
+                printPage.ShowDialog();
+            }
+        }
 
         private void txt_project_name_Leave(object sender, EventArgs e)
         {
             string action = ProjectLabel + txt_project_name.Text;
+        }
+
+        private void basicPrintToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            printShow();
+        }
+
+
+
+        private void tssb_Print_ButtonClick(object sender, EventArgs e)
+        {
+            printShow();
         }
     }
 }

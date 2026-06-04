@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace smpc_inventory_app.Services.Setup.Model.Item
 {
-    class AdditionalSpecsModel
+    public class AdditionalSpecsModel
     {
         public int id { get; set; }
         public int based_id { get; set; }
@@ -21,7 +21,7 @@ namespace smpc_inventory_app.Services.Setup.Model.Item
         public float weight { get; set; }
         public string long_description { get; set; }
     }
-    class AdditionalSpecs
+    public class AdditionalSpecs
     {
         public List<AdditionalSpecsModel> additionalspecs { get; set; }
     }

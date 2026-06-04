@@ -271,6 +271,7 @@ namespace smpc_sales_system.Pages.Sales
             return data;
         }
 
+        public DataTable selectedImageList { get; set; } = new DataTable();
 
         public Dictionary<string, dynamic> GetProjectWiringData()
         {
@@ -1346,10 +1347,62 @@ namespace smpc_sales_system.Pages.Sales
                     AssignModel(index, dgv_project_items);
 
             }
+            if (dgv_project_items.Columns[e.ColumnIndex].Name == "quick_images")
+            {
+                var row = dgv_project_items.Rows[e.RowIndex];
+                var cellQuickId = row.Cells["quick_id"].Value?.ToString();
+                var cellItemId = row.Cells["item_id"].Value?.ToString();
+
+                cellQuickId = string.IsNullOrWhiteSpace(cellQuickId) ? "0" : cellQuickId;
+
+
+                if (int.TryParse(cellQuickId, out int quickId) &&
+                    int.TryParse(cellItemId, out int itemId))
+                {
+                    HandleItemImageSelectionClick(quickId, itemId);
+                }
+            }
+
 
             //ComputeByReferenceHierarchy(dgv_project_items);
             //ComputeReferenceNonHierarchy(dgv_project_items);
             ProjectComputationLoop();
+        }
+
+        public DataTable ImageList { get; set; } = new DataTable();
+        public List<Dictionary<string, object>> SelectedImages { get; private set; }
+        private void HandleItemImageSelectionClick(int quickId, int itemId)
+        {
+            DataView dvItems = new DataView(ItemList);
+            DataTable filteredItems = dvItems.ToTable();
+
+            if (filteredItems.Rows.Count == 0)
+            {
+                MessageBox.Show("Item not found.");
+                return;
+            }
+
+            string itemName = filteredItems.Rows[0]["item_name"].ToString();
+
+            DataView dvImages = new DataView(ImageList);
+            dvImages.RowFilter = $"based_id = {itemId}";
+            DataTable filteredImages = dvImages.ToTable();
+
+
+            DataView dvSelectedImages = new DataView(selectedImageList);
+            dvSelectedImages.RowFilter = $"quotation_quick_id = {quickId}";
+            DataTable filteredSelectedImages = dvSelectedImages.ToTable();
+
+            ItemImagesModal itemImageModal = new ItemImagesModal(itemName, filteredItems, filteredImages, filteredSelectedImages);
+            DialogResult r = itemImageModal.ShowDialog();
+
+            if (r == DialogResult.OK)
+            {
+                SelectedImages = itemImageModal.SelectedImages;
+                int selectedImageCount = SelectedImages.Count();
+                MessageBox.Show($"{selectedImageCount} images selected.");
+            }
+
         }
 
         private void AddModel(DataGridView dgv, int rowIndex, bool isBom, int BomId, int ItemId, string referenceCode, int templateId = 0)

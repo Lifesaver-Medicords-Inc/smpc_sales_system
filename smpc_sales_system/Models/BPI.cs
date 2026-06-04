@@ -97,16 +97,6 @@ namespace smpc_sales_system.Models
         public List<BpiSuppliers> BpiSuppliers { get; set; }
     }
 
-
-
-
-
-
-
-
-
-    
-
     //class Bpi
     class Bpi_Class
     {
