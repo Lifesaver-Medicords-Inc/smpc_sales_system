@@ -1,27 +1,28 @@
 ﻿using smpc_app.Services.Helpers;
+using smpc_app.Services.Helpers;
+using smpc_sales_app.Data;
+using smpc_sales_app.Services.Helpers;
+using smpc_sales_app.Services.Sales;
+using smpc_sales_system.Models;
+using smpc_sales_system.Pages;
+using smpc_sales_system.Pages.Sales;
+using smpc_sales_system.Properties;
+using smpc_sales_system.Services.Sales;
+using smpc_sales_system.Services.Sales.Models;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Configuration;
 using System.Data;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using smpc_app.Services.Helpers;
-using smpc_sales_app.Data;
-using smpc_sales_app.Services.Sales;
-using smpc_sales_system.Services.Sales.Models;
-using smpc_sales_app.Services.Helpers;
-using smpc_sales_system.Models;
-using smpc_sales_system.Pages;
-using smpc_sales_system.Services.Sales;
-using smpc_sales_system.Pages.Sales;
-using System.Configuration;
-using smpc_sales_system.Properties;
-using System.Linq.Expressions;
+using WebSocketSharp;
 
 namespace smpc_sales_app.Pages.Sales
 {
@@ -106,7 +107,10 @@ namespace smpc_sales_app.Pages.Sales
         private async Task   FetchQuotationDetails()
         {
             SalesQuotationList data = await QuotationService.GetQuotations();
-            transactionList = JsonHelper.ToDataTable(data.SalesQuotation);
+            transactionList = JsonHelper.ToDataTable(data.SalesQuotation.AsEnumerable()
+            .Where(q => q.document_no != null &&
+                q.document_no.Contains("FQ"))
+            .ToList());
             childList = JsonHelper.ToDataTable(data.SalesQuotationQuick);
         }
         private async Task FetchProject()
@@ -144,7 +148,7 @@ namespace smpc_sales_app.Pages.Sales
                     HandleProjectNameVisibility(quotation[0]);
                 }
 
-                string customerID = parentRow["customer_id"].ToString();
+                 string customerID = parentRow["customer_id"].ToString();
                 string ShipID = parentRow["ship_to_id"].ToString();
                 string BillID = parentRow["bill_to_id"].ToString();
                 PopulateCustomerAndAddressInfo(customerID, ShipID, BillID, newRow);
@@ -319,15 +323,23 @@ namespace smpc_sales_app.Pages.Sales
                         newRow["has_stocks"] = int.Parse(qty) > 0 ? false : true;
 
                         // Add item details to newRow
-                        if (itemRows.Length > 0 && itemspecRows.Length > 0)
+
+                        if (itemspecRows.Length > 0)
                         {
                             newRow["item_description"] = itemspecRows[0]["long_description"].ToString();
+                        }
+                        else
+                        {
+                            newRow["item_description"] = "Unknown Item";
+                        }
+
+                        if (itemRows.Length > 0)
+                        {
                             newRow["item_code"] = itemRows[0]["item_code"].ToString();
                             newRow["numbering"] = itemcounter;
                         }
                         else
                         {
-                            newRow["item_description"] = "Unknown Item";
                             newRow["item_code"] = "N/A";
                             newRow["numbering"] = itemcounter;
                         }
@@ -688,7 +700,7 @@ namespace smpc_sales_app.Pages.Sales
                     }
                     else
                     {
-                        btn_print.Visible = false;
+                        btn_refresh.Visible = false;
                         BindControlsForNewOrderORexisting();
                         bindQuotation(documentNo, true);
                         SOIncrementer();
@@ -706,7 +718,7 @@ namespace smpc_sales_app.Pages.Sales
                 }
                 else
                 {
-                    btn_print.Visible = false;
+                    btn_refresh.Visible = false;
                     BindControlsForNewOrderORexisting();
                     bindQuotation(documentNo, true);
                     SOIncrementer();
@@ -714,13 +726,9 @@ namespace smpc_sales_app.Pages.Sales
                     TV2_preview.Visible = true;
                 }
                 CheckStatus();
-                
             }
             LoadDirectory(AFTERSALES_TV, AfterSalesPath);
             LoadDirectory(SALES_TV, SalesPath);
-
-
-
         }
         //ACTIONS METHOD (BUTTONS, CLICKS)
         private void btn_search_Click(object sender, EventArgs e)
@@ -751,7 +759,7 @@ namespace smpc_sales_app.Pages.Sales
                 string docIdValue = ((TextBox)pnl_header_2.Controls["txt_doc"]).Text;
                 string docnoValue = ((TextBox)pnl_header_2.Controls["txt_document_no"]).Text;
                 docIdValue = docIdValue.StartsWith("SO#") ? docIdValue.Substring(3) : docIdValue;
-                docnoValue = docnoValue.StartsWith("Q#") ? docnoValue.Substring(2) : docnoValue;
+                docnoValue = docnoValue.StartsWith("FQ#") ? docnoValue.Substring(3) : docnoValue;
 
                 if (int.TryParse(docIdValue, out int selectedDoc) && selectedDoc > 0)
                 {
@@ -786,7 +794,7 @@ namespace smpc_sales_app.Pages.Sales
                             Dictionary<string, object> data = new Dictionary<string, object>();
 
                             if (int.Parse(string.IsNullOrEmpty(item["qtydgv"].ToString()) ? "0" : item["qtydgv"].ToString()) <=
-                                int.Parse(string.IsNullOrEmpty(item["qty_allocation"].ToString()) ? "0" : item["qty_allocation"].ToString()))
+                                int.Parse(string.IsNullOrEmpty(item["allocated_qty"].ToString()) ? "0" : item["allocated_qty"].ToString()))
                             {
                                 data.Add("status", "IN STOCK");
                             }
@@ -852,7 +860,7 @@ namespace smpc_sales_app.Pages.Sales
                 string docIdValue = ((TextBox)pnl_header_2.Controls["txt_doc"]).Text;
                 string docnoValue = ((TextBox)pnl_header_2.Controls["txt_document_no"]).Text;
                 docIdValue = docIdValue.StartsWith("SO#") ? docIdValue.Substring(3) : docIdValue;
-                docnoValue = docnoValue.StartsWith("Q#") ? docnoValue.Substring(2) : docnoValue;
+                docnoValue = docnoValue.StartsWith("FQ#") ? docnoValue.Substring(3) : docnoValue;
 
                 if (int.TryParse(docIdValue, out int selectedDoc) && selectedDoc > 0)
                 {
@@ -1585,9 +1593,9 @@ namespace smpc_sales_app.Pages.Sales
                 {
                     if (control is TextBox textBox && textBox.Name.Contains("txt_document_no"))
                     {
-                        if (!textBox.Text.StartsWith("Q#"))
+                        if (!textBox.Text.StartsWith("FQ#"))
                         {
-                            textBox.Text = "Q#" + textBox.Text;
+                            textBox.Text = "FQ#" + textBox.Text;
                         }
                     }
                     if (control is TextBox textBox2 && textBox2.Name.Contains("txt_doc"))
@@ -1668,7 +1676,7 @@ namespace smpc_sales_app.Pages.Sales
             txt_remarks.ReadOnly = isStatusCancelled;
             txt_approved_by.ReadOnly = isStatusCancelled;
             btn_save.Enabled = isStatusCancelled;
-            btn_print.Enabled = isStatusActive || !isStatusCancelled;
+            btn_refresh.Enabled = isStatusActive || !isStatusCancelled;
 
             foreach (DataGridViewColumn column in dgv_order_sales.Columns)
             {
@@ -1724,7 +1732,7 @@ namespace smpc_sales_app.Pages.Sales
                 }
                 if (parentDataHeader2.ContainsKey("document_no") && parentDataHeader2["document_no"] is string document_no)
                 {
-                    parentDataHeader2["document_no"] = document_no.StartsWith("Q#") ? document_no.Substring(2) : document_no;
+                    parentDataHeader2["document_no"] = document_no.StartsWith("FQ#") ? document_no.Substring(3) : document_no;
                 }
 
                 var columnsToConvert = new List<string> { "ship_to_id", "bill_to_id", "customer_id", "quotation_id", "ref_po" };
@@ -1754,6 +1762,7 @@ namespace smpc_sales_app.Pages.Sales
                 string docNumber = txt_doc.Text.StartsWith("SO#") ? txt_doc.Text.Substring(3) : txt_doc.Text;
                 bool isExistingDoc = OrderList.Rows.Cast<DataRow>().Any(row => row["doc"].ToString() == docNumber);
                 bool InSalesOrderDGV = false;
+
                 if (isExistingDoc)
                 {
                     dataSource = Helpers.ConvertDataGridViewToDataTable(dgv_order_sales);
@@ -1845,7 +1854,9 @@ namespace smpc_sales_app.Pages.Sales
                         }
                         else
                         {
-                            
+                            //added the sales when saving the first time the SO
+                            parentData["sales_executive"] = CacheData.CurrentUser.first_name + " " + CacheData.CurrentUser.last_name;
+
                             var success = await OrderService.Insert(parentData);
 
                             if (success != null)
@@ -1899,9 +1910,14 @@ namespace smpc_sales_app.Pages.Sales
             {
                 DataGridViewRow row = dgv_order_sales.Rows[e.RowIndex];
 
+                if(!int.TryParse(row.Cells["allocated_qty"].Value?.ToString(), out int qtyAllocation))
+                {
+                    qtyAllocation = 0;
+                }
+
                 if (int.TryParse(row.Cells["qtydgv"].Value?.ToString(), out int qty))
                 {
-                    bool hasStock = qty <= 0;
+                    bool hasStock = qty <= qtyAllocation;
                     row.Cells["checkHasStock"].Value = hasStock;
 
                     dgv_order_sales.InvalidateCell(
@@ -1910,6 +1926,16 @@ namespace smpc_sales_app.Pages.Sales
                     );
                 }
             }
+        }
+
+        private void btn_refresh_Click(object sender, EventArgs e)
+        {
+            Orders_Load(sender, e);
+        }
+
+        private void toolStripButton1_Click(object sender, EventArgs e)
+        {
+
         }
 
         private void BindControlsForNewOrderORexisting()

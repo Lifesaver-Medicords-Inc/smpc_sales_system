@@ -34,6 +34,7 @@ namespace smpc_sales_system.Models
         //public int id { get; set; }
 
         public int general_based_id { get; set; }
+        public string branch_sales_id { get; set; }
         public int social_id { get; set; }
         public string branch_name { get; set; }
 
@@ -58,7 +59,6 @@ namespace smpc_sales_system.Models
 
     class BpiContacts
     {
-
         public int contacts_id { get; set; }
         public int contacts_based_id { get; set; }
         public string number { get; set; }

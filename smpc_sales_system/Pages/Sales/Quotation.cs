@@ -1000,6 +1000,18 @@ namespace smpc_sales_app.Pages.Sales
                                     maxDocNum = documentNumber;
                                 }
                             }
+                            else
+                            {
+                                string digitsOnly = new string(row["document_no"].ToString().Where(char.IsDigit).ToArray());
+
+                                if (!string.IsNullOrEmpty(digitsOnly) && int.TryParse(digitsOnly, out int extractedNumber))
+                                {
+                                    if (extractedNumber > maxDocNum)
+                                    {
+                                        maxDocNum = extractedNumber;
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -2217,9 +2229,7 @@ namespace smpc_sales_app.Pages.Sales
             {
                 Panel[] pnl_list = { pnl_header, pnl_footer };
                 var parentData = Helpers.GetControlsValuesV2(pnl_list);
-                //var childData = Helpers.GetControlsValues(pnl_list);
-                int id;
-                bool isParsed = int.TryParse(txt_id.Text, out id);
+                bool isParsed = int.TryParse(txt_id.Text,out int id);
 
                 int bill_to_id = 0;
                 int ship_to_id = 0;
@@ -2305,12 +2315,12 @@ namespace smpc_sales_app.Pages.Sales
                     }
 
                     // trims the Q# from the input
-                    if (parentData.ContainsKey("document_no") && parentData["document_no"] is string documentNo)
-                    {
-                        parentData["document_no"] = documentNo.StartsWith("Q#")
-                            ? documentNo.Substring(2)
-                            : documentNo;
-                    }
+                    //if (parentData.ContainsKey("document_no") && parentData["document_no"] is string documentNo)
+                    //{
+                    //    parentData["document_no"] = documentNo.StartsWith("Q#")
+                    //        ? documentNo.Substring(2)
+                    //        : documentNo;
+                    //}
 
                     //
                     // MAKE A HELPER THAT CONVERT ID TO INT 
@@ -3357,8 +3367,16 @@ namespace smpc_sales_app.Pages.Sales
 
         private void LoadQuickImageCounts()
         {
+            bool isColumnExist = false;
+
+            if (dgv_quick_quote_details.Columns.Contains("quick_images"))
+                isColumnExist = true;
+            
+            if(dgv_quick_quote_details.Columns.Contains("IMAGES"))
+                isColumnExist = true;
+
             //// Ensure quick_images column exists
-            if (!dgv_quick_quote_details.Columns.Contains("quick_images") || dgv_quick_quote_details.Columns.Contains("IMAGES"))
+            if (!isColumnExist)
             {
                 // TO BE CHANGED/FIND INSIDE DGV COLUMN INSTEAD OF CREATING
                 var col = new DataGridViewTextBoxColumn();
@@ -3774,7 +3792,16 @@ namespace smpc_sales_app.Pages.Sales
             List<string> s1 = new List<string>();
             string Title = "Business Partner Info";
             string endpoint = "/api/bpi";
-            SetupSelectionModal bpi = new SetupSelectionModal(Title, endpoint, bpi_general, t1, s1, 0);
+
+            var filtered = bpi_general.AsEnumerable()
+                           .Where(x => x.Field<string>("branch_sales_id") == CacheData.CurrentUser.employee_id);
+
+            DataTable bpiGeneralFilter = filtered.Any()
+                                         ? filtered.CopyToDataTable()
+                                         : bpi_general.Clone();
+
+            SetupSelectionModal bpi = new SetupSelectionModal(Title, endpoint, bpiGeneralFilter, t1, s1, 0);
+
             DialogResult r = bpi.ShowDialog();
 
             if (r == DialogResult.OK)
@@ -3984,6 +4011,8 @@ namespace smpc_sales_app.Pages.Sales
                 {
                     SelectedRow = result;
                     bind(transactionList, SelectedRow, true);
+
+                    //dito pre
                 }
             }
         }
@@ -4234,66 +4263,291 @@ namespace smpc_sales_app.Pages.Sales
 
         private async void FinalizeProjectQuotation()
         {
-            try
+            Panel[] pnl_list = { pnl_header, pnl_footer, pnl_project_name };
+            var pnl_quotation = Helpers.GetControlsValues(pnl_list);
+
+            pnl_quotation["project_name"] = txt_project_name.Text.Trim();
+
+            if (string.IsNullOrWhiteSpace(txt_project_name.Text))
             {
-                int quotationId = Convert.ToInt32(txt_id.Text);
-
-                var finalizeData = new Dictionary<string, dynamic>
-                {
-                    ["id"] = quotationId,
-                    ["is_finalized"] = true
-                };
-
-                await QuotationService.Update(finalizeData);
-
-                Helpers.ResetControls(pnl_header);
-                ResetControls(pnl_footer);
-
-                fetchSalesProject();
-
-                SetFormEditMode("Close");
+                MessageBox.Show("Please enter a valid project name. The project name cannot be empty or consist only of spaces.",
+                                "Invalid Project Name", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                txt_project_name.Focus();
+                return;
             }
-            catch(Exception ex)
+
+            var multiplierSource = Helpers.ConvertDataGridViewToDataTable(dgv_project_multiplier);
+
+            List<SalesProjectMultiplier> multipliers = new List<SalesProjectMultiplier>();
+            foreach (DataRow item in multiplierSource.Rows)
             {
-                MessageBox.Show("Error: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                SalesProjectMultiplier mult = new SalesProjectMultiplier
+                {
+                    brand = item[0].ToString(),
+                    component = item[1].ToString(),
+                    description = item[2].ToString(),
+                    multiplier = item[3].ToString(),
+                };
+                multipliers.Add(mult);
+            }
+
+            pnl_quotation["sales_project_multiplier"] = multipliers;
+
+            var allTabsData = new List<Dictionary<string, object>>();
+
+            foreach (TabPage selectedTab in this.tabControl2.TabPages)
+            {
+                if (selectedTab != null && selectedTab.Controls.Count > 0)
+                {
+                    var selectedControl = selectedTab.Controls[0] as ItemSetUC;
+
+                    if (selectedControl != null)
+                    {
+                        var tabData = new Dictionary<string, object>();
+
+                        int basedId;
+                        if (pnl_quotation["id"] is long)
+                            basedId = (int)(long)pnl_quotation["id"];
+                        else
+                            int.TryParse(pnl_quotation["id"].ToString(), out basedId);
+
+                        tabData["sales_project_item_set"] = new Dictionary<string, object>
+                        {
+                            { "based_id",   basedId },
+                            { "tab_number", selectedTab.Text },
+                            { "itemset_id", selectedTab.Tag }
+                        };
+
+                        tabData["sales_project_history"] = selectedControl.GetHistoryList();
+                        tabData["sales_project_content"] = selectedControl.GetProjectContentsData();
+                        tabData["sales_project_content_advanced_condition"] = selectedControl.GetAdvancedConditionsData();
+                        tabData["sales_project_items"] = selectedControl.GetProjectItems()["sales_project_items"];
+                        tabData["sales_project_wiring"] = selectedControl.GetProjectWiringData()["sales_project_wiring"];
+
+                        allTabsData.Add(tabData);
+                    }
+                }
+            }
+
+            pnl_quotation["sales_project_all_tabs"] = allTabsData;
+
+            if (!ConvertToInt(pnl_quotation, "customer_id", "Invalid customer ID"))
+                return;
+
+            pnl_quotation["id"] = 0;
+            pnl_quotation["is_finalized"] = true;
+
+            // trims the Q# from the input
+            //if (pnl_quotation.ContainsKey("document_no") && pnl_quotation["document_no"] is string documentNo)
+            //{
+            //    pnl_quotation["document_no"] = documentNo.StartsWith("Q#")
+            //        ? documentNo.Substring(2)
+            //        : documentNo;
+            //}
+
+            pnl_quotation["percent_discount"] = float.TryParse(txt_additional_discount.Text, out float discount) ? discount : 0;
+
+            var quotation = JsonConvert.SerializeObject(pnl_quotation, Formatting.Indented);
+
+            if (isNewRecord)
+            {
+                var response = await ProjectService.Insert(pnl_quotation);
+                if (response.Success)
+                {
+                    MessageBox.Show("Saved");
+                    SetNewFormMode(false);
+                }
+                else
+                    MessageBox.Show($"Insert error: {response.message}");
             }
         }
 
         private async void FinalizeQuickQuotation()
         {
+            //try
+            //{
+            //    int quotationId = Convert.ToInt32(txt_id.Text);
+
+            //    var finalizeData = new Dictionary<string, dynamic>
+            //    {
+            //        ["id"] = quotationId,
+            //        ["is_finalized"] = true
+            //    };
+
+            //    await QuotationService.Update(finalizeData);
+
+            //    Helpers.ResetControls(pnl_header);
+            //    //Helpers.ResetControls(pnl_footer);
+            //    ResetControls(pnl_footer);
+
+            //    Panel[] panel = { pnl_header, pnl_footer };
+
+            //    //Helpers.ResetControls(panel);
+
+            //    MessageBox.Show("Quotation successfully finalized.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+            //    await fetchQuotationDetails();
+            //    SetFormEditMode("Close");
+            //}
+            //catch (Exception ex)
+            //{
+            //    MessageBox.Show("Error: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            //}
+
             try
             {
-                int quotationId = Convert.ToInt32(txt_id.Text);
+                Panel[] pnl_list = { pnl_header, pnl_footer };
+                var parentData = Helpers.GetControlsValuesV2(pnl_list);
+                bool isParsed = int.TryParse(txt_id.Text, out int id);
 
-                var finalizeData = new Dictionary<string, dynamic>
+                int bill_to_id = 0;
+                int ship_to_id = 0;
+
+                if (cmb_bill_to.SelectedValue == null)
                 {
-                    ["id"] = quotationId,
-                    ["is_finalized"] = true
-                };
+                    MessageBox.Show("bill to is required.");
+                }
+                else
+                {
+                    bill_to_id = int.Parse(cmb_bill_to.SelectedValue.ToString());
+                }
 
-                await QuotationService.Update(finalizeData);
+                if (cmb_ship_to.SelectedValue == null)
+                {
+                    MessageBox.Show("ship to is required.");
+                }
+                else
+                {
+                    ship_to_id = int.Parse(cmb_ship_to.SelectedValue.ToString());
+                }
 
-                Helpers.ResetControls(pnl_header);
-                //Helpers.ResetControls(pnl_footer);
-                ResetControls(pnl_footer);
+                parentData["id"] = 0;
 
-                Panel[] panel = { pnl_header, pnl_footer };
+                //if (isNewRecord || isSubVersion)
+                //{
+                //    parentData.Remove("id");
+                //}
 
-                //Helpers.ResetControls(panel);
 
-                MessageBox.Show("Quotation successfully finalized.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                parentData["ship_to_id"] = ship_to_id;
 
-                await fetchQuotationDetails();
-                SetFormEditMode("Close");
+
+                var dataSource = Helpers.ConvertDataGridViewToDataTable(dgv_quick_quote_details);
+                var newDatasource = Helpers.ConvertDataTableToStringTable(dataSource);
+
+                List<Dictionary<string, dynamic>> quickQuoteList = new List<Dictionary<string, dynamic>>();
+
+                for (int i = 0; i < newDatasource.Rows.Count; i++)
+                {
+                    DataRow item = newDatasource.Rows[i];
+
+                    int itemId = int.TryParse(item["item_id"].ToString(), out int ival) ? ival : 0;
+
+                    if (itemId == 0)
+                        continue;
+
+                    Dictionary<string, object> data = new Dictionary<string, object>();
+
+                    data.Add("item_id", itemId);
+                    data.Add("bom_id", int.TryParse(item["quick_bom_id"].ToString(), out int bomid) ? bomid : 0);
+                    data.Add("components", item["quick_item_code"]);
+                    data.Add("model", item["quick_item_name"]);
+                    data.Add("qty", int.TryParse(item["quick_qty"].ToString(), out int val) ? val : 0);
+                    data.Add("unit_of_measure", item["quick_unit_of_measure"]);
+                    data.Add("unit_price", decimal.TryParse(item["quick_unit_price"].ToString(), out decimal unitPrice) ? unitPrice : 0);
+                    data.Add("percent_discount", item["quick_discount"].ToString());
+                    data.Add("net_discount", decimal.Parse(Helpers.GetCleanedPriceValue(item["quick_net_discount"].ToString())));
+                    data.Add("net_total", decimal.Parse(Helpers.GetCleanedPriceValue(item["quick_net_total"].ToString())));
+                    data.Add("line_total", decimal.Parse(Helpers.GetCleanedPriceValue(item["quick_line_total"].ToString())));
+                    data.Add("reference_code", item["reference_code"].ToString());
+                    data.Add("short_description", item["short_description"].ToString());
+                    data.Add("man_days", int.TryParse(item["man_days"].ToString(), out int manday) ? manday : 0);
+                    data.Add("labor_rate", decimal.TryParse(item["labor_rate"].ToString(), out decimal laborday) ? laborday : 0);
+                    quickQuoteList.Add(data);
+
+                }
+
+                if (quickQuoteList != null)
+                {
+                    List<Dictionary<string, dynamic>> childCollection = new List<Dictionary<string, dynamic>>();
+
+                    // loops thru the items
+                    foreach (var childData in quickQuoteList)
+                    {
+                        var dict = new Dictionary<string, dynamic>(childData);
+
+                        dict["quick_selected_image"] = SelectedImages;
+
+                        childCollection.Add(dict);
+
+                    }
+
+                    // trims the Q# and adds FQ# for finalized quotations
+                    if (parentData.ContainsKey("document_no") && parentData["document_no"] is string documentNo)
+                    {
+                        string tempDocNo = documentNo.StartsWith("Q#") ? documentNo.Substring(2) : documentNo;
+
+                        tempDocNo = "FQ#" + tempDocNo;
+
+                        parentData["document_no"] = tempDocNo;
+                    }
+                    else
+                    {
+                        MessageBox.Show("Document number is missing or invalid.");
+                        return;
+                    }
+                    parentData["is_finalized"] = true;
+
+                    // MAKE A HELPER THAT CONVERT ID TO INT 
+                    if (!Helpers.ConvertToIntIfString(parentData, "customer_id") ||
+                        !Helpers.ConvertToIntIfString(parentData, "payment_terms_id") ||
+                        !Helpers.ConvertToIntIfString(parentData, "ship_type_id"))
+                    {
+                        return;
+                    }
+
+                    parentData["sales_quotation_quick"] = childCollection;
+
+                    var duplicateTransaction = allTransactionList.AsEnumerable()
+                                                .Where(t => t.Field<string>("document_no") == parentData["document_no"].ToString());
+
+                    if (duplicateTransaction.Any())
+                    {
+                        MessageBox.Show("A transaction cannot be finalized because this document number already exists.");
+                        return;
+                    }
+
+                    if (parentData.ContainsKey("sales_quotation_quick"))
+                    {
+
+                        var isSuccess = await QuotationService.Insert(parentData);
+
+                        if (isSuccess.Success)
+                        {
+                            Helpers.ResetControls(pnl_header);
+                            ResetControls(pnl_footer);
+
+                            dgv_quick_quote_details.DataSource = this.childList.Clone();
+                            toolstrip_quotation.Enabled = true;
+
+                            MessageBox.Show("Quotation Successfully saved");
+                            await fetchQuotationDetails();
+
+                            SetNewFormMode(false);
+                        }
+                        else
+                            MessageBox.Show(isSuccess.message);
+                    }
+                }
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("ERROR ERROR " + ex);
             }
         }
         private void btn_sales_order_Click(object sender, EventArgs e)
         {
-            string documentNo = txt_document_no.Text.Replace("FQ#", "");  // Assuming you have a document_no textbox in Quotation
+            string documentNo = txt_document_no.Text;
 
             if (string.IsNullOrEmpty(documentNo))
             {

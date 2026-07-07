@@ -9,9 +9,6 @@ namespace smpc_sales_system.Services.Sales
     class BpiService
     {
         static string url = "/bpi";
-
         //public static async Task<>
-    }
-
-    
+    }    
 }

@@ -176,7 +176,8 @@ namespace smpc_sales_app.Pages.Sales
             this.btn_next = new System.Windows.Forms.ToolStripButton();
             this.Save = new System.Windows.Forms.ToolStripButton();
             this.btn_back = new System.Windows.Forms.ToolStripButton();
-            this.btn_print = new System.Windows.Forms.ToolStripButton();
+            this.toolStripButton3 = new System.Windows.Forms.ToolStripButton();
+            this.btn_refresh = new System.Windows.Forms.ToolStripButton();
             this.toolStripButton6 = new System.Windows.Forms.ToolStripButton();
             this.toolStripButton2 = new System.Windows.Forms.ToolStripButton();
             this.panel6 = new System.Windows.Forms.Panel();
@@ -257,7 +258,7 @@ namespace smpc_sales_app.Pages.Sales
             this.unitprice = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.linetotal = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.status = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.qty_allocation = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.allocated_qty = new System.Windows.Forms.DataGridViewTextBoxColumn();
             ((System.ComponentModel.ISupportInitialize)(this.quick_quotes)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dataSet1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.tbl_quick_quotes)).BeginInit();
@@ -695,7 +696,7 @@ namespace smpc_sales_app.Pages.Sales
             this.unitprice,
             this.linetotal,
             this.status,
-            this.qty_allocation});
+            this.allocated_qty});
             this.dgv_order_sales.DataSource = this.quick_quotes;
             this.dgv_order_sales.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dgv_order_sales.Location = new System.Drawing.Point(0, 0);
@@ -1043,7 +1044,6 @@ namespace smpc_sales_app.Pages.Sales
             this.txt_customer_code.ReadOnly = true;
             this.txt_customer_code.Size = new System.Drawing.Size(200, 20);
             this.txt_customer_code.TabIndex = 231;
-            this.txt_customer_code.Text = "sdf";
             // 
             // txt_branch_name
             // 
@@ -1052,7 +1052,6 @@ namespace smpc_sales_app.Pages.Sales
             this.txt_branch_name.ReadOnly = true;
             this.txt_branch_name.Size = new System.Drawing.Size(200, 20);
             this.txt_branch_name.TabIndex = 230;
-            this.txt_branch_name.Text = "sdf";
             // 
             // label3
             // 
@@ -1343,7 +1342,8 @@ namespace smpc_sales_app.Pages.Sales
             this.btn_next,
             this.Save,
             this.btn_back,
-            this.btn_print,
+            this.toolStripButton3,
+            this.btn_refresh,
             this.toolStripButton6,
             this.toolStripButton2});
             this.toolStrip1.Location = new System.Drawing.Point(0, 47);
@@ -1361,6 +1361,7 @@ namespace smpc_sales_app.Pages.Sales
             this.toolStripButton1.Size = new System.Drawing.Size(51, 22);
             this.toolStripButton1.Text = "New";
             this.toolStripButton1.Visible = false;
+            this.toolStripButton1.Click += new System.EventHandler(this.toolStripButton1_Click);
             // 
             // btn_new
             // 
@@ -1419,14 +1420,22 @@ namespace smpc_sales_app.Pages.Sales
             this.btn_back.Visible = false;
             this.btn_back.Click += new System.EventHandler(this.btn_back_Click);
             // 
-            // btn_print
+            // toolStripButton3
             // 
-            this.btn_print.Image = ((System.Drawing.Image)(resources.GetObject("btn_print.Image")));
-            this.btn_print.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.btn_print.Name = "btn_print";
-            this.btn_print.Size = new System.Drawing.Size(52, 22);
-            this.btn_print.Text = "Print";
-            this.btn_print.Click += new System.EventHandler(this.btn_print_Click);
+            this.toolStripButton3.Image = ((System.Drawing.Image)(resources.GetObject("toolStripButton3.Image")));
+            this.toolStripButton3.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.toolStripButton3.Name = "toolStripButton3";
+            this.toolStripButton3.Size = new System.Drawing.Size(52, 22);
+            this.toolStripButton3.Text = "Print";
+            // 
+            // btn_refresh
+            // 
+            this.btn_refresh.Image = ((System.Drawing.Image)(resources.GetObject("btn_refresh.Image")));
+            this.btn_refresh.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btn_refresh.Name = "btn_refresh";
+            this.btn_refresh.Size = new System.Drawing.Size(66, 22);
+            this.btn_refresh.Text = "Refresh";
+            this.btn_refresh.Click += new System.EventHandler(this.btn_refresh_Click);
             // 
             // toolStripButton6
             // 
@@ -2202,12 +2211,12 @@ namespace smpc_sales_app.Pages.Sales
             this.status.HeaderText = "STATUS";
             this.status.Name = "status";
             // 
-            // qty_allocation
+            // allocated_qty
             // 
-            this.qty_allocation.DataPropertyName = "qty_allocation";
-            this.qty_allocation.HeaderText = "qty_allocation";
-            this.qty_allocation.Name = "qty_allocation";
-            this.qty_allocation.Visible = false;
+            this.allocated_qty.DataPropertyName = "allocated_qty";
+            this.allocated_qty.HeaderText = "allocated_qty";
+            this.allocated_qty.Name = "allocated_qty";
+            this.allocated_qty.Visible = false;
             // 
             // Orders
             // 
@@ -2356,7 +2365,7 @@ namespace smpc_sales_app.Pages.Sales
         private System.Windows.Forms.ToolStripButton btn_search;
         private System.Windows.Forms.ToolStripButton btn_prev;
         private System.Windows.Forms.ToolStripButton btn_next;
-        private System.Windows.Forms.ToolStripButton btn_print;
+        private System.Windows.Forms.ToolStripButton btn_refresh;
         private System.Windows.Forms.ToolStripButton toolStripButton6;
         private System.Windows.Forms.Panel panel6;
         private System.Windows.Forms.Label label1;
@@ -2481,6 +2490,7 @@ namespace smpc_sales_app.Pages.Sales
         private System.Windows.Forms.PictureBox pictureBox3;
         private System.Windows.Forms.ToolStripButton toolStripButton2;
         private System.Windows.Forms.ToolStripButton Save;
+        private System.Windows.Forms.ToolStripButton toolStripButton3;
         private System.Windows.Forms.DataGridViewTextBoxColumn order_details_id;
         private System.Windows.Forms.DataGridViewTextBoxColumn number1;
         private System.Windows.Forms.DataGridViewTextBoxColumn checkHasStock;
@@ -2500,6 +2510,6 @@ namespace smpc_sales_app.Pages.Sales
         private System.Windows.Forms.DataGridViewTextBoxColumn unitprice;
         private System.Windows.Forms.DataGridViewTextBoxColumn linetotal;
         private System.Windows.Forms.DataGridViewTextBoxColumn status;
-        private System.Windows.Forms.DataGridViewTextBoxColumn qty_allocation;
+        private System.Windows.Forms.DataGridViewTextBoxColumn allocated_qty;
     }
 }
