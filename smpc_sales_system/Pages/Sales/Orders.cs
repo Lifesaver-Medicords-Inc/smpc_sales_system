@@ -801,7 +801,7 @@ namespace smpc_sales_app.Pages.Sales
                                 }
                                 else
                                 {
-                                    MessageBox.Show("Failed to update order status. Please try again. this is possible cause " + response.Message);
+                                    MessageBox.Show("Failed to update order status. Please try again. this is possible cause is " + response.message);
                                 }
                             }
                         }
