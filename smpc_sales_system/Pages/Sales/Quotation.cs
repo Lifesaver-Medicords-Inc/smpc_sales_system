@@ -4011,8 +4011,8 @@ namespace smpc_sales_app.Pages.Sales
                 {
                     SelectedRow = result;
                     bind(transactionList, SelectedRow, true);
+                    createFilterViewDgvQuickQouteDetails();
 
-                    //dito pre
                 }
             }
         }
@@ -4542,7 +4542,7 @@ namespace smpc_sales_app.Pages.Sales
             }
             catch (Exception ex)
             {
-                MessageBox.Show("ERROR ERROR " + ex);
+                MessageBox.Show("ERROR: " + ex);
             }
         }
         private void btn_sales_order_Click(object sender, EventArgs e)
@@ -4557,7 +4557,11 @@ namespace smpc_sales_app.Pages.Sales
 
             // Create an instance of Orders user control
             Orders ordersPage = new Orders(documentNo);
-            //ordersPage.Width = this.Parent.Width;
+            // Match the width-fitting the generic tab-hosting path (Layout.showForm)
+            // does — without this, Orders keeps its designed width (1229) and gets
+            // clipped by the tab, since it's never actually resized to fit here.
+            ordersPage.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            ordersPage.Width = this.Parent.ClientSize.Width;
             this.Parent.Controls.Add(ordersPage);
             this.Hide();
         }
@@ -5590,6 +5594,22 @@ namespace smpc_sales_app.Pages.Sales
         private void tssb_Print_ButtonClick(object sender, EventArgs e)
         {
             printShow();
+        }
+
+        private void txt_contact_1_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (!char.IsDigit(e.KeyChar) && !char.IsControl(e.KeyChar))
+            {
+                e.Handled = true;
+            }
+        }
+
+        private void txt_contact_2_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (!char.IsDigit(e.KeyChar) && !char.IsControl(e.KeyChar))
+            {
+                e.Handled = true;
+            }
         }
     }
 }

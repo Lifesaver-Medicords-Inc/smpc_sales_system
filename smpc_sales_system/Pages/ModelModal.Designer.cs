@@ -33,9 +33,13 @@ namespace smpc_sales_system.Pages.Sales
             this.label1 = new System.Windows.Forms.Label();
             this.panel2 = new System.Windows.Forms.Panel();
             this.DataGridViewModel = new System.Windows.Forms.DataGridView();
+            this.panel3 = new System.Windows.Forms.Panel();
+            this.txt_search = new System.Windows.Forms.TextBox();
+            this.lbl_search = new System.Windows.Forms.Label();
             this.panel1.SuspendLayout();
             this.panel2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.DataGridViewModel)).BeginInit();
+            this.panel3.SuspendLayout();
             this.SuspendLayout();
             // 
             // panel1
@@ -58,16 +62,16 @@ namespace smpc_sales_system.Pages.Sales
             this.label1.Text = "Model";
             // 
             // panel2
-            // 
+            //
             this.panel2.Controls.Add(this.DataGridViewModel);
             this.panel2.Dock = System.Windows.Forms.DockStyle.Top;
-            this.panel2.Location = new System.Drawing.Point(0, 57);
+            this.panel2.Location = new System.Drawing.Point(0, 91);
             this.panel2.Name = "panel2";
-            this.panel2.Size = new System.Drawing.Size(490, 335);
+            this.panel2.Size = new System.Drawing.Size(490, 301);
             this.panel2.TabIndex = 1;
-            // 
+            //
             // DataGridViewModel
-            // 
+            //
             this.DataGridViewModel.AllowUserToAddRows = false;
             this.DataGridViewModel.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
             this.DataGridViewModel.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
@@ -77,16 +81,48 @@ namespace smpc_sales_system.Pages.Sales
             this.DataGridViewModel.Name = "DataGridViewModel";
             this.DataGridViewModel.ReadOnly = true;
             this.DataGridViewModel.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.DataGridViewModel.Size = new System.Drawing.Size(490, 335);
+            this.DataGridViewModel.Size = new System.Drawing.Size(490, 301);
             this.DataGridViewModel.TabIndex = 2;
             this.DataGridViewModel.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.DataGridViewModel_CellClick);
-            // 
+            //
+            // panel3
+            //
+            this.panel3.Controls.Add(this.txt_search);
+            this.panel3.Controls.Add(this.lbl_search);
+            this.panel3.Dock = System.Windows.Forms.DockStyle.Top;
+            this.panel3.Location = new System.Drawing.Point(0, 57);
+            this.panel3.Name = "panel3";
+            this.panel3.Padding = new System.Windows.Forms.Padding(20, 4, 20, 4);
+            this.panel3.Size = new System.Drawing.Size(490, 34);
+            this.panel3.TabIndex = 3;
+            //
+            // txt_search
+            //
+            this.txt_search.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.txt_search.Location = new System.Drawing.Point(78, 4);
+            this.txt_search.Name = "txt_search";
+            this.txt_search.Size = new System.Drawing.Size(392, 20);
+            this.txt_search.TabIndex = 1;
+            this.txt_search.TextChanged += new System.EventHandler(this.txt_search_TextChanged);
+            //
+            // lbl_search
+            //
+            this.lbl_search.AutoSize = true;
+            this.lbl_search.Dock = System.Windows.Forms.DockStyle.Left;
+            this.lbl_search.Location = new System.Drawing.Point(20, 4);
+            this.lbl_search.Name = "lbl_search";
+            this.lbl_search.Padding = new System.Windows.Forms.Padding(0, 6, 6, 0);
+            this.lbl_search.Size = new System.Drawing.Size(58, 19);
+            this.lbl_search.TabIndex = 0;
+            this.lbl_search.Text = "Search:";
+            //
             // ModelModal
-            // 
+            //
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(490, 390);
             this.Controls.Add(this.panel2);
+            this.Controls.Add(this.panel3);
             this.Controls.Add(this.panel1);
             this.Name = "ModelModal";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
@@ -95,6 +131,8 @@ namespace smpc_sales_system.Pages.Sales
             this.panel1.PerformLayout();
             this.panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.DataGridViewModel)).EndInit();
+            this.panel3.ResumeLayout(false);
+            this.panel3.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -105,5 +143,8 @@ namespace smpc_sales_system.Pages.Sales
         private System.Windows.Forms.Panel panel2;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.DataGridView DataGridViewModel;
+        private System.Windows.Forms.Panel panel3;
+        private System.Windows.Forms.TextBox txt_search;
+        private System.Windows.Forms.Label lbl_search;
     }
 }

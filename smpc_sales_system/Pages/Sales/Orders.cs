@@ -577,43 +577,6 @@ namespace smpc_sales_app.Pages.Sales
                     rowData += $"Row {i}:\n";
                     rowData += $"number = '{numberValue}'\n";
                 }
-
-
-                //Just design
-                //int headerCount = 0;
-                //int detailCount = 0;
-
-                //foreach (DataGridViewRow row in dgv_project.Rows)
-                //{
-                //    try
-                //    {
-                //        object numberValue = row.Cells["number"].Value;
-                //        string numVal = numberValue.ToString();
-                //        string number = string.IsNullOrWhiteSpace(numVal) ? "0" : numVal;
-                
-                //        // If number is empty, it's a HEADER
-                //        if (string.IsNullOrEmpty(number))
-                //        {
-                //            row.DefaultCellStyle.BackColor = Color.FromArgb(30, 58, 138);  // Dark blue
-                //            row.DefaultCellStyle.ForeColor = Color.White;
-                //            row.DefaultCellStyle.Font = new Font("Arial", 11, FontStyle.Bold);
-                //            row.Height = 30;
-                //            headerCount++;
-                //        }
-                //        else
-                //        {
-                //            row.DefaultCellStyle.BackColor = Color.White;
-                //            row.DefaultCellStyle.ForeColor = Color.Black;
-                //            row.DefaultCellStyle.Font = new Font("Arial", 10, FontStyle.Regular);
-                //            row.Height = 22;
-                //            detailCount++;
-                //        }
-                //    }
-                //    catch (Exception rowEx)
-                //    {
-                //        MessageBox.Show($"Error on row {row.Index}: {rowEx.Message}");
-                //    }
-                //}
             }
             catch (Exception ex)
             {
@@ -766,7 +729,24 @@ namespace smpc_sales_app.Pages.Sales
                     var selectedOrder = OrderList.Select($"doc = {selectedDoc}").FirstOrDefault();
                 if (selectedOrder != null)
                 {
-                    selectedOrder["status"] = "ACTIVE";
+                    int orderId = Convert.ToInt32(selectedOrder["order_id"]);
+
+                    // Re-fetch before building the payload instead of reading dgv_order_sales /
+                    // dgv_project directly: those grids are only populated depending on which
+                    // bind path was last run (e.g. converting a project quotation into an order
+                    // only ever populates dgv_project, never dgv_order_sales), so reading "the
+                    // visible grid" silently sent an empty/stale detail list and item statuses
+                    // never got updated even though the order itself was marked ACTIVE.
+                    // DetailsList always reflects the real persisted sales_order_details rows.
+                    await FetchSalesOrder(true);
+
+                    selectedOrder = OrderList.Select($"doc = {selectedDoc}").FirstOrDefault();
+                    if (selectedOrder == null)
+                    {
+                        MessageBox.Show("No order found with the selected ID.");
+                        return;
+                    }
+
                     var parentDataHeader = new Dictionary<string, dynamic>
                         {
                             { "doc", selectedOrder["doc"] },
@@ -774,43 +754,31 @@ namespace smpc_sales_app.Pages.Sales
                             { "status", "ACTIVE" }
                         };
 
-                        var dataSource = Helpers.ConvertDataGridViewToDataTable(dgv_order_sales);
-                        string projectName = txt_project_name.Text;
+                        DataRow[] detailRows = DetailsList != null && DetailsList.Columns.Contains("based_id")
+                            ? DetailsList.Select($"based_id = {orderId}")
+                            : new DataRow[0];
 
                         List<Dictionary<string, dynamic>> orderDetailsList = new List<Dictionary<string, dynamic>>();
-                        string docNumber = txt_doc.Text.StartsWith("SO#") ? txt_doc.Text.Substring(3) : txt_doc.Text;
-                        bool isExistingDoc = OrderList.Rows.Cast<DataRow>().Any(row => row["doc"].ToString() == docNumber);
-                        bool InSalesOrderDGV = false;
 
-                        if (isExistingDoc)
-                        {
-                            dataSource = Helpers.ConvertDataGridViewToDataTable(dgv_order_sales);
-                            InSalesOrderDGV = true;
-                        }
-
-
-                        foreach (DataRow item in dataSource.Rows)
+                        foreach (DataRow item in detailRows)
                         {
                             Dictionary<string, object> data = new Dictionary<string, object>();
 
-                            if (int.Parse(string.IsNullOrEmpty(item["qtydgv"].ToString()) ? "0" : item["qtydgv"].ToString()) <=
-                                int.Parse(string.IsNullOrEmpty(item["allocated_qty"].ToString()) ? "0" : item["allocated_qty"].ToString()))
-                            {
-                                data.Add("status", "IN STOCK");
-                            }
-                            else
-                            {
-                                data.Add("status", "CANVASS");
-                            }
+                            int qty = int.TryParse(item["qty"]?.ToString(), out var q) ? q : 0;
+                            int allocatedQty = int.TryParse(item["allocated_qty"]?.ToString(), out var aq) ? aq : 0;
 
-                            data.Add("order_details_id", int.Parse(item["order_details_id"].ToString()));
-                            data.Add("based_id", int.Parse(item["basedid"].ToString()));
-                         
+                            data.Add("status", qty <= allocatedQty ? "IN STOCK" : "CANVASS");
+                            data.Add("order_details_id", int.TryParse(item["order_details_id"]?.ToString(), out var orderDetailsId) ? orderDetailsId : 0);
+                            data.Add("based_id", orderId);
+
                             orderDetailsList.Add(data);
-
                         }
 
-                        if (orderDetailsList != null)
+                        if (orderDetailsList.Count == 0)
+                        {
+                            MessageBox.Show("No order details found to update.");
+                        }
+                        else
                         {
                             List<Dictionary<string, dynamic>> childCollection = new List<Dictionary<string, dynamic>>();
                             foreach (var childData in orderDetailsList)
@@ -1666,7 +1634,10 @@ namespace smpc_sales_app.Pages.Sales
             bool isStatusActive = txt_status.Text == "ACTIVE";
             bool isStatusCancelled = txt_status.Text == "CANCELLED";
 
-            btn_check.Enabled = !string.IsNullOrEmpty(txt_status.Text) && !isStatusActive;
+            // Was `!isStatusActive`, which permanently locked Check out once an order went
+            // ACTIVE. Kept enabled while ACTIVE so it can be re-run to resync item-level
+            // status (see btn_check_Click) if a prior approve ran before item details existed.
+            btn_check.Enabled = !string.IsNullOrEmpty(txt_status.Text) && !isStatusCancelled;
             btn_cancel.Enabled = !string.IsNullOrEmpty(txt_status.Text) && !isStatusCancelled;
             txt_ref_po.ReadOnly = isStatusActive || isStatusCancelled;
             dtp_date.Enabled = !isStatusCancelled;

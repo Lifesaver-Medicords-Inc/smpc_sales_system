@@ -897,7 +897,8 @@ namespace smpc_sales_system.Pages.Sales
             // 
             // dgv_project_items
             // 
-            this.dgv_project_items.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.dgv_project_items.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.dgv_project_items.BackgroundColor = System.Drawing.SystemColors.ActiveBorder;
             dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
@@ -1339,7 +1340,8 @@ namespace smpc_sales_system.Pages.Sales
             this.checkBox1.UseVisualStyleBackColor = true;
             // 
             // label58
-            // 
+            //
+            this.label58.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.label58.AutoSize = true;
             this.label58.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label58.Location = new System.Drawing.Point(698, 943);
@@ -1347,17 +1349,19 @@ namespace smpc_sales_system.Pages.Sales
             this.label58.Size = new System.Drawing.Size(113, 13);
             this.label58.TabIndex = 156;
             this.label58.Text = "ASSIGNED ENGR.";
-            // 
+            //
             // txt_FLA
-            // 
+            //
+            this.txt_FLA.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.txt_FLA.Location = new System.Drawing.Point(53, 939);
             this.txt_FLA.Name = "txt_FLA";
             this.txt_FLA.ReadOnly = true;
             this.txt_FLA.Size = new System.Drawing.Size(66, 20);
             this.txt_FLA.TabIndex = 159;
-            // 
+            //
             // label6
-            // 
+            //
+            this.label6.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.label6.AutoSize = true;
             this.label6.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label6.Location = new System.Drawing.Point(21, 942);
@@ -1365,17 +1369,19 @@ namespace smpc_sales_system.Pages.Sales
             this.label6.Size = new System.Drawing.Size(29, 13);
             this.label6.TabIndex = 160;
             this.label6.Text = "FLA";
-            // 
+            //
             // txt_VOLT
-            // 
+            //
+            this.txt_VOLT.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.txt_VOLT.Location = new System.Drawing.Point(195, 938);
             this.txt_VOLT.Name = "txt_VOLT";
             this.txt_VOLT.ReadOnly = true;
             this.txt_VOLT.Size = new System.Drawing.Size(66, 20);
             this.txt_VOLT.TabIndex = 161;
-            // 
+            //
             // label7
-            // 
+            //
+            this.label7.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.label7.AutoSize = true;
             this.label7.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label7.Location = new System.Drawing.Point(126, 942);
@@ -1383,9 +1389,10 @@ namespace smpc_sales_system.Pages.Sales
             this.label7.Size = new System.Drawing.Size(64, 13);
             this.label7.TabIndex = 162;
             this.label7.Text = "VOLTAGE";
-            // 
+            //
             // chk_wiring
-            // 
+            //
+            this.chk_wiring.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.chk_wiring.AutoSize = true;
             this.chk_wiring.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.chk_wiring.Location = new System.Drawing.Point(20, 916);
@@ -1398,7 +1405,7 @@ namespace smpc_sales_system.Pages.Sales
             // 
             // dgv_wiring
             // 
-            this.dgv_wiring.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.dgv_wiring.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.dgv_wiring.AutoGenerateColumns = false;
             dataGridViewCellStyle7.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
@@ -1597,7 +1604,8 @@ namespace smpc_sales_system.Pages.Sales
             this.cmb_template_project.SelectedIndexChanged += new System.EventHandler(this.cb_template_project_SelectedIndexChanged);
             // 
             // cmb_assign_engineer_user_id
-            // 
+            //
+            this.cmb_assign_engineer_user_id.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.cmb_assign_engineer_user_id.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmb_assign_engineer_user_id.FormattingEnabled = true;
             this.cmb_assign_engineer_user_id.Location = new System.Drawing.Point(817, 937);

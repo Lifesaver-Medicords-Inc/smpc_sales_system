@@ -17,6 +17,7 @@ namespace smpc_sales_system.Pages.Sales
     public partial class ModelModal : Form
     {
         private DataTable _ItemData, _BomHead, _BomDetail;
+        private DataView _modelView;
         public event Action<String> CreateSuccess;
         int itemId = 0, bomId = 0, id = 0;
         bool isBom = false;
@@ -74,8 +75,27 @@ namespace smpc_sales_system.Pages.Sales
 
             DataView dv = new DataView(ItemData);
             DataGridViewModel.DataSource = dv;
+            _modelView = dv;
 
             IdentifyItemType(DataGridViewModel);
+        }
+
+        private void txt_search_TextChanged(object sender, EventArgs e)
+        {
+            if (_modelView == null) return;
+
+            string search = txt_search.Text.Trim().Replace("'", "''");
+
+            if (string.IsNullOrWhiteSpace(search))
+            {
+                _modelView.RowFilter = string.Empty;
+                return;
+            }
+
+            _modelView.RowFilter = $@"
+                item_code LIKE '%{search}%' OR
+                item_model LIKE '%{search}%'
+             ";
         }
 
         private void IdentifyItemType(DataGridView dgv)
