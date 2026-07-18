@@ -174,7 +174,9 @@ namespace smpc_sales_app.Pages.Sales
             this.btn_search = new System.Windows.Forms.ToolStripButton();
             this.btn_prev = new System.Windows.Forms.ToolStripButton();
             this.btn_next = new System.Windows.Forms.ToolStripButton();
+            this.btn_edit = new System.Windows.Forms.ToolStripButton();
             this.Save = new System.Windows.Forms.ToolStripButton();
+            this.btn_delete = new System.Windows.Forms.ToolStripButton();
             this.btn_back = new System.Windows.Forms.ToolStripButton();
             this.toolStripButton3 = new System.Windows.Forms.ToolStripButton();
             this.btn_refresh = new System.Windows.Forms.ToolStripButton();
@@ -1340,7 +1342,9 @@ namespace smpc_sales_app.Pages.Sales
             this.btn_search,
             this.btn_prev,
             this.btn_next,
+            this.btn_edit,
             this.Save,
+            this.btn_delete,
             this.btn_back,
             this.toolStripButton3,
             this.btn_refresh,
@@ -1398,17 +1402,40 @@ namespace smpc_sales_app.Pages.Sales
             this.btn_next.Size = new System.Drawing.Size(51, 22);
             this.btn_next.Text = "Next";
             this.btn_next.Click += new System.EventHandler(this.btn_next_Click);
-            // 
+            //
+            // btn_edit
+            //
+            this.btn_edit.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.btn_edit.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold);
+            this.btn_edit.Name = "btn_edit";
+            this.btn_edit.Size = new System.Drawing.Size(51, 22);
+            this.btn_edit.Text = "Edit";
+            this.btn_edit.ToolTipText = "Edit";
+            this.btn_edit.Click += new System.EventHandler(this.btn_edit_Click);
+            //
             // Save
-            // 
+            //
             this.Save.Image = ((System.Drawing.Image)(resources.GetObject("Save.Image")));
             this.Save.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.Save.Name = "Save";
             this.Save.Size = new System.Drawing.Size(51, 22);
             this.Save.Text = "Save";
             this.Save.ToolTipText = "Save";
+            this.Save.Visible = false;
             this.Save.Click += new System.EventHandler(this.Save_Click);
-            // 
+            //
+            // btn_delete
+            //
+            this.btn_delete.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.btn_delete.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold);
+            this.btn_delete.ForeColor = System.Drawing.Color.Maroon;
+            this.btn_delete.Name = "btn_delete";
+            this.btn_delete.Size = new System.Drawing.Size(60, 22);
+            this.btn_delete.Text = "Delete";
+            this.btn_delete.ToolTipText = "Delete";
+            this.btn_delete.Enabled = false;
+            this.btn_delete.Click += new System.EventHandler(this.btn_delete_Click);
+            //
             // btn_back
             // 
             this.btn_back.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
@@ -1597,9 +1624,9 @@ namespace smpc_sales_app.Pages.Sales
             this.btn_cancel.Text = "CANCEL";
             this.btn_cancel.UseVisualStyleBackColor = false;
             this.btn_cancel.Click += new System.EventHandler(this.btn_cancel_Click);
-            // 
+            //
             // txt_vat_amount
-            // 
+            //
             this.txt_vat_amount.Location = new System.Drawing.Point(82, 33);
             this.txt_vat_amount.Name = "txt_vat_amount";
             this.txt_vat_amount.ReadOnly = true;
@@ -1702,6 +1729,7 @@ namespace smpc_sales_app.Pages.Sales
             // 
             this.btn_save.BackColor = System.Drawing.Color.LightGreen;
             this.btn_save.Enabled = false;
+            this.btn_save.Visible = false;
             this.btn_save.FlatAppearance.BorderColor = System.Drawing.Color.White;
             this.btn_save.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
             this.btn_save.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(255)))), ((int)(((byte)(128)))));
@@ -2365,6 +2393,8 @@ namespace smpc_sales_app.Pages.Sales
         private System.Windows.Forms.ToolStripButton btn_search;
         private System.Windows.Forms.ToolStripButton btn_prev;
         private System.Windows.Forms.ToolStripButton btn_next;
+        private System.Windows.Forms.ToolStripButton btn_edit;
+        private System.Windows.Forms.ToolStripButton btn_delete;
         private System.Windows.Forms.ToolStripButton btn_refresh;
         private System.Windows.Forms.ToolStripButton toolStripButton6;
         private System.Windows.Forms.Panel panel6;

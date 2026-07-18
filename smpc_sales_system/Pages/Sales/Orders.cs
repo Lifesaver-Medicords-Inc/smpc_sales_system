@@ -30,6 +30,12 @@ namespace smpc_sales_app.Pages.Sales
     {
         int SelectedRow = 0;
         private string documentNo;
+        // True only while this screen is being used to convert a just-finalized
+        // quotation into a brand-new order (nothing to view yet, so it starts
+        // editable). False when browsing/viewing an order that already exists -
+        // that starts locked, until the user clicks Edit.
+        private bool isCreatingNewOrder = false;
+        private bool isEditingExisting = false;
         private ImageList imageList = new ImageList(), imageList2 = new ImageList();
         string SalesPath = Settings.Default.SALESPATH;
         string AfterSalesPath = Settings.Default.AFTERSALESPATH;
@@ -635,6 +641,11 @@ namespace smpc_sales_app.Pages.Sales
         //ON LOAD OF ORDER
         private async void Orders_Load(object sender, EventArgs e)
         {
+            // A (re)load always starts back in view mode; the branches below set
+            // isCreatingNewOrder = true again if this load is actually for
+            // converting a quotation into a brand-new order.
+            isEditingExisting = false;
+            isCreatingNewOrder = false;
             bs_payment_terms.DataSource = CacheData.PaymentTerms;
             bs_ship_type.DataSource = CacheData.ShipTypeSetup;
             toBenchedToolStripMenuItem.Click += toBenchedToolStripMenuItem_Click;
@@ -658,11 +669,17 @@ namespace smpc_sales_app.Pages.Sales
 
                     if (matchingRows.Length > 0)
                     {
+                        // documentNo matches an order that already exists - viewing it,
+                        // not creating one.
+                        isCreatingNewOrder = false;
                         BindControlsForNewOrderORexisting();
                         bindOrderByDocNo(documentNo, true);
                     }
                     else
                     {
+                        // documentNo didn't match an existing order, so it's a quotation
+                        // being converted into a brand-new one.
+                        isCreatingNewOrder = true;
                         btn_refresh.Visible = false;
                         BindControlsForNewOrderORexisting();
                         bindQuotation(documentNo, true);
@@ -674,6 +691,7 @@ namespace smpc_sales_app.Pages.Sales
                 }
                 else if (documentNo == "0")
                 {
+                    isCreatingNewOrder = true;
                     BindControlsForNewOrderORexisting();
                     await FetchSalesOrder(false);
                     CalculateTotalPrice();
@@ -681,6 +699,7 @@ namespace smpc_sales_app.Pages.Sales
                 }
                 else
                 {
+                    isCreatingNewOrder = true;
                     btn_refresh.Visible = false;
                     BindControlsForNewOrderORexisting();
                     bindQuotation(documentNo, true);
@@ -706,6 +725,7 @@ namespace smpc_sales_app.Pages.Sales
                 if (result != -1)
                 {
                     SelectedRow = result;
+                    isEditingExisting = false;
                     bindOrder(true);
                     CalculateTotalPrice();
                 }
@@ -861,12 +881,80 @@ namespace smpc_sales_app.Pages.Sales
                 MessageBox.Show($"Error: {ex.Message}\n\nStack Trace: {ex.StackTrace}");
             }
         }
+        // DELETE - permanently removes the order (unlike Cancel, which just sets
+        // status to CANCELLED and keeps the record). Only allowed while the order
+        // hasn't gone ACTIVE yet, so this is for cleaning up mistakes/duplicates
+        // (e.g. two orders accidentally created from the same quotation) rather
+        // than voiding an order that already has real activity against it.
+        private async void btn_delete_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                string docIdValue = ((TextBox)pnl_header_2.Controls["txt_doc"]).Text;
+                docIdValue = docIdValue.StartsWith("SO#") ? docIdValue.Substring(3) : docIdValue;
+
+                if (!int.TryParse(docIdValue, out int selectedDoc) || selectedDoc <= 0)
+                {
+                    MessageBox.Show("Please select a valid order to delete.");
+                    return;
+                }
+
+                var selectedOrder = OrderList.Select($"doc = {selectedDoc}").FirstOrDefault();
+                if (selectedOrder == null)
+                {
+                    MessageBox.Show("No order found with the selected ID.");
+                    return;
+                }
+
+                if (selectedOrder["status"]?.ToString() == "ACTIVE")
+                {
+                    MessageBox.Show(
+                        "This order is ACTIVE and can't be deleted. Use Cancel instead if it needs to be voided.",
+                        "Delete Not Allowed", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                string docNoDisplay = selectedOrder["document_no"]?.ToString() ?? selectedDoc.ToString();
+                DialogResult confirm = MessageBox.Show(
+                    $"Are you sure you want to permanently delete order {docNoDisplay}? This cannot be undone.",
+                    "Confirm Delete", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+
+                if (confirm != DialogResult.Yes)
+                {
+                    return;
+                }
+
+                var data = new Dictionary<string, dynamic>
+                {
+                    { "order_id", selectedOrder["order_id"] }
+                };
+
+                bool isSuccess = await OrderService.Delete(data);
+                if (isSuccess)
+                {
+                    MessageBox.Show("Order deleted successfully.");
+                    Helpers.ResetControls(pnl_header);
+                    Helpers.ResetControls(pnl_footer);
+                    await FetchSalesOrder(false);
+                    ViewEnable();
+                }
+                else
+                {
+                    MessageBox.Show("Failed to delete the order.");
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error: {ex.Message}\n\nStack Trace: {ex.StackTrace}");
+            }
+        }
         private async void btn_next_Click(object sender, EventArgs e)
         {
             int rowCount = OrderList.Rows.Count;
             if (SelectedRow < rowCount - 1)
             {
                 SelectedRow++;
+                isEditingExisting = false;
                 Helpers.ResetControls(pnl_header);
                 Helpers.ResetControls(pnl_footer);
                 await FetchSalesOrder(false);
@@ -881,6 +969,7 @@ namespace smpc_sales_app.Pages.Sales
             if (SelectedRow >= 1)
             {
                 SelectedRow--;
+                isEditingExisting = false;
                 Helpers.ResetControls(pnl_header);
                 Helpers.ResetControls(pnl_footer);
                 await FetchSalesOrder(false);
@@ -1633,26 +1722,64 @@ namespace smpc_sales_app.Pages.Sales
         {
             bool isStatusActive = txt_status.Text == "ACTIVE";
             bool isStatusCancelled = txt_status.Text == "CANCELLED";
+            bool hasStatus = !string.IsNullOrEmpty(txt_status.Text);
 
             // Was `!isStatusActive`, which permanently locked Check out once an order went
             // ACTIVE. Kept enabled while ACTIVE so it can be re-run to resync item-level
             // status (see btn_check_Click) if a prior approve ran before item details existed.
-            btn_check.Enabled = !string.IsNullOrEmpty(txt_status.Text) && !isStatusCancelled;
-            btn_cancel.Enabled = !string.IsNullOrEmpty(txt_status.Text) && !isStatusCancelled;
-            txt_ref_po.ReadOnly = isStatusActive || isStatusCancelled;
-            dtp_date.Enabled = !isStatusCancelled;
-            dtp_delivery_date.Enabled = !isStatusCancelled;
-            txt_receiver.ReadOnly = isStatusCancelled;
-            txt_contact_no.ReadOnly = isStatusCancelled;
-            txt_remarks.ReadOnly = isStatusCancelled;
-            txt_approved_by.ReadOnly = isStatusCancelled;
-            btn_save.Enabled = isStatusCancelled;
+            btn_check.Enabled = hasStatus && !isStatusCancelled;
+            btn_cancel.Enabled = hasStatus && !isStatusCancelled;
+            // Delete is only for orders that haven't gone ACTIVE yet (cleaning up
+            // mistakes/duplicates) - once ACTIVE, use Cancel instead. Not applicable
+            // while still creating a brand-new order (nothing saved yet to delete).
+            btn_delete.Enabled = !isCreatingNewOrder && hasStatus && !isStatusActive;
             btn_refresh.Enabled = isStatusActive || !isStatusCancelled;
+
+            // Edit mode: a brand-new order (just converted from a finalized quotation)
+            // starts editable immediately since there's nothing to view yet. An
+            // existing order starts locked and needs Edit clicked - and can't be
+            // edited at all once CANCELLED.
+            bool canEdit = isCreatingNewOrder || isEditingExisting;
+
+            btn_edit.Visible = !isCreatingNewOrder;
+            btn_edit.Enabled = !isCreatingNewOrder && !isEditingExisting && hasStatus && !isStatusCancelled;
+
+            Save.Visible = canEdit;
+            btn_save.Visible = canEdit;
+            btn_save.Enabled = canEdit;
+
+            Panel[] editablePanels = { pnl_header, pnl_header_2, pnl_footer };
+            if (canEdit && !isStatusCancelled)
+            {
+                Helpers.ResetReadOnlyControls(editablePanels);
+            }
+            else
+            {
+                Helpers.ReadOnlyControls(editablePanels);
+            }
+
+            txt_ref_po.ReadOnly = isStatusActive || isStatusCancelled || !canEdit;
+            dtp_date.Enabled = !isStatusCancelled && canEdit;
+            dtp_delivery_date.Enabled = !isStatusCancelled && canEdit;
+            txt_receiver.ReadOnly = isStatusCancelled || !canEdit;
+            txt_contact_no.ReadOnly = isStatusCancelled || !canEdit;
+            txt_remarks.ReadOnly = isStatusCancelled || !canEdit;
+            txt_approved_by.ReadOnly = isStatusCancelled || !canEdit;
 
             foreach (DataGridViewColumn column in dgv_order_sales.Columns)
             {
-                column.ReadOnly = isStatusCancelled;
+                column.ReadOnly = isStatusCancelled || !canEdit;
             }
+        }
+        private void btn_edit_Click(object sender, EventArgs e)
+        {
+            if (isCreatingNewOrder)
+            {
+                return;
+            }
+
+            isEditingExisting = true;
+            CheckStatus();
         }
         private async void SaveSalesOrder()
         {
@@ -1820,11 +1947,36 @@ namespace smpc_sales_app.Pages.Sales
                                 MessageBox.Show("Data updated successfully");
                                 await FetchSalesOrder(true);
                                 bindOrderByDocNo(docno, true);
+                                // Close back out of edit mode now that the update is saved.
+                                isEditingExisting = false;
                                 CheckStatus();
                             }
                         }
                         else
                         {
+                            // Block creating a second Sales Order from a Sales Quotation
+                            // that's already been converted - a quotation should only
+                            // ever become one Sales Order.
+                            var quotationIdStr = parentDataHeader2.ContainsKey("quotation_id")
+                                ? parentDataHeader2["quotation_id"]?.ToString()
+                                : null;
+
+                            if (!string.IsNullOrWhiteSpace(quotationIdStr))
+                            {
+                                bool duplicateQuotation = OrderList.Rows.Cast<DataRow>().Any(row =>
+                                    row["quotation_id"] != DBNull.Value &&
+                                    row["quotation_id"].ToString() == quotationIdStr);
+
+                                if (duplicateQuotation)
+                                {
+                                    MessageBox.Show(
+                                        "A Sales Order already exists for this Sales Quotation. " +
+                                        "A quotation can only be converted to one Sales Order.",
+                                        "Duplicate Sales Order", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                                    return;
+                                }
+                            }
+
                             //added the sales when saving the first time the SO
                             parentData["sales_executive"] = CacheData.CurrentUser.first_name + " " + CacheData.CurrentUser.last_name;
 
@@ -1835,6 +1987,11 @@ namespace smpc_sales_app.Pages.Sales
                                 MessageBox.Show("Data added successfully");
                                 await FetchSalesOrder(true);
                                 CheckStatus();
+                                // Finalized quotation -> new Sales Order: once the first
+                                // save succeeds, close out of edit mode (hide Save/Back,
+                                // show New) instead of leaving the form sitting open in
+                                // the same editable state.
+                                ViewEnable();
                             }
 
                         }
@@ -1851,9 +2008,15 @@ namespace smpc_sales_app.Pages.Sales
 
         public void ViewEnable()
         {
-            btn_save.Visible = false;
             btn_back.Visible = false;
             btn_new.Visible = true;
+            // The order that was just created now exists, so this screen is no
+            // longer "creating a new order" - fall back to normal view mode
+            // (locked fields, Save/Delete hidden or gated the same way as any
+            // other existing order, Edit available).
+            isCreatingNewOrder = false;
+            isEditingExisting = false;
+            CheckStatus();
         }
 
         private void dgv_order_sales_CellMouseClick(object sender, DataGridViewCellMouseEventArgs e)
