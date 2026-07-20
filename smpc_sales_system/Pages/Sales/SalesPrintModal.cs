@@ -38,8 +38,6 @@ namespace smpc_sales_system.Pages.Sales
             string inclusion = null, string exclusion = null, string termsAndCondition = null)
         {
             InitializeComponent();
-            fetchBpiData();
-            fetchItemData();
             this.documentNo = documentNo;
             this.isQuotation = isQuotation;
             this.isProject = isProject;
@@ -62,13 +60,13 @@ namespace smpc_sales_system.Pages.Sales
         private DataTable bpi_general = new DataTable();
         private DataTable bpi_address = new DataTable();
         //FETCHERS OF DATA METHODS
-        private async void fetchItemData()
+        private async Task fetchItemData()
         {
             var itemData = await ItemService.GetItem();
             ItemList = JsonHelper.ToDataTable(itemData.items);
             ImageList = JsonHelper.ToDataTable(itemData.ItemImages);
         }
-        private async void fetchBpiData()
+        private async Task fetchBpiData()
         {
             Bpi_Class bpi_data = await QuotationService.GetBpiCustomers();
             bpi_general = JsonHelper.ToDataTable(bpi_data.general);
@@ -214,6 +212,13 @@ namespace smpc_sales_system.Pages.Sales
         public string ExportPath { get; set; } = "";
         private async void SalesPrintModal_Load(object sender, EventArgs e)
         {
+            // Must finish before anything below touches ItemList/bpi_general/bpi_address -
+            // these used to be fired-and-forgotten from the constructor, which raced with
+            // this handler and could leave those tables empty (no columns at all), causing
+            // "Cannot find column [id]" when .Select() ran against them.
+            await fetchBpiData();
+            await fetchItemData();
+
             if (isProject)
             {
                 await fetchQuotationProjectByDocumentNo(documentNo);
@@ -529,10 +534,22 @@ namespace smpc_sales_system.Pages.Sales
 
                         foreach (DataRow childRow in childList.Rows)
                         {
-                            
-                            if (selectedImageList != null && selectedImageList.Rows.Count > 0)
+                            int quotationQuickId = (int)childRow["id"];
+
+                            var matchingImageRows = selectedImageList != null
+                                ? selectedImageList.AsEnumerable()
+                                    .Where(row => row.Field<int>("quotation_quick_id") == quotationQuickId)
+                                    .ToList()
+                                : new List<DataRow>();
+
+                            // Prefer the row explicitly marked as selected for this line item
+                            DataRow matchedImageRow = matchingImageRows
+                                .FirstOrDefault(row => row.Field<bool>("is_selected"))
+                                ?? matchingImageRows.FirstOrDefault();
+
+                            if (matchedImageRow != null)
                             {
-                                int ImageId = (int)selectedImageList.Rows[0]["image_id"];
+                                int ImageId = matchedImageRow.Field<int>("image_id");
 
                                 string imageName = ImageList.AsEnumerable()
                                     .Where(row => row.Field<int>("id") == ImageId)

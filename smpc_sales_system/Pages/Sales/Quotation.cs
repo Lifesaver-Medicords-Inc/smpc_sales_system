@@ -3181,8 +3181,32 @@ namespace smpc_sales_app.Pages.Sales
                 this.tabControl.ItemSize = new Size(0, 0);
 
                 // overload, added version
-                FetchQuotationDetailsByDocumentNo(documentNo, versionNo, subVersionNo);
-                FetchProjectDetailsByDocumentNo(documentNo, versionNo, subVersionNo);
+                // A document can only ever be a Quick Quote OR a Project quotation
+                // (the API filters each list by whether project_name is set), so exactly
+                // one of these two lookups is expected to come back empty - that's normal,
+                // not an error. We wait for both, then set isProject based on whichever
+                // one actually found the record, so Print (and anything else keyed off
+                // isProject) uses the correct data source afterwards.
+                bool foundAsQuickQuote = await FetchQuotationDetailsByDocumentNo(documentNo, versionNo, subVersionNo);
+                bool foundAsProject = await FetchProjectDetailsByDocumentNo(documentNo, versionNo, subVersionNo);
+
+                if (foundAsProject)
+                {
+                    isProject = true;
+                    this.btn_quick_quote.BackColor = Color.White;
+                    this.btn_project.BackColor = Color.FromArgb(255, 128, 128);
+                }
+                else
+                {
+                    isProject = false;
+                    this.btn_quick_quote.BackColor = Color.FromArgb(255, 128, 128);
+                    this.btn_project.BackColor = Color.White;
+                }
+
+                if (!foundAsQuickQuote && !foundAsProject)
+                {
+                    MessageBox.Show("No SalesQuotation found for the provided document number.");
+                }
 
                 bs_unit.DataSource = CacheData.UoM;
             }
@@ -4585,7 +4609,8 @@ namespace smpc_sales_app.Pages.Sales
                 printPage.ShowDialog();
             }
         }
-        private async void FetchQuotationDetailsByDocumentNo(string documentNo, string version_no = null, string sub_version_no = null)
+        // Returns true if a Quick Quote record matching documentNo was found and bound.
+        private async Task<bool> FetchQuotationDetailsByDocumentNo(string documentNo, string version_no = null, string sub_version_no = null)
         {
             SalesQuotationList data = await QuotationService.GetQuotations();
             var itemData = await ItemService.GetItem();
@@ -4593,7 +4618,7 @@ namespace smpc_sales_app.Pages.Sales
 
             if (data == null || string.IsNullOrEmpty(documentNo))
             {
-                return;
+                return false;
             }
 
             var filteredSalesQuotation = data.SalesQuotation
@@ -4631,20 +4656,25 @@ namespace smpc_sales_app.Pages.Sales
                 {
                     MessageBox.Show("No records found for the provided document number.");
                 }
+
+                return true;
             }
             else
             {
-                MessageBox.Show("No SalesQuotation found for the provided document number.");
+                // Not found here just means this document is a Project quotation instead -
+                // the caller checks both lookups before deciding it's a real error.
+                return false;
             }
         }
 
-        private async void FetchProjectDetailsByDocumentNo(string documentNo, string version_no = null, string sub_version_no = null)
+        // Returns true if a Project quotation record matching documentNo was found and bound.
+        private async Task<bool> FetchProjectDetailsByDocumentNo(string documentNo, string version_no = null, string sub_version_no = null)
         {
             SalesProjectList data = await ProjectService.GetProjects();
 
             if (data == null || string.IsNullOrEmpty(documentNo))
             {
-                return;
+                return false;
             }
 
             var filteredSalesQuotation = data.SalesQuotation
@@ -4679,10 +4709,14 @@ namespace smpc_sales_app.Pages.Sales
                 {
                     MessageBox.Show("No records found for the provided document number.");
                 }
+
+                return true;
             }
             else
             {
-                MessageBox.Show("No SalesQuotation found for the provided document number.");
+                // Not found here just means this document is a Quick Quote instead -
+                // the caller checks both lookups before deciding it's a real error.
+                return false;
             }
         }
         private void back_Click(object sender, EventArgs e)
