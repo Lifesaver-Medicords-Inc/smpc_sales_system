@@ -73,6 +73,9 @@
   <PropertyGroup>
     <StartupObject>smpc_sales_system.Program</StartupObject>
   </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>download.ico</ApplicationIcon>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Accessibility" />
     <Reference Include="FastReport, Version=2026.2.1.0, Culture=neutral, PublicKeyToken=db7e5ce63278458c, processorArchitecture=MSIL">
@@ -673,6 +676,7 @@
     <None Include="Resources\three-dots-vertical_1.png" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="download.ico" />
     <Content Include="Resources\check.png" />
     <None Include="Resources\check1.png" />
     <None Include="Resources\FileIcon.png" />

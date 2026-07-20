@@ -175,6 +175,7 @@ namespace smpc_sales_app.Pages.Sales
             this.btn_prev = new System.Windows.Forms.ToolStripButton();
             this.btn_next = new System.Windows.Forms.ToolStripButton();
             this.btn_edit = new System.Windows.Forms.ToolStripButton();
+            this.btn_cancel_edit = new System.Windows.Forms.ToolStripButton();
             this.Save = new System.Windows.Forms.ToolStripButton();
             this.btn_delete = new System.Windows.Forms.ToolStripButton();
             this.btn_back = new System.Windows.Forms.ToolStripButton();
@@ -1343,6 +1344,7 @@ namespace smpc_sales_app.Pages.Sales
             this.btn_prev,
             this.btn_next,
             this.btn_edit,
+            this.btn_cancel_edit,
             this.Save,
             this.btn_delete,
             this.btn_back,
@@ -1412,6 +1414,17 @@ namespace smpc_sales_app.Pages.Sales
             this.btn_edit.Text = "Edit";
             this.btn_edit.ToolTipText = "Edit";
             this.btn_edit.Click += new System.EventHandler(this.btn_edit_Click);
+            //
+            // btn_cancel_edit
+            //
+            this.btn_cancel_edit.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.btn_cancel_edit.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold);
+            this.btn_cancel_edit.Name = "btn_cancel_edit";
+            this.btn_cancel_edit.Size = new System.Drawing.Size(51, 22);
+            this.btn_cancel_edit.Text = "Back";
+            this.btn_cancel_edit.ToolTipText = "Discard changes and return to view mode";
+            this.btn_cancel_edit.Visible = false;
+            this.btn_cancel_edit.Click += new System.EventHandler(this.btn_cancel_edit_Click);
             //
             // Save
             //
@@ -2394,6 +2407,7 @@ namespace smpc_sales_app.Pages.Sales
         private System.Windows.Forms.ToolStripButton btn_prev;
         private System.Windows.Forms.ToolStripButton btn_next;
         private System.Windows.Forms.ToolStripButton btn_edit;
+        private System.Windows.Forms.ToolStripButton btn_cancel_edit;
         private System.Windows.Forms.ToolStripButton btn_delete;
         private System.Windows.Forms.ToolStripButton btn_refresh;
         private System.Windows.Forms.ToolStripButton toolStripButton6;

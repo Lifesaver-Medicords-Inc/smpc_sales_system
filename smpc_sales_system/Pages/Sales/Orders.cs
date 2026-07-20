@@ -1732,7 +1732,10 @@ namespace smpc_sales_app.Pages.Sales
             // Delete is only for orders that haven't gone ACTIVE yet (cleaning up
             // mistakes/duplicates) - once ACTIVE, use Cancel instead. Not applicable
             // while still creating a brand-new order (nothing saved yet to delete).
-            btn_delete.Enabled = !isCreatingNewOrder && hasStatus && !isStatusActive;
+            // Hidden (not just disabled) when it doesn't apply, same as Edit/Save.
+            bool canDelete = !isCreatingNewOrder && hasStatus && !isStatusActive;
+            btn_delete.Visible = canDelete;
+            btn_delete.Enabled = canDelete;
             btn_refresh.Enabled = isStatusActive || !isStatusCancelled;
 
             // Edit mode: a brand-new order (just converted from a finalized quotation)
@@ -1743,6 +1746,11 @@ namespace smpc_sales_app.Pages.Sales
 
             btn_edit.Visible = !isCreatingNewOrder;
             btn_edit.Enabled = !isCreatingNewOrder && !isEditingExisting && hasStatus && !isStatusCancelled;
+
+            // Back-to-view: only meaningful while actively editing an *existing*
+            // order (discards unsaved edits and re-locks the form). Not shown while
+            // creating a brand-new order, since there's no prior view to return to.
+            btn_cancel_edit.Visible = isEditingExisting;
 
             Save.Visible = canEdit;
             btn_save.Visible = canEdit;
@@ -1780,6 +1788,27 @@ namespace smpc_sales_app.Pages.Sales
 
             isEditingExisting = true;
             CheckStatus();
+        }
+        // Leaves edit mode without saving - reloads the order's original values
+        // (discarding whatever was typed) and re-locks the form. Only reachable
+        // while editing an existing order (see CheckStatus's btn_cancel_edit.Visible).
+        private void btn_cancel_edit_Click(object sender, EventArgs e)
+        {
+            isEditingExisting = false;
+
+            bool matchesExistingOrder = !string.IsNullOrEmpty(documentNo)
+                && OrderList != null
+                && OrderList.Select($"document_no = '{documentNo}'").Length > 0;
+
+            if (matchesExistingOrder)
+            {
+                bindOrderByDocNo(documentNo, true);
+            }
+            else
+            {
+                bindOrder(true);
+            }
+            CalculateTotalPrice();
         }
         private async void SaveSalesOrder()
         {
