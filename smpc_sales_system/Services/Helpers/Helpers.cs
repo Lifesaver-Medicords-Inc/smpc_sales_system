@@ -697,22 +697,28 @@ namespace smpc_app.Services.Helpers
         {
             DataTable dataTable = new DataTable();
 
-            // Add columns to DataTable
             foreach (DataGridViewColumn column in dgv.Columns)
             {
-                dataTable.Columns.Add(column.Name);
+                if (!dataTable.Columns.Contains(column.Name))
+                {
+                    dataTable.Columns.Add(column.Name);
+                }
             }
 
-            // Add rows to DataTable
             foreach (DataGridViewRow row in dgv.Rows)
             {
-                // Skip the new row placeholder if it's present
+
                 if (!row.IsNewRow)
                 {
                     DataRow dataRow = dataTable.NewRow();
                     for (int i = 0; i < dgv.Columns.Count; i++)
                     {
-                        dataRow[i] = row.Cells[i].Value;
+                        string columnName = dgv.Columns[i].Name;
+
+                        if (dataRow[columnName] == DBNull.Value || dataRow[columnName] == null)
+                        {
+                            dataRow[columnName] = row.Cells[i].Value ?? DBNull.Value;
+                        }
                     }
                     dataTable.Rows.Add(dataRow);
                 }

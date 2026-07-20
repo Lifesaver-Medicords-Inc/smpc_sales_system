@@ -51,6 +51,17 @@ namespace smpc_sales_app.Pages.Sales
         {
             InitializeComponent();
 
+            // Every column dgv_quick_quote_details needs is already defined explicitly in
+            // the designer (quick_id, quick_images, reference_code, etc.). With
+            // AutoGenerateColumns left at its WinForms default (true), every time the grid
+            // gets rebound to a new data source, WinForms silently appends an extra column
+            // for any bound field that doesn't already have a matching column - which is
+            // exactly what kept producing the stray duplicate "images" column (and, before
+            // that, duplicate "quick_images" columns) no matter how much the binding code
+            // was patched around it. Turning this off is the actual fix: no more columns
+            // will ever be auto-added.
+            dgv_quick_quote_details.AutoGenerateColumns = false;
+
             cmb_warranty.Text = "1 year";
             //KRIS: NEED ITONG DALAWA KAPAG MAY VERSION_NO NA PERO GINAGAMIT KO NA RIN GANYAN
             this.documentNo = documentNo;
@@ -2268,6 +2279,10 @@ namespace smpc_sales_app.Pages.Sales
                 var newDatasource = Helpers.ConvertDataTableToStringTable(dataSource);
 
                 List<Dictionary<string, dynamic>> quickQuoteList = new List<Dictionary<string, dynamic>>();
+                // Tracks which original grid row each quickQuoteList entry came from, since
+                // rows with item_id == 0 are skipped below and would otherwise throw the
+                // indices out of sync with SelectedImagesByRow.
+                List<int> quickQuoteRowIndexes = new List<int>();
 
                 for (int i = 0; i < newDatasource.Rows.Count; i++)
                 {
@@ -2296,6 +2311,7 @@ namespace smpc_sales_app.Pages.Sales
                     data.Add("man_days", int.TryParse(item["man_days"].ToString(), out int manday) ? manday : 0);
                     data.Add("labor_rate", decimal.TryParse(item["labor_rate"].ToString(), out decimal laborday) ? laborday : 0);
                 quickQuoteList.Add(data);
+                quickQuoteRowIndexes.Add(i);
 
                 }
 
@@ -2303,12 +2319,16 @@ namespace smpc_sales_app.Pages.Sales
                 {
                     List<Dictionary<string, dynamic>> childCollection = new List<Dictionary<string, dynamic>>();
 
-                    // loops thru the items
-                    foreach (var childData in quickQuoteList)
+                    // loops thru the items - each row only gets the images that were
+                    // selected for that specific row (falls back to empty if none picked)
+                    for (int q = 0; q < quickQuoteList.Count; q++)
                     {
-                        var dict = new Dictionary<string, dynamic>(childData);
+                        var dict = new Dictionary<string, dynamic>(quickQuoteList[q]);
 
-                        dict["quick_selected_image"] = SelectedImages;
+                        int rowIndex = quickQuoteRowIndexes[q];
+                        dict["quick_selected_image"] = SelectedImagesByRow.TryGetValue(rowIndex, out var rowImages)
+                            ? rowImages
+                            : new List<Dictionary<string, object>>();
 
                         childCollection.Add(dict);
 
@@ -2419,7 +2439,7 @@ namespace smpc_sales_app.Pages.Sales
                     if (int.TryParse(cellQuickId, out int quickId) &&
                         int.TryParse(cellItemId, out int itemId))
                     {
-                        HandleItemImageSelectionClick(quickId, itemId);
+                        HandleItemImageSelectionClick(e.RowIndex, quickId, itemId);
                     }
                 }
                 // Components Column
@@ -2769,7 +2789,12 @@ namespace smpc_sales_app.Pages.Sales
         }
 
         public List<Dictionary<string, object>> SelectedImages { get; private set; }
-        private void HandleItemImageSelectionClick(int quickId, int itemId)
+        // Selected images picked via the IMAGES column, keyed by the grid row index they
+        // belong to. Previously a single shared "SelectedImages" field was applied to every
+        // row on Save, so every line item ended up with a copy of whichever item's images
+        // were picked last - this keeps each row's image selection independent.
+        private Dictionary<int, List<Dictionary<string, object>>> SelectedImagesByRow { get; set; } = new Dictionary<int, List<Dictionary<string, object>>>();
+        private void HandleItemImageSelectionClick(int rowIndex, int quickId, int itemId)
         {
             DataView dvItems = new DataView(ItemList);
             DataTable filteredItems = dvItems.ToTable();
@@ -2797,6 +2822,7 @@ namespace smpc_sales_app.Pages.Sales
             if (r == DialogResult.OK)
             {
                 SelectedImages = itemImageModal.SelectedImages;
+                SelectedImagesByRow[rowIndex] = SelectedImages;
                 int selectedImageCount = SelectedImages.Count();
                 MessageBox.Show($"{selectedImageCount} images selected.");
             }
@@ -3391,11 +3417,28 @@ namespace smpc_sales_app.Pages.Sales
 
         private void LoadQuickImageCounts()
         {
+            // Defensive cleanup: this method (and the DataSource rebind that precedes it
+            // in createFilterViewDgvQuickQouteDetails) can run several times over the life
+            // of the form - e.g. re-selecting a row after a search. If more than one column
+            // ends up named "quick_images", keep only the first and drop the rest so the
+            // grid never shows a duplicate IMAGES column, and so
+            // Helpers.ConvertDataGridViewToDataTable doesn't choke on Save.
+            var duplicateImageColumns = dgv_quick_quote_details.Columns
+                .Cast<DataGridViewColumn>()
+                .Where(c => c.Name == "quick_images")
+                .Skip(1)
+                .ToList();
+
+            foreach (var dupe in duplicateImageColumns)
+            {
+                dgv_quick_quote_details.Columns.Remove(dupe);
+            }
+
             bool isColumnExist = false;
 
             if (dgv_quick_quote_details.Columns.Contains("quick_images"))
                 isColumnExist = true;
-            
+
             if(dgv_quick_quote_details.Columns.Contains("IMAGES"))
                 isColumnExist = true;
 
@@ -4460,6 +4503,10 @@ namespace smpc_sales_app.Pages.Sales
                 var newDatasource = Helpers.ConvertDataTableToStringTable(dataSource);
 
                 List<Dictionary<string, dynamic>> quickQuoteList = new List<Dictionary<string, dynamic>>();
+                // Tracks which original grid row each quickQuoteList entry came from, since
+                // rows with item_id == 0 are skipped below and would otherwise throw the
+                // indices out of sync with SelectedImagesByRow.
+                List<int> quickQuoteRowIndexes = new List<int>();
 
                 for (int i = 0; i < newDatasource.Rows.Count; i++)
                 {
@@ -4488,6 +4535,7 @@ namespace smpc_sales_app.Pages.Sales
                     data.Add("man_days", int.TryParse(item["man_days"].ToString(), out int manday) ? manday : 0);
                     data.Add("labor_rate", decimal.TryParse(item["labor_rate"].ToString(), out decimal laborday) ? laborday : 0);
                     quickQuoteList.Add(data);
+                    quickQuoteRowIndexes.Add(i);
 
                 }
 
@@ -4495,12 +4543,16 @@ namespace smpc_sales_app.Pages.Sales
                 {
                     List<Dictionary<string, dynamic>> childCollection = new List<Dictionary<string, dynamic>>();
 
-                    // loops thru the items
-                    foreach (var childData in quickQuoteList)
+                    // loops thru the items - each row only gets the images that were
+                    // selected for that specific row (falls back to empty if none picked)
+                    for (int q = 0; q < quickQuoteList.Count; q++)
                     {
-                        var dict = new Dictionary<string, dynamic>(childData);
+                        var dict = new Dictionary<string, dynamic>(quickQuoteList[q]);
 
-                        dict["quick_selected_image"] = SelectedImages;
+                        int rowIndex = quickQuoteRowIndexes[q];
+                        dict["quick_selected_image"] = SelectedImagesByRow.TryGetValue(rowIndex, out var rowImages)
+                            ? rowImages
+                            : new List<Dictionary<string, object>>();
 
                         childCollection.Add(dict);
 
