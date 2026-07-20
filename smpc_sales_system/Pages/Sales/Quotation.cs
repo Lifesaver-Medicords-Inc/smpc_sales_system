@@ -2982,6 +2982,36 @@ namespace smpc_sales_app.Pages.Sales
 
         }
 
+        // Finds the highest top-level reference_code already on the grid (e.g. for codes
+        // "1", "2", "3", "3.1" this returns 3) so numbering can continue from there instead
+        // of restarting at 0 - restarting is what caused new items added while editing an
+        // already-saved quotation to reuse codes that were already in use (1,2,3 -> 1,2
+        // instead of 4,5).
+        private int GetMaxTopLevelReferenceCode(DataGridView dgv)
+        {
+            int max = 0;
+
+            if (!(dgv?.DataSource is DataTable dataSource) || !dataSource.Columns.Contains("reference_code"))
+                return max;
+
+            foreach (DataRow row in dataSource.Rows)
+            {
+                string value = row["reference_code"]?.ToString();
+                if (string.IsNullOrWhiteSpace(value))
+                    continue;
+
+                // Only the part before the first "." is the top-level item number
+                // (sub-item numbering restarts per parent, so it shouldn't count here).
+                string topLevelPart = value.Split('.')[0];
+                if (int.TryParse(topLevelPart, out int num) && num > max)
+                {
+                    max = num;
+                }
+            }
+
+            return max;
+        }
+
         // Helper to count rows by reference code prefix
         private int CountRowsByReference(DataTable dt, string referencePrefix)
         {
@@ -4894,7 +4924,12 @@ namespace smpc_sales_app.Pages.Sales
 
             }
 
-            counterReference = 0;
+            // Continue numbering from the highest CODE already on the loaded rows instead
+            // of restarting at 0 - otherwise items added while editing an already-saved
+            // quotation reuse codes that are already in use (e.g. 1,2,3 -> 1,2 again
+            // instead of continuing on to 4,5).
+            counterReference = GetMaxTopLevelReferenceCode(dgv_quick_quote_details);
+            counterParent = 1;
             SelectedRowIndex = 0;
             IsEdit = true;
 
