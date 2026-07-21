@@ -682,6 +682,7 @@ namespace smpc_sales_app.Pages.Sales
                         isCreatingNewOrder = true;
                         btn_refresh.Visible = false;
                         BindControlsForNewOrderORexisting();
+                        SetCreatedByToCurrentUser();
                         bindQuotation(documentNo, true);
                         SOIncrementer();
                         TV1_preview.Visible = true;
@@ -693,6 +694,7 @@ namespace smpc_sales_app.Pages.Sales
                 {
                     isCreatingNewOrder = true;
                     BindControlsForNewOrderORexisting();
+                    SetCreatedByToCurrentUser();
                     await FetchSalesOrder(false);
                     CalculateTotalPrice();
                     SOIncrementer();
@@ -702,6 +704,7 @@ namespace smpc_sales_app.Pages.Sales
                     isCreatingNewOrder = true;
                     btn_refresh.Visible = false;
                     BindControlsForNewOrderORexisting();
+                    SetCreatedByToCurrentUser();
                     bindQuotation(documentNo, true);
                     SOIncrementer();
                     TV1_preview.Visible = true;
@@ -2111,6 +2114,17 @@ namespace smpc_sales_app.Pages.Sales
             btn_back.Visible = true;
             btn_prev.Visible = false;
             btn_next.Visible = false;
+        }
+
+        // txt_created_by is read-only (system-populated, not user-editable) but was never
+        // actually being set anywhere, so it stayed blank on every new order. Filling it in
+        // here (right after BindControlsForNewOrderORexisting resets pnl_header_2, and before
+        // bindQuotation/save) means it shows "Firstname Lastname" immediately in the UI and
+        // flows into the save payload as "created_by" the same way txt_created_by's
+        // sibling controls in pnl_header_2 do.
+        private void SetCreatedByToCurrentUser()
+        {
+            txt_created_by.Text = $"{CacheData.CurrentUser.first_name} {CacheData.CurrentUser.last_name}";
         }
     }
 }
