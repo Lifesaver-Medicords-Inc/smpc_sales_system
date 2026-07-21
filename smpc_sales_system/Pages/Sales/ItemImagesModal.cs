@@ -55,6 +55,22 @@ namespace smpc_sales_system.Pages.Sales
         {
             lbl_counter.Text = $"Selected: {listView1.CheckedItems.Count}.";
         }
+        // Properties.Settings.Default.imagePath was a leftover hardcoded
+        // "http://localhost:3000/api/vfile/" value - that only ever worked on the original
+        // developer's own machine (the same class of problem REPORTPATH had). Build the URL
+        // the same way the Inventory app's item entry screen does, from the actual
+        // environment-resolved server address, so images resolve correctly wherever this
+        // app is actually running.
+        private static string BuildImageUrl(string imagePath)
+        {
+            string path = (imagePath ?? string.Empty).Trim();
+
+            if (path.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+                return path;
+
+            return $"{smpc_sales_system.Program.ApiBaseUrl}/vfile/{path}";
+        }
+
         private void LoadItemImages()
         {
             listView1.Items.Clear();
@@ -66,7 +82,7 @@ namespace smpc_sales_system.Pages.Sales
                 string imageId = row["id"].ToString();
                 string imagePath = row["image"].ToString();
                 string filename = row["filename"].ToString();
-                string imageUrl = Properties.Settings.Default.imagePath + imagePath;
+                string imageUrl = BuildImageUrl(imagePath);
 
                 Image thumb = null;
                 try

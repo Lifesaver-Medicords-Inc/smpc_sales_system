@@ -1124,13 +1124,10 @@ namespace smpc_sales_app.Pages.Sales
             if (IsEdit)
                 pnl_quotation["id"] = int.Parse(pnl_quotation["id"].ToString());
 
-            // trims the Q# from the input
-            if (pnl_quotation.ContainsKey("document_no") && pnl_quotation["document_no"] is string documentNo)
-            {
-                pnl_quotation["document_no"] = documentNo.StartsWith("Q#")
-                    ? documentNo.Substring(2)
-                    : documentNo;
-            }
+            // document_no is saved with its "Q#"/"FQ#" prefix intact - that's the intended
+            // identifier for draft vs. finalized status at a glance, not an accident. Search
+            // and print lookups are normalized (NormalizeDocumentNo) to match regardless of
+            // whether a given record has the prefix or not, so this doesn't break those.
 
             pnl_quotation["percent_discount"] = float.TryParse(txt_additional_discount.Text, out float discount) ? discount : 0;
 
@@ -2334,16 +2331,13 @@ namespace smpc_sales_app.Pages.Sales
 
                     }
 
-                    // trims the Q# from the input
-                    //if (parentData.ContainsKey("document_no") && parentData["document_no"] is string documentNo)
-                    //{
-                    //    parentData["document_no"] = documentNo.StartsWith("Q#")
-                    //        ? documentNo.Substring(2)
-                    //        : documentNo;
-                    //}
+                    // document_no is saved with its "Q#"/"FQ#" prefix intact - that's the
+                    // intended identifier for draft vs. finalized status at a glance, not an
+                    // accident. Search and print lookups are normalized (NormalizeDocumentNo)
+                    // to match regardless of whether a given record has the prefix or not.
 
                     //
-                    // MAKE A HELPER THAT CONVERT ID TO INT 
+                    // MAKE A HELPER THAT CONVERT ID TO INT
                     if (!Helpers.ConvertToIntIfString(parentData, "customer_id") ||
                         !Helpers.ConvertToIntIfString(parentData, "payment_terms_id") ||
                         !Helpers.ConvertToIntIfString(parentData, "ship_type_id"))
@@ -3443,6 +3437,51 @@ namespace smpc_sales_app.Pages.Sales
             dgv_quick_quote_details.DataSource = dataview;
 
             LoadQuickImageCounts();
+            SeedSelectedImagesByRowFromView(dataview);
+        }
+
+        // This is the one place every "view an existing document's items" path actually
+        // funnels through - opening the module blank then Searching for a document (the
+        // normal day-to-day flow, via fetchQuotationDetails -> here), Next/Prev, and
+        // re-selecting after a search all call this. FetchQuotationDetailsByDocumentNo (used
+        // only when a documentNo is passed straight into the Quotation constructor, e.g. from
+        // Opportunities/Orders) had its own copy of this seeding, but that path is never hit
+        // when a document is opened via Search from a blank Quotation screen - which is why
+        // seeding SelectedImagesByRow only there didn't fix "images didn't copy from Q#0019
+        // to Q#0025" (Q#0019 was opened via Search, not via a documentNo passed at
+        // construction). Seeding here instead covers every path, since they all end up
+        // calling this method to actually populate the grid.
+        private void SeedSelectedImagesByRowFromView(DataView dataview)
+        {
+            SelectedImagesByRow.Clear();
+
+            if (selectedImageList == null || !selectedImageList.Columns.Contains("quotation_quick_id"))
+                return;
+
+            for (int rowIdx = 0; rowIdx < dataview.Count; rowIdx++)
+            {
+                DataRowView rowView = dataview[rowIdx];
+
+                if (!rowView.Row.Table.Columns.Contains("id"))
+                    continue;
+
+                if (!int.TryParse(rowView["id"].ToString(), out int quickId))
+                    continue;
+
+                var imagesForRow = selectedImageList.AsEnumerable()
+                    .Where(img => int.TryParse(img["quotation_quick_id"].ToString(), out int qId) && qId == quickId)
+                    .Select(img => new Dictionary<string, object>
+                    {
+                        { "image_id", img["image_id"] },
+                        { "is_selected", img["is_selected"] }
+                    })
+                    .ToList();
+
+                if (imagesForRow.Count > 0)
+                {
+                    SelectedImagesByRow[rowIdx] = imagesForRow;
+                }
+            }
         }
 
         private void LoadQuickImageCounts()
@@ -4091,6 +4130,7 @@ namespace smpc_sales_app.Pages.Sales
                 DataView dataview = new DataView(this.childList);
                 dataview.RowFilter = "based_id = '" + ver.Rows[this.SelectedRow]["id"].ToString() + "'";
                 dgv_quick_quote_details.DataSource = dataview;
+                SeedSelectedImagesByRowFromView(dataview);
             }
         }
 
@@ -4588,7 +4628,10 @@ namespace smpc_sales_app.Pages.Sales
 
                     }
 
-                    // trims the Q# and adds FQ# for finalized quotations
+                    // Finalizing bakes "FQ#" directly into the saved document_no - that's the
+                    // deliberate identifier for "this is a finalized quotation" at a glance.
+                    // Search and print lookups are normalized (NormalizeDocumentNo) to match
+                    // regardless of the "Q#"/"FQ#" prefix, so this doesn't break those.
                     if (parentData.ContainsKey("document_no") && parentData["document_no"] is string documentNo)
                     {
                         string tempDocNo = documentNo.StartsWith("Q#") ? documentNo.Substring(2) : documentNo;
@@ -4691,6 +4734,14 @@ namespace smpc_sales_app.Pages.Sales
                 printPage.ShowDialog();
             }
         }
+        // Older records can still have "Q#"/"FQ#" baked into their stored document_no (a
+        // now-fixed save bug used to persist it that way), while documentNo passed into the
+        // lookups below is always the bare number. Stripping both sides the same way before
+        // comparing means lookups work for old and new records alike, without needing a
+        // database migration to clean up the existing prefixed values.
+        private static string NormalizeDocumentNo(string docNo) =>
+            string.IsNullOrEmpty(docNo) ? docNo : Regex.Replace(docNo, @"FQ#|Q#", "").Trim();
+
         // Returns true if a Quick Quote record matching documentNo was found and bound.
         private async Task<bool> FetchQuotationDetailsByDocumentNo(string documentNo, string version_no = null, string sub_version_no = null)
         {
@@ -4703,8 +4754,11 @@ namespace smpc_sales_app.Pages.Sales
                 return false;
             }
 
-            var filteredSalesQuotation = data.SalesQuotation
-                .Where(q => q.document_no == documentNo &&
+            // Either of these can legitimately come back null from the API - fall back to
+            // an empty list instead of letting .Where() throw ArgumentNullException on a
+            // null source.
+            var filteredSalesQuotation = (data.SalesQuotation ?? Enumerable.Empty<SalesQuotationModel>())
+                .Where(q => NormalizeDocumentNo(q.document_no) == documentNo &&
                            (version_no == null || q.version_no == version_no) &&
                            (sub_version_no == null || q.sub_version_no == sub_version_no))
                 .ToList();
@@ -4713,13 +4767,29 @@ namespace smpc_sales_app.Pages.Sales
 
             if (quotationId != null)
             {
-                var filteredSalesQuotationQuick = data.SalesQuotationQuick
+                var filteredSalesQuotationQuick = (data.SalesQuotationQuick ?? Enumerable.Empty<SalesQuotationQuicksModel>())
                     .Where(q => q.based_id == quotationId)
+                    .ToList();
+
+                var idsQuotationQuick = filteredSalesQuotationQuick.Select(q => q.id).ToList();
+
+                // This was missing entirely, unlike the equivalent loader in
+                // SalesPrintModal.cs - without it, the app has no record of which images
+                // were already selected per item whenever an existing quotation gets opened
+                // (including "New Version"), so every row's previously-saved images looked
+                // like they'd been lost/never carried over.
+                var filteredSalesQuotationImage = (data.SalesQuotationSelectedImages ?? Enumerable.Empty<SalesQuotationSelectedImageModel>())
+                    .Where(q => idsQuotationQuick.Contains(q.quotation_quick_id))
                     .ToList();
 
                 transactionList = JsonHelper.ToDataTable(filteredSalesQuotation);
                 childList = JsonHelper.ToDataTable(filteredSalesQuotationQuick);
+                selectedImageList = JsonHelper.ToDataTable(filteredSalesQuotationImage);
 
+                // SelectedImagesByRow now gets (re)seeded down in
+                // createFilterViewDgvQuickQouteDetails() once the grid is actually bound
+                // below - that's the one place every "view an existing document" path goes
+                // through, so seeding lives there instead of being duplicated per-caller.
 
                 Panel[] panels = { pnl_header, pnl_footer };
                 Helpers.ResetReadOnlyControls(panels);
@@ -4732,7 +4802,13 @@ namespace smpc_sales_app.Pages.Sales
                 toolstrip_quotation.Enabled = true;
                 if (filteredSalesQuotation.Any() || filteredSalesQuotationQuick.Any())
                 {
+                    SelectedRow = 0;
                     bind(transactionList, SelectedRow, true);
+                    // bind() only fills the header/footer text controls - without this the
+                    // items grid itself stays empty when a document is opened straight from
+                    // a documentNo (e.g. from Opportunities/Orders), unlike opening the
+                    // module blank and using Search, which does call this.
+                    createFilterViewDgvQuickQouteDetails();
                 }
                 else
                 {
@@ -4759,8 +4835,10 @@ namespace smpc_sales_app.Pages.Sales
                 return false;
             }
 
-            var filteredSalesQuotation = data.SalesQuotation
-                .Where(q => q.document_no == documentNo &&
+            // Can legitimately come back null from the API - fall back to an empty list
+            // instead of letting .Where() throw ArgumentNullException on a null source.
+            var filteredSalesQuotation = (data.SalesQuotation ?? Enumerable.Empty<SalesQuotationModel>())
+                .Where(q => NormalizeDocumentNo(q.document_no) == documentNo &&
                            (version_no == null || q.version_no == version_no) &&
                            (sub_version_no == null || q.sub_version_no == sub_version_no))
                 .ToList();
@@ -4769,7 +4847,7 @@ namespace smpc_sales_app.Pages.Sales
 
             if (quotationId != null)
             {
-                var filteredSalesQuotationQuick = data.SalesQuotation
+                var filteredSalesQuotationQuick = (data.SalesQuotation ?? Enumerable.Empty<SalesQuotationModel>())
                     .Where(q => q.id == quotationId)
                     .ToList();
 
@@ -4953,7 +5031,8 @@ namespace smpc_sales_app.Pages.Sales
             btn_next.Visible = !isTrue;
             btn_edit.Visible = !isTrue;
             btn_update.Visible = !isTrue;
-            tssb_Print.Visible = !isTrue;
+            btn_print.Visible = !isTrue;
+            //tssb_Print.Visible = !isTrue;
             btn_finalize.Enabled = !isTrue;
 
             // Show action button
@@ -4974,7 +5053,8 @@ namespace smpc_sales_app.Pages.Sales
             btn_next.Visible = false;
             btn_edit.Visible = false;
             btn_update.Visible = false;
-            tssb_Print.Visible = false;
+            btn_print.Visible = false;
+            //tssb_Print.Visible = false;
 
             // Enable editing controls
             btn_savee.Visible = true;
@@ -5008,7 +5088,8 @@ namespace smpc_sales_app.Pages.Sales
                 btn_next.Visible = true;
                 btn_edit.Visible = true;
                 btn_update.Visible = true;
-                tssb_Print.Visible = true;
+                btn_print.Visible = true;
+                //tssb_Print.Visible = true;
 
                 btn_savee.Visible = false;
                 btn_close.Visible = false;

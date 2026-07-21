@@ -786,19 +786,20 @@
             this.tssb_Print.Name = "tssb_Print";
             this.tssb_Print.Size = new System.Drawing.Size(64, 22);
             this.tssb_Print.Text = "Print";
+            this.tssb_Print.Visible = false;
             this.tssb_Print.ButtonClick += new System.EventHandler(this.tssb_Print_ButtonClick);
             // 
             // basicPrintToolStripMenuItem
             // 
             this.basicPrintToolStripMenuItem.Name = "basicPrintToolStripMenuItem";
-            this.basicPrintToolStripMenuItem.Size = new System.Drawing.Size(148, 22);
+            this.basicPrintToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.basicPrintToolStripMenuItem.Text = "Basic Print";
             this.basicPrintToolStripMenuItem.Click += new System.EventHandler(this.basicPrintToolStripMenuItem_Click);
             // 
             // advancePrintToolStripMenuItem
             // 
             this.advancePrintToolStripMenuItem.Name = "advancePrintToolStripMenuItem";
-            this.advancePrintToolStripMenuItem.Size = new System.Drawing.Size(148, 22);
+            this.advancePrintToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.advancePrintToolStripMenuItem.Text = "Advance Print";
             this.advancePrintToolStripMenuItem.Click += new System.EventHandler(this.advancePrintToolStripMenuItem_Click);
             // 
@@ -809,7 +810,6 @@
             this.btn_print.Name = "btn_print";
             this.btn_print.Size = new System.Drawing.Size(52, 22);
             this.btn_print.Text = "Print";
-            this.btn_print.Visible = false;
             this.btn_print.Click += new System.EventHandler(this.btn_print_Click);
             // 
             // btn_update

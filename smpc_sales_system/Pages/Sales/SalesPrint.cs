@@ -17,6 +17,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using static smpc_sales_system.Models.SalesPrintModel;
@@ -170,8 +171,12 @@ namespace smpc_sales_system.Pages.Sales
                 return;
             }
 
-            // Get quotation details and build complete model
-            DataRow[] filteredRows = transactionList.Select($"document_no = '{documentNo}'");
+            // transactionList was already filtered down to this exact document by
+            // fetchQuotationDetailsByDocumentNo using a prefix-normalized comparison.
+            // Re-filtering here with an exact "document_no = '{documentNo}'" string match
+            // failed for older records whose stored document_no still has "Q#"/"FQ#" baked
+            // in, so just use the rows already here instead.
+            DataRow[] filteredRows = transactionList.Rows.Cast<DataRow>().ToArray();
 
             if (filteredRows.Length == 0)
             {
@@ -361,6 +366,14 @@ namespace smpc_sales_system.Pages.Sales
             return rows.Length > 0 ? rows[0]["location"].ToString() : "Address not found";
         }
 
+        // Older records can still have "Q#"/"FQ#" baked into their stored document_no (a
+        // now-fixed save bug used to persist it that way), while documentNo passed into the
+        // lookups below is always the bare number. Stripping both sides the same way before
+        // comparing means lookups work for old and new records alike, without needing a
+        // database migration to clean up the existing prefixed values.
+        private static string NormalizeDocumentNo(string docNo) =>
+            string.IsNullOrEmpty(docNo) ? docNo : Regex.Replace(docNo, @"FQ#|Q#", "").Trim();
+
         private async Task fetchQuotationProjectByDocumentNo(string documentNo)
         {
             try
@@ -373,15 +386,15 @@ namespace smpc_sales_system.Pages.Sales
                     return;
                 }
 
-                List<SalesQuotationModel> filteredSalesQuotation = data.SalesQuotation
-                    .Where(q => q.document_no == documentNo)
+                List<SalesQuotationModel> filteredSalesQuotation = (data.SalesQuotation ?? Enumerable.Empty<SalesQuotationModel>())
+                    .Where(q => NormalizeDocumentNo(q.document_no) == documentNo)
                     .ToList();
 
                 var quotationId = filteredSalesQuotation.FirstOrDefault()?.id;
 
                 if (quotationId != null)
                 {
-                    var filteredItemSets = data.sales_project_item_set
+                    var filteredItemSets = (data.sales_project_item_set ?? Enumerable.Empty<SalesProjectItemSet>())
                         .Where(q => q.based_id == quotationId)
                         .ToList();
 
@@ -390,7 +403,7 @@ namespace smpc_sales_system.Pages.Sales
 
                     var itemsIds = filteredItemSets.Select(q => q.itemset_id).ToList();
 
-                    var filteredcontent = data.sales_project_content
+                    var filteredcontent = (data.sales_project_content ?? Enumerable.Empty<SalesProjectContent>())
                         .Where(q => itemsIds.Contains(q.based_id))
                         .ToList();
 
@@ -419,8 +432,8 @@ namespace smpc_sales_system.Pages.Sales
                 }
 
                 // Get the main quotation
-                List<SalesQuotationModel> filteredSalesQuotation = data.SalesQuotation
-                    .Where(q => q.document_no == documentNo)
+                List<SalesQuotationModel> filteredSalesQuotation = (data.SalesQuotation ?? Enumerable.Empty<SalesQuotationModel>())
+                    .Where(q => NormalizeDocumentNo(q.document_no) == documentNo)
                     .ToList();
 
                 if (filteredSalesQuotation.Count == 0)
@@ -432,7 +445,7 @@ namespace smpc_sales_system.Pages.Sales
                 var QuotationId = filteredSalesQuotation.FirstOrDefault()?.id;
 
                 // Get the quick items - IMPORTANT: Use based_id, not id
-                List<SalesQuotationQuicksModel> filteredSalesQuotationQuick = data.SalesQuotationQuick
+                List<SalesQuotationQuicksModel> filteredSalesQuotationQuick = (data.SalesQuotationQuick ?? Enumerable.Empty<SalesQuotationQuicksModel>())
                     .Where(q => q.based_id == QuotationId)  // ✅ CHANGED: from q.id to q.based_id
                     .ToList();
 
@@ -441,7 +454,7 @@ namespace smpc_sales_system.Pages.Sales
                 // Get images for each item and attach them
                 foreach (var item in filteredSalesQuotationQuick)
                 {
-                    var itemImages = data.SalesQuotationSelectedImages
+                    var itemImages = (data.SalesQuotationSelectedImages ?? Enumerable.Empty<SalesQuotationSelectedImageModel>())
                         .Where(q => q.quotation_quick_id == item.id)
                         .ToList();
 

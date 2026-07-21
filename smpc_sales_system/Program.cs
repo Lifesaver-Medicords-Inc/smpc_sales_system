@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -34,6 +35,10 @@ namespace smpc_sales_system
 
             Log.Information("Running in {Environment} environment", env);
             Log.Information("API URL: {Url}", ApiBaseUrl);
+
+            string reportsFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Reports");
+            smpc_sales_system.Properties.Settings.Default.REPORTPATH = reportsFolder;
+            Log.Information("Report path resolved to: {ReportsFolder}", reportsFolder);
 
             // Set application-wide currency format to Philippine Peso
             CultureInfo culture = new CultureInfo("en-PH");

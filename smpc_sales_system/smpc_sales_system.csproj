@@ -642,9 +642,26 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
-    <EmbeddedResource Include="Reports\OrderReport.rdlc" />
-    <EmbeddedResource Include="Reports\ProjectReport.rdlc" />
-    <EmbeddedResource Include="Reports\QuotationReport.rdlc" />
+    <!--
+      These report files are loaded at runtime from disk via LocalReport.ReportPath
+      (Settings.Default.REPORTPATH + file name) - EmbeddedResource never actually gets
+      read for that. Marking them Content + CopyToOutputDirectory instead makes the build
+      copy a "Reports" folder next to the built exe automatically, so whatever packages
+      the build output (installer, xcopy, publish, etc.) carries them along too - instead
+      of relying on the hardcoded developer path REPORTPATH used to have.
+    -->
+    <Content Include="Reports\OrderReport.rdlc">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Reports\ProjectReport.rdlc">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Reports\QuotationReport.rdlc">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Reports\QuotationReport without image.rdlc">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <None Include="appsetting.Development.json" />
     <None Include="appsetting.Production.json" />
     <None Include="packages.config" />
@@ -657,7 +674,9 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
-    <None Include="Reports\QuotationReport.frx" />
+    <Content Include="Reports\QuotationReport.frx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <None Include="smpc_sales_system.Models.SalesPrintModel+SalesProjectQuotationDetailsReportModel.datasource" />
     <None Include="smpc_sales_system_TemporaryKey.pfx" />
   </ItemGroup>

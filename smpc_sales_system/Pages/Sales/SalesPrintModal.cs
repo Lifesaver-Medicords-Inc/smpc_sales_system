@@ -2,6 +2,7 @@
 using smpc_sales_app.Pages.Sales;
 using smpc_sales_app.Services.Helpers;
 using smpc_sales_app.Services.Sales;
+using smpc_sales_app.Services.Sales.Models;
 using smpc_sales_system.Models;
 using smpc_sales_system.Properties;
 using smpc_sales_system.Services.Sales;
@@ -16,6 +17,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using static smpc_sales_system.Models.SalesPrintModel;
@@ -59,6 +61,14 @@ namespace smpc_sales_system.Pages.Sales
         public DataTable OriginalProjectItemList { get; set; } = new DataTable();
         private DataTable bpi_general = new DataTable();
         private DataTable bpi_address = new DataTable();
+        // Older records can still have "Q#"/"FQ#" baked into their stored document_no (a
+        // now-fixed save bug used to persist it that way), while documentNo passed in here
+        // is always the bare number. Stripping both sides the same way before comparing
+        // means lookups work for old and new records alike, without needing a database
+        // migration to clean up the existing prefixed values.
+        private static string NormalizeDocumentNo(string docNo) =>
+            string.IsNullOrEmpty(docNo) ? docNo : Regex.Replace(docNo, @"FQ#|Q#", "").Trim();
+
         //FETCHERS OF DATA METHODS
         private async Task fetchItemData()
         {
@@ -72,7 +82,11 @@ namespace smpc_sales_system.Pages.Sales
             bpi_general = JsonHelper.ToDataTable(bpi_data.general);
             bpi_address = JsonHelper.ToDataTable(bpi_data.address);
         }
-        private async Task fetchQuotationDetailsByDocumentNo(string documentNo)
+        // Returns true once transactionList has actually been populated, so the caller
+        // knows whether it's safe to keep going or whether this method already showed the
+        // relevant error (avoids stacking a second, redundant "no data" message box for the
+        // same underlying "not found" failure).
+        private async Task<bool> fetchQuotationDetailsByDocumentNo(string documentNo)
         {
             SalesQuotationList data = await QuotationService.GetQuotations();
 
@@ -80,22 +94,26 @@ namespace smpc_sales_system.Pages.Sales
             if (data == null || string.IsNullOrEmpty(documentNo))
             {
                 MessageBox.Show("No document number received");
-                return;
+                return false;
             }
-            var filteredSalesQuotation = data.SalesQuotation
-                .Where(q => q.document_no == documentNo)
+            // Any of these can legitimately come back null from the API (e.g. an empty
+            // array serializes fine, but a missing/omitted field deserializes to null) -
+            // calling .Where() directly on a null source throws ArgumentNullException, so
+            // fall back to an empty list instead of assuming these are always populated.
+            var filteredSalesQuotation = (data.SalesQuotation ?? Enumerable.Empty<SalesQuotationModel>())
+                .Where(q => NormalizeDocumentNo(q.document_no) == documentNo)
                 .ToList();
             var quotationId = filteredSalesQuotation.FirstOrDefault()?.id;
 
             if (quotationId != null)
             {
-                var filteredSalesQuotationQuick = data.SalesQuotationQuick
+                var filteredSalesQuotationQuick = (data.SalesQuotationQuick ?? Enumerable.Empty<SalesQuotationQuicksModel>())
                     .Where(q => q.based_id == quotationId)
                     .ToList();
 
                 var idsQuotationQuick = filteredSalesQuotationQuick.Select(q => q.id).ToList();
 
-                var filteredSalesQuotationImage = data.SalesQuotationSelectedImages
+                var filteredSalesQuotationImage = (data.SalesQuotationSelectedImages ?? Enumerable.Empty<SalesQuotationSelectedImageModel>())
                     .Where(q => idsQuotationQuick.Contains(q.quotation_quick_id))
                     .ToList();
 
@@ -108,15 +126,18 @@ namespace smpc_sales_system.Pages.Sales
                 if (filteredSalesQuotation.Any() || filteredSalesQuotationQuick.Any())
                 {
                     //bind(true); continue
+                    return true;
                 }
                 else
                 {
                     MessageBox.Show("No records found for the provided document number.");
+                    return false;
                 }
             }
             else
             {
                 MessageBox.Show("No SalesQuotation found for the provided document number.");
+                return false;
             }
         }
         private async Task fetchQuotationProjectByDocumentNo(string documentNo)
@@ -126,27 +147,30 @@ namespace smpc_sales_system.Pages.Sales
             {
                 return;
             }
-            var filteredSalesQuotation = data.SalesQuotation
-                .Where(q => q.document_no == documentNo)
+            // Any of these can legitimately come back null from the API - fall back to an
+            // empty list instead of letting .Where() throw ArgumentNullException on a null
+            // source.
+            var filteredSalesQuotation = (data.SalesQuotation ?? Enumerable.Empty<SalesQuotationModel>())
+                .Where(q => NormalizeDocumentNo(q.document_no) == documentNo)
                 .ToList();
             var quotationId = filteredSalesQuotation.FirstOrDefault()?.id;
 
             if (quotationId != null)
             {
-                var filteredItemSets = data.sales_project_item_set
-                    .Where(q => q.based_id == quotationId)  
+                var filteredItemSets = (data.sales_project_item_set ?? Enumerable.Empty<SalesProjectItemSet>())
+                    .Where(q => q.based_id == quotationId)
                     .ToList();
                 transactionList = JsonHelper.ToDataTable(filteredSalesQuotation);
                 ItemSets = JsonHelper.ToDataTable(filteredItemSets);
 
                 var itemsIds = filteredItemSets.Select(q => q.itemset_id).ToList();
 
-                var filteredcontent = data.sales_project_content
+                var filteredcontent = (data.sales_project_content ?? Enumerable.Empty<SalesProjectContent>())
                 .Where(q => itemsIds.Contains(q.based_id))
                 .ToList();
                 ItemSetContent = JsonHelper.ToDataTable(filteredcontent);
 
-                var filteredProjectItems = data.sales_project_items
+                var filteredProjectItems = (data.sales_project_items ?? Enumerable.Empty<SalesProjectItems>())
                     .Where(q => itemsIds.Contains(q.based_id))
                     .ToList();
 
@@ -178,15 +202,15 @@ namespace smpc_sales_system.Pages.Sales
                 return;  // Exit if no data or documentNo is provided
             }
 
-            var filteredSalesOrder = data.order
-                .Where(q => q.doc == documentNo) 
+            var filteredSalesOrder = (data.order ?? Enumerable.Empty<OrderModel>())
+                .Where(q => q.doc == documentNo)
                 .ToList();
 
             var orderId = filteredSalesOrder.FirstOrDefault()?.order_id;
 
             if (orderId != null)
             {
-                var filteredSalesOrderDetails = data.sales_order_details
+                var filteredSalesOrderDetails = (data.sales_order_details ?? Enumerable.Empty<OrderDetailsModel>())
                     .Where(q => q.based_id == orderId)
                     .ToList();
 
@@ -210,6 +234,12 @@ namespace smpc_sales_system.Pages.Sales
         //ON LOAD FOR PRINTMODAL
         public bool AutoExport { get; set; } = false;
         public string ExportPath { get; set; } = "";
+        // Every await below is a point where the user can close this dialog (or it can get
+        // disposed some other way) before the awaited call returns. When that happens, the
+        // code resuming after the await was still touching reportViewer1, which by then had
+        // already been disposed - producing ObjectDisposedException. Bail out instead of
+        // continuing to build/assign the report on a dialog that's no longer there.
+        private bool IsSafeToUpdateReport => !this.IsDisposed && reportViewer1 != null && !reportViewer1.IsDisposed;
         private async void SalesPrintModal_Load(object sender, EventArgs e)
         {
             // Must finish before anything below touches ItemList/bpi_general/bpi_address -
@@ -219,14 +249,24 @@ namespace smpc_sales_system.Pages.Sales
             await fetchBpiData();
             await fetchItemData();
 
+            if (!IsSafeToUpdateReport) return;
+
             if (isProject)
             {
                 await fetchQuotationProjectByDocumentNo(documentNo);
 
+                if (!IsSafeToUpdateReport) return;
+
                 if (transactionList != null && transactionList.Rows.Count > 0)
                 {
-                    // Filter the transactionList based on document_no (use the passed documentNo)  
-                    DataRow[] filteredRows = transactionList.Select($"document_no = '{documentNo}'");
+                    // transactionList was already filtered down to this exact document by
+                    // fetchQuotationProjectByDocumentNo/fetchQuotationDetailsByDocumentNo
+                    // using a prefix-normalized comparison. Re-filtering here with an exact
+                    // "document_no = '{documentNo}'" string match failed for older records
+                    // whose stored document_no still has "Q#"/"FQ#" baked in, producing
+                    // "Document not found in this quotation for the report." even though the
+                    // data had already loaded correctly - so just use the rows already here.
+                    DataRow[] filteredRows = transactionList.Rows.Cast<DataRow>().ToArray();
 
                     if (filteredRows.Length > 0)
                     {
@@ -462,12 +502,25 @@ namespace smpc_sales_system.Pages.Sales
             }
             else if (isQuotation)
             {
-                await fetchQuotationDetailsByDocumentNo(documentNo);
+                bool foundQuotation = await fetchQuotationDetailsByDocumentNo(documentNo);
+
+                if (!IsSafeToUpdateReport) return;
+
+                // fetchQuotationDetailsByDocumentNo already showed the relevant message box
+                // when it couldn't find/populate the data - don't show a second, redundant
+                // "no data" message on top of that for the same underlying failure.
+                if (!foundQuotation) return;
 
                 if (transactionList != null && transactionList.Rows.Count > 0)
                 {
-                    // Filter the transactionList based on document_no (use the passed documentNo)  
-                    DataRow[] filteredRows = transactionList.Select($"document_no = '{documentNo}'");
+                    // transactionList was already filtered down to this exact document by
+                    // fetchQuotationProjectByDocumentNo/fetchQuotationDetailsByDocumentNo
+                    // using a prefix-normalized comparison. Re-filtering here with an exact
+                    // "document_no = '{documentNo}'" string match failed for older records
+                    // whose stored document_no still has "Q#"/"FQ#" baked in, producing
+                    // "Document not found in this quotation for the report." even though the
+                    // data had already loaded correctly - so just use the rows already here.
+                    DataRow[] filteredRows = transactionList.Rows.Cast<DataRow>().ToArray();
 
                     if (filteredRows.Length > 0)
                     {
@@ -584,7 +637,19 @@ namespace smpc_sales_system.Pages.Sales
                         ReportDataSource headerReportDataSource = new ReportDataSource("DataSet1", transactionList);
                         ReportDataSource childReportDataSource = new ReportDataSource("DataSet2", childList);
 
-                        reportViewer1.LocalReport.ReportPath = Path.Combine(Settings.Default.REPORTPATH, "QuotationReport.rdlc");
+                        // Pick the report layout based on whether any line item actually has
+                        // an image: "QuotationReport.rdlc" has the image column/layout,
+                        // "QuotationReport without image.rdlc" is the plain layout used when
+                        // there's nothing to show there (avoids empty image placeholders).
+                        bool anyItemHasImage = childList.Columns.Contains("Image") &&
+                            childList.AsEnumerable().Any(r =>
+                                r["Image"] != DBNull.Value && r["Image"] is byte[] imgBytes && imgBytes.Length > 0);
+
+                        string reportFileName = anyItemHasImage
+                            ? "QuotationReport.rdlc"
+                            : "QuotationReport without image.rdlc";
+
+                        reportViewer1.LocalReport.ReportPath = Path.Combine(Settings.Default.REPORTPATH, reportFileName);
                         reportViewer1.LocalReport.DataSources.Clear();
                         reportViewer1.LocalReport.DataSources.Add(headerReportDataSource);
                         reportViewer1.LocalReport.DataSources.Add(childReportDataSource);
@@ -618,6 +683,9 @@ namespace smpc_sales_system.Pages.Sales
             else
             {
                 await fetchOrderDetailsByDocumentNo(documentNo);
+
+                if (!IsSafeToUpdateReport) return;
+
                 if (OrderList != null && OrderList.Rows.Count > 0)
                 {
                     // Filter the transactionList based on document_no (use the passed documentNo)  
@@ -678,7 +746,12 @@ namespace smpc_sales_system.Pages.Sales
             if (string.IsNullOrEmpty(imageName))
                 return null;
 
-            string imagePath = Path.Combine(Properties.Settings.Default.imagePath,imageName);
+            // Properties.Settings.Default.imagePath was a leftover hardcoded
+            // "http://localhost:3000/api/vfile/" value that only worked on the original
+            // developer's own machine - build the URL from the actual environment-resolved
+            // server address instead (same fix as the item image pickers), and stop using
+            // Path.Combine for a URL, which isn't what it's meant for.
+            string imagePath = $"{smpc_sales_system.Program.ApiBaseUrl}/vfile/{imageName.Trim()}";
 
             if (imagePath.StartsWith("http://") || imagePath.StartsWith("https://"))
             {

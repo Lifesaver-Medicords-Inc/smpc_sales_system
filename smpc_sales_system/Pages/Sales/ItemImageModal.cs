@@ -42,10 +42,24 @@ namespace smpc_sales_system.Pages.Sales
             }
         }
 
+        // Properties.Settings.Default.imagePath was a leftover hardcoded
+        // "http://localhost:3000/api/vfile/" value that only ever worked on the original
+        // developer's own machine. Build the URL from the actual environment-resolved
+        // server address instead (same fix applied in ItemImagesModal.cs).
+        private static string BuildImageUrl(string imagePath)
+        {
+            string path = (imagePath ?? string.Empty).Trim();
+
+            if (path.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+                return path;
+
+            return $"{smpc_sales_system.Program.ApiBaseUrl}/vfile/{path}";
+        }
+
         private void LoadItemImage(int rowIndex)
         {
             string imagePath = images.Rows[rowIndex]["image"].ToString();
-            string imageUrl = Properties.Settings.Default.imagePath + imagePath;
+            string imageUrl = BuildImageUrl(imagePath);
 
             pictureBox1.SizeMode = PictureBoxSizeMode.Zoom;
             pictureBox1.ImageLocation = imageUrl;
