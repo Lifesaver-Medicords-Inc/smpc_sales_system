@@ -320,8 +320,9 @@ namespace smpc_sales_system.Pages.Sales
             var projectSource = Helpers.ConvertDataGridViewToDataTable(dgv_project_items);
             List<SalesProjectItems> items = new List<SalesProjectItems>();
 
-            foreach (DataRow item in projectSource.Rows)
+            for (int rowIndex = 0; rowIndex < projectSource.Rows.Count; rowIndex++)
             {
+                DataRow item = projectSource.Rows[rowIndex];
                 if (item == null) continue;
 
                 var spi = new SalesProjectItems
@@ -348,7 +349,14 @@ namespace smpc_sales_system.Pages.Sales
                     discount_price = decimal.TryParse(Helpers.GetCleanedPriceValue(item["project_items_discount"]?.ToString()), out decimal discountPrice) ? discountPrice : 0.0m,
                     component_total = decimal.TryParse(Helpers.GetCleanedPriceValue(item["project_items_line_total"]?.ToString()), out decimal total) ? total : 0.0m,
                 };
-                 
+
+                // Each row only carries the images actually picked for that row (falls
+                // back to empty if none picked) - see HandleItemImageSelectionClick, which
+                // records selections in SelectedImagesByRow keyed by this same grid row
+                // index.
+                spi.quick_selected_image = SelectedImagesByRow.TryGetValue(rowIndex, out var rowImages)
+                    ? rowImages
+                    : new List<Dictionary<string, object>>();
 
                 items.Add(spi);
             }
@@ -812,6 +820,34 @@ namespace smpc_sales_system.Pages.Sales
                 }
 
                 DgvProjectItems.DataSource = stringTable;
+
+                // Seed SelectedImagesByRow from what was already saved for this tab, so a
+                // row the user doesn't touch this session still saves with its existing
+                // images (see GetProjectItems, which reads from SelectedImagesByRow on
+                // Save). Row index here lines up with the row index each item occupies in
+                // the grid, since stringTable is bound directly (no extra sort/filter).
+                SelectedImagesByRow.Clear();
+                if (selectedImageList != null && selectedImageList.Columns.Contains("quotation_quick_id"))
+                {
+                    for (int rowIdx = 0; rowIdx < stringTable.Rows.Count; rowIdx++)
+                    {
+                        if (!int.TryParse(stringTable.Rows[rowIdx]["items_id"]?.ToString(), out int itemsId) || itemsId == 0)
+                            continue;
+
+                        var imagesForRow = selectedImageList.AsEnumerable()
+                            .Where(img => int.TryParse(img["quotation_quick_id"]?.ToString(), out int qId) && qId == itemsId)
+                            .Select(img => new Dictionary<string, object>
+                            {
+                                { "image_id", img["image_id"] },
+                                { "is_selected", img["is_selected"] }
+                            })
+                            .ToList();
+
+                        if (imagesForRow.Count > 0)
+                            SelectedImagesByRow[rowIdx] = imagesForRow;
+                    }
+                }
+                LoadProjectImageCounts();
 
                 isViewProjectItem = true;
 
@@ -1354,19 +1390,24 @@ namespace smpc_sales_system.Pages.Sales
                     AssignModel(index, dgv_project_items);
 
             }
-            if (dgv_project_items.Columns[e.ColumnIndex].Name == "quick_images")
+            if (dgv_project_items.Columns[e.ColumnIndex].Name == "project_items_images")
             {
+                // Was checking for a column named "quick_images" (that's Quick Quote's
+                // column, not this grid's - this grid's is "project_items_images"), and
+                // reading a "quick_id" cell that doesn't exist on this grid at all, so this
+                // never actually fired. Project items don't have a saved quick-id concept;
+                // rows are identified by their own grid position instead (see
+                // HandleItemImageSelectionClick).
                 var row = dgv_project_items.Rows[e.RowIndex];
-                var cellQuickId = row.Cells["quick_id"].Value?.ToString();
                 var cellItemId = row.Cells["item_id"].Value?.ToString();
 
-                cellQuickId = string.IsNullOrWhiteSpace(cellQuickId) ? "0" : cellQuickId;
-
-
-                if (int.TryParse(cellQuickId, out int quickId) &&
-                    int.TryParse(cellItemId, out int itemId))
+                if (int.TryParse(cellItemId, out int itemId) && itemId != 0)
                 {
-                    HandleItemImageSelectionClick(quickId, itemId);
+                    HandleItemImageSelectionClick(e.RowIndex, itemId);
+                }
+                else
+                {
+                    MessageBox.Show("Select an item for this row first.");
                 }
             }
 
@@ -1377,8 +1418,14 @@ namespace smpc_sales_system.Pages.Sales
         }
 
         public DataTable ImageList { get; set; } = new DataTable();
-        public List<Dictionary<string, object>> SelectedImages { get; private set; }
-        private void HandleItemImageSelectionClick(int quickId, int itemId)
+        // Selected images picked via the IMAGES column, keyed by the grid row index they
+        // belong to (not by items_id - a brand-new, unsaved row has items_id == 0 and would
+        // collide with every other new row). Same fix already applied to Quick Quote's grid
+        // for the same reason: a single shared field meant every row ended up with a copy of
+        // whichever item's images were picked last.
+        private Dictionary<int, List<Dictionary<string, object>>> SelectedImagesByRow { get; set; } = new Dictionary<int, List<Dictionary<string, object>>>();
+
+        private void HandleItemImageSelectionClick(int rowIndex, int itemId)
         {
             DataView dvItems = new DataView(ItemList);
             DataTable filteredItems = dvItems.ToTable();
@@ -1395,21 +1442,61 @@ namespace smpc_sales_system.Pages.Sales
             dvImages.RowFilter = $"based_id = {itemId}";
             DataTable filteredImages = dvImages.ToTable();
 
-
-            DataView dvSelectedImages = new DataView(selectedImageList);
-            dvSelectedImages.RowFilter = $"quotation_quick_id = {quickId}";
-            DataTable filteredSelectedImages = dvSelectedImages.ToTable();
+            // ItemImagesModal only needs this to know which checkboxes should start
+            // checked - build it from whatever's currently recorded for this row instead
+            // of filtering selectedImageList (which has no row-index concept).
+            DataTable filteredSelectedImages = BuildSelectedImagesTableForRow(rowIndex);
 
             ItemImagesModal itemImageModal = new ItemImagesModal(itemName, filteredItems, filteredImages, filteredSelectedImages);
             DialogResult r = itemImageModal.ShowDialog();
 
             if (r == DialogResult.OK)
             {
-                SelectedImages = itemImageModal.SelectedImages;
-                int selectedImageCount = SelectedImages.Count();
+                SelectedImagesByRow[rowIndex] = itemImageModal.SelectedImages;
+                int selectedImageCount = itemImageModal.SelectedImages.Count();
                 MessageBox.Show($"{selectedImageCount} images selected.");
+                LoadProjectImageCounts();
+            }
+        }
+
+        private DataTable BuildSelectedImagesTableForRow(int rowIndex)
+        {
+            DataTable table = new DataTable();
+            table.Columns.Add("image_id", typeof(object));
+            table.Columns.Add("is_selected", typeof(object));
+
+            if (SelectedImagesByRow.TryGetValue(rowIndex, out var images))
+            {
+                foreach (var img in images)
+                {
+                    DataRow row = table.NewRow();
+                    row["image_id"] = img.TryGetValue("image_id", out var imgId) ? imgId : DBNull.Value;
+                    row["is_selected"] = img.TryGetValue("is_selected", out var sel) ? sel : DBNull.Value;
+                    table.Rows.Add(row);
+                }
             }
 
+            return table;
+        }
+
+        // Shows a "SELECTED: n" count on the IMAGES column per row, same UX as Quick
+        // Quote's LoadQuickImageCounts. The column is unbound (see Designer), so this needs
+        // re-running any time the grid gets a fresh DataSource (SetFetchedItemData) since
+        // rebinding wipes unbound cell values.
+        private void LoadProjectImageCounts()
+        {
+            if (!dgv_project_items.Columns.Contains("project_items_images"))
+                return;
+
+            for (int rowIdx = 0; rowIdx < dgv_project_items.Rows.Count; rowIdx++)
+            {
+                if (dgv_project_items.Rows[rowIdx].IsNewRow)
+                    continue;
+
+                int count = SelectedImagesByRow.TryGetValue(rowIdx, out var images) ? images.Count : 0;
+                dgv_project_items.Rows[rowIdx].Cells["project_items_images"].Value =
+                    count > 0 ? $"SELECTED: {count}" : string.Empty;
+            }
         }
 
         private void AddModel(DataGridView dgv, int rowIndex, bool isBom, int BomId, int ItemId, string referenceCode, int templateId = 0)
@@ -2128,9 +2215,46 @@ namespace smpc_sales_system.Pages.Sales
                 return;
 
             if (chk_wiring.Checked)
-                AddWiringRowsComponent(LastRefInt);
+            {
+                // LastRefInt is only ever set by the "load from Template" flow
+                // (cb_template_project_SelectedIndexChanged) - if items were added
+                // manually one at a time instead (no template selected), it stays at its
+                // default 0, so wiring rows started over at "1" and collided with
+                // reference codes that already existed (e.g. a manually-added PUMP already
+                // using "1"/"1.1"). Reading the actual max reference code off the grid
+                // right now instead avoids that regardless of how the existing items got
+                // there.
+                int nextReference = GetMaxTopLevelReferenceCode();
+                AddWiringRowsComponent(nextReference);
+            }
             else
                 RemoveWiringRowsComponentByBaseReference();
+        }
+
+        // Finds the highest top-level reference_code already on the grid (e.g. for codes
+        // "1", "1.1", "2" this returns 2) so a following block of rows (like wiring
+        // materials) continues numbering from there instead of restarting at 1.
+        private int GetMaxTopLevelReferenceCode()
+        {
+            int max = 0;
+
+            if (!(dgv_project_items.DataSource is DataTable dataSource) || !dataSource.Columns.Contains("reference_code"))
+                return max;
+
+            foreach (DataRow row in dataSource.Rows)
+            {
+                string value = row["reference_code"]?.ToString();
+                if (string.IsNullOrWhiteSpace(value))
+                    continue;
+
+                string topLevelPart = value.Split('.')[0];
+                if (int.TryParse(topLevelPart, out int num) && num > max)
+                {
+                    max = num;
+                }
+            }
+
+            return max;
         }
 
 

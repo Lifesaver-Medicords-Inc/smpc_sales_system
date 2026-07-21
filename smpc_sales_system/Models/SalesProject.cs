@@ -111,6 +111,13 @@ namespace smpc_sales_system.Models
         public decimal component_total { get; set; }
         public string notes { get; set; }
         public int template_id { get; set; }
+
+        // Only used when SENDING this item to Create (mirrors how Quick Quote items carry
+        // "quick_selected_image" alongside their own fields) - on the way back from GET this
+        // stays null, since selected images come back separately as
+        // SalesProjectList.sales_project_items_selected_images and get matched up client-side
+        // by items_id, the same way Quick Quote matches by quotation_quick_id.
+        public List<Dictionary<string, object>> quick_selected_image { get; set; }
     }
 
     public class SalesProjectList
@@ -123,6 +130,7 @@ namespace smpc_sales_system.Models
         public List<SalesProjectAdvancedConditions> sales_project_content_advanced_condition { get; set; }
         public List<SalesProjectItems> sales_project_items { get; set; }
         public List<SalesWiringModel> sales_project_wiring { get; set; }
+        public List<SalesQuotationSelectedImageModel> sales_project_items_selected_images { get; set; }
     }
 
 }

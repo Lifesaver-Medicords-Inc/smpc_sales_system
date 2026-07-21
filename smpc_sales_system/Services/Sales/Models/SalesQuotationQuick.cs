@@ -28,7 +28,7 @@ namespace smpc_sales_system.Services.Sales.Models
         public string short_description { get; set; }
     }
 
-    class SalesQuotationSelectedImageModel
+    public class SalesQuotationSelectedImageModel
     {
         public int id { get; set; }
         public int quotation_quick_id { get; set; }

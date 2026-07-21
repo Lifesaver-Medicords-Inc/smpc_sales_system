@@ -910,6 +910,11 @@ namespace smpc_sales_system.Pages.Sales
             dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
             this.dgv_project_items.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
             this.dgv_project_items.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            // Every column this grid needs is already defined explicitly below. Left at the
+            // WinForms default (true) this silently appends an extra column for any bound
+            // field without a matching DataPropertyName - the same duplicate-column bug
+            // already fixed on dgv_quick_quote_details (see Quotation.cs's constructor).
+            this.dgv_project_items.AutoGenerateColumns = false;
             this.dgv_project_items.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.project_items_id,
             this.item_id,
@@ -992,7 +997,10 @@ namespace smpc_sales_system.Pages.Sales
             // project_items_images
             // 
             this.project_items_images.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
-            this.project_items_images.DataPropertyName = "project_items_images";
+            // No DataPropertyName on purpose - SalesProjectItems has no matching field to
+            // bind to. This mirrors dgv_quick_quote_details's "quick_images" column: an
+            // unbound column whose per-row text ("SELECTED: n") is set directly in code
+            // (see ItemSetUC.LoadProjectImageCounts), independent of the DataSource.
             this.project_items_images.HeaderText = "IMAGES";
             this.project_items_images.Name = "project_items_images";
             this.project_items_images.Width = 60;

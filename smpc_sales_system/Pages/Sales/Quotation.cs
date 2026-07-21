@@ -646,6 +646,7 @@ namespace smpc_sales_app.Pages.Sales
         public DataTable dt_content_final { get; set; }
         public DataTable dt_advanced_conditions { get; set; }
         public DataTable dt_items { get; set; }
+        public DataTable dt_items_selected_images { get; set; }
         public DataTable dt_wiring { get; set; }
 
 
@@ -740,6 +741,10 @@ namespace smpc_sales_app.Pages.Sales
                     Dock = DockStyle.Fill,
                     BackColor = Color.White
                 };
+                // So this tab's IMAGES column picker has something to show/filter from -
+                // ItemSetUC.ImageList was never being set anywhere, so the picker always
+                // came up empty.
+                UC.ImageList = this.ImageList;
 
                 // Attach event handlers
                 UC.ButtonClicked += Button_ClickedUC;
@@ -802,6 +807,7 @@ namespace smpc_sales_app.Pages.Sales
             dt_content_final = JsonHelper.ToDataTable(allFinals);
             dt_advanced_conditions = JsonHelper.ToDataTable(SalesProjectListData.sales_project_content_advanced_condition);
             dt_items = JsonHelper.ToDataTable(SalesProjectListData.sales_project_items);
+            dt_items_selected_images = JsonHelper.ToDataTable(SalesProjectListData.sales_project_items_selected_images);
             dt_wiring = JsonHelper.ToDataTable(SalesProjectListData.sales_project_wiring);
 
             //Helpers.BindControls(pnls, dt2, selectedProject);
@@ -824,6 +830,13 @@ namespace smpc_sales_app.Pages.Sales
                 {
                     Dock = DockStyle.Fill
                 };
+                // ImageList/selectedImageList were never being set here, so this tab's
+                // IMAGES column picker had nothing to show and no record of previously
+                // saved selections. selectedImageList is passed unfiltered (same as Quick
+                // Quote) - SetFetchedItemData matches rows to this tab's own items by
+                // items_id, so passing every tab the same full table is fine.
+                UC.ImageList = this.ImageList;
+                UC.selectedImageList = dt_items_selected_images;
 
 
                 //UC.DataChangedConditions += ItemSet_DataChanged;
@@ -3616,6 +3629,7 @@ namespace smpc_sales_app.Pages.Sales
                     {
                         txtBox.Text = "0%";
                     }
+
                     txtBox.Text = "";
                 }
             }
@@ -3726,6 +3740,7 @@ namespace smpc_sales_app.Pages.Sales
                     Dock = DockStyle.Fill,
                     BackColor = Color.White
                 };
+                UC.ImageList = this.ImageList;
 
                 // Attach event handlers
                 UC.ButtonClicked += Button_ClickedUC;
@@ -3751,6 +3766,12 @@ namespace smpc_sales_app.Pages.Sales
                 // Select the newly added tab
                 this.tabControl2.SelectedIndex = lastIndex;
                 setProjectMultiplier();
+
+                // This branch returns early, before the shared "new quotations always
+                // default to 30 days" line below ever runs - so clicking New while in
+                // Project mode left txt_validays blank instead of reset to 30 like Quick
+                // Quote's New already does.
+                txt_validays.Text = "30";
                 return;
             }
 
@@ -3767,6 +3788,12 @@ namespace smpc_sales_app.Pages.Sales
 
             var data = await ProjectService.GetPumpsViewList();
 
+            if (data == null || data.ItemPumpsView == null || !data.ItemPumpsView.Any())
+            {
+                MessageBox.Show("No pump items are set up yet. Please add pump items before using this.", "No Pump Data", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             //if (tabControl2.SelectedTab.Controls[0] is ItemSetUC currentControl)
             //{
             //    var data = currentControl.GetSizeUpData();
@@ -3776,16 +3803,28 @@ namespace smpc_sales_app.Pages.Sales
 
             pumps = JsonHelper.ToDataTable(data.ItemPumpsView);
 
-
-
             List<int> pumpId = pumps.AsEnumerable()
                                 .Select(row => row.Field<int>("item_id"))
                                 .Distinct()
                                 .ToList();
 
-            DataTable ItemListPump = ItemList.AsEnumerable()
-                                .Where(row => pumpId.Contains(int.Parse(row["id"].ToString())))
-                                .CopyToDataTable();
+            // .CopyToDataTable() throws InvalidOperationException("The source contains no
+            // DataRows.") if the filtered sequence comes up empty - happened whenever none
+            // of ItemList's rows matched any of the pump view's item_ids (e.g. a pump item
+            // was removed from the item catalog but is still referenced in the pumps view).
+            // Filtering to a list first lets us validate before ever calling
+            // CopyToDataTable, instead of crashing.
+            var filteredPumpItems = ItemList.AsEnumerable()
+                                .Where(row => int.TryParse(row["id"]?.ToString(), out int rowId) && pumpId.Contains(rowId))
+                                .ToList();
+
+            if (filteredPumpItems.Count == 0)
+            {
+                MessageBox.Show("None of the items in the item list match the pump data. Please check that the pump items still exist in the item catalog.", "No Matching Items", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            DataTable ItemListPump = filteredPumpItems.CopyToDataTable();
 
             ModelModal createModal = new ModelModal(ItemListPump, BomHead, BomDetails, "0");
 
@@ -4153,6 +4192,33 @@ namespace smpc_sales_app.Pages.Sales
 
         private void btn_search_Click_1(object sender, EventArgs e)
         {
+            // One Search button is shared between Quick Quote and Project mode, but this
+            // always searched transactionList - Quick Quote's list only - even while in
+            // Project mode. Project mode has its own separate list
+            // (transactionProjectDataTable); searching it while in Project mode picked a
+            // row index out of the wrong table and tried to bind Project's UI with Quick
+            // Quote data (or a mismatched/nonexistent record).
+            if (isProject)
+            {
+                string projectTitle = "Project List";
+                SetupModal projectSetup = new SetupModal(projectTitle, transactionProjectDataTable);
+                DialogResult projectResult = projectSetup.ShowDialog();
+
+                if (projectResult == DialogResult.OK)
+                {
+                    int projectRowResult = projectSetup.GetResult();
+
+                    if (projectRowResult != -1)
+                    {
+                        selectedProjectRow = projectRowResult;
+                        bind(transactionProjectDataTable, selectedProjectRow, true);
+                        fetchSalesProject();
+                    }
+                }
+
+                return;
+            }
+
             string Title = "Quotation List";
             SetupModal setup = new SetupModal(Title, transactionList);
             DialogResult r = setup.ShowDialog();
@@ -4261,6 +4327,7 @@ namespace smpc_sales_app.Pages.Sales
                     BackColor = Color.White
 
                 };
+                myControl.ImageList = this.ImageList;
 
                 //plus events function
                 myControl.CellClicked += Cell_ClickedUC;
@@ -5032,6 +5099,7 @@ namespace smpc_sales_app.Pages.Sales
         private void GetLatestDate()
         {
             dtp_date.Value = DateTime.Now;
+            txt_validays.Text = "30";
         }
         private void ChangeDocumentType()
         {
