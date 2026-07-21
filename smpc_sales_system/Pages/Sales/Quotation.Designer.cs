@@ -1765,6 +1765,13 @@
             this.tabControl2.SelectedIndex = 0;
             this.tabControl2.Size = new System.Drawing.Size(1174, 1731);
             this.tabControl2.TabIndex = 0;
+            // DrawMode/DrawItem were never wired up, so tabControl2_DrawItem (which paints
+            // a tab red when "Toggle RedFlag" sets its Tag) never actually ran - the click
+            // handler toggled the Tag but nothing ever repainted using it, so the tab never
+            // visibly turned red. OwnerDrawFixed + this event is what makes that painting
+            // happen at all.
+            this.tabControl2.DrawMode = System.Windows.Forms.TabDrawMode.OwnerDrawFixed;
+            this.tabControl2.DrawItem += new System.Windows.Forms.DrawItemEventHandler(this.tabControl2_DrawItem);
             this.tabControl2.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.tabControl2_MouseDoubleClick);
             this.tabControl2.MouseDown += new System.Windows.Forms.MouseEventHandler(this.tabControl2_MouseDown);
             // 
@@ -1796,7 +1803,8 @@
             this.toolStripMenuItemRemoveTabs.Name = "toolStripMenuItemRemoveTabs";
             this.toolStripMenuItemRemoveTabs.Size = new System.Drawing.Size(155, 22);
             this.toolStripMenuItemRemoveTabs.Text = "Remove Tabs";
-            // 
+            this.toolStripMenuItemRemoveTabs.Click += new System.EventHandler(this.toolStripMenuItemRemoveTabs_Click);
+            //
             // tabPage1
             // 
             this.tabPage1.Location = new System.Drawing.Point(4, 22);

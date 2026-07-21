@@ -265,6 +265,16 @@ namespace smpc_sales_app.Pages.Sales
             if (tabControl2.SelectedTab.Controls[0] is ItemSetUC currentControl)
             {
                 int index = currentControl.GetIndex();
+
+                // counterReference/counterParent live on this form, not on ItemSetUC, so
+                // they were being shared across every Project tab - adding an item on Tab A
+                // then switching to Tab B would keep counting up from Tab A's numbers
+                // instead of Tab B's own. Re-deriving them from the currently selected
+                // tab's own grid right before use (same approach as the Quick Quote
+                // Edit-numbering fix) makes numbering independent per tab.
+                counterReference = GetMaxTopLevelReferenceCode(currentControl.DgvProjectItems);
+                counterParent = 1;
+
                 HandleItemSelectionClick(index, currentControl.DgvProjectItems);
             }
         }
@@ -279,6 +289,13 @@ namespace smpc_sales_app.Pages.Sales
 
             foreach (TabPage tab in tabControl2.TabPages)
             {
+                // Red-flagged tabs (toggled via the right-click menu) are excluded from the
+                // quotation's totals - that's the point of flagging a tab red, to set it
+                // aside without deleting it.
+                bool isRedFlagged = tab.Tag is Color tagColor && tagColor == Color.Red;
+                if (isRedFlagged)
+                    continue;
+
                 var itemControls = tab.Controls.OfType<ItemSetUC>();
 
                 foreach (var currentControl in itemControls)
@@ -5687,6 +5704,10 @@ namespace smpc_sales_app.Pages.Sales
             }
 
             tabControl2.Invalidate();
+
+            // Flagging/unflagging a tab changes which tabs count toward the totals - update
+            // the bottom panel right away instead of waiting for the next item edit.
+            RecomputeParentTotals();
         }
 
         private void toolStripMenuItemRenameTabs_Click(object sender, EventArgs e)
@@ -5697,6 +5718,48 @@ namespace smpc_sales_app.Pages.Sales
 
             // Renames the tab here
             tabControl2.TabPages[selectedIndex].Text = tabNewName;
+        }
+
+        // "Remove Tabs" already existed in the right-click menu (Designer.cs), but had no
+        // Click handler wired to it at all, so clicking it did nothing. This removes the
+        // currently selected Project tab, the same "act on the selected tab" pattern the
+        // RedFlag/Rename menu items already use.
+        private void toolStripMenuItemRemoveTabs_Click(object sender, EventArgs e)
+        {
+            int selectedIndex = tabControl2.SelectedIndex;
+
+            if (selectedIndex < 0 || selectedIndex >= tabControl2.TabPages.Count)
+                return;
+
+            // The last tab is always the "+" add-tab control, not a real item set - never
+            // let it be removed this way.
+            if (tabControl2.TabPages[selectedIndex].Text == "+")
+            {
+                MessageBox.Show("That's the \"+\" add-tab button, not a project tab.");
+                return;
+            }
+
+            // Keep at least one real tab - a project quotation needs somewhere for its items
+            // to live (the "+" tab doesn't count as a real one).
+            int realTabCount = tabControl2.TabPages.Count - 1;
+            if (realTabCount <= 1)
+            {
+                MessageBox.Show("A project quotation needs at least one tab - add another before removing this one.");
+                return;
+            }
+
+            string tabName = tabControl2.TabPages[selectedIndex].Text;
+            DialogResult confirm = MessageBox.Show(
+                $"Remove tab \"{tabName}\" and all its items? This can't be undone.",
+                "Remove Tab",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Warning);
+
+            if (confirm != DialogResult.Yes)
+                return;
+
+            tabControl2.TabPages.RemoveAt(selectedIndex);
+            RecomputeParentTotals();
         }
 
         //
