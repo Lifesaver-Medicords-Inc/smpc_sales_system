@@ -1156,12 +1156,13 @@ namespace smpc_sales_app.Pages.Sales
                             basedId = (int)(long)pnl_quotation["id"];
                         else
                             int.TryParse(pnl_quotation["id"].ToString(), out basedId);
-                        
+
                         tabData["sales_project_item_set"] = new Dictionary<string, object>
                         {
                             { "based_id",   basedId },
                             { "tab_number", selectedTab.Text },
-                            { "itemset_id", selectedTab.Tag }
+                            { "itemset_id", selectedTab.Tag },
+                            { "is_new_tab", _newlyCreatedTabs.Contains(selectedTab) }
                         };
 
                         tabData["sales_project_history"] = selectedControl.GetHistoryList();
@@ -1213,16 +1214,6 @@ namespace smpc_sales_app.Pages.Sales
                 Dictionary<string, dynamic> changes = GetFullDiff(dbData, pnl_quotation);
 
                 changes["id"] = (int)pnl_quotation["id"];
-
-                // for checking to get the cleanJson for testing purpose
-
-                //string json = JsonConvert.SerializeObject(changes);
-
-                //var jsonObject = JsonConvert.DeserializeObject(json);
-
-                //string cleanJson = JsonConvert.SerializeObject(jsonObject);
-
-                // testing purpose
 
                 var response = await ProjectService.UpdateChange(changes);
 
@@ -1369,80 +1360,103 @@ namespace smpc_sales_app.Pages.Sales
 
             var allTabs = DeserializeList<Dictionary<string, object>>(pnlQuotation, "sales_project_all_tabs");
 
-            var newTabIds = new HashSet<int>();
-            foreach (var tab in allTabs)
+            // Brand-new tabs (added via "+" this session, never saved) are processed entirely
+            // separately below, by TabPage-flagged identity rather than by id - matching them
+            // in with everything else by id is what let a new tab's placeholder id collide
+            // with (and be silently shadowed by) another tab's id, real or placeholder.
+            var existingTabs = allTabs.Where(t => !IsNewTabFlag(t)).ToList();
+            var newTabs = allTabs.Where(t => IsNewTabFlag(t)).ToList();
+
+            var existingTabIds = new HashSet<int>();
+            foreach (var tab in existingTabs)
             {
                 int bid = GetItemSetIdFromTab(tab);
                 if (bid > 0)
-                    newTabIds.Add(bid);
+                    existingTabIds.Add(bid);
             }
 
             var allItemSetIds = new HashSet<int>(dbByTab.Keys);
-            allItemSetIds.UnionWith(newTabIds);
+            allItemSetIds.UnionWith(existingTabIds);
 
             foreach (int itemSetId in allItemSetIds)
             {
                 var db = dbByTab.ContainsKey(itemSetId) ? dbByTab[itemSetId] : new TabDbData();
 
                 Dictionary<string, object> matchedTab = null;
-                foreach (var tab in allTabs)
+                foreach (var tab in existingTabs)
                 {
-                    if (GetItemSetIdFromTab(tab) == itemSetId) 
+                    if (GetItemSetIdFromTab(tab) == itemSetId)
                     {
                         matchedTab = tab;
                         break;
                     }
                 }
 
-                var newItemSets = new List<SalesProjectItemSet>();
-                if (matchedTab != null && matchedTab.ContainsKey("sales_project_item_set")
-                    && matchedTab["sales_project_item_set"] != null)
-                { 
-                    newItemSets.Add(BuildItemSet(matchedTab, itemSetId));
-                }
-                 
-                var tabDiff = new TabDiff { BasedId = itemSetId };
+                BuildTabDiffEntry(itemSetId, db, matchedTab, result);
+            }
 
-                List<SalesProjectContent> ContentMatchedTab = new List<SalesProjectContent>();
-                List<SalesProjectAdvancedConditions> AdvanceConditionMatchedTab = new List<SalesProjectAdvancedConditions>();
-
-                if (matchedTab != null)
-                {
-                    var content = DeserializeSingleFromTab<SalesProjectContent>(matchedTab, "sales_project_content");
-                    if (content != null)
-                    {
-                        content.based_id = itemSetId;
-                        ContentMatchedTab.Add(content);
-                    }
-
-                    var advCondition = DeserializeSingleFromTab<SalesProjectAdvancedConditions>(matchedTab, "sales_project_content_advanced_condition");
-                    if (advCondition != null)
-                    {
-                        advCondition.based_id = itemSetId;
-                        AdvanceConditionMatchedTab.Add(advCondition);
-                    }
-                }
-
-                List<SalesProjectItems> ItemsMatchedTab = DeserializeFromTab<SalesProjectItems>(matchedTab, "sales_project_items");
-                List<SalesWiringModel> WiringMatchedTab = DeserializeFromTab<SalesWiringModel>(matchedTab, "sales_project_wiring");
-                List<SalesProjectHistory> HistoryMatchedTab = DeserializeFromTab<SalesProjectHistory>(matchedTab, "sales_project_history");
-
-                tabDiff.SalesProjectItemSet = DiffModels(db.ItemSets, newItemSets, x => x.itemset_id, GetItemSetChanges);
-                tabDiff.SalesProjectContent = DiffModels(db.Contents, ContentMatchedTab, x => x.content_id, GetContentChanges);
-                tabDiff.SalesProjectContentAdvancedCondition = DiffModels(db.Conditions, AdvanceConditionMatchedTab, x => x.conditions_id, GetAdvancedConditionsChanges);
-                tabDiff.SalesProjectItems = DiffModels(db.Items, ItemsMatchedTab, x => x.items_id, GetItemFieldChanges);
-                tabDiff.SalesProjectWirings = DiffModels(db.Wiring, WiringMatchedTab, x => x.id, GetWiringChanges);
-                tabDiff.SalesProjectHistory = DiffModels(db.History, HistoryMatchedTab, x => x.id, GetHistoryChanges);
-
-                if (tabDiff.HasChanges())
-                {
-                    if (!result.ContainsKey("Tabs")) result["Tabs"] = new List<Dictionary<string, dynamic>>();
-
-                    ((List<Dictionary<string, dynamic>>)result["Tabs"]).Add(JsonConvert.DeserializeObject<Dictionary<string, dynamic>>(JsonConvert.SerializeObject(tabDiff)));
-                }
+            // Every genuinely new tab gets its own diff entry, unconditionally treated as new
+            // (nothing in the db to diff against) and never deduped/matched by id with anything
+            // else - so its placeholder id can never shadow, or be shadowed by, another tab.
+            foreach (var tab in newTabs)
+            {
+                int itemSetId = GetItemSetIdFromTab(tab);
+                BuildTabDiffEntry(itemSetId, new TabDbData(), tab, result);
             }
 
             return result;
+        }
+
+        // Builds and appends one tab's diff entry to result["Tabs"] if it has any changes.
+        // Shared by GetFullDiff's existing-tab (id-matched) and new-tab (unconditional) paths.
+        private void BuildTabDiffEntry(int itemSetId, TabDbData db, Dictionary<string, object> matchedTab, Dictionary<string, dynamic> result)
+        {
+            var newItemSets = new List<SalesProjectItemSet>();
+            if (matchedTab != null && matchedTab.ContainsKey("sales_project_item_set")
+                && matchedTab["sales_project_item_set"] != null)
+            {
+                newItemSets.Add(BuildItemSet(matchedTab, itemSetId));
+            }
+
+            var tabDiff = new TabDiff { BasedId = itemSetId };
+
+            List<SalesProjectContent> ContentMatchedTab = new List<SalesProjectContent>();
+            List<SalesProjectAdvancedConditions> AdvanceConditionMatchedTab = new List<SalesProjectAdvancedConditions>();
+
+            if (matchedTab != null)
+            {
+                var content = DeserializeSingleFromTab<SalesProjectContent>(matchedTab, "sales_project_content");
+                if (content != null)
+                {
+                    content.based_id = itemSetId;
+                    ContentMatchedTab.Add(content);
+                }
+
+                var advCondition = DeserializeSingleFromTab<SalesProjectAdvancedConditions>(matchedTab, "sales_project_content_advanced_condition");
+                if (advCondition != null)
+                {
+                    advCondition.based_id = itemSetId;
+                    AdvanceConditionMatchedTab.Add(advCondition);
+                }
+            }
+
+            List<SalesProjectItems> ItemsMatchedTab = DeserializeFromTab<SalesProjectItems>(matchedTab, "sales_project_items");
+            List<SalesWiringModel> WiringMatchedTab = DeserializeFromTab<SalesWiringModel>(matchedTab, "sales_project_wiring");
+            List<SalesProjectHistory> HistoryMatchedTab = DeserializeFromTab<SalesProjectHistory>(matchedTab, "sales_project_history");
+
+            tabDiff.SalesProjectItemSet = DiffModels(db.ItemSets, newItemSets, x => x.itemset_id, GetItemSetChanges);
+            tabDiff.SalesProjectContent = DiffModels(db.Contents, ContentMatchedTab, x => x.content_id, GetContentChanges);
+            tabDiff.SalesProjectContentAdvancedCondition = DiffModels(db.Conditions, AdvanceConditionMatchedTab, x => x.conditions_id, GetAdvancedConditionsChanges);
+            tabDiff.SalesProjectItems = DiffModels(db.Items, ItemsMatchedTab, x => x.items_id, GetItemFieldChanges);
+            tabDiff.SalesProjectWirings = DiffModels(db.Wiring, WiringMatchedTab, x => x.id, GetWiringChanges);
+            tabDiff.SalesProjectHistory = DiffModels(db.History, HistoryMatchedTab, x => x.id, GetHistoryChanges);
+
+            if (tabDiff.HasChanges())
+            {
+                if (!result.ContainsKey("Tabs")) result["Tabs"] = new List<Dictionary<string, dynamic>>();
+
+                ((List<Dictionary<string, dynamic>>)result["Tabs"]).Add(JsonConvert.DeserializeObject<Dictionary<string, dynamic>>(JsonConvert.SerializeObject(tabDiff)));
+            }
         }
 
         private T DeserializeSingleFromTab<T>(Dictionary<string, object> tab, string key) where T : class, new()
@@ -1836,6 +1850,22 @@ namespace smpc_sales_app.Pages.Sales
 
             return itemsetId;
         }
+
+        // Whether the client flagged this tab as brand-new this session (see
+        // _newlyCreatedTabs). GetFullDiff uses this - not the tab's id - to decide whether to
+        // process it unconditionally as new, so an id collision (placeholder vs. placeholder,
+        // or placeholder vs. a real db id) can never cause one tab's data to shadow another's.
+        private bool IsNewTabFlag(Dictionary<string, object> tab)
+        {
+            if (tab == null || !tab.ContainsKey("sales_project_item_set"))
+                return false;
+
+            var setDict = tab["sales_project_item_set"] as Dictionary<string, object>;
+            if (setDict == null || !setDict.ContainsKey("is_new_tab"))
+                return false;
+
+            return setDict["is_new_tab"] is bool isNew && isNew;
+        }
         private int ToInt(object value)
         {
             if (value == null) return 0;
@@ -2017,7 +2047,7 @@ namespace smpc_sales_app.Pages.Sales
             object val;
             Compare(c, "project_name", db.project_name, upd.TryGetValue("project_name", out val) ? val : null);
             Compare(c, "customer_id", db.customer_id, upd.TryGetValue("customer_id", out val) ? val : null);
-            Compare(c, "application_id", db.application_id, upd.TryGetValue(" ", out val) ? val : null);
+            Compare(c, "application_id", db.application_id, upd.TryGetValue("application_id", out val) ? val : null);
             Compare(c, "payment_terms_id", db.payment_terms_id, upd.TryGetValue("payment_terms_id", out val) ? val : null);
             Compare(c, "ship_to_id", db.ship_to_id, upd.TryGetValue("ship_to_id", out val) ? val : null);
             Compare(c, "bill_to_id", db.bill_to_id, upd.TryGetValue("bill_to_id", out val) ? val : null);
@@ -2897,11 +2927,24 @@ namespace smpc_sales_app.Pages.Sales
         // flagged tabs here instead leaves Tag free to always hold the tab's id.
         private readonly HashSet<TabPage> _redFlaggedTabs = new HashSet<TabPage>();
 
-        // Placeholder ids handed to brand-new, not-yet-saved Project tabs so they have a
-        // non-null, non-zero Tag (GetFullDiff only includes tabs whose resolved id is > 0).
-        // Chosen far above any realistic real item_set_id so it can never collide with one;
-        // the server always discards this value and assigns the real database id on insert.
-        private int _nextNewTabTempId = 1000000000;
+        // Tabs added via "+" this session that have never been saved. GetFullDiff uses this
+        // (not the placeholder id below) to decide whether a tab is brand-new: matching by id
+        // is what let one new tab's placeholder collide with, and get silently shadowed by,
+        // another tab's id (real or placeholder) - see the incident this comment thread
+        // documents. A tab in this set is always treated as new and diffed unconditionally,
+        // never looked up or deduped by id, so an id collision can no longer cause data loss.
+        private readonly HashSet<TabPage> _newlyCreatedTabs = new HashSet<TabPage>();
+
+        // Placeholder id given to every brand-new, not-yet-saved Project tab's Tag. Used to be
+        // a counter starting at a "surely big enough" constant (1000000000, later bumped to
+        // 2000000000) so GetFullDiff's id-based tab matching wouldn't treat it as "no id" - but
+        // that same id-matching is what let a new tab's placeholder collide with (and get
+        // silently shadowed by) another tab, real or placeholder, when the constant wasn't as
+        // collision-proof as assumed (see the incident this comment thread documents). Now that
+        // GetFullDiff decides "is this tab new" via _newlyCreatedTabs (identity, not a number),
+        // the placeholder's actual value no longer matters for correctness - a plain 0 works,
+        // and it's permanently collision-proof since no real database id is ever 0.
+        private const int NewTabPlaceholderId = 0;
 
         private decimal GetBomDataRecursive(int rowIndex, int bomID, int itemID, DataGridView dgv, string additionalReference = null, int level = 0, HashSet<int> visited = null)
         {
@@ -4114,7 +4157,9 @@ namespace smpc_sales_app.Pages.Sales
 
         public List<string> fetchMultiplierData()
         {
-            List<string> multiplier = new List<string>();
+            // Leading blank entry so the MULTIPLIER dropdown on each item row can be left
+            // unset instead of forcing the user to pick one of the real multiplier values.
+            List<string> multiplier = new List<string> { string.Empty };
 
             foreach (DataGridViewRow row in dgv_project_multiplier.Rows)
             {
@@ -4347,6 +4392,11 @@ namespace smpc_sales_app.Pages.Sales
         }
         private void tabControl2_MouseDown(object sender, MouseEventArgs e)
         {
+            // Don't let the "+" tab spawn a new tab while just viewing a project quotation -
+            // only New/Edit mode should be able to add tabs.
+            if (isProject && !isNewRecord && !IsEdit)
+                return;
+
             //if (tabControl2.TabPages.Count == 0) return;
 
             //if (e.Button == MouseButtons.Right)
@@ -4387,11 +4437,13 @@ namespace smpc_sales_app.Pages.Sales
 
                 // Tag must never be left null here - it's how this tab's itemset_id gets
                 // written into the save payload (see the sales_project_all_tabs builder in
-                // btn_save_Click and GetItemSetIdFromTab). A null Tag was silently making
-                // GetFullDiff drop the whole tab (bid == 0 is filtered out), so a newly added
-                // tab would report "saved" but never actually be sent to the server. This
-                // placeholder stands in until the server assigns a real item_set_id on insert.
-                newTabPage.Tag = _nextNewTabTempId++;
+                // btn_save_Click and GetItemSetIdFromTab). This placeholder stands in until the
+                // server assigns a real item_set_id on insert; _newlyCreatedTabs (not this
+                // value) is what tells GetFullDiff to treat the tab as new.
+                newTabPage.Tag = NewTabPlaceholderId;
+
+                // The authoritative "this tab is new" signal - see _newlyCreatedTabs.
+                _newlyCreatedTabs.Add(newTabPage);
 
                 // Create an instance of your UserControl
                 ItemSetUC myControl = new ItemSetUC
@@ -5959,6 +6011,7 @@ namespace smpc_sales_app.Pages.Sales
                 return;
 
             _redFlaggedTabs.Remove(tabControl2.TabPages[selectedIndex]);
+            _newlyCreatedTabs.Remove(tabControl2.TabPages[selectedIndex]);
             tabControl2.TabPages.RemoveAt(selectedIndex);
             RecomputeParentTotals();
         }
