@@ -161,6 +161,48 @@ namespace smpc_app.Services.Helpers
             }
         }
 
+        // ReadOnlyControls/ResetReadOnlyControls only walk one level of a panel's direct
+        // children and don't touch CheckBox or DataGridView at all - fine for the flat quick
+        // quote header panels, but Project Quotation's controls (ItemSetUC) are nested inside
+        // several layers of panels and include checkboxes (chk_wiring) and grids
+        // (dgv_project_items, dgv_wiring, dgv_final) that were never being locked, so
+        // everything stayed editable even before clicking Edit. This walks the whole control
+        // tree under `root` and locks/unlocks every field type it finds. DataGridViews are
+        // set ReadOnly rather than Disabled so they can still be scrolled/viewed while locked.
+        public static void SetControlsEditable(Control root, bool editable)
+        {
+            foreach (Control ctrl in root.Controls)
+            {
+                switch (ctrl)
+                {
+                    case TextBox textBox:
+                        textBox.ReadOnly = !editable;
+                        break;
+                    case ComboBox comboBox:
+                        comboBox.Enabled = editable;
+                        break;
+                    case CheckBox checkBox:
+                        checkBox.Enabled = editable;
+                        break;
+                    case DateTimePicker dateTimePicker:
+                        dateTimePicker.Enabled = editable;
+                        break;
+                    case NumericUpDown numericUpDown:
+                        numericUpDown.ReadOnly = !editable;
+                        break;
+                    case DataGridView dataGridView:
+                        dataGridView.ReadOnly = !editable;
+                        break;
+                }
+
+                // Recurse into anything that can itself contain fields (panels, group boxes,
+                // split container panels, nested user controls, etc.) so nothing buried a
+                // couple of levels deep gets skipped.
+                if (ctrl.Controls.Count > 0)
+                    SetControlsEditable(ctrl, editable);
+            }
+        }
+
 
 
         public static Dictionary<string, dynamic> GetControlsValues(Panel pnl)
@@ -176,15 +218,20 @@ namespace smpc_app.Services.Helpers
 
                     if (textBox.Tag != null && textBox.Tag.ToString() == "money_format")
                     {
-                        bool isParsed = decimal.TryParse(textBox.Text.ToString().Replace(",", ""), out decimal tempVal);
+                        // Only strips commas, not the "₱" MoneyFormat/BindControls puts on
+                        // these fields - so any field that had already been displayed with
+                        // its currency symbol (i.e. any money field that was simply left
+                        // untouched since the record was loaded) failed to parse here and
+                        // showed "Invalid money format" even though the value was fine.
+                        bool isParsed = decimal.TryParse(GetCleanedPriceValue(textBox.Text), out decimal tempVal);
                         if (isParsed)
                         {
-                            val = tempVal; 
+                            val = tempVal;
                         }
                         else
                         {
                             MessageBox.Show("Invalid money format. Please enter a valid number.");
-                            val = 0; 
+                            val = 0;
                         }
                     }
                     else
@@ -271,7 +318,13 @@ namespace smpc_app.Services.Helpers
                         // Handle money formatting
                         if (textBox.Tag != null && textBox.Tag.ToString() == "money_format")
                         {
-                            if (decimal.TryParse(textBox.Text.Replace(",", ""), out decimal tempVal))
+                            // Only stripped commas, not the "₱" that MoneyFormat/BindControls
+                            // puts on these fields - so a money field that had simply been
+                            // displayed with its currency symbol (i.e. left untouched since
+                            // the record loaded) failed to parse here and showed "Invalid
+                            // money format" on save even though nothing was actually wrong
+                            // with the value.
+                            if (decimal.TryParse(GetCleanedPriceValue(textBox.Text), out decimal tempVal))
                             {
                                 val = tempVal;
                             }
@@ -284,7 +337,18 @@ namespace smpc_app.Services.Helpers
                         // Handle _id conversion
                         else if (key.EndsWith("_id"))
                         {
-                            if (int.TryParse(textBox.Text, out int idVal))
+                            // A blank id field (e.g. content_id on a tab whose content row
+                            // hasn't been created/saved yet) is a normal "doesn't exist yet"
+                            // state, not a user input mistake - it used to trip the same
+                            // "Invalid ID format" warning as actually-malformed text, and it
+                            // fired on tab switch/content-changed events, not just Save, since
+                            // this runs any time this panel's values get read. Only warn when
+                            // there's text that genuinely isn't a number.
+                            if (string.IsNullOrWhiteSpace(textBox.Text))
+                            {
+                                val = 0;
+                            }
+                            else if (int.TryParse(textBox.Text, out int idVal))
                             {
                                 val = idVal;
                             }
@@ -340,7 +404,7 @@ namespace smpc_app.Services.Helpers
                         values.Add(key, val);
                     }
 
-                   
+
                     if (control is DateTimePicker dateTimePicker)
                     {
                         string key = dateTimePicker.Name.Replace("dtp_", "");
@@ -348,7 +412,7 @@ namespace smpc_app.Services.Helpers
                         values.Add(key, val);
                     }
 
-                    
+
                     if (control is NumericUpDown numericUpDown)
                     {
                         string key = numericUpDown.Name.Replace("txt_", "");
@@ -391,7 +455,18 @@ namespace smpc_app.Services.Helpers
                         // Handle _id conversion
                         else if (key.EndsWith("_id"))
                         {
-                            if (int.TryParse(textBox.Text, out int idVal))
+                            // A blank id field (e.g. content_id on a tab whose content row
+                            // hasn't been created/saved yet) is a normal "doesn't exist yet"
+                            // state, not a user input mistake - it used to trip the same
+                            // "Invalid ID format" warning as actually-malformed text, and it
+                            // fired on tab switch/content-changed events, not just Save, since
+                            // this runs any time this panel's values get read. Only warn when
+                            // there's text that genuinely isn't a number.
+                            if (string.IsNullOrWhiteSpace(textBox.Text))
+                            {
+                                val = 0;
+                            }
+                            else if (int.TryParse(textBox.Text, out int idVal))
                             {
                                 val = idVal;
                             }
@@ -495,6 +570,13 @@ namespace smpc_app.Services.Helpers
         }
         public static void BindControls(Panel[] pnl_list, DataTable dt, int selectedIndex = 0)
         {
+            // dt can legitimately be empty (e.g. a fresh/no-record state) or selectedIndex can
+            // be stale from a previous, larger dataset - either used to throw
+            // IndexOutOfRangeException: "There is no row at position 0." Nothing to bind to, so
+            // just leave the controls as they are instead of crashing.
+            if (dt == null || dt.Rows.Count == 0 || selectedIndex < 0 || selectedIndex >= dt.Rows.Count)
+                return;
+
             Dictionary<string, dynamic> values = new Dictionary<string, dynamic>();
 
             foreach (var col_name in dt.Columns)

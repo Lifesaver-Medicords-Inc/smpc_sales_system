@@ -762,6 +762,17 @@ namespace smpc_sales_system.Pages.Sales
 
                     if (containsBonds)
                     {
+                        // project_items_multiplier is a combo box column bound to a fixed
+                        // list of standard multipliers (bs_multiplier / setMultiplier) - "0.035"
+                        // isn't one of those choices, so setting it directly on a combo cell
+                        // threw "DataGridViewComboBoxCell value is not valid". The "t&c labor"
+                        // case above already avoids this by swapping to a plain text cell first;
+                        // do the same here (a no-op if the t&c swap above already ran for this row).
+                        if (!(row.Cells["project_items_multiplier"] is DataGridViewTextBoxCell))
+                        {
+                            DataGridViewTextBoxCell bondsTextBoxCell = new DataGridViewTextBoxCell();
+                            row.Cells["project_items_multiplier"] = bondsTextBoxCell;
+                        }
                         row.Cells["project_items_multiplier"].Value = "0.035";
                     }
                 }
@@ -798,7 +809,11 @@ namespace smpc_sales_system.Pages.Sales
                     }
                 }
 
-                LastRefInt = int.Parse(lastRef);
+                // A tab with no items yet (e.g. a brand-new tab) means stringTable has no
+                // rows, so the loop above never ran and lastRef is still null - int.Parse(null)
+                // used to throw ArgumentNullException here and abort the whole load. Reference
+                // codes start counting from 0 in that case, same as counterReference's default.
+                LastRefInt = lastRef != null && int.TryParse(lastRef, out int parsedLastRef) ? parsedLastRef : 0;
 
                 int CompareRef(string a, string b)
                 {
@@ -1119,10 +1134,23 @@ namespace smpc_sales_system.Pages.Sales
         public DataTable BomDetails { get; set; } = new DataTable();
 
         // for wiring soon
-        private async void ItemSetUC_Load(object sender, EventArgs e) 
+        private async void ItemSetUC_Load(object sender, EventArgs e)
         {
 
             stockProjectItemDataTable = Helpers.GetDataTableFromUnboundGrid(dgv_project_items);
+
+            // This has to happen before any of the awaits below, not after all of them (as it
+            // did before) - ClearProjectItemsDgv() doesn't actually use any of the awaited
+            // data, but running it at the end of this async method left a window where a
+            // brand-new tab's grid looked ready to use immediately, while this handler was
+            // still resolving in the background. Adding an item during that window (very easy
+            // to do on a fresh tab) got silently wiped out the moment this method finally
+            // reached the clear call - dgv_project_items.DataSource got replaced with a fresh
+            // empty clone - so the item vanished, the user re-added it, and every add attempt
+            // computed its reference code from an apparently-empty grid, landing on "1" every
+            // time instead of counting up.
+            if (!isViewProjectItem)
+                ClearProjectItemsDgv();
 
             var dt = await ProjectTemplatesService.GetProjectTemplates();
 
@@ -1161,9 +1189,6 @@ namespace smpc_sales_system.Pages.Sales
 
             if (txt_template_id.Text != null && txt_template_id.Text != "")
                 cmb_template_project.SelectedValue = txt_template_id.Text;
-
-            if (!isViewProjectItem)
-                ClearProjectItemsDgv();
 
         }
 
@@ -1351,6 +1376,11 @@ namespace smpc_sales_system.Pages.Sales
 
         private void button1_Click(object sender, EventArgs e)
         {
+            // Opens the template selection modal (Button_ClickedUC in Quotation.cs) - an edit
+            // action, so it shouldn't be reachable while this tab is locked (view mode).
+            if (!_isEditable)
+                return;
+
             ButtonClicked?.Invoke(this, EventArgs.Empty);
         }
 
@@ -1362,9 +1392,47 @@ namespace smpc_sales_system.Pages.Sales
             return index;
         }
 
+        // Locks/unlocks every textbox, checkbox, combobox, and gridview in this tab (Content,
+        // Advanced Conditions, Items grid, Wiring grid, Final grid, notes, template/engineer
+        // pickers - everything). Project Quotation had no read-only state at all before this,
+        // so a tab's details could be edited freely even while just viewing a saved project,
+        // before clicking Edit.
+        //
+        // DataGridView.ReadOnly (set by Helpers.SetControlsEditable below) only blocks typing
+        // directly into a cell - it does nothing to stop a CellClick handler from firing, and
+        // this grid's component/model/image pickers are all launched from CellClick
+        // (dgv_project_items_CellClick), not from in-cell editing. _isEditable is what those
+        // handlers actually check before opening a picker or assigning anything.
+        private bool _isEditable = true;
+        public void SetEditable(bool editable)
+        {
+            _isEditable = editable;
+            Helpers.SetControlsEditable(this, editable);
+        }
+
+        // MULTIPLIER (project_items_multiplier) is a combo box column bound to a fixed list
+        // of standard multipliers. Any time a row's stored multiplier value isn't in that
+        // list - a legacy value, one entered before the standard list changed, or anything
+        // else that doesn't match exactly - WinForms throws "DataGridViewComboBoxCell value
+        // is not valid" while rendering, and with no DataError handler that showed its own
+        // ugly default dialog and left the grid in whatever half-loaded state it was in.
+        // Swallowing it here (as the dialog itself suggests) lets the grid keep rendering;
+        // the mismatched cell just shows blank instead of taking the app down.
+        private void dgv_project_items_DataError(object sender, DataGridViewDataErrorEventArgs e)
+        {
+            e.ThrowException = false;
+            e.Cancel = true;
+        }
+
         private void dgv_project_items_CellClick(object sender, DataGridViewCellEventArgs e)
         {
             if (e.RowIndex < 0 || e.ColumnIndex < 0)
+                return;
+
+            // Component/Model/Image picking all launch from this click handler, not from
+            // in-cell editing, so DataGridView.ReadOnly alone doesn't stop any of them while
+            // the tab is locked (view mode, before New/Edit).
+            if (!_isEditable)
                 return;
 
             index = e.RowIndex;
@@ -2273,11 +2341,19 @@ namespace smpc_sales_system.Pages.Sales
 
         private void txt_final_Click(object sender, EventArgs e)
         {
+            // Opens the pump FLA/Voltage picker - an edit action, shouldn't be reachable
+            // while this tab is locked (view mode).
+            if (!_isEditable)
+                return;
+
             FinalTxtBoxClicked?.Invoke(this, EventArgs.Empty);
         }
 
         private void dgv_final_CellClick(object sender, DataGridViewCellEventArgs e)
         {
+            if (!_isEditable)
+                return;
+
             FinalTxtBoxClicked?.Invoke(this, EventArgs.Empty);
         }
 

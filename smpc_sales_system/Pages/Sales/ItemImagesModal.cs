@@ -90,9 +90,19 @@ namespace smpc_sales_system.Pages.Sales
                     // Load thumbnail from file or url
                     thumb =  Image.FromStream(new WebClient().OpenRead(imageUrl));
                 }
-                catch
+                catch (Exception ex)
                 {
-                    //thumb = SystemIcons.Application.ToBitmap();
+                    // Silently falling back to the placeholder here made every fetch failure
+                    // look identical from the UI, whether the cause was a wrong base URL, a
+                    // 404 (file genuinely missing/never uploaded), a network error, or a
+                    // malformed path in the "image" column - impossible to tell apart without
+                    // this. Logged, not shown as a dialog, since this runs once per thumbnail
+                    // and a modal per image would be unusable.
+                    // Console.WriteLine alone won't show anywhere for a normal WinForms run
+                    // (no console attached) - Debug.WriteLine is what actually shows up in
+                    // Visual Studio's Output window while running/debugging.
+                    System.Diagnostics.Debug.WriteLine($"[ItemImagesModal] Failed to load thumbnail \"{filename}\" from \"{imageUrl}\": {ex.Message}");
+                    Console.WriteLine($"[ItemImagesModal] Failed to load thumbnail \"{filename}\" from \"{imageUrl}\": {ex.Message}");
                     thumb = Properties.Resources.no_pictures;
                 }
 

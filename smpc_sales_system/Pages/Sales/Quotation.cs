@@ -262,6 +262,14 @@ namespace smpc_sales_app.Pages.Sales
 
         private async void Cell_ClickedUC(object sender, EventArgs e)
         {
+            // Setting DataGridView.ReadOnly (see UpdateProjectControlsEditableState) only
+            // blocks typing directly into cells - it does nothing to stop a CellClick handler
+            // like this one from firing and opening the item picker, which is how a component
+            // (and its MODEL, list price, etc. - everything GetItemData fills in) could still
+            // get added while just viewing a project, before Edit/New had been clicked.
+            if (isProject && !isNewRecord && !IsEdit)
+                return;
+
             if (tabControl2.SelectedTab.Controls[0] is ItemSetUC currentControl)
             {
                 int index = currentControl.GetIndex();
@@ -292,7 +300,7 @@ namespace smpc_sales_app.Pages.Sales
                 // Red-flagged tabs (toggled via the right-click menu) are excluded from the
                 // quotation's totals - that's the point of flagging a tab red, to set it
                 // aside without deleting it.
-                bool isRedFlagged = tab.Tag is Color tagColor && tagColor == Color.Red;
+                bool isRedFlagged = _redFlaggedTabs.Contains(tab);
                 if (isRedFlagged)
                     continue;
 
@@ -770,6 +778,13 @@ namespace smpc_sales_app.Pages.Sales
                 // Select the newly added tab
                 this.tabControl2.SelectedIndex = lastIndex;
 
+                // There's nothing saved yet to view read-only - this is a fresh starting
+                // point, so it should be editable right away.
+                UC.SetEditable(true);
+                Panel[] freshProjectPanels = { pnl_header, pnl_footer, pnl_project_name };
+                Helpers.ResetReadOnlyControls(freshProjectPanels);
+                dgv_project_multiplier.ReadOnly = false;
+
                 return;
             }
 
@@ -838,7 +853,6 @@ namespace smpc_sales_app.Pages.Sales
                 UC.ImageList = this.ImageList;
                 UC.selectedImageList = dt_items_selected_images;
 
-
                 //UC.DataChangedConditions += ItemSet_DataChanged;
                 //UC.DataChangedContent += Content_DataChanged;
                 //UC.CellChangedProject += Cell_DataChanged;
@@ -862,6 +876,17 @@ namespace smpc_sales_app.Pages.Sales
                 //bs_project_multipliers.DataSource = multipliers.ToTable();
                 dgv_project_multiplier.DataSource = multipliers;
 
+                // setMultiplier() was only ever called for a brand-new tab (the "+" handler)
+                // or as a side effect of editing the multiplier setup grid on whichever tab
+                // happened to be selected at that moment - never here, when a project's
+                // existing tabs are actually loaded. So the MULTIPLIER dropdown column had no
+                // choices bound to it (empty/unusable) on every loaded tab except by
+                // coincidence, if that side effect had happened to touch it first. Reading
+                // fetchMultiplierData() here (right after dgv_project_multiplier is populated
+                // for this tab, above) instead of before it, so it isn't stale from whichever
+                // tab happened to be bound last.
+                UC.setMultiplier(fetchMultiplierData());
+
                 DataView contentView = new DataView(dt_content);
                 contentView.RowFilter = $"based_id = '{tab.itemset_id}'";
 
@@ -879,13 +904,15 @@ namespace smpc_sales_app.Pages.Sales
 
                 CurrentProjectItemBasedID = tab.itemset_id;
 
+                DataTable contentTable = contentView.ToTable();
+
                 UC.SetAdvancedPanelData(conditionsView.ToTable());
-                UC.SetContentsPanelData(contentView.ToTable());
+                UC.SetContentsPanelData(contentTable);
                 UC.SetFinalData(contentFinalView.ToTable());
 
-                //this is not using any panel but just to set the value of template name and wiring for reference in saving and websocket updates
-                UC.SetTemplateName(contentView.ToTable().Rows[0]["template_project_id"]?.ToString() ?? "0");
-                UC.SetWiring(contentView.ToTable().Rows[0]["is_wiring"]?.ToString() ?? "false");
+                bool hasContentRow = contentTable.Rows.Count > 0;
+                UC.SetTemplateName(hasContentRow ? contentTable.Rows[0]["template_project_id"]?.ToString() ?? "0" : "0");
+                UC.SetWiring(hasContentRow ? contentTable.Rows[0]["is_wiring"]?.ToString() ?? "false" : "false");
 
 
                 newTab.Controls.Add(UC);
@@ -900,6 +927,11 @@ namespace smpc_sales_app.Pages.Sales
 
             fetchProjectMultipliers();
             //ConnectToWebSocket("Sales", selectedSalesQuotationId);
+
+            // Newly (re)built tabs default to whatever the form's current isNewRecord/IsEdit
+            // state actually is - locked (view mode) unless the user already clicked Edit or
+            // this is a brand new project being built out.
+            UpdateProjectControlsEditableState();
         }
 
         private async void CellClickedModelUC(object sender, EventArgs e)
@@ -2857,6 +2889,20 @@ namespace smpc_sales_app.Pages.Sales
         int counterReference = 0;
         int counterParent = 1;
 
+        // Red-flagged Project tabs (toggled via right-click menu). Used to be stored as
+        // Color.Red/Color.White directly in TabPage.Tag, but Tag is also where a tab's real
+        // itemset_id lives (see newTab.Tag = tab.itemset_id and the "+" new-tab handler) -
+        // toggling red flag was silently destroying the tab's id, which made GetItemSetIdFromTab
+        // treat an existing, previously-saved tab as brand new on the next save. Tracking
+        // flagged tabs here instead leaves Tag free to always hold the tab's id.
+        private readonly HashSet<TabPage> _redFlaggedTabs = new HashSet<TabPage>();
+
+        // Placeholder ids handed to brand-new, not-yet-saved Project tabs so they have a
+        // non-null, non-zero Tag (GetFullDiff only includes tabs whose resolved id is > 0).
+        // Chosen far above any realistic real item_set_id so it can never collide with one;
+        // the server always discards this value and assigns the real database id on insert.
+        private int _nextNewTabTempId = 1000000000;
+
         private decimal GetBomDataRecursive(int rowIndex, int bomID, int itemID, DataGridView dgv, string additionalReference = null, int level = 0, HashSet<int> visited = null)
         {
             Dictionary<int, DataRow> bomHeadDict = new Dictionary<int, DataRow>();
@@ -3640,6 +3686,7 @@ namespace smpc_sales_app.Pages.Sales
             GetLatestDate();
             SetNewFormMode(true);
             isNewRecord = true;
+            IsEdit = false;
             IsView = false;
 
             Helpers.ResetControls(pnl_header);
@@ -3767,6 +3814,11 @@ namespace smpc_sales_app.Pages.Sales
                 this.tabControl2.SelectedIndex = lastIndex;
                 setProjectMultiplier();
 
+                // This tab didn't exist yet when isNewRecord/IsEdit were set further up in
+                // this handler, so it never got unlocked - do it now that it's actually in
+                // tabControl2.
+                UC.SetEditable(true);
+
                 // This branch returns early, before the shared "new quotations always
                 // default to 30 days" line below ever runs - so clicking New while in
                 // Project mode left txt_validays blank instead of reset to 30 like Quick
@@ -3859,6 +3911,7 @@ namespace smpc_sales_app.Pages.Sales
             GetLatestDate();
             SetNewFormMode(true);
             isNewRecord = true;
+            IsEdit = false;
 
 
             Panel[] panels = { pnl_header, pnl_footer };
@@ -3949,6 +4002,9 @@ namespace smpc_sales_app.Pages.Sales
                 if (selectedProjectRow < rowCount - 1)
                 {
                     selectedProjectRow++;
+                    // Navigating to a different record shouldn't carry over edit mode from
+                    // whatever was previously open.
+                    IsEdit = false;
                     bind(transactionProjectDataTable, selectedProjectRow, true);
                     fetchSalesProject();
                 }
@@ -3970,6 +4026,9 @@ namespace smpc_sales_app.Pages.Sales
                 if (selectedProjectRow >= 1)
                 {
                     selectedProjectRow--;
+                    // Navigating to a different record shouldn't carry over edit mode from
+                    // whatever was previously open.
+                    IsEdit = false;
                     bind(transactionProjectDataTable, selectedProjectRow, true);
                     fetchSalesProject();
                 }
@@ -4211,6 +4270,11 @@ namespace smpc_sales_app.Pages.Sales
                     if (projectRowResult != -1)
                     {
                         selectedProjectRow = projectRowResult;
+                        // IsEdit doesn't get reset just by opening a different record - if the
+                        // user was editing another project earlier in this same session,
+                        // IsEdit was still true here, so this newly opened project would come
+                        // up unlocked/editable by default instead of view-only.
+                        IsEdit = false;
                         bind(transactionProjectDataTable, selectedProjectRow, true);
                         fetchSalesProject();
                     }
@@ -4262,8 +4326,9 @@ namespace smpc_sales_app.Pages.Sales
             TabPage tabPage = tabControl.TabPages[e.Index];
             Rectangle tabBounds = tabControl.GetTabRect(e.Index);
 
-            // Get custom color from Tag, default is Gray
-            Color tabColor = tabPage.Tag is Color color ? color : Color.White;
+            // Red-flag state is tracked in _redFlaggedTabs, not Tag - Tag holds the tab's
+            // itemset_id (see toolStripMenuItemTagRed_Click).
+            Color tabColor = _redFlaggedTabs.Contains(tabPage) ? Color.Red : Color.White;
 
             using (Brush brush = new SolidBrush(tabColor))
             {
@@ -4320,6 +4385,14 @@ namespace smpc_sales_app.Pages.Sales
 
                 var newTabPage = new TabPage(tabNewName);
 
+                // Tag must never be left null here - it's how this tab's itemset_id gets
+                // written into the save payload (see the sales_project_all_tabs builder in
+                // btn_save_Click and GetItemSetIdFromTab). A null Tag was silently making
+                // GetFullDiff drop the whole tab (bid == 0 is filtered out), so a newly added
+                // tab would report "saved" but never actually be sent to the server. This
+                // placeholder stands in until the server assigns a real item_set_id on insert.
+                newTabPage.Tag = _nextNewTabTempId++;
+
                 // Create an instance of your UserControl
                 ItemSetUC myControl = new ItemSetUC
                 {
@@ -4341,6 +4414,11 @@ namespace smpc_sales_app.Pages.Sales
 
                 // Insert the new TabPage into the TabControl
                 this.tabControl2.TabPages.Insert(lastIndex, newTabPage);
+
+                // A new tab you just added should match whatever editable state the rest of
+                // the project is currently in (it'll only actually be reachable while
+                // editing/creating, but match explicitly rather than assume).
+                myControl.SetEditable(isNewRecord || IsEdit);
 
                 // Select the new tab
                 this.tabControl2.SelectedIndex = lastIndex;
@@ -4431,8 +4509,58 @@ namespace smpc_sales_app.Pages.Sales
                 pnl_project_name.Height = 225;
             }
         }
-        public bool IsEdit { get; private set; }
+        private bool _isEdit;
+        // isNewRecord (set true by the various "New" handlers) was never being reset back to
+        // false anywhere in this class. So once "New" was clicked at any point during this
+        // form's lifetime, isNewRecord stayed true even after the user went on to open/edit a
+        // totally different, already-saved record - at which point IsEdit also became true.
+        // With both true, IsProject()/FinalizeProjectQuotation() ran BOTH their "if
+        // (isNewRecord)" Insert/POST branch AND their "if (IsEdit)" Update/PUT branch for the
+        // same save click. The POST tried to re-insert tabs/item sets that already exist in
+        // the DB (PRIMARY KEY violation), and a stale/leftover id from the earlier "New" click
+        // rode along as the top-level id on that same POST. Routing IsEdit's setter through
+        // here keeps the two flags mutually exclusive no matter which of the several call
+        // sites sets them.
+        public bool IsEdit
+        {
+            get => _isEdit;
+            private set
+            {
+                _isEdit = value;
+                if (value)
+                    isNewRecord = false;
+                UpdateProjectControlsEditableState();
+            }
+        }
         public bool isSubVersion { get; private set; }
+
+        // Project Quotation had no read-only state at all - every textbox, checkbox, combobox
+        // and gridview (header fields, the multiplier setup grid, and everything inside every
+        // tab's ItemSetUC) stayed editable even while just viewing an already-saved project,
+        // before Edit was ever clicked. Called any time isNewRecord/IsEdit changes and any
+        // time a project's tabs are (re)built, so the lock always matches current state:
+        // editable only while starting a brand new project (isNewRecord) or actively editing
+        // an existing one (IsEdit); locked otherwise (view mode).
+        private void UpdateProjectControlsEditableState()
+        {
+            if (!isProject) return;
+
+            bool editable = isNewRecord || IsEdit;
+
+            Panel[] projectPanels = { pnl_header, pnl_footer, pnl_project_name };
+            if (editable)
+                Helpers.ResetReadOnlyControls(projectPanels);
+            else
+                Helpers.ReadOnlyControls(projectPanels);
+
+            dgv_project_multiplier.ReadOnly = !editable;
+
+            foreach (TabPage tab in tabControl2.TabPages)
+            {
+                if (tab.Controls.Count > 0 && tab.Controls[0] is ItemSetUC uc)
+                    uc.SetEditable(editable);
+            }
+        }
         private async void timer1_Tick(object sender, EventArgs e)
         {
             timer1.Stop();
@@ -5206,6 +5334,7 @@ namespace smpc_sales_app.Pages.Sales
         {
             GetLatestDate();
             isNewRecord = true;
+            IsEdit = false;
         }
         private void ComputeQuickQuoteTotal()
         {
@@ -5760,15 +5889,18 @@ namespace smpc_sales_app.Pages.Sales
         private void toolStripMenuItemTagRed_Click(object sender, EventArgs e)
         {
             int selectedIndex = tabControl2.SelectedIndex;
-            Color currentColor = tabControl2.TabPages[selectedIndex].Tag is Color ? (Color)tabControl2.TabPages[selectedIndex].Tag : Color.White;
+            TabPage selectedTabPage = tabControl2.TabPages[selectedIndex];
 
-            if (currentColor == Color.Red)
+            // Tracked separately from Tag - Tag holds the tab's itemset_id and must not be
+            // overwritten with a color (that used to silently make a saved tab look brand-new
+            // again on the next save, since GetItemSetIdFromTab couldn't parse a Color as an id).
+            if (_redFlaggedTabs.Contains(selectedTabPage))
             {
-                tabControl2.TabPages[selectedIndex].Tag = Color.White;
+                _redFlaggedTabs.Remove(selectedTabPage);
             }
             else
             {
-                tabControl2.TabPages[selectedIndex].Tag = Color.Red;
+                _redFlaggedTabs.Add(selectedTabPage);
             }
 
             tabControl2.Invalidate();
@@ -5826,6 +5958,7 @@ namespace smpc_sales_app.Pages.Sales
             if (confirm != DialogResult.Yes)
                 return;
 
+            _redFlaggedTabs.Remove(tabControl2.TabPages[selectedIndex]);
             tabControl2.TabPages.RemoveAt(selectedIndex);
             RecomputeParentTotals();
         }
