@@ -69,9 +69,13 @@ namespace smpc_sales_app.Pages.Sales
             this.versionNo = sub_version_no;
             this.isFinalized = is_finalized;
 
-            // websocket related 
+            // websocket related
             _websocket = new ClientWebSocket();
             _cancelTokenSource = new CancellationTokenSource();
+
+            // Redraw the Change History panel for whichever tab is currently selected - see
+            // RenderTabHistory.
+            tabControl2.SelectedIndexChanged += tabControl2_SelectedIndexChanged;
         }
 
         private async void UpdateProjectConditions(object sender, EventArgs e)
@@ -491,11 +495,27 @@ namespace smpc_sales_app.Pages.Sales
             isProject = false;
             IsEdit = false;
 
+            UpdateDescriptionFieldsVisibility();
+
             fetchQuotationDetails();
 
             Helpers.ResetControls(pnl_header);
             ResetControls(pnl_footer);
         }
+
+        // Short/Long Description (txt_short_description, txt_long_description, and their
+        // labels label34/label33) belong to Quick Quote only - Project Quotation has no
+        // matching data for them. They live on pnl_footer alongside everything else, so
+        // they stay visible whichever tab was active last unless explicitly toggled here.
+        private void UpdateDescriptionFieldsVisibility()
+        {
+            bool show = !isProject;
+            label34.Visible = show;
+            label33.Visible = show;
+            txt_short_description.Visible = show;
+            txt_long_description.Visible = show;
+        }
+
         private void btn_project_Click(object sender, EventArgs e)
         {
             if (_websocket != null && _websocket.State == System.Net.WebSockets.WebSocketState.Open)
@@ -516,15 +536,50 @@ namespace smpc_sales_app.Pages.Sales
             // set state
             isProject = true;
 
-            UC_History h = new UC_History();
-            flowLayoutPanelChangeHistory.Controls.Add(h);
-
-            foreach (Control ctrl in h.Controls)
-            {
-                ctrl.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Bottom;
-            }
+            UpdateDescriptionFieldsVisibility();
 
             fetchSalesProjectData();
+        }
+
+        // Redraws flowLayoutPanelChangeHistory from real data for whichever tab is currently
+        // selected - this used to just get another copy of a hardcoded mockup control
+        // permanently appended on every click of the Project nav button (see btn_project_Click
+        // history), which is why the same fake entry could show up duplicated. Now it's driven
+        // by the actual SalesProjectHistory rows loaded for this tab's item_set_id and redraws
+        // whenever the selected tab changes.
+        private void RenderTabHistory()
+        {
+            flowLayoutPanelChangeHistory.Controls.Clear();
+
+            if (!isProject || tabControl2.SelectedTab == null)
+                return;
+
+            int itemSetId = ToInt(tabControl2.SelectedTab.Tag);
+            if (itemSetId <= 0)
+                return;
+
+            var entries = (SalesProjectListData?.sales_project_history ?? new List<SalesProjectHistory>())
+                .Where(h => h.based_id == (uint)itemSetId)
+                .OrderByDescending(h => h.id)
+                .ToList();
+
+            foreach (var entry in entries)
+            {
+                UC_History h = new UC_History();
+                h.SetHistory(entry);
+
+                foreach (Control ctrl in h.Controls)
+                {
+                    ctrl.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Bottom;
+                }
+
+                flowLayoutPanelChangeHistory.Controls.Add(h);
+            }
+        }
+
+        private void tabControl2_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            RenderTabHistory();
         }
         private void setProjectMultiplier()
         {
@@ -932,6 +987,8 @@ namespace smpc_sales_app.Pages.Sales
             // state actually is - locked (view mode) unless the user already clicked Edit or
             // this is a brand new project being built out.
             UpdateProjectControlsEditableState();
+
+            RenderTabHistory();
         }
 
         private async void CellClickedModelUC(object sender, EventArgs e)
@@ -1203,6 +1260,13 @@ namespace smpc_sales_app.Pages.Sales
                 {
                     MessageBox.Show("Saved");
                     SetNewFormMode(false);
+
+                    // A successful save should always drop back to read-only View mode -
+                    // isNewRecord/IsEdit weren't being reset here, so the grids/textboxes
+                    // stayed unlocked (still "editable") even though Save had already
+                    // succeeded and the New/Edit buttons had reappeared.
+                    isNewRecord = false;
+                    IsEdit = false;
                 }
                 else
                     MessageBox.Show($"Insert error: {response.message}");
@@ -1221,6 +1285,10 @@ namespace smpc_sales_app.Pages.Sales
                 {
                     MessageBox.Show("Updated successfully.");
                     SetNewFormMode(false);
+
+                    // Same as the isNewRecord branch above - drop back to read-only View mode.
+                    isNewRecord = false;
+                    IsEdit = false;
                 }
                 else
                     MessageBox.Show($"Update error: {response.message}");
@@ -1451,12 +1519,82 @@ namespace smpc_sales_app.Pages.Sales
             tabDiff.SalesProjectWirings = DiffModels(db.Wiring, WiringMatchedTab, x => x.id, GetWiringChanges);
             tabDiff.SalesProjectHistory = DiffModels(db.History, HistoryMatchedTab, x => x.id, GetHistoryChanges);
 
+            // Auto-generate a readable Change History entry for every meaningful change this
+            // save is about to make - GetHistoryList() (ItemSetUC) never produced real entries
+            // on its own, so this is what actually populates the history table now, driven
+            // straight off the diffs already computed above rather than requiring anything to
+            // be logged manually.
+            tabDiff.SalesProjectHistory.Added.AddRange(BuildAutoHistoryEntries(itemSetId, tabDiff));
+
             if (tabDiff.HasChanges())
             {
                 if (!result.ContainsKey("Tabs")) result["Tabs"] = new List<Dictionary<string, dynamic>>();
 
                 ((List<Dictionary<string, dynamic>>)result["Tabs"]).Add(JsonConvert.DeserializeObject<Dictionary<string, dynamic>>(JsonConvert.SerializeObject(tabDiff)));
             }
+        }
+
+        // Turns the diffs already computed for one tab into readable Change History rows -
+        // one per changed field/item, matching the "OLD DESCRIPTION => NEW VALUE" layout the
+        // (formerly static-mockup) UC_History control displays.
+        private List<SalesProjectHistory> BuildAutoHistoryEntries(int itemSetId, TabDiff tabDiff)
+        {
+            var entries = new List<SalesProjectHistory>();
+
+            string user = CacheData.CurrentUser != null
+                ? $"{CacheData.CurrentUser.first_name} {CacheData.CurrentUser.last_name}".Trim()
+                : string.Empty;
+            string date = DateTime.Now.ToString("M/d/yyyy");
+            string time = DateTime.Now.ToString("h:mm tt");
+
+            void AddEntry(string label, object oldVal, object newVal)
+            {
+                entries.Add(new SalesProjectHistory
+                {
+                    based_id = (uint)itemSetId,
+                    user = user,
+                    date = date,
+                    time = time,
+                    old_data = $"ITEM/SET {itemSetId} - {label}",
+                    new_data = $"{FormatHistoryValue(oldVal)} => {FormatHistoryValue(newVal)}"
+                });
+            }
+
+            foreach (var updated in tabDiff.SalesProjectItems.Updated)
+                foreach (var change in updated.Changes)
+                    AddEntry($"ITEM - {change.Key.ToUpperInvariant()}", change.Value.OldValue, change.Value.NewValue);
+
+            // A brand-new item is diffed against a blank SalesProjectItems the same way an
+            // edit is diffed against the old row - that's what makes an empty field getting
+            // its first value ("" -> "Gate Valve") show up as its own readable line instead of
+            // being collapsed into one generic "item added" entry.
+            foreach (var added in tabDiff.SalesProjectItems.Added)
+                foreach (var change in GetItemFieldChanges(new SalesProjectItems(), added))
+                    AddEntry($"ITEM - {change.Key.ToUpperInvariant()}", change.Value.OldValue, change.Value.NewValue);
+
+            foreach (var removed in tabDiff.SalesProjectItems.Removed)
+                AddEntry("ITEM REMOVED", string.IsNullOrWhiteSpace(removed.model) ? removed.components : removed.model, null);
+
+            foreach (var updated in tabDiff.SalesProjectContent.Updated)
+                foreach (var change in updated.Changes)
+                    AddEntry($"CONTENT - {change.Key.ToUpperInvariant()}", change.Value.OldValue, change.Value.NewValue);
+
+            // Same idea for a tab's content record the first time it's ever saved (no prior
+            // row existed, so it lands in Added rather than Updated) - each field the user
+            // actually typed into (Application, Additional, Item/Set Notes, etc.) gets logged
+            // as its own "(empty) -> new value" line instead of being silently skipped.
+            foreach (var added in tabDiff.SalesProjectContent.Added)
+                foreach (var change in GetContentChanges(new SalesProjectContent(), added))
+                    AddEntry($"CONTENT - {change.Key.ToUpperInvariant()}", change.Value.OldValue, change.Value.NewValue);
+
+            return entries;
+        }
+
+        private static string FormatHistoryValue(object value)
+        {
+            if (value == null) return "-";
+            var text = value.ToString();
+            return string.IsNullOrWhiteSpace(text) ? "-" : text;
         }
 
         private T DeserializeSingleFromTab<T>(Dictionary<string, object> tab, string key) where T : class, new()
@@ -3372,6 +3510,8 @@ namespace smpc_sales_app.Pages.Sales
                     this.btn_project.BackColor = Color.White;
                 }
 
+                UpdateDescriptionFieldsVisibility();
+
                 if (!foundAsQuickQuote && !foundAsProject)
                 {
                     MessageBox.Show("No SalesQuotation found for the provided document number.");
@@ -4757,6 +4897,11 @@ namespace smpc_sales_app.Pages.Sales
                 {
                     MessageBox.Show("Saved");
                     SetNewFormMode(false);
+
+                    // Same as IsProject()'s save handling - drop back to read-only View mode
+                    // once the finalized record is actually saved.
+                    isNewRecord = false;
+                    IsEdit = false;
                 }
                 else
                     MessageBox.Show($"Insert error: {response.message}");
