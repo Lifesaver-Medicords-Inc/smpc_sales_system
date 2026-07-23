@@ -316,6 +316,12 @@
     <Compile Include="Pages\Sales\BomSelection.Designer.cs">
       <DependentUpon>BomSelection.cs</DependentUpon>
     </Compile>
+    <Compile Include="Pages\Sales\ChangeHistoryModal.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Pages\Sales\ChangeHistoryModal.Designer.cs">
+      <DependentUpon>ChangeHistoryModal.cs</DependentUpon>
+    </Compile>
     <Compile Include="Pages\Sales\CRM.cs">
       <SubType>UserControl</SubType>
     </Compile>

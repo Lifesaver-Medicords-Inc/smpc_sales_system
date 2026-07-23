@@ -25,7 +25,13 @@ namespace smpc_sales_system.Models
 
     public class SalesProjectHistory
     {
-        public int id { get; set; }
+        // The API's actual primary key for this row is "history_id" (models.SalesProjectHistory.HistoryID
+        // on the Go side) - it was never returned as "id", so a plain "id" property here always
+        // deserialized to 0 for every fetched row. That silently broke both the Change History sort
+        // (OrderByDescending on a field that's always 0 is a no-op - list/insertion order, not
+        // chronological order) and DiffModels' history matching (every db row collapsed onto the same
+        // dictionary key, since the key selector also read the always-0 "id"). Replaced with the real key.
+        public uint history_id { get; set; }
         public uint based_id { get; set; }
         public string user { get; set; }
         public string date { get; set; }

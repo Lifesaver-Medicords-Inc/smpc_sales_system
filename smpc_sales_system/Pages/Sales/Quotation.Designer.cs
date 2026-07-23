@@ -29,22 +29,22 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle16 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle17 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle18 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle19 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle20 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle30 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle31 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle32 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle33 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle34 = new System.Windows.Forms.DataGridViewCellStyle();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Quotation));
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle21 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle22 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle23 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle24 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle25 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle26 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle35 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle36 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle37 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle38 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle39 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle40 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle41 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle27 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle12 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle28 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle29 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle42 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle43 = new System.Windows.Forms.DataGridViewCellStyle();
             this.bs_project_multipliers = new System.Windows.Forms.BindingSource(this.components);
             this.ds_project = new System.Data.DataSet();
             this.dataTable8 = new System.Data.DataTable();
@@ -222,6 +222,7 @@
             this.label26 = new System.Windows.Forms.Label();
             this.label36 = new System.Windows.Forms.Label();
             this.flowLayoutPanelChangeHistory = new System.Windows.Forms.FlowLayoutPanel();
+            this.btn_full_history = new System.Windows.Forms.Button();
             this.button2 = new System.Windows.Forms.Button();
             this.label35 = new System.Windows.Forms.Label();
             this.txt_project_name = new System.Windows.Forms.TextBox();
@@ -572,9 +573,9 @@
             // 
             this.unit_price.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
             this.unit_price.DataPropertyName = "unit_price";
-            dataGridViewCellStyle16.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
-            dataGridViewCellStyle16.Format = "N2";
-            this.unit_price.DefaultCellStyle = dataGridViewCellStyle16;
+            dataGridViewCellStyle30.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
+            dataGridViewCellStyle30.Format = "N2";
+            this.unit_price.DefaultCellStyle = dataGridViewCellStyle30;
             this.unit_price.HeaderText = "UNIT PRICE";
             this.unit_price.Name = "unit_price";
             // 
@@ -589,11 +590,11 @@
             // 
             this.amount_discounted.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
             this.amount_discounted.DataPropertyName = "amount_discounted";
-            dataGridViewCellStyle17.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
-            dataGridViewCellStyle17.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
-            dataGridViewCellStyle17.Format = "N2";
-            dataGridViewCellStyle17.NullValue = "0";
-            this.amount_discounted.DefaultCellStyle = dataGridViewCellStyle17;
+            dataGridViewCellStyle31.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
+            dataGridViewCellStyle31.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
+            dataGridViewCellStyle31.Format = "N2";
+            dataGridViewCellStyle31.NullValue = "0";
+            this.amount_discounted.DefaultCellStyle = dataGridViewCellStyle31;
             this.amount_discounted.HeaderText = "DISCOUNTED AMOUNT";
             this.amount_discounted.Name = "amount_discounted";
             this.amount_discounted.ReadOnly = true;
@@ -602,11 +603,11 @@
             // 
             this.net_discount.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
             this.net_discount.DataPropertyName = "net_discount";
-            dataGridViewCellStyle18.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
-            dataGridViewCellStyle18.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
-            dataGridViewCellStyle18.Format = "N2";
-            dataGridViewCellStyle18.NullValue = "0";
-            this.net_discount.DefaultCellStyle = dataGridViewCellStyle18;
+            dataGridViewCellStyle32.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
+            dataGridViewCellStyle32.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
+            dataGridViewCellStyle32.Format = "N2";
+            dataGridViewCellStyle32.NullValue = "0";
+            this.net_discount.DefaultCellStyle = dataGridViewCellStyle32;
             this.net_discount.HeaderText = "NET DISCOUNT";
             this.net_discount.Name = "net_discount";
             this.net_discount.ReadOnly = true;
@@ -615,11 +616,11 @@
             // 
             this.net_total.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
             this.net_total.DataPropertyName = "net_total";
-            dataGridViewCellStyle19.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
-            dataGridViewCellStyle19.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
-            dataGridViewCellStyle19.Format = "N2";
-            dataGridViewCellStyle19.NullValue = "0";
-            this.net_total.DefaultCellStyle = dataGridViewCellStyle19;
+            dataGridViewCellStyle33.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
+            dataGridViewCellStyle33.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
+            dataGridViewCellStyle33.Format = "N2";
+            dataGridViewCellStyle33.NullValue = "0";
+            this.net_total.DefaultCellStyle = dataGridViewCellStyle33;
             this.net_total.HeaderText = "NET AMOUNT";
             this.net_total.Name = "net_total";
             this.net_total.ReadOnly = true;
@@ -628,11 +629,11 @@
             // 
             this.line_total.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
             this.line_total.DataPropertyName = "line_total";
-            dataGridViewCellStyle20.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
-            dataGridViewCellStyle20.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
-            dataGridViewCellStyle20.Format = "N2";
-            dataGridViewCellStyle20.NullValue = "0";
-            this.line_total.DefaultCellStyle = dataGridViewCellStyle20;
+            dataGridViewCellStyle34.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
+            dataGridViewCellStyle34.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
+            dataGridViewCellStyle34.Format = "N2";
+            dataGridViewCellStyle34.NullValue = "0";
+            this.line_total.DefaultCellStyle = dataGridViewCellStyle34;
             this.line_total.HeaderText = "LINE TOTAL";
             this.line_total.Name = "line_total";
             this.line_total.ReadOnly = true;
@@ -792,14 +793,14 @@
             // basicPrintToolStripMenuItem
             // 
             this.basicPrintToolStripMenuItem.Name = "basicPrintToolStripMenuItem";
-            this.basicPrintToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.basicPrintToolStripMenuItem.Size = new System.Drawing.Size(148, 22);
             this.basicPrintToolStripMenuItem.Text = "Basic Print";
             this.basicPrintToolStripMenuItem.Click += new System.EventHandler(this.basicPrintToolStripMenuItem_Click);
             // 
             // advancePrintToolStripMenuItem
             // 
             this.advancePrintToolStripMenuItem.Name = "advancePrintToolStripMenuItem";
-            this.advancePrintToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.advancePrintToolStripMenuItem.Size = new System.Drawing.Size(148, 22);
             this.advancePrintToolStripMenuItem.Text = "Advance Print";
             this.advancePrintToolStripMenuItem.Click += new System.EventHandler(this.advancePrintToolStripMenuItem_Click);
             // 
@@ -1505,9 +1506,9 @@
             // item_id
             // 
             this.item_id.DataPropertyName = "item_id";
-            dataGridViewCellStyle21.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
-            dataGridViewCellStyle21.SelectionForeColor = System.Drawing.Color.White;
-            this.item_id.DefaultCellStyle = dataGridViewCellStyle21;
+            dataGridViewCellStyle35.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
+            dataGridViewCellStyle35.SelectionForeColor = System.Drawing.Color.White;
+            this.item_id.DefaultCellStyle = dataGridViewCellStyle35;
             this.item_id.HeaderText = "item_id";
             this.item_id.Name = "item_id";
             this.item_id.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
@@ -1517,9 +1518,9 @@
             // 
             this.quick_item_code.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
             this.quick_item_code.DataPropertyName = "components";
-            dataGridViewCellStyle22.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
-            dataGridViewCellStyle22.SelectionForeColor = System.Drawing.Color.Black;
-            this.quick_item_code.DefaultCellStyle = dataGridViewCellStyle22;
+            dataGridViewCellStyle36.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
+            dataGridViewCellStyle36.SelectionForeColor = System.Drawing.Color.Black;
+            this.quick_item_code.DefaultCellStyle = dataGridViewCellStyle36;
             this.quick_item_code.FillWeight = 70.91644F;
             this.quick_item_code.HeaderText = "COMPONENTS";
             this.quick_item_code.Name = "quick_item_code";
@@ -1531,10 +1532,10 @@
             // 
             this.quick_item_name.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
             this.quick_item_name.DataPropertyName = "model";
-            dataGridViewCellStyle23.BackColor = System.Drawing.Color.LightGray;
-            dataGridViewCellStyle23.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
-            dataGridViewCellStyle23.SelectionForeColor = System.Drawing.Color.Black;
-            this.quick_item_name.DefaultCellStyle = dataGridViewCellStyle23;
+            dataGridViewCellStyle37.BackColor = System.Drawing.Color.LightGray;
+            dataGridViewCellStyle37.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
+            dataGridViewCellStyle37.SelectionForeColor = System.Drawing.Color.Black;
+            this.quick_item_name.DefaultCellStyle = dataGridViewCellStyle37;
             this.quick_item_name.FillWeight = 52.91645F;
             this.quick_item_name.HeaderText = "MODEL";
             this.quick_item_name.Name = "quick_item_name";
@@ -1545,11 +1546,11 @@
             // 
             this.quick_qty.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
             this.quick_qty.DataPropertyName = "qty";
-            dataGridViewCellStyle24.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle24.NullValue = "0";
-            dataGridViewCellStyle24.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
-            dataGridViewCellStyle24.SelectionForeColor = System.Drawing.Color.Black;
-            this.quick_qty.DefaultCellStyle = dataGridViewCellStyle24;
+            dataGridViewCellStyle38.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle38.NullValue = "0";
+            dataGridViewCellStyle38.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
+            dataGridViewCellStyle38.SelectionForeColor = System.Drawing.Color.Black;
+            this.quick_qty.DefaultCellStyle = dataGridViewCellStyle38;
             this.quick_qty.FillWeight = 20F;
             this.quick_qty.HeaderText = "QTY";
             this.quick_qty.Name = "quick_qty";
@@ -1559,10 +1560,10 @@
             // 
             this.quick_unit_of_measure.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
             this.quick_unit_of_measure.DataPropertyName = "unit_of_measure";
-            dataGridViewCellStyle25.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle25.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
-            dataGridViewCellStyle25.SelectionForeColor = System.Drawing.Color.Black;
-            this.quick_unit_of_measure.DefaultCellStyle = dataGridViewCellStyle25;
+            dataGridViewCellStyle39.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle39.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
+            dataGridViewCellStyle39.SelectionForeColor = System.Drawing.Color.Black;
+            this.quick_unit_of_measure.DefaultCellStyle = dataGridViewCellStyle39;
             this.quick_unit_of_measure.FillWeight = 20F;
             this.quick_unit_of_measure.HeaderText = "UNIT";
             this.quick_unit_of_measure.Name = "quick_unit_of_measure";
@@ -1590,9 +1591,9 @@
             // 
             this.quick_list_price.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
             this.quick_list_price.DataPropertyName = "list_price";
-            dataGridViewCellStyle26.Format = "C2";
-            dataGridViewCellStyle26.NullValue = null;
-            this.quick_list_price.DefaultCellStyle = dataGridViewCellStyle26;
+            dataGridViewCellStyle40.Format = "C2";
+            dataGridViewCellStyle40.NullValue = null;
+            this.quick_list_price.DefaultCellStyle = dataGridViewCellStyle40;
             this.quick_list_price.FillWeight = 52.91645F;
             this.quick_list_price.HeaderText = "LIST PRICE";
             this.quick_list_price.Name = "quick_list_price";
@@ -1603,9 +1604,9 @@
             this.quick_unit_price.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
             this.quick_unit_price.ContextMenuStrip = this.UnitPriceColumnContextMenuStrip;
             this.quick_unit_price.DataPropertyName = "unit_price";
-            dataGridViewCellStyle27.Format = "C2";
-            dataGridViewCellStyle27.NullValue = "0";
-            this.quick_unit_price.DefaultCellStyle = dataGridViewCellStyle27;
+            dataGridViewCellStyle41.Format = "C2";
+            dataGridViewCellStyle41.NullValue = "0";
+            this.quick_unit_price.DefaultCellStyle = dataGridViewCellStyle41;
             this.quick_unit_price.FillWeight = 52.91645F;
             this.quick_unit_price.HeaderText = "UNIT PRICE";
             this.quick_unit_price.Name = "quick_unit_price";
@@ -1624,8 +1625,8 @@
             // 
             this.quick_net_discount.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
             this.quick_net_discount.DataPropertyName = "net_discount";
-            dataGridViewCellStyle12.Format = "C2";
-            this.quick_net_discount.DefaultCellStyle = dataGridViewCellStyle12;
+            dataGridViewCellStyle27.Format = "C2";
+            this.quick_net_discount.DefaultCellStyle = dataGridViewCellStyle27;
             this.quick_net_discount.FillWeight = 52.91645F;
             this.quick_net_discount.HeaderText = "NET DISCOUNT";
             this.quick_net_discount.Name = "quick_net_discount";
@@ -1636,8 +1637,8 @@
             // 
             this.quick_net_total.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
             this.quick_net_total.DataPropertyName = "net_total";
-            dataGridViewCellStyle28.Format = "C2";
-            this.quick_net_total.DefaultCellStyle = dataGridViewCellStyle28;
+            dataGridViewCellStyle42.Format = "C2";
+            this.quick_net_total.DefaultCellStyle = dataGridViewCellStyle42;
             this.quick_net_total.FillWeight = 52.91645F;
             this.quick_net_total.HeaderText = "NET TOTAL";
             this.quick_net_total.Name = "quick_net_total";
@@ -1648,8 +1649,8 @@
             // 
             this.quick_line_total.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
             this.quick_line_total.DataPropertyName = "line_total";
-            dataGridViewCellStyle29.Format = "C2";
-            this.quick_line_total.DefaultCellStyle = dataGridViewCellStyle29;
+            dataGridViewCellStyle43.Format = "C2";
+            this.quick_line_total.DefaultCellStyle = dataGridViewCellStyle43;
             this.quick_line_total.FillWeight = 52.91645F;
             this.quick_line_total.HeaderText = "LINE TOTAL";
             this.quick_line_total.Name = "quick_line_total";
@@ -1760,17 +1761,12 @@
             this.tabControl2.ContextMenuStrip = this.TabControl2ContextMenuStrip;
             this.tabControl2.Controls.Add(this.tabPage1);
             this.tabControl2.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tabControl2.DrawMode = System.Windows.Forms.TabDrawMode.OwnerDrawFixed;
             this.tabControl2.Location = new System.Drawing.Point(3, 236);
             this.tabControl2.Name = "tabControl2";
             this.tabControl2.SelectedIndex = 0;
             this.tabControl2.Size = new System.Drawing.Size(1174, 1731);
             this.tabControl2.TabIndex = 0;
-            // DrawMode/DrawItem were never wired up, so tabControl2_DrawItem (which paints
-            // a tab red when "Toggle RedFlag" sets its Tag) never actually ran - the click
-            // handler toggled the Tag but nothing ever repainted using it, so the tab never
-            // visibly turned red. OwnerDrawFixed + this event is what makes that painting
-            // happen at all.
-            this.tabControl2.DrawMode = System.Windows.Forms.TabDrawMode.OwnerDrawFixed;
             this.tabControl2.DrawItem += new System.Windows.Forms.DrawItemEventHandler(this.tabControl2_DrawItem);
             this.tabControl2.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.tabControl2_MouseDoubleClick);
             this.tabControl2.MouseDown += new System.Windows.Forms.MouseEventHandler(this.tabControl2_MouseDown);
@@ -1804,7 +1800,7 @@
             this.toolStripMenuItemRemoveTabs.Size = new System.Drawing.Size(155, 22);
             this.toolStripMenuItemRemoveTabs.Text = "Remove Tabs";
             this.toolStripMenuItemRemoveTabs.Click += new System.EventHandler(this.toolStripMenuItemRemoveTabs_Click);
-            //
+            // 
             // tabPage1
             // 
             this.tabPage1.Location = new System.Drawing.Point(4, 22);
@@ -1833,6 +1829,7 @@
             this.panel2.Controls.Add(this.label26);
             this.panel2.Controls.Add(this.label36);
             this.panel2.Controls.Add(this.flowLayoutPanelChangeHistory);
+            this.panel2.Controls.Add(this.btn_full_history);
             this.panel2.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.panel2.Location = new System.Drawing.Point(0, 38);
             this.panel2.Name = "panel2";
@@ -1903,11 +1900,28 @@
             // 
             // flowLayoutPanelChangeHistory
             // 
+            this.flowLayoutPanelChangeHistory.AutoScroll = true;
             this.flowLayoutPanelChangeHistory.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+            // TopDown + no wrap so entries always stack in one strict vertical column in the
+            // order they're added - without this the default (LeftToRight, wrap) layout could
+            // let width happen to determine ordering instead of the newest-first sort applied
+            // in RenderTabHistory/GetFullProjectHistory.
+            this.flowLayoutPanelChangeHistory.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
+            this.flowLayoutPanelChangeHistory.WrapContents = false;
             this.flowLayoutPanelChangeHistory.Location = new System.Drawing.Point(771, 22);
             this.flowLayoutPanelChangeHistory.Name = "flowLayoutPanelChangeHistory";
-            this.flowLayoutPanelChangeHistory.Size = new System.Drawing.Size(366, 150);
+            this.flowLayoutPanelChangeHistory.Size = new System.Drawing.Size(398, 150);
             this.flowLayoutPanelChangeHistory.TabIndex = 0;
+            // 
+            // btn_full_history
+            // 
+            this.btn_full_history.Location = new System.Drawing.Point(1055, 2);
+            this.btn_full_history.Name = "btn_full_history";
+            this.btn_full_history.Size = new System.Drawing.Size(115, 20);
+            this.btn_full_history.TabIndex = 86;
+            this.btn_full_history.Text = "FULL DETAILS";
+            this.btn_full_history.UseVisualStyleBackColor = true;
+            this.btn_full_history.Click += new System.EventHandler(this.btn_full_history_Click);
             // 
             // button2
             // 
@@ -2552,6 +2566,7 @@
         private System.Windows.Forms.Label label26;
         private System.Windows.Forms.Label label36;
         private System.Windows.Forms.FlowLayoutPanel flowLayoutPanelChangeHistory;
+        private System.Windows.Forms.Button btn_full_history;
         private System.Windows.Forms.Button button2;
         private System.Windows.Forms.Label label35;
         private System.Windows.Forms.TextBox txt_project_name;

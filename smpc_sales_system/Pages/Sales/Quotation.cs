@@ -541,12 +541,36 @@ namespace smpc_sales_app.Pages.Sales
             fetchSalesProjectData();
         }
 
-        // Redraws flowLayoutPanelChangeHistory from real data for whichever tab is currently
-        // selected - this used to just get another copy of a hardcoded mockup control
-        // permanently appended on every click of the Project nav button (see btn_project_Click
-        // history), which is why the same fake entry could show up duplicated. Now it's driven
-        // by the actual SalesProjectHistory rows loaded for this tab's item_set_id and redraws
-        // whenever the selected tab changes.
+        // Every SalesProjectHistory row for the whole current project - every tab's item set
+        // plus the header-level entries (project name/other top fields, multipliers - see
+        // BuildHeaderAutoHistoryEntries), keyed to the quotation's own id. Change History was
+        // previously scoped to whichever tab happened to be selected, which hid header/other
+        // tabs' entries; it's now a whole-project view, so this is the single source both
+        // RenderTabHistory (inline panel) and the "FULL DETAILS" modal read from.
+        private List<SalesProjectHistory> GetFullProjectHistory(int quotationId)
+        {
+            if (quotationId <= 0 || SalesProjectListData == null)
+                return new List<SalesProjectHistory>();
+
+            var itemSetIds = new HashSet<uint>(
+                (SalesProjectListData.sales_project_item_set ?? new List<SalesProjectItemSet>())
+                    .Where(s => s.based_id == quotationId)
+                    .Select(s => (uint)s.itemset_id)
+            );
+            itemSetIds.Add((uint)quotationId);
+
+            return (SalesProjectListData.sales_project_history ?? new List<SalesProjectHistory>())
+                .Where(h => itemSetIds.Contains(h.based_id))
+                .OrderByDescending(h => h.history_id)
+                .ToList();
+        }
+
+        // Redraws flowLayoutPanelChangeHistory from real data - this used to just get another
+        // copy of a hardcoded mockup control permanently appended on every click of the
+        // Project nav button (see btn_project_Click history), which is why the same fake entry
+        // could show up duplicated. It's driven by the actual SalesProjectHistory rows for the
+        // whole project (not just whichever tab is selected) and redraws whenever the selected
+        // tab changes, since that's also when it's convenient to catch a freshly loaded project.
         private void RenderTabHistory()
         {
             flowLayoutPanelChangeHistory.Controls.Clear();
@@ -554,14 +578,8 @@ namespace smpc_sales_app.Pages.Sales
             if (!isProject || tabControl2.SelectedTab == null)
                 return;
 
-            int itemSetId = ToInt(tabControl2.SelectedTab.Tag);
-            if (itemSetId <= 0)
-                return;
-
-            var entries = (SalesProjectListData?.sales_project_history ?? new List<SalesProjectHistory>())
-                .Where(h => h.based_id == (uint)itemSetId)
-                .OrderByDescending(h => h.id)
-                .ToList();
+            int quotationId = ToInt(txt_id.Text);
+            var entries = GetFullProjectHistory(quotationId);
 
             foreach (var entry in entries)
             {
@@ -574,6 +592,19 @@ namespace smpc_sales_app.Pages.Sales
                 }
 
                 flowLayoutPanelChangeHistory.Controls.Add(h);
+            }
+        }
+
+        // Opens the full, scrollable Change History list for the whole project - the inline
+        // panel is small and only meant to give a quick glance.
+        private void btn_full_history_Click(object sender, EventArgs e)
+        {
+            int quotationId = ToInt(txt_id.Text);
+            var entries = GetFullProjectHistory(quotationId);
+
+            using (var modal = new ChangeHistoryModal(txt_project_name.Text, entries))
+            {
+                modal.ShowDialog(this);
             }
         }
 
@@ -1267,6 +1298,11 @@ namespace smpc_sales_app.Pages.Sales
                     // succeeded and the New/Edit buttons had reappeared.
                     isNewRecord = false;
                     IsEdit = false;
+
+                    // Refetch so SalesProjectListData (and therefore Change History) reflects
+                    // what was actually just saved instead of staying stale until the user
+                    // happens to navigate away and back.
+                    await fetchSalesProjectData();
                 }
                 else
                     MessageBox.Show($"Insert error: {response.message}");
@@ -1289,6 +1325,11 @@ namespace smpc_sales_app.Pages.Sales
                     // Same as the isNewRecord branch above - drop back to read-only View mode.
                     isNewRecord = false;
                     IsEdit = false;
+
+                    // Same reason as the isNewRecord branch - without this, the newly
+                    // auto-generated Change History entries (project fields, multipliers,
+                    // per-tab changes) wouldn't show up until the next unrelated refresh.
+                    await fetchSalesProjectData();
                 }
                 else
                     MessageBox.Show($"Update error: {response.message}");
@@ -1410,16 +1451,28 @@ namespace smpc_sales_app.Pages.Sales
                 .ToList();
 
 
+            var quotationFieldChanges = GetQuotationFieldChanges(firstQuotation, pnlQuotation);
+            var multiplierDiff = DiffByIndex(projectMultiplier,
+                DeserializeList<SalesProjectMultiplier>(pnlQuotation, "sales_project_multiplier"),
+                GetMultiplierChanges
+            );
+
+            // Change History used to only be generated per-tab - edits to the top part
+            // (project name and the other header fields) and to the multipliers grid never
+            // produced any history entries at all. This generates them the same way
+            // BuildAutoHistoryEntries does for tabs, keyed to the quotation's own id so
+            // RenderTabHistory can show them regardless of which tab is selected.
+            var headerHistoryEntries = BuildHeaderAutoHistoryEntries(ProjectQuotationId, quotationFieldChanges, multiplierDiff);
+
             result["Header"] = new Dictionary<string, dynamic>
             {
-                { 
-                    "QuotationFields", GetQuotationFieldChanges(firstQuotation, pnlQuotation) 
-                },
+                { "QuotationFields", quotationFieldChanges },
+                { "Multipliers", multiplierDiff },
                 {
-                    "Multipliers", DiffByIndex(projectMultiplier,
-                        DeserializeList<SalesProjectMultiplier>(pnlQuotation, "sales_project_multiplier"),
-                        GetMultiplierChanges
-                    )
+                    "SalesProjectHistory", new ModelUpdateDiff<SalesProjectHistory>
+                    {
+                        Added = headerHistoryEntries
+                    }
                 }
             };
 
@@ -1517,7 +1570,7 @@ namespace smpc_sales_app.Pages.Sales
             tabDiff.SalesProjectContentAdvancedCondition = DiffModels(db.Conditions, AdvanceConditionMatchedTab, x => x.conditions_id, GetAdvancedConditionsChanges);
             tabDiff.SalesProjectItems = DiffModels(db.Items, ItemsMatchedTab, x => x.items_id, GetItemFieldChanges);
             tabDiff.SalesProjectWirings = DiffModels(db.Wiring, WiringMatchedTab, x => x.id, GetWiringChanges);
-            tabDiff.SalesProjectHistory = DiffModels(db.History, HistoryMatchedTab, x => x.id, GetHistoryChanges);
+            tabDiff.SalesProjectHistory = DiffModels(db.History, HistoryMatchedTab, x => (int)x.history_id, GetHistoryChanges);
 
             // Auto-generate a readable Change History entry for every meaningful change this
             // save is about to make - GetHistoryList() (ItemSetUC) never produced real entries
@@ -1586,6 +1639,56 @@ namespace smpc_sales_app.Pages.Sales
             foreach (var added in tabDiff.SalesProjectContent.Added)
                 foreach (var change in GetContentChanges(new SalesProjectContent(), added))
                     AddEntry($"CONTENT - {change.Key.ToUpperInvariant()}", change.Value.OldValue, change.Value.NewValue);
+
+            return entries;
+        }
+
+        // Same idea as BuildAutoHistoryEntries, but for changes that don't belong to any one
+        // tab - the top-part header fields (project name, customer, purpose, etc.) and the
+        // project multipliers grid. These are keyed to the quotation's own id (not a tab's
+        // item_set_id) so RenderTabHistory can surface them no matter which tab is selected.
+        private List<SalesProjectHistory> BuildHeaderAutoHistoryEntries(
+            int quotationId,
+            Dictionary<string, FieldChange> quotationFieldChanges,
+            ModelUpdateDiff<SalesProjectMultiplier> multiplierDiff)
+        {
+            var entries = new List<SalesProjectHistory>();
+
+            string user = CacheData.CurrentUser != null
+                ? $"{CacheData.CurrentUser.first_name} {CacheData.CurrentUser.last_name}".Trim()
+                : string.Empty;
+            string date = DateTime.Now.ToString("M/d/yyyy");
+            string time = DateTime.Now.ToString("h:mm tt");
+
+            void AddEntry(string label, object oldVal, object newVal)
+            {
+                entries.Add(new SalesProjectHistory
+                {
+                    based_id = (uint)quotationId,
+                    user = user,
+                    date = date,
+                    time = time,
+                    old_data = $"PROJECT - {label}",
+                    new_data = $"{FormatHistoryValue(oldVal)} => {FormatHistoryValue(newVal)}"
+                });
+            }
+
+            foreach (var change in quotationFieldChanges)
+                AddEntry(change.Key.ToUpperInvariant(), change.Value.OldValue, change.Value.NewValue);
+
+            foreach (var updated in multiplierDiff.Updated)
+                foreach (var change in updated.Changes)
+                    AddEntry($"MULTIPLIER - {change.Key.ToUpperInvariant()}", change.Value.OldValue, change.Value.NewValue);
+
+            // A brand-new multiplier row is diffed against a blank one, same as items/content -
+            // an empty cell getting its first value shows up as its own readable line instead
+            // of one generic "multiplier added" entry.
+            foreach (var added in multiplierDiff.Added)
+                foreach (var change in GetMultiplierChanges(new SalesProjectMultiplier(), added))
+                    AddEntry($"MULTIPLIER - {change.Key.ToUpperInvariant()}", change.Value.OldValue, change.Value.NewValue);
+
+            foreach (var removed in multiplierDiff.Removed)
+                AddEntry("MULTIPLIER REMOVED", string.IsNullOrWhiteSpace(removed.description) ? removed.component : removed.description, null);
 
             return entries;
         }
@@ -2074,14 +2177,17 @@ namespace smpc_sales_app.Pages.Sales
             return diff;
         }
 
-        private static object DiffByIndex(
+        // Was typed to return an anonymous object - changed to the strongly-typed
+        // ModelUpdateDiff<SalesProjectMultiplier> (same JSON shape: Added/Removed/Updated,
+        // Updated entries carrying Item/Changes) so BuildHeaderAutoHistoryEntries can walk
+        // the multiplier diff the same way BuildAutoHistoryEntries already walks tab diffs,
+        // instead of needing reflection over an anonymous type.
+        private static ModelUpdateDiff<SalesProjectMultiplier> DiffByIndex(
             List<SalesProjectMultiplier> oldList,
             List<SalesProjectMultiplier> newList,
             Func<SalesProjectMultiplier, SalesProjectMultiplier, Dictionary<string, FieldChange>> getChanges)
         {
-            var added = new List<object>();
-            var removed = new List<object>();
-            var updated = new List<object>();
+            var diff = new ModelUpdateDiff<SalesProjectMultiplier>();
 
             var minCount = Math.Min(oldList.Count, newList.Count);
 
@@ -2097,16 +2203,16 @@ namespace smpc_sales_app.Pages.Sales
                 newItem.multiplier_id = oldItem.multiplier_id;
                 newItem.based_id = oldItem.based_id;
 
-                updated.Add(new { Item = newItem, Changes = changes });
+                diff.Updated.Add(new UpdatedModel<SalesProjectMultiplier> { Item = newItem, Changes = changes });
             }
 
             for (int i = minCount; i < newList.Count; i++)
-                added.Add(newList[i]);
+                diff.Added.Add(newList[i]);
 
             for (int i = minCount; i < oldList.Count; i++)
-                removed.Add(oldList[i]);
+                diff.Removed.Add(oldList[i]);
 
-            return new { Added = added, Removed = removed, Updated = updated };
+            return diff;
         }
 
         private ModelUpdateDiff<T> DiffModels<T>(List<T> dbList, List<T> newList, Func<T, int> keySelector, Func<T, T, Dictionary<string, FieldChange>> fieldComparer)
