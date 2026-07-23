@@ -4875,37 +4875,63 @@ namespace smpc_sales_app.Pages.Sales
             if (!ConvertToInt(pnl_quotation, "customer_id", "Invalid customer ID"))
                 return;
 
+            // Finalizing always creates a brand new, frozen "FQ#" record - same behavior
+            // as FinalizeQuickQuotation. Whatever record we started from (new or an
+            // existing draft being viewed/edited) is left completely untouched under
+            // its own "Q#" - that's why id is forced to 0 for the insert below
+            // regardless of isNewRecord/IsEdit.
             pnl_quotation["id"] = 0;
             pnl_quotation["is_finalized"] = true;
 
-            // trims the Q# from the input
-            //if (pnl_quotation.ContainsKey("document_no") && pnl_quotation["document_no"] is string documentNo)
-            //{
-            //    pnl_quotation["document_no"] = documentNo.StartsWith("Q#")
-            //        ? documentNo.Substring(2)
-            //        : documentNo;
-            //}
+            // Bakes "FQ#" into document_no, mirroring FinalizeQuickQuotation - the
+            // deliberate identifier for "this is a finalized quotation" at a glance.
+            // Search/print already normalize away the "Q#"/"FQ#" prefix, so this
+            // doesn't break those lookups.
+            if (pnl_quotation.ContainsKey("document_no") && pnl_quotation["document_no"] is string documentNo)
+            {
+                string tempDocNo = documentNo.StartsWith("Q#") ? documentNo.Substring(2) : documentNo;
+                tempDocNo = "FQ#" + tempDocNo;
+                pnl_quotation["document_no"] = tempDocNo;
+            }
+            else
+            {
+                MessageBox.Show("Document number is missing or invalid.");
+                return;
+            }
+
+            // Same duplicate guard FinalizeQuickQuotation runs against allTransactionList,
+            // just against the Project quotation list instead.
+            var duplicateTransaction = transactionProjectDataTable.AsEnumerable()
+                .Where(t => t.Field<string>("document_no") == pnl_quotation["document_no"].ToString());
+
+            if (duplicateTransaction.Any())
+            {
+                MessageBox.Show("A transaction cannot be finalized because this document number already exists.");
+                return;
+            }
 
             pnl_quotation["percent_discount"] = float.TryParse(txt_additional_discount.Text, out float discount) ? discount : 0;
 
             var quotation = JsonConvert.SerializeObject(pnl_quotation, Formatting.Indented);
 
-            if (isNewRecord)
+            // Always insert as a new (finalized) record - this used to be gated behind
+            // "if (isNewRecord)", so clicking Finalize on an already-existing project
+            // quotation (View or Edit mode) silently did nothing at all.
+            var response = await ProjectService.Insert(pnl_quotation);
+            if (response.Success)
             {
-                var response = await ProjectService.Insert(pnl_quotation);
-                if (response.Success)
-                {
-                    MessageBox.Show("Saved");
-                    SetNewFormMode(false);
+                MessageBox.Show("Saved");
+                SetNewFormMode(false);
 
-                    // Same as IsProject()'s save handling - drop back to read-only View mode
-                    // once the finalized record is actually saved.
-                    isNewRecord = false;
-                    IsEdit = false;
-                }
-                else
-                    MessageBox.Show($"Insert error: {response.message}");
+                // Same as IsProject()'s save handling - drop back to read-only View mode
+                // once the finalized record is actually saved.
+                isNewRecord = false;
+                IsEdit = false;
+
+                await fetchSalesProjectData();
             }
+            else
+                MessageBox.Show($"Insert error: {response.message}");
         }
 
         private async void FinalizeQuickQuotation()
