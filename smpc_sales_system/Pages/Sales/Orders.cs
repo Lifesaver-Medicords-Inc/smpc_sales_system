@@ -177,6 +177,14 @@ namespace smpc_sales_app.Pages.Sales
                 DataView filteredDetailsView = new DataView(this.DetailsList);
                 filteredDetailsView.RowFilter = $"based_id = '{orderId}'";
                 dgv_order_sales.DataSource = filteredDetailsView;
+
+                // Same reason as bindOrderByDocNo below - always show the grid with the REAL
+                // saved order details, even for a project-sourced order. dgv_project is only
+                // ever populated as a creation-time preview (bindProject), never with this
+                // order's actual saved rows.
+                dgv_order_sales.Visible = true;
+                dgv_project.Visible = false;
+
                 CheckStatus();
             }
         }
@@ -237,6 +245,18 @@ namespace smpc_sales_app.Pages.Sales
                     DataView filteredDetailsView = new DataView(this.DetailsList);
                     filteredDetailsView.RowFilter = $"based_id = '{orderId}'";
                     dgv_order_sales.DataSource = filteredDetailsView;
+
+                    // bindOrderByDocNo loads the REAL saved sales_order_details rows into
+                    // dgv_order_sales - always show that grid here, even for a project-sourced
+                    // order. dgv_project is only ever populated by bindProject as a preview
+                    // while creating a NEW order from a quotation (via bindQuotation); this
+                    // function never touches it, so if IsProject(true) had been left on from an
+                    // earlier action in the same session, dgv_project would still be visible and
+                    // showing that stale preview (blank description/delivery/list price/status,
+                    // since those were never wired up there) instead of what was actually saved.
+                    dgv_order_sales.Visible = true;
+                    dgv_project.Visible = false;
+
                     CheckStatus();
                 }
             }
@@ -1926,6 +1946,18 @@ namespace smpc_sales_app.Pages.Sales
                     }
                     else if (!string.IsNullOrEmpty(projectName))
                     {
+                        // dgv_project's rows aren't all real, purchasable items - bindProject
+                        // adds purely structural rows for display grouping: the itemset
+                        // "header" row (labeled with the tab name, e.g. "A1") and BOM
+                        // group-head rows. Both always carry item_id = 0, since neither
+                        // represents an actual item. Sending them through as order details hit
+                        // a FOREIGN KEY violation on z_tbl_trans_sales_order_details_at (item_id
+                        // 0 doesn't exist in tbl_setup_item) - skip anything without a real
+                        // item_id instead of trying to save it as a line item.
+                        int projectItemId = int.TryParse(item["itemiddgv"].ToString(), out int parsedProjectItemId) ? parsedProjectItemId : 0;
+                        if (projectItemId <= 0)
+                            continue;
+
                         data.Add("based_id", int.Parse(item["basedidproject"].ToString()));
                         data.Add("numbering", (item["number"].ToString()));
                         data.Add("qty", int.Parse(item["qtyproject"].ToString()));
@@ -1934,9 +1966,19 @@ namespace smpc_sales_app.Pages.Sales
                         data.Add("delivery_preference", (item["delivery_preferenceproject"].ToString()));
                         data.Add("list_price", float.Parse(item["listpriceproject"].ToString()));
                         data.Add("total_price", float.Parse(item["componenttotalproject"].ToString()));
-                        data.Add("item_id", int.Parse(item["itemiddgv"].ToString()));
+                        data.Add("item_id", projectItemId);
                         data.Add("status", item["statusproject"].ToString());
-                        data.Add("has_stocks", bool.Parse(item["checkHasStock"].ToString()));
+
+                        // dgv_project (unlike dgv_order_sales) has no "checkHasStock" column at
+                        // all - it was never given the stock-check UI/column the quick-quote
+                        // grid has, so reading item["checkHasStock"] here always threw "Column
+                        // 'checkHasStock' does not belong to table" and aborted the whole save
+                        // before any project-order rows were persisted (which is also why they
+                        // never made it into the purchase list downstream). Compute has_stocks
+                        // the same way the quick-quote branch above does, from this row's own
+                        // qty instead.
+                        string projectQty = string.IsNullOrEmpty(item["qtyproject"].ToString()) ? "0" : item["qtyproject"].ToString();
+                        data.Add("has_stocks", int.Parse(projectQty) > 0 ? false : true);
                     }
                     else
                     {
