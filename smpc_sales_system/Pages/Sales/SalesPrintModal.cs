@@ -724,7 +724,13 @@ namespace smpc_sales_system.Pages.Sales
                         ReportParameter billaddressNameParameter = new ReportParameter("BillName", billaddressName);
                         ReportParameter codeNameParameter = new ReportParameter("CodeName", codeName);
                         ReportDataSource headerReportDataSource = new ReportDataSource("DataSet1", OrderList);
-                        ReportDataSource childReportDataSource = new ReportDataSource("DataSet2", DetailsList);
+                        // Orders converted from a project quotation never saved their itemset
+                        // "header" rows (item_id = 0 rows are skipped on save to avoid an
+                        // item_id FK violation) - each surviving item row instead carries the
+                        // header's tab name in item_set_header. Re-insert a header row before
+                        // every group of items so the print shows them the same way the
+                        // project quotation did, even though their qty is 0.
+                        ReportDataSource childReportDataSource = new ReportDataSource("DataSet2", BuildDetailsWithHeaders(DetailsList));
                         
                         reportViewer1.LocalReport.ReportPath = Path.Combine(Settings.Default.REPORTPATH, "OrderReport.rdlc");
                         reportViewer1.LocalReport.DataSources.Clear();
@@ -739,6 +745,51 @@ namespace smpc_sales_system.Pages.Sales
                     }
                 }
             }
+        }
+
+        // Re-inserts the dynamic itemset header rows (tab name, e.g. "A1") that were
+        // dropped at save time, using the item_set_header label carried on each real item
+        // row. Defensive about the column not existing at all (old API/DB before the
+        // item_set_header migration ships, or a non-project order) - in that case this is a
+        // no-op and the original table is returned unchanged.
+        private DataTable BuildDetailsWithHeaders(DataTable details)
+        {
+            if (details == null || !details.Columns.Contains("item_set_header") || !details.Columns.Contains("item_code"))
+                return details;
+
+            bool hasAnyHeaderLabel = details.AsEnumerable()
+                .Any(row => !string.IsNullOrWhiteSpace(row["item_set_header"]?.ToString()));
+            if (!hasAnyHeaderLabel)
+                return details;
+
+            DataTable result = details.Clone();
+            string lastHeader = null;
+
+            foreach (DataRow row in details.Rows)
+            {
+                string header = row["item_set_header"]?.ToString();
+
+                if (!string.IsNullOrWhiteSpace(header) && header != lastHeader)
+                {
+                    DataRow headerRow = result.NewRow();
+                    foreach (DataColumn col in result.Columns)
+                    {
+                        headerRow[col.ColumnName] = DBNull.Value;
+                    }
+                    headerRow["item_code"] = header;
+                    if (result.Columns.Contains("qty"))
+                    {
+                        headerRow["qty"] = 0;
+                    }
+                    result.Rows.Add(headerRow);
+
+                    lastHeader = header;
+                }
+
+                result.LoadDataRow(row.ItemArray, true);
+            }
+
+            return result;
         }
 
         private byte[] LoadImageAsBytes(string imageName)

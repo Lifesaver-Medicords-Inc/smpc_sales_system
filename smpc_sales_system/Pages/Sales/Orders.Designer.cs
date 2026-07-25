@@ -262,6 +262,7 @@ namespace smpc_sales_app.Pages.Sales
             this.linetotal = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.status = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.allocated_qty = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.item_set_header = new System.Windows.Forms.DataGridViewTextBoxColumn();
             ((System.ComponentModel.ISupportInitialize)(this.quick_quotes)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dataSet1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.tbl_quick_quotes)).BeginInit();
@@ -699,7 +700,8 @@ namespace smpc_sales_app.Pages.Sales
             this.unitprice,
             this.linetotal,
             this.status,
-            this.allocated_qty});
+            this.allocated_qty,
+            this.item_set_header});
             this.dgv_order_sales.DataSource = this.quick_quotes;
             this.dgv_order_sales.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dgv_order_sales.Location = new System.Drawing.Point(0, 0);
@@ -2259,7 +2261,19 @@ namespace smpc_sales_app.Pages.Sales
             this.allocated_qty.HeaderText = "allocated_qty";
             this.allocated_qty.Name = "allocated_qty";
             this.allocated_qty.Visible = false;
-            // 
+            //
+            // item_set_header
+            //
+            // Hidden helper column so ConvertDataGridViewToDataTable(dgv_order_sales) carries
+            // item_set_header through when an already-saved project-sourced order is edited
+            // and resaved - without this the grid never exposes that bound property, and
+            // resaving would silently blank out the itemset header label captured on the
+            // order's original save.
+            this.item_set_header.DataPropertyName = "item_set_header";
+            this.item_set_header.HeaderText = "item_set_header";
+            this.item_set_header.Name = "item_set_header";
+            this.item_set_header.Visible = false;
+            //
             // Orders
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -2556,5 +2570,6 @@ namespace smpc_sales_app.Pages.Sales
         private System.Windows.Forms.DataGridViewTextBoxColumn linetotal;
         private System.Windows.Forms.DataGridViewTextBoxColumn status;
         private System.Windows.Forms.DataGridViewTextBoxColumn allocated_qty;
+        private System.Windows.Forms.DataGridViewTextBoxColumn item_set_header;
     }
 }

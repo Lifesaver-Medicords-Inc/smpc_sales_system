@@ -5479,7 +5479,11 @@ namespace smpc_sales_app.Pages.Sales
             IsView = false;
             string customerId = txt_customer_id.Text;
 
-            GetLatestDate();
+            // NOTE: previously called GetLatestDate() here, which forced dtp_date.Value = DateTime.Now
+            // on every Edit click - even for an already-saved record. That overwrote the record's real
+            // stored date with "today" before any save happened, so the auto Change History always
+            // detected a false "date changed" diff. Editing an existing record must keep its own date;
+            // only genuinely new records (New / New Version / Duplicate) should default to today.
             LoadCustomerBillAddress(customerId);
             LoadCustomerShipAddress(customerId);
 

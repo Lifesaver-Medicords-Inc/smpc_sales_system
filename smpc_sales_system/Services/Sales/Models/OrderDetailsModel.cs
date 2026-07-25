@@ -22,6 +22,12 @@ namespace smpc_sales_app.Services.Sales.Models
         public float list_price { get; set; }
         public float total_price { get; set; }
         public int? allocated_qty { get; set; }
+        // Tab name of the itemset (project quotation "header", e.g. "A1") this line item
+        // belongs to. Only populated for orders converted from a project quotation - blank
+        // otherwise. Used by SalesPrintModal to re-insert the dynamic header rows into the
+        // printed Sales Order (they're never saved as their own row - see Orders.cs's save
+        // handler for why).
+        public string item_set_header { get; set; }
 
     }
 }

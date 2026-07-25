@@ -443,6 +443,13 @@ namespace smpc_sales_app.Pages.Sales
                     withItemListTwo.Columns.Add("number", typeof(string));
                     withItemListTwo.Columns.Add("level", typeof(int));
                     withItemListTwo.Columns.Add("itemset_header", typeof(int));
+                    // Carries the itemset's tab name (e.g. "A1") onto every real item row
+                    // under it, not just the synthetic header row - the header row itself
+                    // never survives to the saved order (item_id = 0 rows get skipped
+                    // below to avoid an item_id FK violation), so this is how the print
+                    // reconstruction later on knows which dynamic header to re-insert for
+                    // each surviving item.
+                    withItemListTwo.Columns.Add("item_set_header_name", typeof(string));
 
                     var uniqueItemsets = ids.Distinct().ToList();
 
@@ -459,6 +466,7 @@ namespace smpc_sales_app.Pages.Sales
                         headerRow["level"] = 0;
                         headerRow["itemset_header"] = itemsetId;
                         headerRow["item_code"] = itemSetRow["tab_number"];
+                        headerRow["item_set_header_name"] = itemSetRow["tab_number"];
                         headerRow["number"] = "";
 
                         // update the transformedTable
@@ -486,6 +494,7 @@ namespace smpc_sales_app.Pages.Sales
                             {
                                 newRow[col.ColumnName] = row[col.ColumnName];
                             }
+                            newRow["item_set_header_name"] = itemSetRow["tab_number"];
                             int itemId = Convert.ToInt32(row["item_id"]);
                             int bomId = Convert.ToInt32(row["bom_id"]);
                             string model = row["model"].ToString();
@@ -1943,6 +1952,14 @@ namespace smpc_sales_app.Pages.Sales
                         data.Add("item_id", int.Parse(item["itemid"].ToString()));
                         data.Add("status", item["status"].ToString());
                         data.Add("has_stocks", bool.Parse(item["checkHasStock"].ToString()));
+                        // Re-saving an already-existing order: dgv_order_sales here is bound
+                        // from the previously-fetched DetailsList, which only carries
+                        // "item_set_header" once the API model/DB column for it exists -
+                        // guard against the column being absent so resaving an order doesn't
+                        // break before that ships.
+                        data.Add("item_set_header", dataSource.Columns.Contains("item_set_header")
+                            ? (item["item_set_header"]?.ToString() ?? "")
+                            : "");
                     }
                     else if (!string.IsNullOrEmpty(projectName))
                     {
@@ -1979,6 +1996,12 @@ namespace smpc_sales_app.Pages.Sales
                         // qty instead.
                         string projectQty = string.IsNullOrEmpty(item["qtyproject"].ToString()) ? "0" : item["qtyproject"].ToString();
                         data.Add("has_stocks", int.Parse(projectQty) > 0 ? false : true);
+
+                        // Carry the itemset's tab name onto this real item row so printing
+                        // can re-insert the (dynamic, per-project) header row it belongs to -
+                        // the header row itself is never saved (item_id = 0 rows are skipped
+                        // above).
+                        data.Add("item_set_header", item["item_set_header_name"]?.ToString() ?? "");
                     }
                     else
                     {
