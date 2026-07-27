@@ -23,6 +23,10 @@ namespace smpc_sales_app.Pages
         {
             InitializeComponent();
             InitializeTabEvents();
+            // redBoxControl lives permanently in the right-side panel (not opened via
+            // showForm like the sidebar pages), so it needs its own hook here to open a
+            // Sales Order/Quotation tab when a document link inside it is clicked.
+            redBoxControl.TriggerNewForm += showForm;
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -115,7 +119,7 @@ namespace smpc_sales_app.Pages
                 showForm(route.GetTitle(), route.GetForm());
             }
         }
-        private void Layout_Load(object sender, EventArgs e)
+        private async void Layout_Load(object sender, EventArgs e)
         {
             Login login = new Login();
             if (DialogResult.OK == login.ShowDialog())
@@ -124,6 +128,10 @@ namespace smpc_sales_app.Pages
                 lbl_position.Text = CacheData.CurrentUser.position_id;
                 lbl_department.Text = CacheData.CurrentUser.department;
                 this.Enabled = true;
+
+                // Only safe to call now that CacheData.SessionToken is actually set - see
+                // the comment on RedBox.RefreshData() for why this can't run any earlier.
+                await redBoxControl.RefreshData();
             }
             else
             {

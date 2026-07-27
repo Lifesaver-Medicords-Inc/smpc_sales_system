@@ -54,6 +54,7 @@ namespace smpc_sales_app.Pages
             this.panel1 = new System.Windows.Forms.Panel();
             this.label2 = new System.Windows.Forms.Label();
             this.panel2 = new System.Windows.Forms.Panel();
+            this.redBoxControl = new smpc_sales_system.Pages.Sales.RedBox();
             this.label1 = new System.Windows.Forms.Label();
             this.panel6 = new System.Windows.Forms.Panel();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
@@ -169,6 +170,7 @@ namespace smpc_sales_app.Pages
             this.panel1.BackColor = System.Drawing.Color.IndianRed;
             this.panel1.Controls.Add(this.label2);
             this.panel1.Controls.Add(this.panel2);
+            this.panel1.Controls.Add(this.redBoxControl);
             this.panel1.Dock = System.Windows.Forms.DockStyle.Right;
             this.panel1.Location = new System.Drawing.Point(0, 0);
             this.panel1.Name = "panel1";
@@ -193,6 +195,17 @@ namespace smpc_sales_app.Pages
             this.panel2.Name = "panel2";
             this.panel2.Size = new System.Drawing.Size(312, 1);
             this.panel2.TabIndex = 0;
+            // 
+            // redBoxControl
+            // 
+            this.redBoxControl.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.redBoxControl.BackColor = System.Drawing.Color.White;
+            this.redBoxControl.Location = new System.Drawing.Point(0, 41);
+            this.redBoxControl.Name = "redBoxControl";
+            this.redBoxControl.Size = new System.Drawing.Size(313, 387);
+            this.redBoxControl.TabIndex = 3;
             // 
             // label1
             // 
@@ -352,5 +365,6 @@ namespace smpc_sales_app.Pages
         private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Panel panel2;
+        private smpc_sales_system.Pages.Sales.RedBox redBoxControl;
     }
 }

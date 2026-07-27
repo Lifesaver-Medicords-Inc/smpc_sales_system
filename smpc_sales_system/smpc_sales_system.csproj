@@ -454,6 +454,12 @@
     <Compile Include="Pages\Sales\Opportunities.Designer.cs">
       <DependentUpon>Opportunities.cs</DependentUpon>
     </Compile>
+    <Compile Include="Pages\Sales\RedBox.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Pages\Sales\RedBox.Designer.cs">
+      <DependentUpon>RedBox.cs</DependentUpon>
+    </Compile>
     <Compile Include="Pages\Sales\Orders.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -499,6 +505,7 @@
     <Compile Include="Services\Sales\ApplicationService.cs" />
     <Compile Include="Services\Sales\BpiService.cs" />
     <Compile Include="Services\Sales\CRMService.cs" />
+    <Compile Include="Services\Sales\SalesInvoiceService.cs" />
     <Compile Include="Services\Sales\ItemBomList.cs" />
     <Compile Include="Services\Sales\ItemService.cs" />
     <Compile Include="Services\Sales\Models\AdditionalSpecsModel.cs" />
@@ -506,6 +513,7 @@
     <Compile Include="Services\Sales\Models\BpiCustomer.cs" />
     <Compile Include="Services\Sales\Models\Combined.cs" />
     <Compile Include="Services\Sales\Models\CRMModel.cs" />
+    <Compile Include="Services\Sales\Models\SalesInvoiceModel.cs" />
     <Compile Include="Services\Sales\Models\GetBpiCustomers.cs" />
     <Compile Include="Services\Sales\Models\ItemBomListModel.cs" />
     <Compile Include="Services\Sales\Models\ItemImageModel.cs" />
@@ -610,6 +618,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Pages\Sales\Quotation.resx">
       <DependentUpon>Quotation.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Pages\Sales\RedBox.resx">
+      <DependentUpon>RedBox.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Pages\Sales\SalesPrint.resx">
       <DependentUpon>SalesPrint.cs</DependentUpon>
