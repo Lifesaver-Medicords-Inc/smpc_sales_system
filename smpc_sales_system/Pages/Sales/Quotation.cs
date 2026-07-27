@@ -717,10 +717,26 @@ namespace smpc_sales_app.Pages.Sales
                 dgv_quick_quote_details.ReadOnly = true;
                 dgv_quick_quote_details.Enabled = true;
 
-                await Task.Delay(2000); // optional wait
-                bind(transactionList, SelectedRow, true);
+                // Don't default to row 0 of the full table - that could be someone else's
+                // quotation. Land on the first record that's actually the current user's own,
+                // and if they don't have any yet, leave the form blank/ready for New instead
+                // of showing another user's data.
+                List<int> ownedIndexes = GetOwnedRowIndexes(transactionList);
 
-                createFilterViewDgvQuickQouteDetails();
+                if (ownedIndexes.Count == 0)
+                {
+                    MessageBox.Show("You have no saved quotations yet. Click New to create one.");
+                    Helpers.ResetReadOnlyControls(panels);
+                }
+                else
+                {
+                    SelectedRow = ownedIndexes[0];
+
+                    await Task.Delay(2000); // optional wait
+                    bind(transactionList, SelectedRow, true);
+
+                    createFilterViewDgvQuickQouteDetails();
+                }
 
             }
             else
@@ -819,8 +835,14 @@ namespace smpc_sales_app.Pages.Sales
 
             transactionProjectDataTable = JsonHelper.ToDataTable(latestQuotations);
 
+            // Don't default to row 0 of the full table - that could be someone else's project
+            // quotation. Only the current user's own records count here; if there are project
+            // quotations in the system but none of them are this user's, treat it the same as
+            // "no project data found" below (fresh blank project, ready for New) instead of
+            // showing another user's data.
+            List<int> ownedProjectIndexes = GetOwnedRowIndexes(transactionProjectDataTable);
 
-            if (SalesProjectListData == null || (SalesProjectListData.sales_project_item_set == null || !SalesProjectListData.sales_project_item_set.Any()))
+            if (SalesProjectListData == null || (SalesProjectListData.sales_project_item_set == null || !SalesProjectListData.sales_project_item_set.Any()) || ownedProjectIndexes.Count == 0)
             {
                 MessageBox.Show("No project data found. Creating a new entry.", "Empty Data", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
@@ -874,6 +896,7 @@ namespace smpc_sales_app.Pages.Sales
                 return;
             }
 
+            selectedProjectRow = ownedProjectIndexes[0];
             fetchSalesProject();
         }
 
@@ -1197,6 +1220,15 @@ namespace smpc_sales_app.Pages.Sales
 
         private async void  IsProject()
         {
+            // Belt-and-suspenders check alongside the one in btn_edit_Click/btn_update_Click -
+            // IsEdit only means "editing an existing record" (see IsEdit's setter), so this
+            // only fires on an update to a record that already exists, never on a brand new one.
+            if (IsEdit && !IsRecordCreatedByCurrentUser(txt_created_by.Text))
+            {
+                MessageBox.Show("Only the user who created this quotation can update it.", "Not Allowed", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             Panel[] pnl_list = { pnl_header, pnl_footer, pnl_project_name };
             var pnl_quotation = Helpers.GetControlsValues(pnl_list);
 
@@ -2569,6 +2601,15 @@ namespace smpc_sales_app.Pages.Sales
         }
         private async void IsQuickQuote()
         {
+            // Belt-and-suspenders check alongside the one in btn_edit_Click/btn_update_Click -
+            // IsEdit only means "editing an existing record" (see IsEdit's setter), so this
+            // only fires on an update to a record that already exists, never on a brand new one.
+            if (IsEdit && !IsRecordCreatedByCurrentUser(txt_created_by.Text))
+            {
+                MessageBox.Show("Only the user who created this quotation can update it.", "Not Allowed", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             try
             {
                 Panel[] pnl_list = { pnl_header, pnl_footer };
@@ -4274,23 +4315,39 @@ namespace smpc_sales_app.Pages.Sales
         private bool isProject = false;
         private void btn_next_Click(object sender, EventArgs e)
         {
+            // Previous/Next only step through the current user's OWN records - same
+            // restriction as Search - otherwise these two buttons would be a way to browse
+            // straight past that restriction, one record at a time.
             if (!isProject)
             {
-                int rowCount = transactionList.Rows.Count;
-                if (SelectedRow < rowCount - 1)
+                List<int> ownedIndexes = GetOwnedRowIndexes(transactionList);
+                if (ownedIndexes.Count == 0)
                 {
-                    SelectedRow++;
+                    MessageBox.Show("You have no saved quotations yet. Click New to create one.");
+                    return;
+                }
+
+                int pos = ownedIndexes.IndexOf(SelectedRow);
+                if (pos < ownedIndexes.Count - 1)
+                {
+                    SelectedRow = ownedIndexes[pos == -1 ? 0 : pos + 1];
                     bind(transactionList, SelectedRow, true);
                     createFilterViewDgvQuickQouteDetails();
                 }
             }
             else
             {
-                int rowCount = transactionProjectDataTable.Rows.Count;
-
-                if (selectedProjectRow < rowCount - 1)
+                List<int> ownedIndexes = GetOwnedRowIndexes(transactionProjectDataTable);
+                if (ownedIndexes.Count == 0)
                 {
-                    selectedProjectRow++;
+                    MessageBox.Show("You have no project quotations yet. Click New to create one.");
+                    return;
+                }
+
+                int pos = ownedIndexes.IndexOf(selectedProjectRow);
+                if (pos < ownedIndexes.Count - 1)
+                {
+                    selectedProjectRow = ownedIndexes[pos == -1 ? 0 : pos + 1];
                     // Navigating to a different record shouldn't carry over edit mode from
                     // whatever was previously open.
                     IsEdit = false;
@@ -4301,20 +4358,50 @@ namespace smpc_sales_app.Pages.Sales
         }
         private void btn_prev_Click(object sender, EventArgs e)
         {
+            // Same "own records only" restriction as btn_next_Click - see the comment there.
             if (!isProject)
             {
-                if (SelectedRow >= 1)
+                List<int> ownedIndexes = GetOwnedRowIndexes(transactionList);
+                if (ownedIndexes.Count == 0)
                 {
-                    SelectedRow--;
+                    MessageBox.Show("You have no saved quotations yet. Click New to create one.");
+                    return;
+                }
+
+                int pos = ownedIndexes.IndexOf(SelectedRow);
+                if (pos == -1)
+                {
+                    SelectedRow = ownedIndexes[0];
+                    bind(transactionList, SelectedRow, true);
+                    createFilterViewDgvQuickQouteDetails();
+                }
+                else if (pos >= 1)
+                {
+                    SelectedRow = ownedIndexes[pos - 1];
                     bind(transactionList, SelectedRow, true);
                     createFilterViewDgvQuickQouteDetails();
                 }
             }
             else
             {
-                if (selectedProjectRow >= 1)
+                List<int> ownedIndexes = GetOwnedRowIndexes(transactionProjectDataTable);
+                if (ownedIndexes.Count == 0)
                 {
-                    selectedProjectRow--;
+                    MessageBox.Show("You have no project quotations yet. Click New to create one.");
+                    return;
+                }
+
+                int pos = ownedIndexes.IndexOf(selectedProjectRow);
+                if (pos == -1)
+                {
+                    selectedProjectRow = ownedIndexes[0];
+                    IsEdit = false;
+                    bind(transactionProjectDataTable, selectedProjectRow, true);
+                    fetchSalesProject();
+                }
+                else if (pos >= 1)
+                {
+                    selectedProjectRow = ownedIndexes[pos - 1];
                     // Navigating to a different record shouldn't carry over edit mode from
                     // whatever was previously open.
                     IsEdit = false;
@@ -4540,6 +4627,84 @@ namespace smpc_sales_app.Pages.Sales
             }
         }
 
+        // Only the user who created a quotation (quick quote or project) should see it in
+        // the Search results - other users' records are filtered out entirely rather than
+        // just shown read-only. Returns a NEW DataTable (same columns, subset of rows) so
+        // transactionList/transactionProjectDataTable themselves stay untouched - other
+        // logic in this file (document numbering, version lookups, save/edit) still needs
+        // the full, unfiltered data to keep working correctly.
+        private DataTable FilterToCurrentUserQuotations(DataTable source)
+        {
+            DataTable filtered = source.Clone();
+
+            if (CacheData.CurrentUser == null)
+                return source;
+
+            string currentUserName = $"{CacheData.CurrentUser.first_name} {CacheData.CurrentUser.last_name}".Trim();
+
+            foreach (DataRow row in source.Rows)
+            {
+                string createdBy = source.Columns.Contains("created_by") && row["created_by"] != DBNull.Value
+                    ? row["created_by"].ToString()
+                    : null;
+
+                if (string.IsNullOrEmpty(createdBy) ||
+                    string.Equals(createdBy.Trim(), currentUserName, StringComparison.OrdinalIgnoreCase))
+                {
+                    filtered.ImportRow(row);
+                }
+            }
+
+            return filtered;
+        }
+
+        // SetupModal returns a row index into whatever DataTable it was given - since search
+        // now gets a filtered copy instead of the real transactionList/transactionProjectDataTable,
+        // that index has to be translated back to the matching row in the real table (by "id")
+        // before it's used anywhere else in this file.
+        private int FindRowIndexById(DataTable table, object idValue)
+        {
+            string idString = idValue?.ToString();
+
+            for (int i = 0; i < table.Rows.Count; i++)
+            {
+                if (table.Rows[i]["id"].ToString() == idString)
+                    return i;
+            }
+
+            return -1;
+        }
+
+        // Same ownership rule as FilterToCurrentUserQuotations, but returns the matching row
+        // INDEXES into the given table instead of a filtered copy - used by Previous/Next,
+        // which need to keep stepping through the real transactionList/transactionProjectDataTable
+        // (SelectedRow/selectedProjectRow are indexes into those, used all over this file), just
+        // skipping over any row that isn't the current user's own.
+        private List<int> GetOwnedRowIndexes(DataTable table)
+        {
+            List<int> indexes = new List<int>();
+
+            string currentUserName = CacheData.CurrentUser != null
+                ? $"{CacheData.CurrentUser.first_name} {CacheData.CurrentUser.last_name}".Trim()
+                : null;
+
+            for (int i = 0; i < table.Rows.Count; i++)
+            {
+                string createdBy = table.Columns.Contains("created_by") && table.Rows[i]["created_by"] != DBNull.Value
+                    ? table.Rows[i]["created_by"].ToString()
+                    : null;
+
+                if (string.IsNullOrEmpty(createdBy) ||
+                    string.IsNullOrEmpty(currentUserName) ||
+                    string.Equals(createdBy.Trim(), currentUserName, StringComparison.OrdinalIgnoreCase))
+                {
+                    indexes.Add(i);
+                }
+            }
+
+            return indexes;
+        }
+
         private void btn_search_Click_1(object sender, EventArgs e)
         {
             // One Search button is shared between Quick Quote and Project mode, but this
@@ -4551,7 +4716,8 @@ namespace smpc_sales_app.Pages.Sales
             if (isProject)
             {
                 string projectTitle = "Project List";
-                SetupModal projectSetup = new SetupModal(projectTitle, transactionProjectDataTable);
+                DataTable ownProjects = FilterToCurrentUserQuotations(transactionProjectDataTable);
+                SetupModal projectSetup = new SetupModal(projectTitle, ownProjects);
                 DialogResult projectResult = projectSetup.ShowDialog();
 
                 if (projectResult == DialogResult.OK)
@@ -4560,7 +4726,8 @@ namespace smpc_sales_app.Pages.Sales
 
                     if (projectRowResult != -1)
                     {
-                        selectedProjectRow = projectRowResult;
+                        int mappedRow = FindRowIndexById(transactionProjectDataTable, ownProjects.Rows[projectRowResult]["id"]);
+                        selectedProjectRow = mappedRow != -1 ? mappedRow : projectRowResult;
                         // IsEdit doesn't get reset just by opening a different record - if the
                         // user was editing another project earlier in this same session,
                         // IsEdit was still true here, so this newly opened project would come
@@ -4575,7 +4742,8 @@ namespace smpc_sales_app.Pages.Sales
             }
 
             string Title = "Quotation List";
-            SetupModal setup = new SetupModal(Title, transactionList);
+            DataTable ownQuotes = FilterToCurrentUserQuotations(transactionList);
+            SetupModal setup = new SetupModal(Title, ownQuotes);
             DialogResult r = setup.ShowDialog();
 
             if (r == DialogResult.OK)
@@ -4584,7 +4752,8 @@ namespace smpc_sales_app.Pages.Sales
 
                 if (result != -1)
                 {
-                    SelectedRow = result;
+                    int mappedRow = FindRowIndexById(transactionList, ownQuotes.Rows[result]["id"]);
+                    SelectedRow = mappedRow != -1 ? mappedRow : result;
                     bind(transactionList, SelectedRow, true);
                     createFilterViewDgvQuickQouteDetails();
 
@@ -5433,8 +5602,29 @@ namespace smpc_sales_app.Pages.Sales
             pt.Show();
 
         }
+        // Only the user who originally created a quotation (quick quote or project) is
+        // allowed to edit/update it. txt_created_by is already bound to the loaded record's
+        // "created_by" value by bind()/BindControls before either Edit or Update can be
+        // clicked, so it reflects whoever actually owns the record on screen right now - not
+        // necessarily the current user. A blank value (e.g. a record predating this field)
+        // isn't treated as a block, only a genuine mismatch is.
+        private bool IsRecordCreatedByCurrentUser(string createdBy)
+        {
+            if (string.IsNullOrWhiteSpace(createdBy) || CacheData.CurrentUser == null)
+                return true;
+
+            string currentUserName = $"{CacheData.CurrentUser.first_name} {CacheData.CurrentUser.last_name}".Trim();
+            return string.Equals(createdBy.Trim(), currentUserName, StringComparison.OrdinalIgnoreCase);
+        }
+
         private void btn_update_Click(object sender, EventArgs e)
         {
+            if (!IsRecordCreatedByCurrentUser(txt_created_by.Text))
+            {
+                MessageBox.Show("Only the user who created this quotation can update it.", "Not Allowed", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             IsEdit = true;
             MessageBox.Show("EDIT MODE ON");
         }
@@ -5476,6 +5666,12 @@ namespace smpc_sales_app.Pages.Sales
 
         private void btn_edit_Click(object sender, EventArgs e)
         {
+            if (!IsRecordCreatedByCurrentUser(txt_created_by.Text))
+            {
+                MessageBox.Show("Only the user who created this quotation can edit it.", "Not Allowed", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             IsView = false;
             string customerId = txt_customer_id.Text;
 

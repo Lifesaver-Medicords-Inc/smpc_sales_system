@@ -30,15 +30,15 @@ namespace smpc_sales_system.Pages.Sales
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle10 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle14 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle15 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle11 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle12 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle13 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle16 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle17 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle18 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle5 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle6 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle7 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle8 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle9 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
             this.pnl_project_content = new System.Windows.Forms.Panel();
             this.dgv_final = new System.Windows.Forms.DataGridView();
             this.Id = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -109,26 +109,7 @@ namespace smpc_sales_system.Pages.Sales
             this.label56 = new System.Windows.Forms.Label();
             this.txt_template_name = new System.Windows.Forms.TextBox();
             this.dgv_project_items = new System.Windows.Forms.DataGridView();
-            this.project_items_id = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.item_id = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.project_items_based_id = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.project_items_template_id = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.project_items_bom_id = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.project_items_images = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.reference_code = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.project_items_components = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.project_items_model = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.project_items_item_inv_type = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.project_items_qty = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.man_days = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.labor_rate = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.project_items_list_price = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.project_items_unit_price = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.project_items_multiplier = new System.Windows.Forms.DataGridViewComboBoxColumn();
             this.bs_multiplier = new System.Windows.Forms.BindingSource(this.components);
-            this.project_items_discount = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.project_items_line_total = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.project_items_notes = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.bs_project_components = new System.Windows.Forms.BindingSource(this.components);
             this.ds_project = new System.Data.DataSet();
             this.dataTable9 = new System.Data.DataTable();
@@ -200,6 +181,25 @@ namespace smpc_sales_system.Pages.Sales
             this.project_wiring_unit = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.cmb_template_project = new System.Windows.Forms.ComboBox();
             this.cmb_assign_engineer_user_id = new System.Windows.Forms.ComboBox();
+            this.project_items_id = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.item_id = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.project_items_based_id = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.project_items_template_id = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.project_items_bom_id = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.project_items_images = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.reference_code = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.project_items_components = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.project_items_model = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.project_items_item_inv_type = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.project_items_qty = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.man_days = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.labor_rate = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.project_items_list_price = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.project_items_unit_price = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.project_items_multiplier = new System.Windows.Forms.DataGridViewComboBoxColumn();
+            this.project_items_discount = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.project_items_line_total = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.project_items_notes = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.pnl_project_content.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgv_final)).BeginInit();
             this.pnl_advanced_conditions.SuspendLayout();
@@ -901,16 +901,15 @@ namespace smpc_sales_system.Pages.Sales
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.dgv_project_items.BackgroundColor = System.Drawing.SystemColors.ActiveBorder;
-            dataGridViewCellStyle10.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle10.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle10.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle10.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle10.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle10.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle10.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dgv_project_items.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle10;
+            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dgv_project_items.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
             this.dgv_project_items.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dgv_project_items.AutoGenerateColumns = false;
             this.dgv_project_items.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.project_items_id,
             this.item_id,
@@ -931,170 +930,30 @@ namespace smpc_sales_system.Pages.Sales
             this.project_items_discount,
             this.project_items_line_total,
             this.project_items_notes});
-            dataGridViewCellStyle14.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle14.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle14.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle14.ForeColor = System.Drawing.SystemColors.ControlText;
-            dataGridViewCellStyle14.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle14.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle14.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.dgv_project_items.DefaultCellStyle = dataGridViewCellStyle14;
+            dataGridViewCellStyle5.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle5.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle5.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle5.ForeColor = System.Drawing.SystemColors.ControlText;
+            dataGridViewCellStyle5.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle5.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle5.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.dgv_project_items.DefaultCellStyle = dataGridViewCellStyle5;
             this.dgv_project_items.Location = new System.Drawing.Point(17, 490);
             this.dgv_project_items.Name = "dgv_project_items";
-            dataGridViewCellStyle15.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle15.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle15.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle15.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle15.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle15.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle15.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dgv_project_items.RowHeadersDefaultCellStyle = dataGridViewCellStyle15;
+            dataGridViewCellStyle6.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle6.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle6.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle6.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle6.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle6.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle6.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dgv_project_items.RowHeadersDefaultCellStyle = dataGridViewCellStyle6;
             this.dgv_project_items.Size = new System.Drawing.Size(1092, 408);
             this.dgv_project_items.TabIndex = 151;
             this.dgv_project_items.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgv_project_items_CellClick);
             this.dgv_project_items.CellEndEdit += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgv_project_items_CellEndEdit);
             this.dgv_project_items.CellValueChanged += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgv_project_items_CellValueChanged);
             this.dgv_project_items.DataError += new System.Windows.Forms.DataGridViewDataErrorEventHandler(this.dgv_project_items_DataError);
-            // 
-            // project_items_id
-            // 
-            this.project_items_id.DataPropertyName = "items_id";
-            this.project_items_id.HeaderText = "id";
-            this.project_items_id.Name = "project_items_id";
-            this.project_items_id.Visible = false;
-            // 
-            // item_id
-            // 
-            this.item_id.DataPropertyName = "item_id";
-            this.item_id.HeaderText = "item_id";
-            this.item_id.Name = "item_id";
-            this.item_id.Visible = false;
-            // 
-            // project_items_based_id
-            // 
-            this.project_items_based_id.DataPropertyName = "based_id";
-            this.project_items_based_id.HeaderText = "based_id";
-            this.project_items_based_id.Name = "project_items_based_id";
-            this.project_items_based_id.Visible = false;
-            // 
-            // project_items_template_id
-            // 
-            this.project_items_template_id.DataPropertyName = "template_id";
-            this.project_items_template_id.HeaderText = "template_id";
-            this.project_items_template_id.Name = "project_items_template_id";
-            this.project_items_template_id.Visible = false;
-            // 
-            // project_items_bom_id
-            // 
-            this.project_items_bom_id.DataPropertyName = "bom_id";
-            this.project_items_bom_id.HeaderText = "bom_id";
-            this.project_items_bom_id.Name = "project_items_bom_id";
-            this.project_items_bom_id.Visible = false;
-            // 
-            // project_items_images
-            // 
-            this.project_items_images.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
-            this.project_items_images.HeaderText = "IMAGES";
-            this.project_items_images.Name = "project_items_images";
-            this.project_items_images.Width = 60;
-            // 
-            // reference_code
-            // 
-            this.reference_code.DataPropertyName = "reference_code";
-            this.reference_code.HeaderText = "REFERENCE CODE";
-            this.reference_code.Name = "reference_code";
-            this.reference_code.Width = 50;
-            // 
-            // project_items_components
-            // 
-            this.project_items_components.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.project_items_components.DataPropertyName = "components";
-            this.project_items_components.HeaderText = "COMPONENTS";
-            this.project_items_components.MinimumWidth = 100;
-            this.project_items_components.Name = "project_items_components";
-            this.project_items_components.ReadOnly = true;
-            // 
-            // project_items_model
-            // 
-            this.project_items_model.DataPropertyName = "model";
-            this.project_items_model.HeaderText = "MODEL";
-            this.project_items_model.Name = "project_items_model";
-            this.project_items_model.ReadOnly = true;
-            // 
-            // project_items_item_inv_type
-            // 
-            this.project_items_item_inv_type.DataPropertyName = "item_inv_type";
-            this.project_items_item_inv_type.HeaderText = "ITEM INV TYPE";
-            this.project_items_item_inv_type.MinimumWidth = 40;
-            this.project_items_item_inv_type.Name = "project_items_item_inv_type";
-            this.project_items_item_inv_type.Width = 40;
-            // 
-            // project_items_qty
-            // 
-            this.project_items_qty.DataPropertyName = "qty";
-            this.project_items_qty.HeaderText = "QTY";
-            this.project_items_qty.MinimumWidth = 40;
-            this.project_items_qty.Name = "project_items_qty";
-            this.project_items_qty.Width = 40;
-            // 
-            // man_days
-            // 
-            this.man_days.DataPropertyName = "man_days";
-            this.man_days.HeaderText = "MAN DAYS";
-            this.man_days.Name = "man_days";
-            this.man_days.Visible = false;
-            // 
-            // labor_rate
-            // 
-            this.labor_rate.DataPropertyName = "labor_rate";
-            this.labor_rate.HeaderText = "LABOR RATE";
-            this.labor_rate.Name = "labor_rate";
-            this.labor_rate.Visible = false;
-            // 
-            // project_items_list_price
-            // 
-            this.project_items_list_price.DataPropertyName = "list_price_per_unit";
-            dataGridViewCellStyle11.NullValue = "0.00";
-            this.project_items_list_price.DefaultCellStyle = dataGridViewCellStyle11;
-            this.project_items_list_price.HeaderText = "LIST PRICE";
-            this.project_items_list_price.Name = "project_items_list_price";
-            // 
-            // project_items_unit_price
-            // 
-            this.project_items_unit_price.DataPropertyName = "unit_price";
-            dataGridViewCellStyle12.NullValue = "0.00";
-            this.project_items_unit_price.DefaultCellStyle = dataGridViewCellStyle12;
-            this.project_items_unit_price.HeaderText = "UNIT PRICE";
-            this.project_items_unit_price.Name = "project_items_unit_price";
-            // 
-            // project_items_multiplier
-            // 
-            this.project_items_multiplier.DataPropertyName = "multiplier";
-            this.project_items_multiplier.DataSource = this.bs_multiplier;
-            this.project_items_multiplier.HeaderText = "MULTIPLIER";
-            this.project_items_multiplier.Name = "project_items_multiplier";
-            this.project_items_multiplier.Resizable = System.Windows.Forms.DataGridViewTriState.True;
-            this.project_items_multiplier.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
-            // 
-            // project_items_discount
-            // 
-            this.project_items_discount.DataPropertyName = "discount_price";
-            dataGridViewCellStyle13.NullValue = "0.00";
-            this.project_items_discount.DefaultCellStyle = dataGridViewCellStyle13;
-            this.project_items_discount.HeaderText = "DISCOUNT/MARK UP PRICE";
-            this.project_items_discount.Name = "project_items_discount";
-            // 
-            // project_items_line_total
-            // 
-            this.project_items_line_total.DataPropertyName = "component_total";
-            this.project_items_line_total.HeaderText = "LINE TOTAL";
-            this.project_items_line_total.Name = "project_items_line_total";
-            // 
-            // project_items_notes
-            // 
-            this.project_items_notes.DataPropertyName = "notes";
-            this.project_items_notes.HeaderText = "NOTES";
-            this.project_items_notes.Name = "project_items_notes";
             // 
             // bs_project_components
             // 
@@ -1409,14 +1268,14 @@ namespace smpc_sales_system.Pages.Sales
             this.dgv_wiring.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.dgv_wiring.AutoGenerateColumns = false;
-            dataGridViewCellStyle16.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle16.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle16.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle16.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle16.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle16.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle16.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dgv_wiring.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle16;
+            dataGridViewCellStyle7.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle7.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle7.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle7.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle7.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle7.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle7.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dgv_wiring.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle7;
             this.dgv_wiring.ColumnHeadersHeight = 100;
             this.dgv_wiring.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.project_wiring_id,
@@ -1437,24 +1296,24 @@ namespace smpc_sales_system.Pages.Sales
             this.project_wiring_total_cost,
             this.project_wiring_unit});
             this.dgv_wiring.DataSource = this.bs_project_wiring;
-            dataGridViewCellStyle17.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle17.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle17.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle17.ForeColor = System.Drawing.SystemColors.ControlText;
-            dataGridViewCellStyle17.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle17.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle17.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.dgv_wiring.DefaultCellStyle = dataGridViewCellStyle17;
+            dataGridViewCellStyle8.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle8.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle8.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle8.ForeColor = System.Drawing.SystemColors.ControlText;
+            dataGridViewCellStyle8.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle8.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle8.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.dgv_wiring.DefaultCellStyle = dataGridViewCellStyle8;
             this.dgv_wiring.Location = new System.Drawing.Point(24, 965);
             this.dgv_wiring.Name = "dgv_wiring";
-            dataGridViewCellStyle18.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle18.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle18.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle18.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle18.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle18.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle18.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dgv_wiring.RowHeadersDefaultCellStyle = dataGridViewCellStyle18;
+            dataGridViewCellStyle9.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle9.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle9.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle9.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle9.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle9.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle9.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dgv_wiring.RowHeadersDefaultCellStyle = dataGridViewCellStyle9;
             this.dgv_wiring.Size = new System.Drawing.Size(1092, 416);
             this.dgv_wiring.TabIndex = 154;
             this.dgv_wiring.CellEndEdit += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgv_wiring_CellEndEdit);
@@ -1613,6 +1472,146 @@ namespace smpc_sales_system.Pages.Sales
             this.cmb_assign_engineer_user_id.Name = "cmb_assign_engineer_user_id";
             this.cmb_assign_engineer_user_id.Size = new System.Drawing.Size(294, 21);
             this.cmb_assign_engineer_user_id.TabIndex = 167;
+            // 
+            // project_items_id
+            // 
+            this.project_items_id.DataPropertyName = "items_id";
+            this.project_items_id.HeaderText = "id";
+            this.project_items_id.Name = "project_items_id";
+            this.project_items_id.Visible = false;
+            // 
+            // item_id
+            // 
+            this.item_id.DataPropertyName = "item_id";
+            this.item_id.HeaderText = "item_id";
+            this.item_id.Name = "item_id";
+            this.item_id.Visible = false;
+            // 
+            // project_items_based_id
+            // 
+            this.project_items_based_id.DataPropertyName = "based_id";
+            this.project_items_based_id.HeaderText = "based_id";
+            this.project_items_based_id.Name = "project_items_based_id";
+            this.project_items_based_id.Visible = false;
+            // 
+            // project_items_template_id
+            // 
+            this.project_items_template_id.DataPropertyName = "template_id";
+            this.project_items_template_id.HeaderText = "template_id";
+            this.project_items_template_id.Name = "project_items_template_id";
+            this.project_items_template_id.Visible = false;
+            // 
+            // project_items_bom_id
+            // 
+            this.project_items_bom_id.DataPropertyName = "bom_id";
+            this.project_items_bom_id.HeaderText = "bom_id";
+            this.project_items_bom_id.Name = "project_items_bom_id";
+            this.project_items_bom_id.Visible = false;
+            // 
+            // project_items_images
+            // 
+            this.project_items_images.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
+            this.project_items_images.HeaderText = "IMAGES";
+            this.project_items_images.Name = "project_items_images";
+            this.project_items_images.Width = 60;
+            // 
+            // reference_code
+            // 
+            this.reference_code.DataPropertyName = "reference_code";
+            this.reference_code.HeaderText = "CODE";
+            this.reference_code.Name = "reference_code";
+            this.reference_code.Width = 50;
+            // 
+            // project_items_components
+            // 
+            this.project_items_components.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.project_items_components.DataPropertyName = "components";
+            this.project_items_components.HeaderText = "COMPONENTS";
+            this.project_items_components.MinimumWidth = 100;
+            this.project_items_components.Name = "project_items_components";
+            this.project_items_components.ReadOnly = true;
+            // 
+            // project_items_model
+            // 
+            this.project_items_model.DataPropertyName = "model";
+            this.project_items_model.HeaderText = "MODEL";
+            this.project_items_model.Name = "project_items_model";
+            this.project_items_model.ReadOnly = true;
+            // 
+            // project_items_item_inv_type
+            // 
+            this.project_items_item_inv_type.DataPropertyName = "item_inv_type";
+            this.project_items_item_inv_type.HeaderText = "ITEM INV TYPE";
+            this.project_items_item_inv_type.MinimumWidth = 40;
+            this.project_items_item_inv_type.Name = "project_items_item_inv_type";
+            this.project_items_item_inv_type.Width = 40;
+            // 
+            // project_items_qty
+            // 
+            this.project_items_qty.DataPropertyName = "qty";
+            this.project_items_qty.HeaderText = "QTY";
+            this.project_items_qty.MinimumWidth = 40;
+            this.project_items_qty.Name = "project_items_qty";
+            this.project_items_qty.Width = 40;
+            // 
+            // man_days
+            // 
+            this.man_days.DataPropertyName = "man_days";
+            this.man_days.HeaderText = "MAN DAYS";
+            this.man_days.Name = "man_days";
+            this.man_days.Visible = false;
+            // 
+            // labor_rate
+            // 
+            this.labor_rate.DataPropertyName = "labor_rate";
+            this.labor_rate.HeaderText = "LABOR RATE";
+            this.labor_rate.Name = "labor_rate";
+            this.labor_rate.Visible = false;
+            // 
+            // project_items_list_price
+            // 
+            this.project_items_list_price.DataPropertyName = "list_price_per_unit";
+            dataGridViewCellStyle2.NullValue = "0.00";
+            this.project_items_list_price.DefaultCellStyle = dataGridViewCellStyle2;
+            this.project_items_list_price.HeaderText = "LIST PRICE";
+            this.project_items_list_price.Name = "project_items_list_price";
+            // 
+            // project_items_unit_price
+            // 
+            this.project_items_unit_price.DataPropertyName = "unit_price";
+            dataGridViewCellStyle3.NullValue = "0.00";
+            this.project_items_unit_price.DefaultCellStyle = dataGridViewCellStyle3;
+            this.project_items_unit_price.HeaderText = "UNIT PRICE";
+            this.project_items_unit_price.Name = "project_items_unit_price";
+            // 
+            // project_items_multiplier
+            // 
+            this.project_items_multiplier.DataPropertyName = "multiplier";
+            this.project_items_multiplier.DataSource = this.bs_multiplier;
+            this.project_items_multiplier.HeaderText = "MULTIPLIER";
+            this.project_items_multiplier.Name = "project_items_multiplier";
+            this.project_items_multiplier.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+            this.project_items_multiplier.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
+            // 
+            // project_items_discount
+            // 
+            this.project_items_discount.DataPropertyName = "discount_price";
+            dataGridViewCellStyle4.NullValue = "0.00";
+            this.project_items_discount.DefaultCellStyle = dataGridViewCellStyle4;
+            this.project_items_discount.HeaderText = "DISCOUNT/ MARK UP PRICE";
+            this.project_items_discount.Name = "project_items_discount";
+            // 
+            // project_items_line_total
+            // 
+            this.project_items_line_total.DataPropertyName = "component_total";
+            this.project_items_line_total.HeaderText = "LINE TOTAL";
+            this.project_items_line_total.Name = "project_items_line_total";
+            // 
+            // project_items_notes
+            // 
+            this.project_items_notes.DataPropertyName = "notes";
+            this.project_items_notes.HeaderText = "NOTES";
+            this.project_items_notes.Name = "project_items_notes";
             // 
             // ItemSetUC
             // 
