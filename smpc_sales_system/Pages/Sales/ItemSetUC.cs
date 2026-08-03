@@ -528,14 +528,24 @@ namespace smpc_sales_system.Pages.Sales
             ComputeReferenceNonHierarchy(dgv_project_items);
 
             // Was: "Quotation quote = new Quotation(); ... quote.GetCashDiscount();" -
-            // that created a brand-new, never-shown Quotation form and read its
+            // that created a brand-new, never-shown Quotation instance and read its
             // designer-default cash discount ("0.00"), not what the user actually
-            // typed on the visible form this control is hosted in. Walk up to the
-            // real hosting form instead, so cash discount is picked up correctly.
+            // typed on the visible form this control is hosted in.
+            // Note: Quotation is a UserControl (not a Form), so FindForm() can never
+            // return one - walk up the actual Parent chain instead, since this
+            // control is nested inside Quotation's tabControl2 tabs.
             decimal gross_sales = 0, vat_amount = 0, net_sales = 0;
             decimal percent_discount = 0;
             decimal net_amount_due = 0, total_amount_due = 0;
-            decimal cash_discount = (this.FindForm() as Quotation)?.GetCashDiscount() ?? 0m;
+            decimal cash_discount = 0m;
+            for (Control parent = this.Parent; parent != null; parent = parent.Parent)
+            {
+                if (parent is Quotation hostingQuotation)
+                {
+                    cash_discount = hostingQuotation.GetCashDiscount();
+                    break;
+                }
+            }
             const decimal VAT_RATE = 0.12m;
 
             foreach (DataGridViewRow row in this.dgv_project_items.Rows)
