@@ -4586,8 +4586,11 @@ namespace smpc_sales_app.Pages.Sales
                                         cumulativeMultiplier *= (1 - (discountValue / 100));
                                     }
                                 }
-                                //this.DiscountedAmount = this.UnitPrice * (1 - cumulativeMultiplier);
-                                this.DiscountedAmount = this.UnitPrice * cumulativeMultiplier;
+                                // Was "UnitPrice * cumulativeMultiplier", which stores the
+                                // POST-discount unit price into DiscountedAmount instead of
+                                // the discount amount itself - inverted vs. the single-discount
+                                // branch below (and vs. what NetDiscount/LineTotal expect).
+                                this.DiscountedAmount = this.UnitPrice * (1 - cumulativeMultiplier);
                             }
                             else
                             {
@@ -5914,6 +5917,13 @@ namespace smpc_sales_app.Pages.Sales
             isNewRecord = true;
             IsEdit = false;
         }
+        // NOTE: ComputeQuickQuoteTotal / ComputeDgvHierarchy / computationLoop / DGVComputation
+        // below are not called from any wired event or other live code path (confirmed via
+        // Designer.cs and full-file search) - this looks like an abandoned parallel
+        // implementation of what ComputeByReferenceHierarchy/ComputeReferenceNonHierarchy/
+        // ComputeFooterTotals do live. Left in place rather than deleted since they're
+        // unreachable either way, but flagging so nobody reconnects them expecting them to
+        // match the live computation path's behavior without re-checking them first.
         private void ComputeQuickQuoteTotal()
         {
 
