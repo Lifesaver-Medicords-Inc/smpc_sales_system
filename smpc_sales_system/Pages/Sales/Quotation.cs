@@ -3000,8 +3000,14 @@ namespace smpc_sales_app.Pages.Sales
                         result *= (1m / value);
                     }
                     else if (part.Contains('/'))
-                    { 
-                        MessageBox.Show("Invalid discount format. Division should be at the start of the part.");
+                    {
+                        // Was a bare MessageBox that let the loop keep going with this
+                        // segment silently skipped - the returned multiplier looked
+                        // valid but was computed from only part of the input. Now
+                        // returns the neutral multiplier (1 = no discount) so a
+                        // malformed entry can't silently produce a partial discount.
+                        MessageBox.Show("Invalid discount format. Division should be at the start of the part. No discount was applied.");
+                        return 1m;
                     }
                     else
                     {
