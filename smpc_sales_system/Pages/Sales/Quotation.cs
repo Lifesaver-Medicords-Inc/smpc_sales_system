@@ -3819,13 +3819,14 @@ namespace smpc_sales_app.Pages.Sales
                 LoadCustomerBillAddress(cId.ToString());
                 LoadCustomerShipAddress(cId.ToString());
 
-                cmb_application.SelectedItem = appId;
+                // SelectedItem expects an item object from the bound list, not a raw id -
+                // assigning appId/billId/shipId to it was a no-op that never matched
+                // anything in Items. SelectedValue (below) is what actually drives the
+                // ValueMember-bound selection, so the SelectedItem assignments are removed.
                 cmb_application.SelectedValue = appId;
 
-                cmb_bill_to.SelectedItem = billId;
                 cmb_bill_to.SelectedValue = billId;
-                 
-                cmb_ship_to.SelectedItem = shipId;
+
                 cmb_ship_to.SelectedValue = shipId;
 
                 Helpers.BindControls(pnlList, HeaderList, SelectedRow);
