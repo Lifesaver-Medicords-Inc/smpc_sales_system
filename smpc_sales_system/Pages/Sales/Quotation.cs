@@ -2651,7 +2651,10 @@ namespace smpc_sales_app.Pages.Sales
 
                 if (cmb_bill_to.SelectedValue == null)
                 {
-                    MessageBox.Show("bill to is required.");
+                    MessageBox.Show("Bill To is required.", "Missing Information", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    // Previously fell through and saved anyway with bill_to_id defaulted to 0 -
+                    // the warning was shown but never actually stopped the save (bug #246).
+                    return;
                 }
                 else
                 {
@@ -2660,11 +2663,25 @@ namespace smpc_sales_app.Pages.Sales
 
                 if (cmb_ship_to.SelectedValue == null)
                 {
-                    MessageBox.Show("ship to is required.");
+                    MessageBox.Show("Ship To is required.", "Missing Information", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
                 }
                 else
                 {
                     ship_to_id = int.Parse(cmb_ship_to.SelectedValue.ToString());
+                }
+
+                // "Valid Until" is derived from the document date + number of days
+                // (ValidUntilDate()), but the document date itself is user-editable, so it's
+                // still possible to end up with a Valid Until in the past. That used to reach
+                // the API and come back as a raw DB/validation error (bug #243/#245). Catch it
+                // here with a friendly message instead.
+                if (dtp_valid_until.Value.Date < DateTime.Today)
+                {
+                    MessageBox.Show("Valid Until date cannot be in the past. Please choose a later date.",
+                        "Invalid Date", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    dtp_valid_until.Focus();
+                    return;
                 }
 
                 parentData["id"] = id;
@@ -2790,7 +2807,13 @@ namespace smpc_sales_app.Pages.Sales
             }
             catch (Exception ex)
             {
-                MessageBox.Show("ERROR ERROR " + ex);
+                // Previously showed the raw exception (including DB error text) directly to
+                // general users (bug #243/#245). Keep the technical detail in the debug output
+                // for support/devs, but show a plain, user-friendly message on screen.
+                System.Diagnostics.Debug.WriteLine("IsQuickQuote save error: " + ex);
+                MessageBox.Show(
+                    "We couldn't save this quotation. Please check that all required fields are filled in correctly and try again. If the problem continues, contact support.",
+                    "Unable to Save", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
