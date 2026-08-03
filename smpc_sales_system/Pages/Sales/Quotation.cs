@@ -3526,7 +3526,9 @@ namespace smpc_sales_app.Pages.Sales
 
         public decimal GetCashDiscount()
         {
-            decimal cash_disc = Convert.ToDecimal(txt_cash_discount.Text.ToString());
+            // Was Convert.ToDecimal with no guard - threw a FormatException
+            // whenever the textbox was blank or mid-edit with non-numeric text.
+            decimal.TryParse(txt_cash_discount.Text, out decimal cash_disc);
             return cash_disc;
         }
         private void computationLoop()
@@ -3534,7 +3536,8 @@ namespace smpc_sales_app.Pages.Sales
             double gross_sales = 0, vat_amount = 0, net_sales = 0;
             double percent_discount = 0;
             double net_amount_due = 0, total_amount_due = 0;
-            double cash_discount = double.Parse(txt_cash_discount.Text);
+            // Was double.Parse with no guard - same unguarded-parse issue as GetCashDiscount above.
+            double.TryParse(txt_cash_discount.Text, out double cash_discount);
             const double VAT_RATE = 0.12; // 12% VAT
 
 
