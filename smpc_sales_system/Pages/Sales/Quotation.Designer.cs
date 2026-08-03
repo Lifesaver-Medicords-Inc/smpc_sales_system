@@ -879,9 +879,10 @@
             this.txt_branch_name.TabIndex = 54;
             // 
             // txt_customer_code
-            // 
+            //
             this.txt_customer_code.Location = new System.Drawing.Point(87, 38);
             this.txt_customer_code.Name = "txt_customer_code";
+            this.txt_customer_code.ReadOnly = true;
             this.txt_customer_code.Size = new System.Drawing.Size(200, 20);
             this.txt_customer_code.TabIndex = 55;
             // 
