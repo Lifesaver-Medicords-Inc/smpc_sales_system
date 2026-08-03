@@ -5718,6 +5718,17 @@ namespace smpc_sales_app.Pages.Sales
 
         private void btn_edit_Click(object sender, EventArgs e)
         {
+            // Belt-and-suspenders like the IsRecordCreatedByCurrentUser check right
+            // below: bind() hides this button when isFinalized, but that's the only
+            // thing stopping a finalized quotation from being edited. If the button
+            // is ever re-enabled by something else, this stops the edit at the
+            // handler itself instead of relying solely on button visibility.
+            if (isFinalized)
+            {
+                MessageBox.Show("This quotation is already finalized and can no longer be edited.", "Not Allowed", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             if (!IsRecordCreatedByCurrentUser(txt_created_by.Text))
             {
                 MessageBox.Show("Only the user who created this quotation can edit it.", "Not Allowed", MessageBoxButtons.OK, MessageBoxIcon.Warning);
