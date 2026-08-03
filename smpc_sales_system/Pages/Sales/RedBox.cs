@@ -27,9 +27,19 @@ namespace smpc_sales_system.Pages.Sales
         public delegate void TriggerNewFormDelegate(string title, Control control);
         public event TriggerNewFormDelegate TriggerNewForm;
 
+        // Auto-refresh every 5 minutes so the dashboard stays current without the user
+        // having to click Refresh. Not started in the constructor - like the Load event
+        // (see the comment on RefreshData() below), a tick firing before login succeeds
+        // would hit the same "Set-Cookie header not found" problem. Instead it's started
+        // the first time RefreshData() runs, which Layout.cs only calls once login has
+        // actually completed.
+        private readonly Timer _autoRefreshTimer = new Timer { Interval = 5 * 60 * 1000 };
+
         public RedBox()
         {
             InitializeComponent();
+            _autoRefreshTimer.Tick += async (s, e) => await LoadData();
+            this.Disposed += (s, e) => _autoRefreshTimer.Dispose();
         }
 
         private class QuoteOrderEntry
@@ -65,6 +75,9 @@ namespace smpc_sales_system.Pages.Sales
         public async Task RefreshData()
         {
             await LoadData();
+
+            if (!_autoRefreshTimer.Enabled)
+                _autoRefreshTimer.Start();
         }
 
         private async void btn_refresh_Click(object sender, EventArgs e)
