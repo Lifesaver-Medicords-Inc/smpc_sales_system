@@ -3760,8 +3760,17 @@ namespace smpc_sales_app.Pages.Sales
                     string ShipToId = parentRow["ship_to_id"].ToString();
 
 
-                    DataRow[] bpiRows = bpi_general.Select($"general_based_id = '{ID}'");
-                    DataRow[] contactsRows = bpi_contacts.Select($"contacts_based_id = '{ID}'");
+                    // bpi_general/bpi_contacts are populated asynchronously by fetchBpiData().
+                    // If bind() runs before that finishes (or the BPI fetch failed/returned
+                    // null), these tables are still their empty DataTable() initializers with
+                    // zero columns, and .Select() throws "Cannot find column [...]" instead of
+                    // just returning no matches. Guard against that instead of crashing.
+                    DataRow[] bpiRows = (bpi_general != null && bpi_general.Columns.Contains("general_based_id"))
+                        ? bpi_general.Select($"general_based_id = '{ID}'")
+                        : Array.Empty<DataRow>();
+                    DataRow[] contactsRows = (bpi_contacts != null && bpi_contacts.Columns.Contains("contacts_based_id"))
+                        ? bpi_contacts.Select($"contacts_based_id = '{ID}'")
+                        : Array.Empty<DataRow>();
 
                     if (bpiRows.Length > 0)
                     {
@@ -5646,8 +5655,23 @@ namespace smpc_sales_app.Pages.Sales
             cmb_ship_type.DisplayMember = "ship_name";
             cmb_ship_type.ValueMember = "id";
         }
+        // bpi_address is only guaranteed populated after fetchBpiData() finishes (same
+        // async-load pattern as bpi_general/bpi_contacts, see bind() above). Called before
+        // that, it's still the empty new DataTable() initializer with zero columns - filtering
+        // it returns an equally columnless clone, and setting DisplayMember/ValueMember on it
+        // throws "Cannot bind to the new display member" instead of leaving the combo empty.
+        private static bool HasAddressColumns(DataTable table)
+        {
+            return table != null
+                && table.Columns.Contains("address_based_id")
+                && table.Columns.Contains("location")
+                && table.Columns.Contains("address_ids");
+        }
+
         private void LoadCustomerBillAddress(string id)
         {
+            if (!HasAddressColumns(bpi_address)) return;
+
             var BillAddress = Helpers.FilterDataTable(bpi_address, id, "address_based_id");
 
             cmb_bill_to.DataSource = BillAddress;
@@ -5656,6 +5680,8 @@ namespace smpc_sales_app.Pages.Sales
         }
         private void LoadCustomerShipAddress(string id)
         {
+            if (!HasAddressColumns(bpi_address)) return;
+
             var ShipAddress = Helpers.FilterDataTable(bpi_address, id, "address_based_id");
 
             cmb_ship_to.DataSource = ShipAddress;

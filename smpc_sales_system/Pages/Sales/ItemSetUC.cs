@@ -1152,19 +1152,23 @@ namespace smpc_sales_system.Pages.Sales
             if (!isViewProjectItem)
                 ClearProjectItemsDgv();
 
+            // Load the engineer dropdown before the project-templates call below, which
+            // returns early on failure/empty data. It used to sit after that check, so
+            // any hiccup fetching templates (unrelated to engineers) silently skipped
+            // this block entirely and left the ASSIGNED ENGR. dropdown with no items to
+            // choose from - it wasn't a data/filtering problem, the code just never ran.
+            var engineers = await EngineerService.GetEngineerList();
+            cmb_assign_engineer_user_id.DataSource = engineers ?? new List<EngineerModel>();
+            cmb_assign_engineer_user_id.DisplayMember = nameof(EngineerModel.FullName);
+            cmb_assign_engineer_user_id.ValueMember = nameof(EngineerModel.Id);
+            cmb_assign_engineer_user_id.SelectedIndex = -1;
+
             var dt = await ProjectTemplatesService.GetProjectTemplates();
 
             if (dt == null || dt.SalesProjectTemplate == null) return;
 
             DataTable listOfTemplates = JsonHelper.ToDataTable(dt.SalesProjectTemplate);
             DataTable templates = JsonHelper.ToDataTable(dt.sales_project_template_child);
-
-            // Backend view already restricts this to tbl_setup_users where department = 'Engineering'.
-            var engineers = await EngineerService.GetEngineerList();
-            cmb_assign_engineer_user_id.DataSource = engineers ?? new List<EngineerModel>();
-            cmb_assign_engineer_user_id.DisplayMember = nameof(EngineerModel.FullName);
-            cmb_assign_engineer_user_id.ValueMember = nameof(EngineerModel.Id);
-            cmb_assign_engineer_user_id.SelectedIndex = -1;
 
             var itemData = await ItemService.GetItem();
             var bomData = await ProjectService.GetBom();
