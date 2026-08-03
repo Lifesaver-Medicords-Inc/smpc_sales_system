@@ -2896,14 +2896,14 @@ namespace smpc_sales_app.Pages.Sales
 
         private decimal GetTotalUnitPriceForChildren(DataTable dt, string parentReferenceCode)
         {
+            // Null check must run before dt is dereferenced below.
+            if (dt == null)
+                return 0;
 
             var ParentRow = dt.AsEnumerable()
                 .FirstOrDefault(row => row.Field<string>("reference_code") == parentReferenceCode);
 
             // Find all direct children of the parent reference_code
-            if (dt == null)
-                return 0;
-
             var children = dt.AsEnumerable()
                 .Where(row =>
                 {
@@ -2945,9 +2945,13 @@ namespace smpc_sales_app.Pages.Sales
             {
                 string childReferenceCode = child.Field<string>("reference_code");
 
-                // Recursively find the total for this child's descendants
+                // Recursively find the total for this child's descendants.
+                // Was "AllChildTotal = ChildTotal" (overwrite instead of
+                // accumulate), so only the last child's subtree total ever
+                // survived the loop and grandchild+ totals never rolled up
+                // into the parent.
                 decimal ChildTotal = GetTotalUnitPriceForChildren(dt, childReferenceCode);
-                AllChildTotal = ChildTotal;
+                AllChildTotal += ChildTotal;
                 //Console.WriteLine($"Adding total from child '{childReferenceCode}': 'Child Total:' {ChildTotal}': 'Total Amount:' {AllChildTotal:C}");
             }
 
@@ -2963,7 +2967,10 @@ namespace smpc_sales_app.Pages.Sales
                 return NewUnitPrice;
             });
 
-            decimal TotalAmount = (totalLaborCost + totalUnitPrice) * 1.186m;
+            // AllChildTotal (each direct child's own recursively-rolled-up
+            // subtree total) was computed above but never folded in here -
+            // add it so grandchild+ totals actually reach the parent.
+            decimal TotalAmount = (totalLaborCost + totalUnitPrice) * 1.186m + AllChildTotal;
             //decimal TotalAmount = (totalLaborCost + totalUnitPrice);
 
             return TotalAmount;
