@@ -66,7 +66,7 @@ namespace smpc_sales_app.Pages.Sales
             //KRIS: NEED ITONG DALAWA KAPAG MAY VERSION_NO NA PERO GINAGAMIT KO NA RIN GANYAN
             this.documentNo = documentNo;
             this.versionNo = version_no;
-            this.versionNo = sub_version_no;
+            this.subVersionNo = sub_version_no;
             this.isFinalized = is_finalized;
 
             // websocket related
