@@ -902,6 +902,13 @@ namespace smpc_sales_app.Pages.Sales
 
         private async void fetchSalesProject()
         {
+            // async void with no unhandled exception guard: any error in here (bad
+            // grid data, a null cell, etc.) used to propagate as an unhandled
+            // exception on the UI thread and crash the whole app instead of just
+            // showing an error message, since async void methods can't be awaited
+            // or wrapped in a try/catch by their caller.
+            try
+            {
             if (transactionProjectDataTable.Rows.Count == 0) return;
 
             string selectedId = this.transactionProjectDataTable.Rows[this.selectedProjectRow]["id"].ToString();
@@ -1043,6 +1050,11 @@ namespace smpc_sales_app.Pages.Sales
             UpdateProjectControlsEditableState();
 
             RenderTabHistory();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error loading project quotation: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private async void CellClickedModelUC(object sender, EventArgs e)
