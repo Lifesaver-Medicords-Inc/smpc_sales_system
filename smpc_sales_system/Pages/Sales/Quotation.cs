@@ -3531,59 +3531,11 @@ namespace smpc_sales_app.Pages.Sales
             decimal.TryParse(txt_cash_discount.Text, out decimal cash_disc);
             return cash_disc;
         }
-        private void computationLoop()
-        {
-            double gross_sales = 0, vat_amount = 0, net_sales = 0;
-            double percent_discount = 0;
-            double net_amount_due = 0, total_amount_due = 0;
-            // Was double.Parse with no guard - same unguarded-parse issue as GetCashDiscount above.
-            double.TryParse(txt_cash_discount.Text, out double cash_discount);
-            const double VAT_RATE = 0.12; // 12% VAT
-
-
-
-            // First pass: Calculate gross sales and total discounts
-            foreach (DataGridViewRow row in this.dgv_quick_quote_details.Rows)
-            {
-                if (row.Cells["quick_net_total"].Value != null &&
-                    !String.IsNullOrEmpty(row.Cells["quick_net_total"].Value.ToString()))
-                {
-                    // Get unit price * quantity = net total
-                    double netAmount = double.Parse(Helpers.GetCleanedPriceValue(row.Cells["quick_net_total"].Value.ToString()));
-                    gross_sales += netAmount;
-
-                    // Get line total (after discount)
-                    if (row.Cells["quick_line_total"].Value != null &&
-                    !string.IsNullOrEmpty(row.Cells["quick_line_total"].Value.ToString()))
-                    {
-                        double lineTotal = double.Parse(Helpers.GetCleanedPriceValue(row.Cells["quick_line_total"].Value.ToString()));
-                        net_sales += lineTotal;
-                    }
-                }
-            }
-
-
-            if (gross_sales != 0)
-            {
-                percent_discount = ((gross_sales - net_sales) / gross_sales) * 100;
-            }
-
-            vat_amount = net_sales * VAT_RATE;
-
-            net_amount_due = net_sales - cash_discount;
-
-            total_amount_due = net_amount_due + vat_amount;
-
-            // Format and display results
-            txt_gross_sales.Text = Helpers.MoneyFormat(gross_sales);
-            txt_vat_amount.Text = Helpers.MoneyFormat(vat_amount);
-            txt_net_sales.Text = Helpers.MoneyFormat(net_sales);
-
-            txt_percent_discount.Text = percent_discount.ToString("N2") /*+ " %"*/;
-            txt_cash_discount.Text = Helpers.MoneyFormat(cash_discount);
-            txt_net_amount_due.Text = Helpers.MoneyFormat(net_amount_due);
-            txt_total_amount_due.Text = Helpers.MoneyFormat(total_amount_due);
-        }
+        // computationLoop() deleted: it was an abandoned parallel implementation of
+        // ComputeFooterTotals with a *different* formula (summed all rows instead of
+        // top-level only, ignored the additional discount) and was only reachable
+        // through other dead code. Keeping it risked someone rewiring it and
+        // silently changing footer totals. ComputeFooterTotals is the live path.
         private void dgv_quick_quote_details_CellEndEdit(object sender, DataGridViewCellEventArgs e)
         {
             //var value = dgv_quick_quote_details.Rows[e.RowIndex].Cells["quick_qty"].Value;
@@ -4536,85 +4488,11 @@ namespace smpc_sales_app.Pages.Sales
             return multiplier;
         }
 
-        private static class QuickQuoteDGV
-        {
-            public static int QTY = 5;
-            public static int UNIT_PRICE = 7;
-            public static int DISCOUNT = 8;
-            public static int DISCOUNT_AMOUNT = 9;
-            public static int NET_DISCOUNT = 10;
-            public static int NET_AMOUNT = 11;
-            public static int LINE_TOTAL = 12;
-        }
+        // QuickQuoteDGV (column index constants) deleted: its only consumer was the
+        // dead compute path removed below.
 
-        private class DGVComputation
-        {
-            private decimal Qty { get; set; }
-            private decimal UnitPrice { get; set; }
-            private string DiscountPercent { get; set; }
-            public decimal DiscountedAmount { get; private set; }
-            public decimal NetAmount { get; private set; }
-            public decimal NetDiscount { get; private set; }
-            public decimal LineTotal { get; private set; }
-
-            public DGVComputation(decimal qty, decimal unitPrice, string discountPercent = "")
-            {
-                this.Qty = qty;
-                this.UnitPrice = unitPrice;
-                this.DiscountPercent = discountPercent;
-            }
-
-            public void ComputeQuickQuote()
-            {
-                try
-                {
-                    if (this.Qty > 0 && this.UnitPrice > 0)
-                    {
-                        this.NetAmount = this.Qty * this.UnitPrice;
-                        //// COMPUTE DISCOUNTED AMOUNT
-                        if (!string.IsNullOrEmpty(this.DiscountPercent) && this.DiscountPercent != "0")
-                        {
-                            if (this.DiscountPercent.Contains("/"))
-                            {
-                                string[] discounts = this.DiscountPercent.Split('/');
-                                decimal cumulativeMultiplier = 1;
-
-                                foreach (string discount in discounts)
-                                {
-                                    if (decimal.TryParse(discount, out decimal discountValue))
-                                    {
-                                        cumulativeMultiplier *= (1 - (discountValue / 100));
-                                    }
-                                }
-                                // Was "UnitPrice * cumulativeMultiplier", which stores the
-                                // POST-discount unit price into DiscountedAmount instead of
-                                // the discount amount itself - inverted vs. the single-discount
-                                // branch below (and vs. what NetDiscount/LineTotal expect).
-                                this.DiscountedAmount = this.UnitPrice * (1 - cumulativeMultiplier);
-                            }
-                            else
-                            {
-                                // Single discount scenario
-                                this.DiscountedAmount = this.UnitPrice * (decimal.Parse(this.DiscountPercent) / 100);
-                            }
-                        }
-                        else
-                        {
-                            this.DiscountedAmount = 0;
-                        }
-                        //// COMPUTE NET DISCOUNT
-                        this.NetDiscount = this.DiscountedAmount * this.Qty;
-                        //// COMPUTE LINE TOTAL
-                        this.LineTotal = this.NetAmount - this.NetDiscount;
-                    }
-                }
-                catch (Exception)
-                {
-                    throw;
-                }
-            }
-        }
-
+        // DGVComputation class deleted: only consumer was ComputeDgvHierarchy (also
+        // deleted, dead code). The live per-row math is in ComputeReferenceNonHierarchy.
 
         private void fetchQuotationBasedOnVersion()
         {
@@ -4802,15 +4680,10 @@ namespace smpc_sales_app.Pages.Sales
             ProjectTemplateSetup s = new ProjectTemplateSetup(ItemList);
             s.Show();
         }
-        private void txt_cash_discount_TextChanged(object sender, EventArgs e)
-        {
-            // add the discount here soon
-
-        }
-        private void txt_cash_discount_DoubleClick(object sender, EventArgs e)
-        {
-            computationLoop();
-        }
+        // txt_cash_discount_TextChanged / txt_cash_discount_DoubleClick deleted:
+        // neither was wired in the Designer (the live handler is
+        // txt_cash_discount_TextChanged_1), and DoubleClick's only body was a call
+        // into the deleted computationLoop().
         private void tabControl2_DrawItem(object sender, DrawItemEventArgs e)
         {
             if (tabControl2.TabPages.Count == 0 || e.Index >= tabControl2.TabPages.Count) return;
@@ -5928,19 +5801,10 @@ namespace smpc_sales_app.Pages.Sales
             isNewRecord = true;
             IsEdit = false;
         }
-        // NOTE: ComputeQuickQuoteTotal / ComputeDgvHierarchy / computationLoop / DGVComputation
-        // below are not called from any wired event or other live code path (confirmed via
-        // Designer.cs and full-file search) - this looks like an abandoned parallel
-        // implementation of what ComputeByReferenceHierarchy/ComputeReferenceNonHierarchy/
-        // ComputeFooterTotals do live. Left in place rather than deleted since they're
-        // unreachable either way, but flagging so nobody reconnects them expecting them to
-        // match the live computation path's behavior without re-checking them first.
-        private void ComputeQuickQuoteTotal()
-        {
-
-
-
-        }
+        // ComputeQuickQuoteTotal (empty stub) deleted along with the rest of the dead
+        // compute path (ComputeDgvHierarchy / computationLoop / DGVComputation) - none
+        // were called from any wired event or live code path. The live computation is
+        // ComputeByReferenceHierarchy / ComputeReferenceNonHierarchy / ComputeFooterTotals.
 
         private void DeleteRowsByReferenceCode(int RowIndex, DataGridView dgv)
         {
@@ -5983,179 +5847,11 @@ namespace smpc_sales_app.Pages.Sales
             dgv_quick_quote_details.Rows[SelectedRowIndex].Cells["short_description"].Value = txt_short_description.Text;
         }
 
-        private void ComputeDgvHierarchy()
-        {
-            // (Move the entire "hierarchy" ComputeDgv implementation here)
-            try
-            {
-                var dgv = dgv_quick_quote_details;
-
-                // Helper to get cell by preferred names
-                Func<DataGridViewRow, string[], object> GetCell = (row, names) =>
-                {
-                    foreach (var name in names)
-                    {
-                        if (dgv.Columns.Contains(name))
-                            return row.Cells[name].Value;
-                    }
-                    return null;
-                };
-
-                // Build list of rows that have a reference_code
-                var rows = new List<(DataGridViewRow Row, string Ref, int Depth, int Index)>();
-                for (int i = 0; i < dgv.Rows.Count; i++)
-                {
-                    var row = dgv.Rows[i];
-                    if (row.IsNewRow) continue;
-
-                    var refObj = GetCell(row, new[] { "reference_code", "quick_reference_code", "ref" });
-                    string reference = refObj?.ToString();
-                    if (string.IsNullOrWhiteSpace(reference))
-                        continue;
-
-                    int depth = reference.Count(countRow => countRow == '.') + 1;
-                    rows.Add((row, reference, depth, i));
-                }
-
-                if (!rows.Any())
-                    return;
-
-                // Sort by depth descending so we compute leaves first
-                var sorted = rows.OrderByDescending(row => row.Depth).ThenBy(row => row.Ref).ToList();
-
-                // Will store computed unit price per reference (as unit price PER UNIT)
-                var computedUnitPrice = new Dictionary<string, decimal>();
-                var computedQty = new Dictionary<string, decimal>(); // helpful for parents if needed
-
-                // Pre-fill computedQty from the rows
-                foreach (var t in sorted)
-                {
-                    var qtyObj = GetCell(t.Row, new[] { "quick_qty", "qty" });
-                    decimal qty = 1;
-                    if (qtyObj != null && decimal.TryParse(qtyObj.ToString(), out decimal qv))
-                        qty = qv;
-                    computedQty[t.Ref] = qty;
-                }
-
-                // Process deepest first
-                foreach (var entry in sorted)
-                {
-                    var row = entry.Row;
-                    string reference = entry.Ref;
-                    int depth = entry.Depth;
-
-                    // Find immediate children (depth + 1)
-                    var immediateChildren = sorted
-                        .Where(r => r.Ref.StartsWith(reference + ".") && r.Depth == depth + 1)
-                        .ToList();
-
-                    // Get man_days and labor_rate (if present)
-                    decimal manDays = 0, laborRate = 0;
-                    var manDaysObj = GetCell(row, new[] { "man_days" });
-                    var laborRateObj = GetCell(row, new[] { "labor_rate" });
-                    if (manDaysObj != null) decimal.TryParse(manDaysObj.ToString(), out manDays);
-                    if (laborRateObj != null) decimal.TryParse(laborRateObj.ToString(), out laborRate);
-
-                    decimal laborCost = manDays * laborRate;
-
-                    // Sum immediate children cost (childUnitPrice * childQty) using previously computed child unit prices
-                    decimal childrenSum = 0;
-                    foreach (var child in immediateChildren)
-                    {
-                        if (computedUnitPrice.TryGetValue(child.Ref, out decimal childUnit))
-                        {
-                            decimal childQty = computedQty.ContainsKey(child.Ref) ? computedQty[child.Ref] : 1m;
-                            childrenSum += childUnit * childQty;
-                        }
-                        else
-                        {
-                            // fallback: attempt to read child's unit price cell
-                            var childUnitObj = GetCell(child.Row, new[] { "quick_unit_price", "unit_price" });
-                            if (childUnitObj != null && decimal.TryParse(Helpers.GetCleanedPriceValue(childUnitObj.ToString()), out decimal cu))
-                            {
-                                decimal childQty = computedQty.ContainsKey(child.Ref) ? computedQty[child.Ref] : 1m;
-                                childrenSum += cu * childQty;
-                            }
-                        }
-                    }
-
-                    // Determine base unit price for this row
-                    // Priority:
-                    // 1) If row is a parent (has children or has man_days/labor_rate) -> base = childrenSum + laborCost (if none, laborCost may be zero)
-                    // 2) else if quick_list_price exists -> use it
-                    // 3) else if quick_unit_price exists -> use it
-                    // 4) else try unit_price (bound column)
-                    decimal baseUnit = 0m;
-                    bool isParent = immediateChildren.Any() || (manDays > 0 && laborRate > 0);
-
-                    if (isParent)
-                    {
-                        baseUnit = childrenSum + laborCost;
-                    }
-                    else
-                    {
-                        // try quick_list_price
-                        var listPriceObj = GetCell(row, new[] { "quick_list_price", "list_price" });
-                        if (listPriceObj != null && decimal.TryParse(Helpers.GetCleanedPriceValue(listPriceObj.ToString()), out decimal lp))
-                        {
-                            baseUnit = lp;
-                        }
-                        else
-                        {
-                            var unitPriceObj = GetCell(row, new[] { "quick_unit_price", "unit_price" });
-                            if (unitPriceObj != null && decimal.TryParse(Helpers.GetCleanedPriceValue(unitPriceObj.ToString()), out decimal upv))
-                            {
-                                baseUnit = upv;
-                            }
-                        }
-                    }
-
-                    // Apply VAT multiplier for parents (as per sample): 1.186
-                    decimal finalUnitPrice = baseUnit;
-                    if (isParent)
-                        finalUnitPrice = baseUnit * 1.186m;
-
-                    // Save computed unit price for parent aggregation
-                    computedUnitPrice[reference] = finalUnitPrice;
-
-                    // Write back unit price to grid cell
-                    if (dgv.Columns.Contains("quick_unit_price"))
-                        row.Cells["quick_unit_price"].Value = finalUnitPrice.ToString("C2");
-                    else if (dgv.Columns.Contains("unit_price"))
-                        row.Cells["unit_price"].Value = finalUnitPrice.ToString("C2");
-
-                    // Now compute line values using DGVComputation
-                    var qtyObjRow = GetCell(row, new[] { "quick_qty", "qty" });
-                    int qtyInt = 0;
-                    if (qtyObjRow != null && int.TryParse(qtyObjRow.ToString(), out int qint))
-                        qtyInt = qint;
-                    else
-                        qtyInt = 1;
-
-                    var discountObj = GetCell(row, new[] { "quick_discount", "percent_discount", "discount" });
-                    string discountStr = discountObj?.ToString() ?? "0";
-
-                    // Use unit price (numeric) for computation
-                    DGVComputation dgvComputation = new DGVComputation(qtyInt, finalUnitPrice, discountStr);
-                    dgvComputation.ComputeQuickQuote();
-
-                    // Write computed fields
-                    if (dgv.Columns.Contains("quick_net_total"))
-                        row.Cells["quick_net_total"].Value = dgvComputation.NetAmount.ToString("C2");
-                    if (dgv.Columns.Contains("quick_net_discount"))
-                        row.Cells["quick_net_discount"].Value = dgvComputation.NetDiscount.ToString("C2");
-                    if (dgv.Columns.Contains("quick_line_total"))
-                        row.Cells["quick_line_total"].Value = dgvComputation.LineTotal.ToString("C2");
-                }
-
-                // After recomputing hierarchy, update overall totals
-                computationLoop();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Error: " + ex.Message);
-            }
-        }
+        // ComputeDgvHierarchy() deleted: dead code (never called from any wired
+        // event or live path). Its per-row math lived in the also-deleted
+        // DGVComputation and it ended by calling the also-deleted computationLoop().
+        // The live equivalents are ComputeByReferenceHierarchy /
+        // ComputeReferenceNonHierarchy / ComputeFooterTotals.
 
         private bool isUpdatingHierarchy = false;
 
