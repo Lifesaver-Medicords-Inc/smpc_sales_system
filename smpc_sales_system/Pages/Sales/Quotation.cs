@@ -6199,6 +6199,11 @@ namespace smpc_sales_app.Pages.Sales
 
                 row.Cells["quick_line_total"].Value = discounted;
                 row.Cells["quick_net_total"].Value = netTotal;
+                // Was never written back here, so the payload built for save/finalize
+                // (which reads this cell) sent whatever net_discount happened to be
+                // bound from the original load - stale or blank - instead of the
+                // value actually matching the qty/price/discount just recalculated.
+                row.Cells["quick_net_discount"].Value = netDiscount;
             }
         }
 
