@@ -527,11 +527,15 @@ namespace smpc_sales_system.Pages.Sales
             ComputeByReferenceHierarchy(dgv_project_items);
             ComputeReferenceNonHierarchy(dgv_project_items);
 
-            Quotation quote = new Quotation();
+            // Was: "Quotation quote = new Quotation(); ... quote.GetCashDiscount();" -
+            // that created a brand-new, never-shown Quotation form and read its
+            // designer-default cash discount ("0.00"), not what the user actually
+            // typed on the visible form this control is hosted in. Walk up to the
+            // real hosting form instead, so cash discount is picked up correctly.
             decimal gross_sales = 0, vat_amount = 0, net_sales = 0;
             decimal percent_discount = 0;
             decimal net_amount_due = 0, total_amount_due = 0;
-            decimal cash_discount = quote.GetCashDiscount();
+            decimal cash_discount = (this.FindForm() as Quotation)?.GetCashDiscount() ?? 0m;
             const decimal VAT_RATE = 0.12m;
 
             foreach (DataGridViewRow row in this.dgv_project_items.Rows)
