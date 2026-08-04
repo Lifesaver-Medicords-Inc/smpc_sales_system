@@ -6000,8 +6000,16 @@ namespace smpc_sales_app.Pages.Sales
 
             //txt_additional_discount.Text = txt_additional_discount.Text != "" ? txt_additional_discount.Text : "0%";
 
+            // Both parses below used to be unguarded decimal.Parse calls (on the raw
+            // textbox text, with no currency-symbol/comma cleanup), throwing a
+            // FormatException and crashing this recompute the moment either field
+            // held anything decimal.Parse couldn't handle directly (e.g. a
+            // currency-formatted value like "₱1,000.00", which other code in this
+            // same form writes into txt_cash_discount). Clean and TryParse instead,
+            // defaulting to 0 like the other cash-discount guards already fixed
+            // elsewhere in this file.
             string AdditionalDiscountString = txt_additional_discount.Text.Replace('%', ' ').TrimEnd();
-            decimal AdditionalDiscount = decimal.Parse(AdditionalDiscountString != "" ? AdditionalDiscountString : "0");
+            decimal.TryParse(Helpers.GetCleanedPriceValue(AdditionalDiscountString), out decimal AdditionalDiscount);
 
              AdditionalDiscount = AdditionalDiscount / 100;
 
@@ -6009,7 +6017,8 @@ namespace smpc_sales_app.Pages.Sales
 
             decimal NetAmountDue = (netSalesTotal - DiscountedTotal) + netSalesWithVat;
 
-            decimal TotalAmountDue = NetAmountDue - decimal.Parse(txt_cash_discount.Text != "" ? txt_cash_discount.Text : "0");
+            decimal.TryParse(Helpers.GetCleanedPriceValue(txt_cash_discount.Text), out decimal cashDiscountValue);
+            decimal TotalAmountDue = NetAmountDue - cashDiscountValue;
 
             txt_gross_sales.Text = Helpers.FormatAsCurrency(grossSalesTotal.ToString());
             txt_net_sales.Text = Helpers.FormatAsCurrency(netSalesTotal.ToString());
