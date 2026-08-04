@@ -1241,6 +1241,15 @@ namespace smpc_sales_app.Pages.Sales
                 return;
             }
 
+            // No customer selected (txt_customer_id is only ever populated by the
+            // "Select Customer" dialog in btn_add_customer_Click) - block the save
+            // instead of letting a quotation with no customer through.
+            if (string.IsNullOrWhiteSpace(txt_customer_id.Text))
+            {
+                MessageBox.Show("Please select a customer before saving.", "Missing Information", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             Panel[] pnl_list = { pnl_header, pnl_footer, pnl_project_name };
             var pnl_quotation = Helpers.GetControlsValues(pnl_list);
 
@@ -2619,6 +2628,15 @@ namespace smpc_sales_app.Pages.Sales
             if (IsEdit && !IsRecordCreatedByCurrentUser(txt_created_by.Text))
             {
                 MessageBox.Show("Only the user who created this quotation can update it.", "Not Allowed", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            // No customer selected (txt_customer_id is only ever populated by the
+            // "Select Customer" dialog in btn_add_customer_Click) - block the save
+            // instead of letting a quotation with no customer through.
+            if (string.IsNullOrWhiteSpace(txt_customer_id.Text))
+            {
+                MessageBox.Show("Please select a customer before saving.", "Missing Information", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
@@ -4993,6 +5011,15 @@ namespace smpc_sales_app.Pages.Sales
 
         private async void FinalizeProjectQuotation()
         {
+            // No customer selected (txt_customer_id is only ever populated by the
+            // "Select Customer" dialog in btn_add_customer_Click) - block finalize
+            // instead of letting a quotation with no customer through.
+            if (string.IsNullOrWhiteSpace(txt_customer_id.Text))
+            {
+                MessageBox.Show("Please select a customer before saving.", "Missing Information", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             Panel[] pnl_list = { pnl_header, pnl_footer, pnl_project_name };
             var pnl_quotation = Helpers.GetControlsValues(pnl_list);
 
@@ -5125,6 +5152,15 @@ namespace smpc_sales_app.Pages.Sales
 
         private async void FinalizeQuickQuotation()
         {
+            // No customer selected (txt_customer_id is only ever populated by the
+            // "Select Customer" dialog in btn_add_customer_Click) - block finalize
+            // instead of letting a quotation with no customer through.
+            if (string.IsNullOrWhiteSpace(txt_customer_id.Text))
+            {
+                MessageBox.Show("Please select a customer before saving.", "Missing Information", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             //try
             //{
             //    int quotationId = Convert.ToInt32(txt_id.Text);
