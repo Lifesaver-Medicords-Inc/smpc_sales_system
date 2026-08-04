@@ -2671,6 +2671,24 @@ namespace smpc_sales_app.Pages.Sales
                     ship_to_id = int.Parse(cmb_ship_to.SelectedValue.ToString());
                 }
 
+                // Bug #246 (continued): Bill To/Ship To were the only required dropdowns that
+                // actually blocked the save - Payment Terms and Ship Type were left completely
+                // unvalidated, so a quotation could be saved with those blank (as reported:
+                // saves fine with Payment Terms/Ship Type left at "--Select--"/empty).
+                if (cmb_payment_terms.SelectedValue == null)
+                {
+                    MessageBox.Show("Payment Terms is required.", "Missing Information", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    cmb_payment_terms.Focus();
+                    return;
+                }
+
+                if (cmb_ship_type.SelectedValue == null)
+                {
+                    MessageBox.Show("Ship Type is required.", "Missing Information", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    cmb_ship_type.Focus();
+                    return;
+                }
+
                 // "Valid Until" is derived from the document date + number of days
                 // (ValidUntilDate()), but the document date itself is user-editable, so it's
                 // still possible to end up with a Valid Until in the past. That used to reach
