@@ -20,6 +20,50 @@ namespace smpc_app.Services.Helpers
 {
     internal static class Helpers
     {
+        // Simple semi-transparent overlay with a message, dropped on top of whatever control
+        // is passed in (e.g. a DataGridView while it's fetching data). Ported from the same
+        // pattern already used in smpc_inventory_app's Helpers.Loading for consistency.
+        public static class Loading
+        {
+            private static UserControl overlayPanel;
+
+            public static void ShowLoading(Control parentControl, string message = "Loading, please wait...")
+            {
+                if (overlayPanel != null) return; // already showing
+
+                overlayPanel = new UserControl
+                {
+                    BackColor = Color.FromArgb(180, Color.Gray), // semi-transparent overlay
+                    Dock = DockStyle.Fill
+                };
+
+                Label lblMessage = new Label
+                {
+                    AutoSize = false,
+                    Dock = DockStyle.Fill,
+                    Text = message,
+                    ForeColor = Color.White,
+                    Font = new Font("Segoe UI", 12, FontStyle.Bold),
+                    TextAlign = ContentAlignment.MiddleCenter
+                };
+
+                overlayPanel.Controls.Add(lblMessage);
+
+                parentControl.Controls.Add(overlayPanel);
+                overlayPanel.BringToFront();
+            }
+
+            public static void HideLoading(Control parentControl)
+            {
+                if (overlayPanel != null)
+                {
+                    parentControl.Controls.Remove(overlayPanel);
+                    overlayPanel.Dispose();
+                    overlayPanel = null;
+                }
+            }
+        }
+
         public static void ResetControls(Panel pnl)
         {
             foreach (Control control in pnl.Controls)

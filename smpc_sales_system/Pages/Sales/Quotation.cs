@@ -694,62 +694,72 @@ namespace smpc_sales_app.Pages.Sales
             toolstrip_quotation.Enabled = false;
             dgv_quick_quote_details.Enabled = false;
 
-            data = await QuotationService.GetQuotations();
+            // Show a loading overlay on the grid while the (potentially large) quotation list
+            // is fetched and bound - this call can take a noticeable moment.
+            Helpers.Loading.ShowLoading(dgv_quick_quote_details, "Fetching quotations...");
 
-            //projectData = await 
-
-            if (data != null && data.SalesQuotation != null && data.SalesQuotation.Any())
+            try
             {
-                // Get latest quotation by version and subversion
-                var latestQuotations = data.SalesQuotation
-                    .GroupBy(q => q.document_no)
-                    .Select(group => group
-                    .OrderByDescending(q => q.version_no)
-                    .ThenByDescending(q => q.sub_version_no)
-                    .First())
-                    .ToList();
+                data = await QuotationService.GetQuotations();
 
-                transactionList = JsonHelper.ToDataTable(latestQuotations);
-                allTransactionList = JsonHelper.ToDataTable(data.SalesQuotation);
-                childList = JsonHelper.ToDataTable(data.SalesQuotationQuick);
-                selectedImageList = JsonHelper.ToDataTable(data.SalesQuotationSelectedImages);
+                //projectData = await
 
-                dgv_quick_quote_details.ReadOnly = true;
-                dgv_quick_quote_details.Enabled = true;
-
-                // Don't default to row 0 of the full table - that could be someone else's
-                // quotation. Land on the first record that's actually the current user's own,
-                // and if they don't have any yet, leave the form blank/ready for New instead
-                // of showing another user's data.
-                List<int> ownedIndexes = GetOwnedRowIndexes(transactionList);
-
-                if (ownedIndexes.Count == 0)
+                if (data != null && data.SalesQuotation != null && data.SalesQuotation.Any())
                 {
-                    MessageBox.Show("You have no saved quotations yet. Click New to create one.");
-                    Helpers.ResetReadOnlyControls(panels);
+                    // Get latest quotation by version and subversion
+                    var latestQuotations = data.SalesQuotation
+                        .GroupBy(q => q.document_no)
+                        .Select(group => group
+                        .OrderByDescending(q => q.version_no)
+                        .ThenByDescending(q => q.sub_version_no)
+                        .First())
+                        .ToList();
+
+                    transactionList = JsonHelper.ToDataTable(latestQuotations);
+                    allTransactionList = JsonHelper.ToDataTable(data.SalesQuotation);
+                    childList = JsonHelper.ToDataTable(data.SalesQuotationQuick);
+                    selectedImageList = JsonHelper.ToDataTable(data.SalesQuotationSelectedImages);
+
+                    dgv_quick_quote_details.ReadOnly = true;
+                    dgv_quick_quote_details.Enabled = true;
+
+                    // Don't default to row 0 of the full table - that could be someone else's
+                    // quotation. Land on the first record that's actually the current user's own,
+                    // and if they don't have any yet, leave the form blank/ready for New instead
+                    // of showing another user's data.
+                    List<int> ownedIndexes = GetOwnedRowIndexes(transactionList);
+
+                    if (ownedIndexes.Count == 0)
+                    {
+                        MessageBox.Show("You have no saved quotations yet. Click New to create one.");
+                        Helpers.ResetReadOnlyControls(panels);
+                    }
+                    else
+                    {
+                        SelectedRow = ownedIndexes[0];
+
+                        await Task.Delay(2000); // optional wait
+                        bind(transactionList, SelectedRow, true);
+
+                        createFilterViewDgvQuickQouteDetails();
+                    }
+
                 }
                 else
                 {
-                    SelectedRow = ownedIndexes[0];
+                    MessageBox.Show("Please create a new data!");
 
-                    await Task.Delay(2000); // optional wait
-                    bind(transactionList, SelectedRow, true);
+                    Helpers.ResetReadOnlyControls(panels);
+                    //pnl_header.Enabled = true;
+                    //pnl_footer.Enabled = true;
 
-                    createFilterViewDgvQuickQouteDetails();
                 }
-
             }
-            else
+            finally
             {
-                MessageBox.Show("Please create a new data!");
-
-                Helpers.ResetReadOnlyControls(panels);
-                //pnl_header.Enabled = true;
-                //pnl_footer.Enabled = true;
-
+                Helpers.Loading.HideLoading(dgv_quick_quote_details);
+                toolstrip_quotation.Enabled = true;
             }
-
-            toolstrip_quotation.Enabled = true;
         }
         public DataTable dt_multiplier { get; set; }
         public DataTable dt_content { get; set; }
