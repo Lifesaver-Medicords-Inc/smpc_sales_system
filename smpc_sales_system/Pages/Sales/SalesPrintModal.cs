@@ -403,10 +403,10 @@ namespace smpc_sales_system.Pages.Sales
 
                         List<SalesProjectQuotationDetailsReportModel> QuotationDetails = new List<SalesProjectQuotationDetailsReportModel>();
 
-                        foreach (DataRow itemSetRow in ItemList.Select())
+                        foreach (DataRow itemSetRow in ItemSets.Select())
                         {
 
-                            int itemSetId = (int)itemSetRow["item_set_id"];
+                            int itemSetId = (int)itemSetRow["itemset_id"];
                             var filterComponentItemRows = ProjectItemList.Select($"based_id = '{itemSetId}' ");
 
                             QuotationDetails.Add(new SalesProjectQuotationDetailsReportModel
