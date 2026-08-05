@@ -206,6 +206,16 @@
             this.label21 = new System.Windows.Forms.Label();
             this.InclusionsRichTextBox = new System.Windows.Forms.RichTextBox();
             this.project_tab = new System.Windows.Forms.TabPage();
+            this.tabControl3 = new System.Windows.Forms.TabControl();
+            this.Project_Items_Tab = new System.Windows.Forms.TabPage();
+            this.Project_Quote_Terms = new System.Windows.Forms.TabPage();
+            this.ProjectQuotationTermsPanel = new System.Windows.Forms.Panel();
+            this.ProjectTermAndConditionsRichTextBox = new System.Windows.Forms.RichTextBox();
+            this.label_pq_terms = new System.Windows.Forms.Label();
+            this.ProjectExclusionsRichTextBox = new System.Windows.Forms.RichTextBox();
+            this.label_pq_exclusions = new System.Windows.Forms.Label();
+            this.label_pq_inclusions = new System.Windows.Forms.Label();
+            this.ProjectInclusionsRichTextBox = new System.Windows.Forms.RichTextBox();
             this.tabControl2 = new System.Windows.Forms.TabControl();
             this.TabControl2ContextMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.toolStripMenuItemTagRed = new System.Windows.Forms.ToolStripMenuItem();
@@ -286,6 +296,10 @@
             this.Quote_Terms.SuspendLayout();
             this.QuotationTermsPanel.SuspendLayout();
             this.project_tab.SuspendLayout();
+            this.tabControl3.SuspendLayout();
+            this.Project_Items_Tab.SuspendLayout();
+            this.Project_Quote_Terms.SuspendLayout();
+            this.ProjectQuotationTermsPanel.SuspendLayout();
             this.tabControl2.SuspendLayout();
             this.TabControl2ContextMenuStrip.SuspendLayout();
             this.pnl_project_name.SuspendLayout();
@@ -1745,10 +1759,112 @@
             this.InclusionsRichTextBox.Size = new System.Drawing.Size(1150, 189);
             this.InclusionsRichTextBox.TabIndex = 0;
             this.InclusionsRichTextBox.Text = "";
-            // 
+            //
+            // tabControl3
+            //
+            this.tabControl3.Controls.Add(this.Project_Items_Tab);
+            this.tabControl3.Controls.Add(this.Project_Quote_Terms);
+            this.tabControl3.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tabControl3.Location = new System.Drawing.Point(3, 236);
+            this.tabControl3.Name = "tabControl3";
+            this.tabControl3.SelectedIndex = 0;
+            this.tabControl3.Size = new System.Drawing.Size(1174, 1731);
+            this.tabControl3.TabIndex = 1;
+            //
+            // Project_Items_Tab
+            //
+            this.Project_Items_Tab.Controls.Add(this.tabControl2);
+            this.Project_Items_Tab.Location = new System.Drawing.Point(4, 22);
+            this.Project_Items_Tab.Name = "Project_Items_Tab";
+            this.Project_Items_Tab.Padding = new System.Windows.Forms.Padding(3);
+            this.Project_Items_Tab.Size = new System.Drawing.Size(1166, 1705);
+            this.Project_Items_Tab.TabIndex = 0;
+            this.Project_Items_Tab.Text = "Project Items";
+            this.Project_Items_Tab.UseVisualStyleBackColor = true;
+            //
+            // Project_Quote_Terms
+            //
+            this.Project_Quote_Terms.Controls.Add(this.ProjectQuotationTermsPanel);
+            this.Project_Quote_Terms.Location = new System.Drawing.Point(4, 22);
+            this.Project_Quote_Terms.Name = "Project_Quote_Terms";
+            this.Project_Quote_Terms.Padding = new System.Windows.Forms.Padding(3);
+            this.Project_Quote_Terms.Size = new System.Drawing.Size(1166, 1705);
+            this.Project_Quote_Terms.TabIndex = 1;
+            this.Project_Quote_Terms.Text = "Quote Terms";
+            this.Project_Quote_Terms.UseVisualStyleBackColor = true;
+            //
+            // ProjectQuotationTermsPanel
+            //
+            this.ProjectQuotationTermsPanel.AutoScroll = true;
+            this.ProjectQuotationTermsPanel.Controls.Add(this.ProjectTermAndConditionsRichTextBox);
+            this.ProjectQuotationTermsPanel.Controls.Add(this.label_pq_terms);
+            this.ProjectQuotationTermsPanel.Controls.Add(this.ProjectExclusionsRichTextBox);
+            this.ProjectQuotationTermsPanel.Controls.Add(this.label_pq_exclusions);
+            this.ProjectQuotationTermsPanel.Controls.Add(this.label_pq_inclusions);
+            this.ProjectQuotationTermsPanel.Controls.Add(this.ProjectInclusionsRichTextBox);
+            this.ProjectQuotationTermsPanel.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.ProjectQuotationTermsPanel.Location = new System.Drawing.Point(3, 3);
+            this.ProjectQuotationTermsPanel.Name = "ProjectQuotationTermsPanel";
+            this.ProjectQuotationTermsPanel.Size = new System.Drawing.Size(1160, 1699);
+            this.ProjectQuotationTermsPanel.TabIndex = 121;
+            //
+            // ProjectTermAndConditionsRichTextBox
+            //
+            this.ProjectTermAndConditionsRichTextBox.Location = new System.Drawing.Point(3, 414);
+            this.ProjectTermAndConditionsRichTextBox.Name = "ProjectTermAndConditionsRichTextBox";
+            this.ProjectTermAndConditionsRichTextBox.Size = new System.Drawing.Size(1150, 436);
+            this.ProjectTermAndConditionsRichTextBox.TabIndex = 5;
+            this.ProjectTermAndConditionsRichTextBox.Text = "";
+            //
+            // label_pq_terms
+            //
+            this.label_pq_terms.AutoSize = true;
+            this.label_pq_terms.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label_pq_terms.Location = new System.Drawing.Point(3, 399);
+            this.label_pq_terms.Name = "label_pq_terms";
+            this.label_pq_terms.Size = new System.Drawing.Size(165, 13);
+            this.label_pq_terms.TabIndex = 4;
+            this.label_pq_terms.Text = "TERMS AND CONDITIONS:";
+            //
+            // ProjectExclusionsRichTextBox
+            //
+            this.ProjectExclusionsRichTextBox.Location = new System.Drawing.Point(3, 255);
+            this.ProjectExclusionsRichTextBox.Name = "ProjectExclusionsRichTextBox";
+            this.ProjectExclusionsRichTextBox.Size = new System.Drawing.Size(1150, 120);
+            this.ProjectExclusionsRichTextBox.TabIndex = 3;
+            this.ProjectExclusionsRichTextBox.Text = "";
+            //
+            // label_pq_exclusions
+            //
+            this.label_pq_exclusions.AutoSize = true;
+            this.label_pq_exclusions.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label_pq_exclusions.Location = new System.Drawing.Point(3, 240);
+            this.label_pq_exclusions.Name = "label_pq_exclusions";
+            this.label_pq_exclusions.Size = new System.Drawing.Size(89, 13);
+            this.label_pq_exclusions.TabIndex = 2;
+            this.label_pq_exclusions.Text = "EXCLUSIONS:";
+            //
+            // label_pq_inclusions
+            //
+            this.label_pq_inclusions.AutoSize = true;
+            this.label_pq_inclusions.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label_pq_inclusions.Location = new System.Drawing.Point(7, 14);
+            this.label_pq_inclusions.Name = "label_pq_inclusions";
+            this.label_pq_inclusions.Size = new System.Drawing.Size(86, 13);
+            this.label_pq_inclusions.TabIndex = 1;
+            this.label_pq_inclusions.Text = "INCLUSIONS:";
+            //
+            // ProjectInclusionsRichTextBox
+            //
+            this.ProjectInclusionsRichTextBox.Location = new System.Drawing.Point(4, 33);
+            this.ProjectInclusionsRichTextBox.Name = "ProjectInclusionsRichTextBox";
+            this.ProjectInclusionsRichTextBox.Size = new System.Drawing.Size(1150, 189);
+            this.ProjectInclusionsRichTextBox.TabIndex = 0;
+            this.ProjectInclusionsRichTextBox.Text = "";
+            //
             // project_tab
-            // 
-            this.project_tab.Controls.Add(this.tabControl2);
+            //
+            this.project_tab.Controls.Add(this.tabControl3);
             this.project_tab.Controls.Add(this.pnl_project_name);
             this.project_tab.Location = new System.Drawing.Point(4, 37);
             this.project_tab.Name = "project_tab";
@@ -2349,6 +2465,11 @@
             this.QuotationTermsPanel.ResumeLayout(false);
             this.QuotationTermsPanel.PerformLayout();
             this.project_tab.ResumeLayout(false);
+            this.tabControl3.ResumeLayout(false);
+            this.Project_Items_Tab.ResumeLayout(false);
+            this.Project_Quote_Terms.ResumeLayout(false);
+            this.ProjectQuotationTermsPanel.ResumeLayout(false);
+            this.ProjectQuotationTermsPanel.PerformLayout();
             this.tabControl2.ResumeLayout(false);
             this.TabControl2ContextMenuStrip.ResumeLayout(false);
             this.pnl_project_name.ResumeLayout(false);
@@ -2520,6 +2641,16 @@
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItemRemoveTabs;
         private System.Windows.Forms.TabControl tabControl;
         private System.Windows.Forms.TabPage project_tab;
+        private System.Windows.Forms.TabControl tabControl3;
+        private System.Windows.Forms.TabPage Project_Items_Tab;
+        private System.Windows.Forms.TabPage Project_Quote_Terms;
+        private System.Windows.Forms.Panel ProjectQuotationTermsPanel;
+        private System.Windows.Forms.RichTextBox ProjectTermAndConditionsRichTextBox;
+        private System.Windows.Forms.Label label_pq_terms;
+        private System.Windows.Forms.RichTextBox ProjectExclusionsRichTextBox;
+        private System.Windows.Forms.Label label_pq_exclusions;
+        private System.Windows.Forms.Label label_pq_inclusions;
+        private System.Windows.Forms.RichTextBox ProjectInclusionsRichTextBox;
         private System.Windows.Forms.TabControl tabControl2;
         private System.Windows.Forms.TabPage quick_tab;
         private System.Windows.Forms.TabControl tabControl1;

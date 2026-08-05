@@ -665,6 +665,7 @@ namespace smpc_sales_app.Pages.Sales
 
             //Apply Quotation Terms and Conditions
             quotationTerms();
+            projectQuotationTerms();
         }
 
         private async Task fetchBpiData()
@@ -6115,6 +6116,62 @@ namespace smpc_sales_app.Pages.Sales
             BoldWords(TermAndConditionsRichTextBox, "SERVICES:");
             BoldWords(TermAndConditionsRichTextBox, "LIABILITY:");
 
+        }
+
+        // Project Quotation's own Quote Terms tab (Project_Quote_Terms) - same company-wide
+        // terms content as Quick Quote's Quote_Terms tab (quotationTerms() above), just bound
+        // to their own RichTextBoxes since a control can only live under one parent tab.
+        private void projectQuotationTerms()
+        {
+            //Set Quotation Terms from Company Data Table
+            //Hardcoded to company id 1 for now
+            var SelectedCompany = Company.AsEnumerable()
+                .FirstOrDefault(row => row.Field<int>("id") == 1);
+
+            foreach (DataRow row in SelectedCompany.Table.Rows)
+            {
+                if (row.Field<int>("id") == 1)
+                {
+                    string inclusions = row.Field<string>("InclusionsQuotationTerms");
+                    ProjectInclusionsRichTextBox.Text = inclusions;
+                    string exclusions = row.Field<string>("ExclusionsQuotationTerms");
+                    ProjectExclusionsRichTextBox.Text = exclusions;
+                    string terms_and_conditions = row.Field<string>("TermAndConditions");
+                    ProjectTermAndConditionsRichTextBox.Text = terms_and_conditions;
+                }
+            }
+
+            //Styling Inclusions Rich Text Box
+            ColorSelectedAndUnderlineWordsAndBold(ProjectInclusionsRichTextBox, "(PLACE)", Color.Blue);
+            UnderlineWords(ProjectInclusionsRichTextBox, "during company regular working hours only.");
+            ColorSelectedAndUnderlineWordsAndBold(ProjectInclusionsRichTextBox, "3 DAYS", Color.Black);
+            BoldWords(ProjectInclusionsRichTextBox, "want more than the allowable and beyond working hours, additional charges will be applied.");
+
+            //Styling Exclusions Rich Text Box
+            MakeAllTextBlue(ProjectExclusionsRichTextBox);
+
+            //Styling Terms and Conditions Rich Text Box
+            BoldWords(ProjectTermAndConditionsRichTextBox, "PAYMENT TERMS:");
+            ColorSelectedAndUnderlineWordsAndBold(ProjectTermAndConditionsRichTextBox, "CASH ON DELIVERY", Color.Blue);
+            BoldWords(ProjectTermAndConditionsRichTextBox, "QUOTATION VALIDITY");
+            BoldAndUnderlineWords(ProjectTermAndConditionsRichTextBox, "30 DAYS");
+            BoldWords(ProjectTermAndConditionsRichTextBox, "thereafter, it shall be subject to reconfirmation");
+            BoldWords(ProjectTermAndConditionsRichTextBox, "AVAILABILITY OF STOCK(S) AND/OR SERVICE(S): ");
+            ColorSelectedAndUnderlineWordsAndBold(ProjectTermAndConditionsRichTextBox, "4-6 MONTHS", Color.Blue);
+            BoldWords(ProjectTermAndConditionsRichTextBox, "DELIVERY TERMS:");
+            ColorSelectedAndUnderlineWordsAndBold(ProjectTermAndConditionsRichTextBox, "WAREHOUSE TO SITE VIA SEA (w/o HAULING).", Color.Blue);
+            BoldWords(ProjectTermAndConditionsRichTextBox, "OTHER CHARGES, TITLE, RISK OF LOSS:");
+            BoldWords(ProjectTermAndConditionsRichTextBox, "within three(3) days");
+            BoldWords(ProjectTermAndConditionsRichTextBox, "STORAGE:");
+            BoldWords(ProjectTermAndConditionsRichTextBox, "SALES RETURN / CANCELLATION POLICY:");
+            ColorSelectedAndUnderlineWordsAndBold(ProjectTermAndConditionsRichTextBox, "(as agreed upon %", Color.Blue);
+            ColorSelectedAndUnderlineWordsAndBold(ProjectTermAndConditionsRichTextBox, "or fixed", Color.Red);
+            BoldWords(ProjectTermAndConditionsRichTextBox, "a cancellation fee");
+            ColorSelectedAndUnderlineWordsAndBold(ProjectTermAndConditionsRichTextBox, "(fixed %) ", Color.Red);
+            BoldWords(ProjectTermAndConditionsRichTextBox, "WARRANTY:");
+            ColorSelectedAndUnderlineWordsAndBold(ProjectTermAndConditionsRichTextBox, "ONE (1) YEAR", Color.Blue);
+            BoldWords(ProjectTermAndConditionsRichTextBox, "SERVICES:");
+            BoldWords(ProjectTermAndConditionsRichTextBox, "LIABILITY:");
         }
 
         private void BoldWords(RichTextBox rtb, string wordToBold)
