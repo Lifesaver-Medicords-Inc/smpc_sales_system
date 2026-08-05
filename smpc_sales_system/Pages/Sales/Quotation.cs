@@ -6484,27 +6484,6 @@ namespace smpc_sales_app.Pages.Sales
             }
         }
 
-        private void advancePrintToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            string documentNo = Regex.Replace(txt_document_no.Text, @"FQ#|Q#", "").Trim();
-            if (isProject)
-            {
-                SalesPrint printPage = new SalesPrint(true, documentNo, InclusionsRichTextBox.Text, ExclusionsRichTextBox.Text, TermAndConditionsRichTextBox.Text);
-                int screenHeight = Screen.PrimaryScreen.Bounds.Height;
-                printPage.Height = (int)(screenHeight);
-                printPage.StartPosition = FormStartPosition.CenterParent;
-                printPage.ShowDialog();
-            }
-            else
-            {
-                SalesPrint printPage = new SalesPrint(false, documentNo, InclusionsRichTextBox.Text, ExclusionsRichTextBox.Text, TermAndConditionsRichTextBox.Text);
-                int screenHeight = Screen.PrimaryScreen.Bounds.Height;
-                printPage.Height = (int)(screenHeight);
-                printPage.StartPosition = FormStartPosition.CenterParent;
-                printPage.ShowDialog();
-            }
-        }
-
         private void txt_project_name_Leave(object sender, EventArgs e)
         {
             string action = ProjectLabel + txt_project_name.Text;

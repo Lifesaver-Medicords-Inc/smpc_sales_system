@@ -119,7 +119,6 @@
             this.btn_savee = new System.Windows.Forms.ToolStripButton();
             this.tssb_Print = new System.Windows.Forms.ToolStripSplitButton();
             this.basicPrintToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.advancePrintToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.btn_print = new System.Windows.Forms.ToolStripButton();
             this.btn_update = new System.Windows.Forms.ToolStripButton();
             this.btn_close = new System.Windows.Forms.ToolStripButton();
@@ -794,8 +793,7 @@
             // tssb_Print
             // 
             this.tssb_Print.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.basicPrintToolStripMenuItem,
-            this.advancePrintToolStripMenuItem});
+            this.basicPrintToolStripMenuItem});
             this.tssb_Print.Image = ((System.Drawing.Image)(resources.GetObject("tssb_Print.Image")));
             this.tssb_Print.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.tssb_Print.Name = "tssb_Print";
@@ -810,14 +808,7 @@
             this.basicPrintToolStripMenuItem.Size = new System.Drawing.Size(148, 22);
             this.basicPrintToolStripMenuItem.Text = "Basic Print";
             this.basicPrintToolStripMenuItem.Click += new System.EventHandler(this.basicPrintToolStripMenuItem_Click);
-            // 
-            // advancePrintToolStripMenuItem
-            // 
-            this.advancePrintToolStripMenuItem.Name = "advancePrintToolStripMenuItem";
-            this.advancePrintToolStripMenuItem.Size = new System.Drawing.Size(148, 22);
-            this.advancePrintToolStripMenuItem.Text = "Advance Print";
-            this.advancePrintToolStripMenuItem.Click += new System.EventHandler(this.advancePrintToolStripMenuItem_Click);
-            // 
+            //
             // btn_print
             // 
             this.btn_print.Image = ((System.Drawing.Image)(resources.GetObject("btn_print.Image")));
@@ -2681,7 +2672,6 @@
         private System.Windows.Forms.TextBox txt_project_name;
         private System.Windows.Forms.ToolStripSplitButton tssb_Print;
         private System.Windows.Forms.ToolStripMenuItem basicPrintToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem advancePrintToolStripMenuItem;
         private System.Windows.Forms.TextBox txt_short_description;
         private System.Windows.Forms.Label label34;
         private System.Windows.Forms.TextBox txt_long_description;

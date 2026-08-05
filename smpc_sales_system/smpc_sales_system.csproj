@@ -388,12 +388,6 @@
     <Compile Include="Pages\Sales\PurchaseRequisition.designer.cs">
       <DependentUpon>PurchaseRequisition.cs</DependentUpon>
     </Compile>
-    <Compile Include="Pages\Sales\SalesPrint.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Pages\Sales\SalesPrint.Designer.cs">
-      <DependentUpon>SalesPrint.cs</DependentUpon>
-    </Compile>
     <Compile Include="Pages\Sales\SalesPrintModal.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -621,9 +615,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Pages\Sales\RedBox.resx">
       <DependentUpon>RedBox.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Pages\Sales\SalesPrint.resx">
-      <DependentUpon>SalesPrint.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Pages\Sales\SalesPrintModal.resx">
       <DependentUpon>SalesPrintModal.cs</DependentUpon>
