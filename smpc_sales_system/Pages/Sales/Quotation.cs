@@ -524,7 +524,7 @@ namespace smpc_sales_app.Pages.Sales
             txt_long_description.Visible = show;
         }
 
-        private void btn_project_Click(object sender, EventArgs e)
+        private async void btn_project_Click(object sender, EventArgs e)
         {
             if (_websocket != null && _websocket.State == System.Net.WebSockets.WebSocketState.Open)
             {
@@ -537,7 +537,7 @@ namespace smpc_sales_app.Pages.Sales
             this.btn_quick_quote.BackColor = Color.White;
             this.btn_project.BackColor = Color.FromArgb(255, 128, 128);
 
-            this.tabControl.SelectedIndex = 1; 
+            this.tabControl.SelectedIndex = 1;
             this.tabControl.Height = 600;
             this.Size = new Size(1386 - 80, 2354);
 
@@ -546,7 +546,12 @@ namespace smpc_sales_app.Pages.Sales
 
             UpdateDescriptionFieldsVisibility();
 
-            fetchSalesProjectData();
+            // fetchSalesProjectData() fetches from the server and then (via fetchSalesProject())
+            // rebuilds the header/footer fields, the multiplier grid and every per-tab
+            // ItemSetUC (with its own item/wiring/final grids) - all of that is empty/stale
+            // until it finishes, so cover the whole switch-to-Project-Quotation flow with the
+            // same loading overlay + button lock used for Quick Quote.
+            await RunWithLoadingAsync(async () => await fetchSalesProjectData(), "Loading project quotation, please wait...");
         }
 
         // Every SalesProjectHistory row for the whole current project - every tab's item set
@@ -1428,7 +1433,7 @@ namespace smpc_sales_app.Pages.Sales
                     // Refetch so SalesProjectListData (and therefore Change History) reflects
                     // what was actually just saved instead of staying stale until the user
                     // happens to navigate away and back.
-                    await fetchSalesProjectData();
+                    await RunWithLoadingAsync(async () => await fetchSalesProjectData(), "Loading project quotation, please wait...");
                 }
                 else
                     MessageBox.Show($"Insert error: {response.message}");
@@ -1455,7 +1460,7 @@ namespace smpc_sales_app.Pages.Sales
                     // Same reason as the isNewRecord branch - without this, the newly
                     // auto-generated Change History entries (project fields, multipliers,
                     // per-tab changes) wouldn't show up until the next unrelated refresh.
-                    await fetchSalesProjectData();
+                    await RunWithLoadingAsync(async () => await fetchSalesProjectData(), "Loading project quotation, please wait...");
                 }
                 else
                     MessageBox.Show($"Update error: {response.message}");
@@ -2887,7 +2892,7 @@ namespace smpc_sales_app.Pages.Sales
                             // IF SUCCESS
 
                             MessageBox.Show("Quotation Successfully saved");
-                            await fetchQuotationDetails();
+                            await RunWithLoadingAsync(async () => await fetchQuotationDetails(), "Loading quotation, please wait...");
 
                             SetNewFormMode(false);
                         }
@@ -3694,6 +3699,45 @@ namespace smpc_sales_app.Pages.Sales
         }
         DataTable stockQuickDataTable = new DataTable();
         bool IsView = true;
+
+        // Every data-bearing panel/grid on the form - both Quick Quote's (header/footer/
+        // dgv_quick_quote_details) and Project Quotation's (header/footer/project name panel/
+        // dgv_project_multiplier/Project_Items_Tab, which hosts tabControl2 and each tab's
+        // ItemSetUC with its own dgv_project_items, dgv_wiring and dgv_final grids) - so a
+        // single overlay call covers "every part" regardless of which of the two a given load
+        // turns out to be.
+        // NOTE: overlay tabControl2's *parent* TabPage (Project_Items_Tab), not tabControl2
+        // itself - a TabControl's Controls collection only accepts TabPage children, so adding
+        // the overlay UserControl directly to it throws
+        // "Cannot add 'UserControl' to TabControl. Only TabPages can be directly added to
+        // TabControls." Project_Items_Tab is a plain TabPage (Panel-like) that already contains
+        // tabControl2, so overlaying it covers the same area safely and also survives
+        // fetchSalesProject() clearing/rebuilding tabControl2.TabPages mid-load.
+        private Control[] GetLoadingOverlayTargets()
+        {
+            return new Control[] { pnl_header, pnl_footer, pnl_project_name, dgv_quick_quote_details, dgv_project_multiplier, Project_Items_Tab };
+        }
+
+        // Shows a loading overlay across every panel/grid above and disables every button on
+        // the form while `action` runs, then always restores both - even if `action` throws -
+        // so a slow server response can't be raced by a click before the fields/grids have
+        // actually finished loading.
+        private async Task RunWithLoadingAsync(Func<Task> action, string message = "Loading, please wait...")
+        {
+            Control[] targets = GetLoadingOverlayTargets();
+            Helpers.Loading.ShowLoading(targets, message);
+            Helpers.SetButtonsEnabled(this, false);
+            try
+            {
+                await action();
+            }
+            finally
+            {
+                Helpers.Loading.HideLoading(targets);
+                Helpers.SetButtonsEnabled(this, true);
+            }
+        }
+
         private async void Quotation_Load(object sender, EventArgs e)
         {
             //int dgvWidth = dgv_quick_quote_details.Width;
@@ -3706,21 +3750,11 @@ namespace smpc_sales_app.Pages.Sales
 
             IsView = true;
 
-            // Header/footer textboxes and comboboxes are still empty at this point and only
-            // get filled once LoadExistingRecord() finishes fetching from the server - cover
-            // that gap with a loading overlay and lock every button on the form so a slow
-            // response can't be raced by a click (e.g. Save) before the fields are populated.
-            Helpers.Loading.ShowLoading(panels, "Loading quotation, please wait...");
-            Helpers.SetButtonsEnabled(this, false);
-            try
-            {
-                await LoadExistingRecord();
-            }
-            finally
-            {
-                Helpers.Loading.HideLoading(panels);
-                Helpers.SetButtonsEnabled(this, true);
-            }
+            // Header/footer textboxes/comboboxes and the Quick Quote/Project grids are still
+            // empty at this point and only get filled once LoadExistingRecord() finishes
+            // fetching from the server (whichever of the two it turns out to be) - cover that
+            // gap with a loading overlay and lock every button on the form.
+            await RunWithLoadingAsync(async () => await LoadExistingRecord(), "Loading quotation, please wait...");
 
         }
         CurrentUserModel CurrentUser { get; set; }
@@ -4622,20 +4656,10 @@ namespace smpc_sales_app.Pages.Sales
 
                     // fetchQuotationDetails() already overlays dgv_quick_quote_details while
                     // it fetches, but pnl_header/pnl_footer stay editable and empty until its
-                    // bind() call finishes - lock those down too, and disable every button on
-                    // the form, so a slow server response can't be raced by a click.
-                    Panel[] loadingPanels = { pnl_header, pnl_footer };
-                    Helpers.Loading.ShowLoading(loadingPanels, "Loading quotation, please wait...");
-                    Helpers.SetButtonsEnabled(this, false);
-                    try
-                    {
-                        await fetchQuotationDetails();
-                    }
-                    finally
-                    {
-                        Helpers.Loading.HideLoading(loadingPanels);
-                        Helpers.SetButtonsEnabled(this, true);
-                    }
+                    // bind() call finishes - RunWithLoadingAsync covers those too (and disables
+                    // every button on the form) so a slow server response can't be raced by a
+                    // click.
+                    await RunWithLoadingAsync(async () => await fetchQuotationDetails(), "Loading quotation, please wait...");
                 }
             }
         }
@@ -5291,7 +5315,7 @@ namespace smpc_sales_app.Pages.Sales
                 isNewRecord = false;
                 IsEdit = false;
 
-                await fetchSalesProjectData();
+                await RunWithLoadingAsync(async () => await fetchSalesProjectData(), "Loading project quotation, please wait...");
             }
             else
                 MessageBox.Show($"Insert error: {response.message}");
@@ -5487,7 +5511,7 @@ namespace smpc_sales_app.Pages.Sales
                             toolstrip_quotation.Enabled = true;
 
                             MessageBox.Show("Quotation Successfully saved");
-                            await fetchQuotationDetails();
+                            await RunWithLoadingAsync(async () => await fetchQuotationDetails(), "Loading quotation, please wait...");
 
                             SetNewFormMode(false);
                         }
@@ -5988,18 +6012,7 @@ namespace smpc_sales_app.Pages.Sales
             SetNewFormMode(false);
             SetFormEditMode("Close");
 
-            Panel[] loadingPanels = { pnl_header, pnl_footer };
-            Helpers.Loading.ShowLoading(loadingPanels, "Loading quotation, please wait...");
-            Helpers.SetButtonsEnabled(this, false);
-            try
-            {
-                await LoadExistingRecord();
-            }
-            finally
-            {
-                Helpers.Loading.HideLoading(loadingPanels);
-                Helpers.SetButtonsEnabled(this, true);
-            }
+            await RunWithLoadingAsync(async () => await LoadExistingRecord(), "Loading quotation, please wait...");
 
             Panel[] panels = { pnl_header, pnl_footer };
             Helpers.ReadOnlyControls(panels);
