@@ -823,7 +823,7 @@
                       <Paragraph>
                         <TextRuns>
                           <TextRun>
-                            <Value>="Q#" &amp; First(Fields!document_no.Value, "DataSet1")</Value>
+                            <Value>=First(Fields!document_no.Value, "DataSet1")</Value>
                             <Style>
                               <FontFamily>Calibri</FontFamily>
                               <FontSize>9pt</FontSize>

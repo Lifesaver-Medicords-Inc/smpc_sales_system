@@ -188,6 +188,18 @@ namespace smpc_sales_system.Pages.Sales
                 var filteredProjectItems2 = templateGreaterThanZero.Concat(templateZero).ToList();
                 ProjectItemList = JsonHelper.ToDataTable(filteredProjectItems2);
                 OriginalProjectItemList = JsonHelper.ToDataTable(filteredProjectItems);
+
+                // Selected images for project items ride in the same table/service Quick
+                // Quote's do (SalesProjectList.sales_project_items_selected_images) - the
+                // column is still named quotation_quick_id on the wire, but for these rows it
+                // actually holds the project item's items_id (see CreateProjectItems on the
+                // API side). Match by that, the same way fetchQuotationDetailsByDocumentNo
+                // matches Quick Quote's own images by quotation_quick_id.
+                var projectItemIds = filteredProjectItems.Select(i => i.items_id).ToList();
+                var filteredProjectSelectedImages = (data.sales_project_items_selected_images ?? Enumerable.Empty<SalesQuotationSelectedImageModel>())
+                    .Where(q => projectItemIds.Contains(q.quotation_quick_id))
+                    .ToList();
+                selectedImageList = JsonHelper.ToDataTable(filteredProjectSelectedImages);
             }
             else
             {
@@ -409,6 +421,10 @@ namespace smpc_sales_system.Pages.Sales
                             int itemSetId = (int)itemSetRow["itemset_id"];
                             var filterComponentItemRows = ProjectItemList.Select($"based_id = '{itemSetId}' ");
 
+                            // Resets to 1 for every item set instead of counting continuously
+                            // through the whole flat list (see item_no's own comment).
+                            int itemNo = 0;
+
                             QuotationDetails.Add(new SalesProjectQuotationDetailsReportModel
                             {
                                 items_id = 0,
@@ -428,15 +444,35 @@ namespace smpc_sales_system.Pages.Sales
                                 discount_price = 0,
                                 component_total = 0,
                                 notes = " ",
-                                template_id = 0
+                                template_id = 0,
+                                is_header_row = true,
+                                percent_discount = 0,
+                                item_no = 0,
+                                Image = null
                             });
 
 
                             foreach (DataRow componentItemRow in filterComponentItemRows)
                             {
+                                int itemsId = (int)componentItemRow["items_id"];
+                                itemNo++;
+
+                                // Same convention Quick Quote's DISCOUNT column uses
+                                // (percent_discount, e.g. "15%") - Project items don't store a
+                                // percent directly, only the raw multiplier string, so derive it
+                                // the same way the live grid computes the actual charged price
+                                // (ItemSetUC.CalculateDiscountMultiplier): ratio < 1 is a
+                                // discount (positive %), ratio > 1 is a markup (negative %).
+                                decimal multiplierRatio = ItemSetUC.CalculateDiscountMultiplier(componentItemRow["multiplier"]?.ToString());
+                                // Round before it ever reaches the report - the raw division
+                                // (e.g. a 1/7-derived multiplier) produces a repeating decimal
+                                // with far more digits than fit in the DISCOUNT column, wrapping
+                                // across multiple lines and blowing out the row's height.
+                                decimal percentDiscount = Math.Round((1 - multiplierRatio) * 100, 2);
+
                                 QuotationDetails.Add(new SalesProjectQuotationDetailsReportModel
                                 {
-                                    items_id = (int)componentItemRow["items_id"],
+                                    items_id = itemsId,
                                     bom_id = (int)componentItemRow["bom_id"],
                                     item_id = (int)componentItemRow["bom_id"],
                                     based_id = (int)componentItemRow["based_id"],
@@ -453,7 +489,11 @@ namespace smpc_sales_system.Pages.Sales
                                     discount_price = (decimal)componentItemRow["discount_price"],
                                     component_total = (decimal)componentItemRow["component_total"],
                                     notes = componentItemRow["notes"].ToString(),
-                                    template_id = (int)componentItemRow["template_id"]
+                                    template_id = (int)componentItemRow["template_id"],
+                                    is_header_row = false,
+                                    percent_discount = percentDiscount,
+                                    item_no = itemNo,
+                                    Image = GetFirstUploadedProjectItemImageBytes(itemsId)
                                 });
 
 
@@ -479,18 +519,44 @@ namespace smpc_sales_system.Pages.Sales
 
                         ReportParameter branchNameParameter = new ReportParameter("BranchName", branchName);
                         ReportParameter addressNameParameter = new ReportParameter("AddressName", addressName);
+                        // ProjectReport.rdlc had no Inclusion/Exclusion/TermsAndConditions
+                        // parameters or report items at all - the section simply didn't exist,
+                        // so Project Quotation prints never showed any of this even though the
+                        // Project-specific Inclusions/Exclusions/Terms panels on the Quotation
+                        // form (ProjectInclusionsRichTextBox etc.) were being filled in from the
+                        // same quote-terms data Quick Quote uses. Passed in from the constructor
+                        // the same way Quick Quote's branch below does.
+                        ReportParameter inclusionParameter = new ReportParameter("Inclusion", inclusion);
+                        ReportParameter exclusionParameter = new ReportParameter("Exclusion", exclusion);
+                        ReportParameter termAndConditionsParameter = new ReportParameter("TermsAndConditions", termsAndCondition);
                         ReportDataSource headerReportDataSource = new ReportDataSource("DataSet1", transactionList);
                         ReportDataSource childReportDataSource = new ReportDataSource("DataSet2", ItemSetContent);
                         ReportDataSource ComponentsReportDataSource = new ReportDataSource("DataSet3", QuotationDetails);
 
-                        reportViewer1.LocalReport.ReportPath = Path.Combine(Settings.Default.REPORTPATH, "ProjectReport.rdlc");
+                        // Same reasoning as Quick Quote's reportFileName switch below: every
+                        // item row's DESCRIPTION cell reserves image-sized space whether that
+                        // item actually has one or not, so a quotation with no images at all
+                        // ended up with every row rendering at full (chunky) height for nothing.
+                        // "ProjectReport without image.rdlc" is the same layout with a plain,
+                        // compact-height description cell and no Image control; only switch to
+                        // the taller image-capable layout when at least one item actually has one.
+                        bool anyProjectItemHasImage = QuotationDetails.Any(d => d.Image != null && d.Image.Length > 0);
+                        string projectReportFileName = anyProjectItemHasImage
+                            ? "ProjectReport.rdlc"
+                            : "ProjectReport without image.rdlc";
+
+                        reportViewer1.LocalReport.ReportPath = Path.Combine(Settings.Default.REPORTPATH, projectReportFileName);
                         reportViewer1.LocalReport.DataSources.Clear();
                         reportViewer1.LocalReport.DataSources.Add(headerReportDataSource);
                         reportViewer1.LocalReport.DataSources.Add(childReportDataSource);
-                        //reportViewer1.LocalReport.DataSources.Add(ComponentsReportDataSource);
-                        //reportViewer1.LocalReport.DataSources.Add(itemSetDataSource);
+                        // ProjectReport.rdlc declares three datasets (DataSet1/2/3) - this one
+                        // (DataSet3, the actual priced line items - QuotationDetails) was built
+                        // above but never added here, so RefreshReport() always threw "A data
+                        // source instance has not been supplied for the data source 'DataSet3'."
+                        // and the report's line-item table would have been empty even if it hadn't.
+                        reportViewer1.LocalReport.DataSources.Add(ComponentsReportDataSource);
                         reportViewer1.LocalReport.SubreportProcessing += new SubreportProcessingEventHandler(MapSubreportData);
-                        reportViewer1.LocalReport.SetParameters(new ReportParameter[] { branchNameParameter, qtySumParameter, qtyParameter, addressNameParameter, unitpricesParameter, unitpricesSumParameter, itemDescriptionParameter, detailParameter });
+                        reportViewer1.LocalReport.SetParameters(new ReportParameter[] { branchNameParameter, qtySumParameter, qtyParameter, addressNameParameter, unitpricesParameter, unitpricesSumParameter, itemDescriptionParameter, detailParameter, inclusionParameter, exclusionParameter, termAndConditionsParameter });
                         reportViewer1.RefreshReport();
                     }
 
@@ -822,6 +888,36 @@ namespace smpc_sales_system.Pages.Sales
             }
 
             return null;
+        }
+
+        // Same "prefer the row explicitly marked selected, else fall back to the first
+        // uploaded" logic the Quick Quote branch above uses (see the childList.Rows loop
+        // around line 592) - just matched against a project item's items_id instead of a
+        // Quick Quote item's id, since that's the key selectedImageList rows carry for
+        // Project Quotation (see fetchQuotationProjectByDocumentNo).
+        private byte[] GetFirstUploadedProjectItemImageBytes(int itemsId)
+        {
+            var matchingImageRows = selectedImageList != null
+                ? selectedImageList.AsEnumerable()
+                    .Where(row => row.Field<int>("quotation_quick_id") == itemsId)
+                    .ToList()
+                : new List<DataRow>();
+
+            DataRow matchedImageRow = matchingImageRows
+                .FirstOrDefault(row => row.Field<bool>("is_selected"))
+                ?? matchingImageRows.FirstOrDefault();
+
+            if (matchedImageRow == null)
+                return null;
+
+            int imageId = matchedImageRow.Field<int>("image_id");
+
+            string imageName = ImageList.AsEnumerable()
+                .Where(row => row.Field<int>("id") == imageId)
+                .Select(row => row.Field<string>("image"))
+                .FirstOrDefault();
+
+            return imageName != null ? LoadImageAsBytes(imageName) : null;
         }
 
         void MapSubreportData(object sender, SubreportProcessingEventArgs e)

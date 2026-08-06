@@ -297,7 +297,7 @@ namespace smpc_sales_app.Pages.Sales
 
         private void RecomputeParentTotals()
         {
-            decimal gross = 0, vat = 0, net = 0, percent = 0, cash_disc = 0, net_amount = 0, total_amount = 0;
+            decimal gross = 0, vat = 0, net = 0;
 
             foreach (TabPage tab in tabControl2.TabPages)
             {
@@ -315,17 +315,25 @@ namespace smpc_sales_app.Pages.Sales
                     var data = currentControl.ProjectComputationLoop();
                     if (data == null) continue;
 
-                    Console.WriteLine("Quotation - net sales: " + net);
-
                     AddDecimal(data, "gross_sales", ref gross);
                     AddDecimal(data, "vat_amount", ref vat);
                     AddDecimal(data, "net_sales", ref net);
-                    AddDecimal(data, "percent_discount", ref percent);
-                    AddDecimal(data, "cash_discount", ref cash_disc);
-                    AddDecimal(data, "net_amount_due", ref net_amount);
-                    AddDecimal(data, "total_amount_due", ref total_amount);
                 }
             }
+
+            // Cash discount and the project-wide discount percentage are computed exactly
+            // once here, against the whole project's summed totals - not per tab. This used
+            // to be summed in from each tab's own copy of the same GetCashDiscount() value
+            // (see the removed cash-discount handling in ItemSetUC.ProjectComputationLoop),
+            // which double- (or N-) counted the discount for any project with more than one
+            // active tab, and then wrote that inflated sum straight back into
+            // txt_cash_discount.Text - causing it to balloon further on every subsequent
+            // edit. Re-parsing/re-formatting the same single value here is safe (idempotent);
+            // it just normalizes whatever the user typed.
+            decimal cash_disc = GetCashDiscount();
+            decimal percent = gross != 0 ? ((gross - net) / gross) * 100 : 0;
+            decimal net_amount = net - cash_disc;
+            decimal total_amount = net_amount + vat;
 
             txt_gross_sales.Text = Helpers.MoneyFormatDecimal(gross);
             txt_vat_amount.Text = Helpers.MoneyFormatDecimal(vat);
@@ -711,8 +719,8 @@ namespace smpc_sales_app.Pages.Sales
                     var latestQuotations = data.SalesQuotation
                         .GroupBy(q => q.document_no)
                         .Select(group => group
-                        .OrderByDescending(q => q.version_no)
-                        .ThenByDescending(q => q.sub_version_no)
+                        .OrderByDescending(q => VersionNoAsInt(q.version_no))
+                        .ThenByDescending(q => VersionNoAsInt(q.sub_version_no))
                         .First())
                         .ToList();
 
@@ -838,10 +846,15 @@ namespace smpc_sales_app.Pages.Sales
 
             if (SalesProjectListData?.SalesQuotation == null) return;
 
+            // Deliberately not grouped down to one row per document_no here (unlike
+            // fetchQuotationDetails above) - Project Quotation's list intentionally keeps
+            // every version so Prev/Next can page through a project's version history. The
+            // ordering still needs to be numeric, though, so index 0 (the default-opened row,
+            // see selectedProjectRow below) is actually the latest version and not just
+            // whichever version happens to sort first as a string.
             var latestQuotations = SalesProjectListData.SalesQuotation
-            //.GroupBy(q => q.document_no)
-            .Select(group => group)
-            .OrderByDescending(q => q.version_no)
+            .OrderByDescending(q => VersionNoAsInt(q.version_no))
+            .ThenByDescending(q => VersionNoAsInt(q.sub_version_no))
             .ToList();
 
             transactionProjectDataTable = JsonHelper.ToDataTable(latestQuotations);
@@ -1241,6 +1254,52 @@ namespace smpc_sales_app.Pages.Sales
             }
         }
 
+        // Same required-field checks IsQuickQuote() already enforces (tickets
+        // #243/#245/#246/#247) - Project Quotation shares the same header controls
+        // (cmb_bill_to, cmb_ship_to, cmb_payment_terms, cmb_ship_type, dtp_valid_until) but
+        // its save/finalize paths never applied any of these checks, so a Project Quotation
+        // could previously be saved or finalized with all of them left blank, or with a
+        // Valid Until date already in the past (reaching the API as a raw error instead of
+        // a friendly message, same as bug #243/#245 did for Quick Quote).
+        private bool ValidateProjectRequiredFields()
+        {
+            if (cmb_bill_to.SelectedValue == null)
+            {
+                MessageBox.Show("Bill To is required.", "Missing Information", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return false;
+            }
+
+            if (cmb_ship_to.SelectedValue == null)
+            {
+                MessageBox.Show("Ship To is required.", "Missing Information", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return false;
+            }
+
+            if (cmb_payment_terms.SelectedValue == null)
+            {
+                MessageBox.Show("Payment Terms is required.", "Missing Information", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                cmb_payment_terms.Focus();
+                return false;
+            }
+
+            if (cmb_ship_type.SelectedValue == null)
+            {
+                MessageBox.Show("Ship Type is required.", "Missing Information", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                cmb_ship_type.Focus();
+                return false;
+            }
+
+            if (dtp_valid_until.Value.Date < DateTime.Today)
+            {
+                MessageBox.Show("Valid Until date cannot be in the past. Please choose a later date.",
+                    "Invalid Date", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                dtp_valid_until.Focus();
+                return false;
+            }
+
+            return true;
+        }
+
         private async void  IsProject()
         {
             // Belt-and-suspenders check alongside the one in btn_edit_Click/btn_update_Click -
@@ -1273,6 +1332,9 @@ namespace smpc_sales_app.Pages.Sales
                 txt_project_name.Focus();
                 return;
             }
+
+            if (!ValidateProjectRequiredFields())
+                return;
 
             var multiplierSource = Helpers.ConvertDataGridViewToDataTable(dgv_project_multiplier);
 
@@ -5085,6 +5147,9 @@ namespace smpc_sales_app.Pages.Sales
                 return;
             }
 
+            if (!ValidateProjectRequiredFields())
+                return;
+
             var multiplierSource = Helpers.ConvertDataGridViewToDataTable(dgv_project_multiplier);
 
             List<SalesProjectMultiplier> multipliers = new List<SalesProjectMultiplier>();
@@ -5431,7 +5496,14 @@ namespace smpc_sales_app.Pages.Sales
             string documentNo = Regex.Replace(txt_document_no.Text, @"FQ#|Q#", "").Trim();
             if (isProject)
             {
-                SalesPrintModal printPage = new SalesPrintModal(false, true, documentNo, InclusionsRichTextBox.Text, ExclusionsRichTextBox.Text, TermAndConditionsRichTextBox.Text);
+                // Project Quotation has its own Inclusions/Exclusions/Terms rich text boxes
+                // (ProjectInclusionsRichTextBox etc., populated from the same quote-terms
+                // source as the Quick Quote ones - see bind()/fetchSalesProject around
+                // line 6208) - this was passing the Quick Quote boxes' text here regardless
+                // of isProject, so a Project Quotation print always showed whatever text
+                // happened to be in the Quick Quote panel (often blank, since that panel
+                // isn't populated while viewing a Project Quotation).
+                SalesPrintModal printPage = new SalesPrintModal(false, true, documentNo, ProjectInclusionsRichTextBox.Text, ProjectExclusionsRichTextBox.Text, ProjectTermAndConditionsRichTextBox.Text);
                 int screenHeight = Screen.PrimaryScreen.Bounds.Height;
                 printPage.Height = (int)(screenHeight);
                 printPage.StartPosition = FormStartPosition.CenterParent;
@@ -5453,6 +5525,14 @@ namespace smpc_sales_app.Pages.Sales
         // database migration to clean up the existing prefixed values.
         private static string NormalizeDocumentNo(string docNo) =>
             string.IsNullOrEmpty(docNo) ? docNo : Regex.Replace(docNo, @"FQ#|Q#", "").Trim();
+
+        // version_no/sub_version_no are stored as strings but represent integers -
+        // OrderByDescending(q => q.version_no) sorts them lexicographically ("9" > "10"), so
+        // a document past its 9th revision could sort an old draft ahead of the true latest.
+        // Parse to int for ordering instead; unparsable/blank values sort as 0 (oldest)
+        // rather than throwing.
+        private static int VersionNoAsInt(string versionNo) =>
+            int.TryParse(versionNo, out int parsed) ? parsed : 0;
 
         // Returns true if a Quick Quote record matching documentNo was found and bound.
         private async Task<bool> FetchQuotationDetailsByDocumentNo(string documentNo, string version_no = null, string sub_version_no = null)
@@ -6265,7 +6345,14 @@ namespace smpc_sales_app.Pages.Sales
 
         private void txt_cash_discount_TextChanged_1(object sender, EventArgs e)
         {
-            ComputeFooterTotals();
+            // This fired ComputeFooterTotals() (the Quick Quote footer math) unconditionally,
+            // even while on the Project tab - so typing a cash discount for a Project
+            // Quotation never actually refreshed that tab's own totals (RecomputeParentTotals)
+            // until some unrelated grid cell edit happened to trigger it instead.
+            if (isProject)
+                RecomputeParentTotals();
+            else
+                ComputeFooterTotals();
         }
 
         private void txt_additional_discount_TextChanged(object sender, EventArgs e)
@@ -6468,7 +6555,9 @@ namespace smpc_sales_app.Pages.Sales
             string documentNo = Regex.Replace(txt_document_no.Text, @"FQ#|Q#", "").Trim();
             if (isProject)
             {
-                SalesPrintModal printPage = new SalesPrintModal(false, true, documentNo, InclusionsRichTextBox.Text, ExclusionsRichTextBox.Text, TermAndConditionsRichTextBox.Text);
+                // Same fix as btn_print_Click - use the Project Quotation's own
+                // Inclusions/Exclusions/Terms rich text boxes, not Quick Quote's.
+                SalesPrintModal printPage = new SalesPrintModal(false, true, documentNo, ProjectInclusionsRichTextBox.Text, ProjectExclusionsRichTextBox.Text, ProjectTermAndConditionsRichTextBox.Text);
                 int screenHeight = Screen.PrimaryScreen.Bounds.Height;
                 printPage.Height = (int)(screenHeight);
                 printPage.StartPosition = FormStartPosition.CenterParent;

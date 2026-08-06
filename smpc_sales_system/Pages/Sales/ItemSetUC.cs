@@ -376,148 +376,22 @@ namespace smpc_sales_system.Pages.Sales
             public static string NET_TOTAL = "project_items_line_total";
         }
 
-        private class DGVProjectComputation
-        {
-            private decimal Qty { get; set; }
-            private string Multiplier { get; set; }
-            public decimal Discount { get; private set; }
-            public decimal ListPrice { get; private set; }
-            public decimal NetTotal { get; private set; }
-
-            public DGVProjectComputation(decimal qty, decimal listPrice, string discountPercent = "")
-            {
-                this.Qty = qty;
-                this.ListPrice = listPrice;
-                this.Multiplier = discountPercent;
-                this.Discount = 0;
-                this.NetTotal = 0;
-            }
-
-            public void ComputeProjectQuote()
-            {
-                if (!string.IsNullOrEmpty(Multiplier) && Multiplier != "0")
-                {
-                    decimal totalBeforeAdjustment = Qty * ListPrice;
-                    decimal price = ListPrice;
-
-                    if (Multiplier.Contains("*"))
-                    {
-                        string[] factors = Multiplier.Split('*');
-                        foreach (string factor in factors)
-                        {
-                            if (decimal.TryParse(factor, out decimal factorValue))
-                            {
-                                if (factorValue > 0 && factorValue < 1)
-                                {
-                                    // Apply each discount factor directly
-                                    price *= factorValue;
-                                }
-                                else
-                                {
-                                    Console.WriteLine("Each discount factor must be bet en 0 and 1.");
-                                    Discount = 0;
-                                    NetTotal = totalBeforeAdjustment;
-                                    return;
-                                }
-                            }
-                        }
-                    }
-                    else if (Multiplier.Contains("/"))
-                    {
-                        string[] markups = Multiplier.Split('/');
-                        foreach (string markup in markups)
-                        {
-                            if (decimal.TryParse(markup, out decimal markupValue))
-                            {
-                                if (markupValue >= 0 && markupValue <= 100)
-                                {
-                                    price /= markupValue;
-                                }
-                                else
-                                {
-                                    Console.WriteLine("Each markup percentage must be between 0 and 100.");
-                                    Discount = 0;
-                                    NetTotal = totalBeforeAdjustment;
-                                    return;
-                                }
-                            }
-                        }
-                    }
-                    else if (decimal.TryParse(Multiplier, out decimal adjustmentPercent))
-                    {
-                        if (adjustmentPercent >= 0 && adjustmentPercent <= 100)
-                        {
-                            //price = 1 - (adjustmentPercent / 100);\
-                            // Single discount scenario
-                            price = this.ListPrice * (decimal.Parse(this.Multiplier));
-                        }
-                        else
-                        {
-                            Console.WriteLine("Adjustment percentage must be between 0 and 100.");
-                            Discount = 0;
-                            NetTotal = totalBeforeAdjustment;
-                            return;
-                        }
-                    }
-
-                    if (price >= 0)
-                    {
-                        Discount = price;
-                        NetTotal = Discount * Qty;
-                    }
-                }
-                else
-                {
-                    Discount = 0;
-                    NetTotal = Qty * ListPrice;
-
-                }
-            }
-        }
+        // DGVProjectComputation / ComputeProjectQuote() deleted: this was a second,
+        // independently-parsed multiplier engine (different rules for "*" and "/" tokens
+        // than CalculateDiscountMultiplier below) whose only call site, ComputeProjectDgv(),
+        // was itself dead code - its one would-be caller (dgv_project_items_CellEndEdit) has
+        // had that call commented out, so neither ever ran. The DISCOUNT/MARK UP PRICE column
+        // they used to write to was therefore never actually updated by any live code path.
+        // ComputeReferenceNonHierarchy (the function that *does* run, via
+        // Quotation.RecomputeParentTotals -> ProjectComputationLoop on every cell edit) now
+        // populates that column itself, using the same CalculateDiscountMultiplier result
+        // that already determines the real, saved line total - so what's displayed always
+        // matches what's charged.
 
         public void setMultiplier(List<string> multiplier)
         {
             bs_multiplier.DataSource = multiplier;
             //this.project_items_multiplier.DataSource = multiplier;
-        }
-
-        private void ComputeProjectDgv(DataGridViewCellEventArgs e)
-        {
-            try
-            {
-                var qty_cell = dgv_project_items.Rows[e.RowIndex].Cells[ProjectQuoteDGV.QTY].Value;
-                var list_price_cell = dgv_project_items.Rows[e.RowIndex].Cells[ProjectQuoteDGV.LIST_PRICE].Value;
-                var unit_price_cell = dgv_project_items.Rows[e.RowIndex].Cells[ProjectQuoteDGV.UNIT_PRICE].Value;
-                var multiplier_cell = dgv_project_items.Rows[e.RowIndex].Cells[ProjectQuoteDGV.MULTIPLIER].Value == null ? "0" :
-                    dgv_project_items.Rows[e.RowIndex].Cells[ProjectQuoteDGV.MULTIPLIER].Value.ToString();
-
-                this.dgv_project_items.Rows[e.RowIndex].Cells[ProjectQuoteDGV.LIST_PRICE].Value = Helpers.FormatAsCurrency(list_price_cell);
-                this.dgv_project_items.Rows[e.RowIndex].Cells[ProjectQuoteDGV.UNIT_PRICE].Value = Helpers.FormatAsCurrency(unit_price_cell);
-
-                if (qty_cell != null && list_price_cell != null)
-                {
-                    decimal listPrice;
-                    decimal qty = decimal.Parse(this.dgv_project_items.Rows[e.RowIndex].Cells[ProjectQuoteDGV.QTY].Value.ToString());
-                    bool listPriceValid = decimal.TryParse(Helpers.GetCleanedPriceValue(this.dgv_project_items.Rows[e.RowIndex].Cells[ProjectQuoteDGV.LIST_PRICE].Value.ToString()), out listPrice);
-                    string multiplier = this.dgv_project_items.Rows[e.RowIndex].Cells[ProjectQuoteDGV.MULTIPLIER].Value == null ? "0" :
-                        dgv_project_items.Rows[e.RowIndex].Cells[ProjectQuoteDGV.MULTIPLIER].Value.ToString();
-
-                    DGVProjectComputation projectComputation = new DGVProjectComputation(qty, listPrice, multiplier);
-                    projectComputation.ComputeProjectQuote();
-
-
-                    // currency converter
-                    this.dgv_project_items.Rows[e.RowIndex].Cells[ProjectQuoteDGV.DISCOUNT].Value = projectComputation.Discount.ToString("C2");
-                    this.dgv_project_items.Rows[e.RowIndex].Cells[ProjectQuoteDGV.NET_TOTAL].Value = projectComputation.NetTotal.ToString("C2");
-
-                    ProjectComputationLoop();
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("ERROR 101:    " +
-                    "" + ex);
-            }
         }
 
         public Dictionary<string, dynamic> ProjectComputationLoop()
@@ -527,25 +401,20 @@ namespace smpc_sales_system.Pages.Sales
             ComputeByReferenceHierarchy(dgv_project_items);
             ComputeReferenceNonHierarchy(dgv_project_items);
 
-            // Was: "Quotation quote = new Quotation(); ... quote.GetCashDiscount();" -
-            // that created a brand-new, never-shown Quotation instance and read its
-            // designer-default cash discount ("0.00"), not what the user actually
-            // typed on the visible form this control is hosted in.
-            // Note: Quotation is a UserControl (not a Form), so FindForm() can never
-            // return one - walk up the actual Parent chain instead, since this
-            // control is nested inside Quotation's tabControl2 tabs.
+            // Cash discount is a single project-wide figure the user types once on the
+            // hosting Quotation form (txt_cash_discount) - it must only ever be applied
+            // once against the whole project's net sales. This used to walk up to the
+            // hosting Quotation and read/subtract that same field once per tab; summed
+            // across every tab in Quotation.RecomputeParentTotals, that double- (or N-)
+            // counted the discount for any project with more than one active tab, and -
+            // because RecomputeParentTotals then wrote the summed total back into this
+            // very field - caused it to inflate further on every subsequent edit. The
+            // single, authoritative subtraction now happens once in
+            // Quotation.RecomputeParentTotals after all tabs' net sales are summed;
+            // this method no longer touches cash discount at all.
             decimal gross_sales = 0, vat_amount = 0, net_sales = 0;
             decimal percent_discount = 0;
             decimal net_amount_due = 0, total_amount_due = 0;
-            decimal cash_discount = 0m;
-            for (Control parent = this.Parent; parent != null; parent = parent.Parent)
-            {
-                if (parent is Quotation hostingQuotation)
-                {
-                    cash_discount = hostingQuotation.GetCashDiscount();
-                    break;
-                }
-            }
             const decimal VAT_RATE = 0.12m;
 
             foreach (DataGridViewRow row in this.dgv_project_items.Rows)
@@ -581,8 +450,11 @@ namespace smpc_sales_system.Pages.Sales
             // Calculate VAT (12% of net sales)
             vat_amount = net_sales * VAT_RATE;
 
-            // Calculate net amount due (subtract cash discount)
-            net_amount_due = net_sales - cash_discount; 
+            // Cash discount is applied once at the project level (see comment above), not
+            // per tab - this tab's own "net amount due"/"total amount due" are therefore
+            // just its net sales and net sales + VAT, before that single project-wide
+            // discount is subtracted.
+            net_amount_due = net_sales;
 
             // Calculate total amount due (net amount + VAT)
             total_amount_due = net_amount_due + vat_amount;
@@ -593,7 +465,6 @@ namespace smpc_sales_system.Pages.Sales
             data.Add("vat_amount", Helpers.MoneyFormatDecimal(vat_amount));
             data.Add("net_sales", Helpers.MoneyFormatDecimal(net_sales));
             data.Add("percent_discount", percent_discount.ToString("0.00") + "%");
-            data.Add("cash_discount", Helpers.MoneyFormatDecimal(cash_discount));
             data.Add("net_amount_due", Helpers.MoneyFormatDecimal(net_amount_due));
             data.Add("total_amount_due", Helpers.MoneyFormatDecimal(total_amount_due));
             return data;
@@ -2021,11 +1892,12 @@ namespace smpc_sales_system.Pages.Sales
         public EventHandler CellEdited;
         private void dgv_project_items_CellEndEdit(object sender, DataGridViewCellEventArgs e)
         {
-            //ComputeProjectDgv(e);
+            // The actual recompute (ComputeByReferenceHierarchy + ComputeReferenceNonHierarchy,
+            // which also now sets the DISCOUNT column - see ComputeReferenceNonHierarchy) runs
+            // via CellEdited -> Quotation.Cell_EditedUC -> RecomputeParentTotals ->
+            // ProjectComputationLoop for every tab, not here directly.
             CellEdited?.Invoke(this, EventArgs.Empty);
             ItemChanged?.Invoke(this, EventArgs.Empty);
-            //ComputeByReferenceHierarchy(dgv_project_items);
-            //ComputeReferenceNonHierarchy(dgv_project_items);
             dgv_project_items.CommitEdit(DataGridViewDataErrorContexts.Commit);
             dgv_project_items.EndEdit();
         }
@@ -2429,10 +2301,16 @@ namespace smpc_sales_system.Pages.Sales
                 decimal qty = Convert.ToDecimal(row.Cells["project_items_qty"].Value);
                 decimal TotalUnitPrice = unitPrice * qty;
                 decimal discounted = TotalUnitPrice * discount;
-                decimal netDiscount = discounted - TotalUnitPrice;
-                decimal netTotal = TotalUnitPrice;
 
                 row.Cells["project_items_line_total"].Value = discounted;
+
+                // DISCOUNT/MARK UP PRICE (project_items_discount) - the per-unit price after
+                // the multiplier is applied. This used to only ever be set by a separate, dead
+                // code path (see ComputeProjectDgv's removal above) with its own, incompatible
+                // parsing of the multiplier string, so it never reflected what was actually
+                // charged. Deriving it from the same `discount` ratio used for the real line
+                // total above keeps the two in sync.
+                row.Cells[ProjectQuoteDGV.DISCOUNT].Value = (unitPrice * discount).ToString("C2");
             }
         }
 

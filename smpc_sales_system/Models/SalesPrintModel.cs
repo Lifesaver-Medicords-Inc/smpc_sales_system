@@ -122,6 +122,22 @@ namespace smpc_sales_system.Models
             public string notes { get; set; }
             public int template_id { get; set; }
             public byte[] Image { get; set; }
+
+            // True for the synthetic "item set name" row inserted before each set's items
+            // (see SalesPrintModal.SalesPrintModal_Load) - lets the report blank out the
+            // numeric columns on that row instead of showing 0/₱0.00.
+            public bool is_header_row { get; set; }
+
+            // Computed client-side from the item's multiplier (ItemSetUC.CalculateDiscountMultiplier)
+            // as (1 - ratio) * 100, matching Quick Quote's percent_discount convention - positive
+            // for a discount, negative for a markup.
+            public decimal percent_discount { get; set; }
+
+            // ITEM column number, restarting at 1 within each item set instead of counting
+            // continuously through the whole flat DataSet3 list (RowNumber("DataSet3") would
+            // count every set's header row too, so numbering drifted/skipped at each new set
+            // instead of resetting). 0 on header rows.
+            public int item_no { get; set; }
         }
     }
 }
