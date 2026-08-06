@@ -25,13 +25,17 @@ namespace smpc_app.Services.Helpers
         // pattern already used in smpc_inventory_app's Helpers.Loading for consistency.
         public static class Loading
         {
-            private static UserControl overlayPanel;
+            // Keyed per parent control instead of a single static field so more than one
+            // overlay can be shown at the same time (e.g. pnl_header and pnl_footer both
+            // loading together on the Sales Quotation screen). Each parent tracks its own
+            // overlay independently - showing one doesn't block or clobber another.
+            private static readonly Dictionary<Control, UserControl> overlays = new Dictionary<Control, UserControl>();
 
             public static void ShowLoading(Control parentControl, string message = "Loading, please wait...")
             {
-                if (overlayPanel != null) return; // already showing
+                if (parentControl == null || overlays.ContainsKey(parentControl)) return; // already showing on this control
 
-                overlayPanel = new UserControl
+                UserControl overlayPanel = new UserControl
                 {
                     BackColor = Color.FromArgb(180, Color.Gray), // semi-transparent overlay
                     Dock = DockStyle.Fill
@@ -51,15 +55,70 @@ namespace smpc_app.Services.Helpers
 
                 parentControl.Controls.Add(overlayPanel);
                 overlayPanel.BringToFront();
+
+                overlays[parentControl] = overlayPanel;
             }
 
             public static void HideLoading(Control parentControl)
             {
-                if (overlayPanel != null)
+                if (parentControl != null && overlays.TryGetValue(parentControl, out UserControl overlayPanel))
                 {
                     parentControl.Controls.Remove(overlayPanel);
                     overlayPanel.Dispose();
-                    overlayPanel = null;
+                    overlays.Remove(parentControl);
+                }
+            }
+
+            // Convenience overload for showing/hiding the same message across several
+            // parents at once (e.g. pnl_header + pnl_footer together).
+            public static void ShowLoading(Control[] parentControls, string message = "Loading, please wait...")
+            {
+                if (parentControls == null) return;
+                foreach (Control parentControl in parentControls)
+                {
+                    ShowLoading(parentControl, message);
+                }
+            }
+
+            public static void HideLoading(Control[] parentControls)
+            {
+                if (parentControls == null) return;
+                foreach (Control parentControl in parentControls)
+                {
+                    HideLoading(parentControl);
+                }
+            }
+        }
+
+        // Recursively walks every control under `root` (Panels, GroupBoxes, TabPages,
+        // ToolStrips, etc.) and enables/disables every clickable Button and ToolStripButton
+        // it finds. Used to lock the whole form's buttons while data is still being fetched
+        // from the server, so a slow response can't be raced by a user click (e.g. hitting
+        // Save before the record has finished loading).
+        public static void SetButtonsEnabled(Control root, bool enabled)
+        {
+            if (root == null) return;
+
+            foreach (Control ctrl in root.Controls)
+            {
+                if (ctrl is Button button)
+                {
+                    button.Enabled = enabled;
+                }
+                else if (ctrl is ToolStrip toolStrip)
+                {
+                    foreach (ToolStripItem item in toolStrip.Items)
+                    {
+                        if (item is ToolStripButton || item is ToolStripSplitButton || item is ToolStripDropDownButton)
+                        {
+                            item.Enabled = enabled;
+                        }
+                    }
+                }
+
+                if (ctrl.Controls.Count > 0)
+                {
+                    SetButtonsEnabled(ctrl, enabled);
                 }
             }
         }

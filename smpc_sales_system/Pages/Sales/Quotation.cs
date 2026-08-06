@@ -3701,12 +3701,26 @@ namespace smpc_sales_app.Pages.Sales
 
             Panel[] panels = { pnl_header, pnl_footer };
             Helpers.ReadOnlyControls(panels);
- 
+
             SetNewFormMode(false);
 
             IsView = true;
 
-            await LoadExistingRecord();
+            // Header/footer textboxes and comboboxes are still empty at this point and only
+            // get filled once LoadExistingRecord() finishes fetching from the server - cover
+            // that gap with a loading overlay and lock every button on the form so a slow
+            // response can't be raced by a click (e.g. Save) before the fields are populated.
+            Helpers.Loading.ShowLoading(panels, "Loading quotation, please wait...");
+            Helpers.SetButtonsEnabled(this, false);
+            try
+            {
+                await LoadExistingRecord();
+            }
+            finally
+            {
+                Helpers.Loading.HideLoading(panels);
+                Helpers.SetButtonsEnabled(this, true);
+            }
 
         }
         CurrentUserModel CurrentUser { get; set; }
@@ -4605,7 +4619,23 @@ namespace smpc_sales_app.Pages.Sales
                 if (result != -1)
                 {
                     SelectedRow = result;
-                    await fetchQuotationDetails();
+
+                    // fetchQuotationDetails() already overlays dgv_quick_quote_details while
+                    // it fetches, but pnl_header/pnl_footer stay editable and empty until its
+                    // bind() call finishes - lock those down too, and disable every button on
+                    // the form, so a slow server response can't be raced by a click.
+                    Panel[] loadingPanels = { pnl_header, pnl_footer };
+                    Helpers.Loading.ShowLoading(loadingPanels, "Loading quotation, please wait...");
+                    Helpers.SetButtonsEnabled(this, false);
+                    try
+                    {
+                        await fetchQuotationDetails();
+                    }
+                    finally
+                    {
+                        Helpers.Loading.HideLoading(loadingPanels);
+                        Helpers.SetButtonsEnabled(this, true);
+                    }
                 }
             }
         }
@@ -5958,7 +5988,18 @@ namespace smpc_sales_app.Pages.Sales
             SetNewFormMode(false);
             SetFormEditMode("Close");
 
-            await LoadExistingRecord();
+            Panel[] loadingPanels = { pnl_header, pnl_footer };
+            Helpers.Loading.ShowLoading(loadingPanels, "Loading quotation, please wait...");
+            Helpers.SetButtonsEnabled(this, false);
+            try
+            {
+                await LoadExistingRecord();
+            }
+            finally
+            {
+                Helpers.Loading.HideLoading(loadingPanels);
+                Helpers.SetButtonsEnabled(this, true);
+            }
 
             Panel[] panels = { pnl_header, pnl_footer };
             Helpers.ReadOnlyControls(panels);
