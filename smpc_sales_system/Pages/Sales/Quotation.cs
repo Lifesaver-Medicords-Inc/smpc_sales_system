@@ -2770,6 +2770,13 @@ namespace smpc_sales_app.Pages.Sales
             if (val is float f) return f == 0;
             if (val is short s) return s == 0;
             if (val is byte b) return b == 0;
+            // Without this, a missing "is_finalized"/"is_project" key in the save payload
+            // (the normal save path never sets either - only FinalizeProjectQuotation sets
+            // is_finalized) compared against the real db value of `false` was treated as a
+            // genuine change (false vs null aren't equal), so every regular save logged a
+            // bogus "False to -" change-history entry for both fields even though nothing
+            // about them actually changed.
+            if (val is bool bl) return bl == false;
             return false;
         }
 
