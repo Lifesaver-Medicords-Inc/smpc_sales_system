@@ -26,8 +26,15 @@ namespace smpc_sales_app.Services.Helpers
                     ConfigurationManager.AppSettings["Environment"]
                     ?? "Development";
 
-                return ConfigurationManager.AppSettings[$"ApiBaseUrl.{env}"]
-                    ?? "http://127.0.0.1:3000/api";
+                // No hardcoded fallback URL - App.config's ApiBaseUrl.{env} is the one place
+                // this is supposed to live, since it changes (localhost in dev, the real host
+                // in production). Silently falling back to a hardcoded address just masks a
+                // missing/misspelled App.config entry instead of surfacing it.
+                string url = ConfigurationManager.AppSettings[$"ApiBaseUrl.{env}"];
+                if (string.IsNullOrWhiteSpace(url))
+                    throw new ConfigurationErrorsException($"App.config is missing \"ApiBaseUrl.{env}\" - add it under <appSettings> instead of relying on a hardcoded default.");
+
+                return url;
             }
         }
 

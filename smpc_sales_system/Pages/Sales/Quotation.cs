@@ -17,6 +17,7 @@ using smpc_sales_system.Services.Sales.Models;
 using smpc_sales_system.Services.Setup;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Data;
 using System.Drawing;
 using System.Linq;
@@ -47,6 +48,26 @@ namespace smpc_sales_app.Pages.Sales
         private ClientWebSocket _websocket;
         private CancellationTokenSource _cancelTokenSource;
 
+        // Polls the server every 5 minutes while a Project Quotation is open so any changes
+        // another user saved in the meantime (fields, tabs, multipliers) show up here too,
+        // and Change History (RenderTabHistory) stays current - see
+        // ProjectAutoRefreshTimer_Tick / RefreshCurrentProjectQuotationAsync. Kept running as
+        // a fallback even once real-time notifications (below) are connected, in case that
+        // socket ever silently drops.
+        private System.Windows.Forms.Timer projectAutoRefreshTimer;
+
+        // Dedicated "someone else just saved this project" notification channel - separate
+        // from _websocket/ConnectToWebSocket above (that one drives the still-unfinished,
+        // never-actually-connected live field-by-field co-editing relay - see
+        // fetchSalesProjectRT/SendMessageAsync). Keeping this one independent means wiring up
+        // real-time save notifications can't accidentally revive that other, untested code
+        // path as a side effect. The server broadcasts a small { "event": "quotation_saved" }
+        // ping on this project's own channel (see BroadcastToProject in UpdateSalesProject)
+        // whenever anyone saves it.
+        private ClientWebSocket _saveNotifyWebSocket;
+        private CancellationTokenSource _saveNotifyCts;
+        private string _saveNotifyProjectId;
+
         public Quotation(string documentNo = null, string version_no = null, string sub_version_no = null, bool is_finalized = false)
         {
             InitializeComponent();
@@ -76,6 +97,144 @@ namespace smpc_sales_app.Pages.Sales
             // Redraw the Change History panel for whichever tab is currently selected - see
             // RenderTabHistory.
             tabControl2.SelectedIndexChanged += tabControl2_SelectedIndexChanged;
+
+            // Auto-refresh Project Quotation every 5 minutes so other users' saved changes
+            // (and Change History) show up without needing a manual reopen. The tick handler
+            // itself decides whether there's actually anything worth refreshing (Project tab
+            // open, a saved record loaded, not mid-edit), so it's safe to just let this run
+            // for the lifetime of the control.
+            projectAutoRefreshTimer = new System.Windows.Forms.Timer { Interval = 5 * 60 * 1000 };
+            projectAutoRefreshTimer.Tick += ProjectAutoRefreshTimer_Tick;
+            projectAutoRefreshTimer.Start();
+            this.Disposed += (s, e) =>
+            {
+                projectAutoRefreshTimer.Stop();
+                projectAutoRefreshTimer.Dispose();
+                DisconnectSaveNotify();
+            };
+        }
+
+        // ---- Real-time "someone else saved this project" notifications ----
+
+        private static string GetWebSocketBaseUrl()
+        {
+            string env = ConfigurationManager.AppSettings["Environment"] ?? "Development";
+
+            // No hardcoded fallback URL - App.config's ApiBaseUrl.{env} is the one place this
+            // is supposed to live, since it changes (localhost in dev, the real host in
+            // production). Silently falling back to a hardcoded address just masks a missing/
+            // misspelled App.config entry instead of surfacing it, and if the two ever
+            // drifted, this would happily keep pointing at the wrong server. Failing loudly
+            // here is safe: EnsureSaveNotifyConnected below already catches this and falls
+            // back to the 5-minute polling timer, it just logs why real-time didn't connect
+            // instead of silently guessing an address.
+            string apiBaseUrl = ConfigurationManager.AppSettings[$"ApiBaseUrl.{env}"];
+            if (string.IsNullOrWhiteSpace(apiBaseUrl))
+                throw new ConfigurationErrorsException($"App.config is missing \"ApiBaseUrl.{env}\" - add it under <appSettings> instead of relying on a hardcoded default.");
+
+            if (apiBaseUrl.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+                return "wss://" + apiBaseUrl.Substring("https://".Length);
+            if (apiBaseUrl.StartsWith("http://", StringComparison.OrdinalIgnoreCase))
+                return "ws://" + apiBaseUrl.Substring("http://".Length);
+            return apiBaseUrl;
+        }
+
+        // Connects (or reconnects, if a different project is now open) to this project's own
+        // broadcast channel so a save from another user shows up right away instead of
+        // waiting for the next 5-minute timer tick. Safe to call every time fetchSalesProject()
+        // resolves a project id - it no-ops if already listening for that same id, and never
+        // throws out to its caller (a fresh new record with no id yet, or the server/socket
+        // being unreachable, should just silently fall back to the 5-minute timer instead of
+        // interrupting the user).
+        private async void EnsureSaveNotifyConnected(string projectId)
+        {
+            if (string.IsNullOrWhiteSpace(projectId) || projectId == "0") return;
+            if (_saveNotifyProjectId == projectId && _saveNotifyWebSocket?.State == System.Net.WebSockets.WebSocketState.Open) return;
+
+            DisconnectSaveNotify();
+
+            _saveNotifyProjectId = projectId;
+            CancellationTokenSource cts = new CancellationTokenSource();
+            ClientWebSocket socket = new ClientWebSocket();
+            _saveNotifyCts = cts;
+            _saveNotifyWebSocket = socket;
+
+            try
+            {
+                Uri uri = new Uri($"{GetWebSocketBaseUrl()}/ws/setup/test?branch=Sales&projectid={projectId}");
+                await socket.ConnectAsync(uri, cts.Token);
+                _ = ListenForSaveNotificationsAsync(socket, cts, projectId);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Real-time update channel unavailable, falling back to periodic refresh: {ex.Message}");
+            }
+        }
+
+        private async Task ListenForSaveNotificationsAsync(ClientWebSocket socket, CancellationTokenSource cts, string projectId)
+        {
+            byte[] buffer = new byte[64 * 1024];
+            try
+            {
+                while (socket.State == System.Net.WebSockets.WebSocketState.Open)
+                {
+                    List<byte> messageBuffer = new List<byte>();
+                    WebSocketReceiveResult result;
+                    do
+                    {
+                        result = await socket.ReceiveAsync(new ArraySegment<byte>(buffer), cts.Token);
+                        messageBuffer.AddRange(buffer.Take(result.Count));
+                    } while (!result.EndOfMessage);
+
+                    if (result.MessageType != WebSocketMessageType.Text) continue;
+
+                    string json = Encoding.UTF8.GetString(messageBuffer.ToArray());
+
+                    JToken token;
+                    try { token = JToken.Parse(json); }
+                    catch { continue; }
+
+                    if (token["event"]?.ToString() != "quotation_saved") continue;
+
+                    Invoke(new Action(() => HandleQuotationSavedNotification(projectId)));
+                }
+            }
+            catch (Exception)
+            {
+                // Connection dropped (server restart, network blip, etc.) - the 5-minute
+                // timer keeps things eventually-consistent even without reconnect logic here.
+            }
+        }
+
+        // async void, but with its own try/catch (same reasoning as fetchSalesProject above) -
+        // this runs off the back of Invoke() from the socket's background receive loop, so an
+        // unhandled exception here would surface as an unhandled exception on the UI thread
+        // instead of just skipping this one notification.
+        private async void HandleQuotationSavedNotification(string projectId)
+        {
+            try
+            {
+                // Never refresh out from under someone who's actively editing/creating, and
+                // ignore a stale notification for a record that isn't even open anymore (the
+                // user navigated away since this notification was sent).
+                if (!isProject || IsEdit || isNewRecord) return;
+                if (ToInt(txt_id.Text) != ToInt(projectId)) return;
+
+                await RunWithLoadingAsync(async () => await RefreshCurrentProjectQuotationAsync(), "Another user just updated this quotation - refreshing...");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error handling real-time quotation update: {ex.Message}");
+            }
+        }
+
+        private void DisconnectSaveNotify()
+        {
+            try { _saveNotifyCts?.Cancel(); } catch { }
+            try { _saveNotifyWebSocket?.Dispose(); } catch { }
+            _saveNotifyWebSocket = null;
+            _saveNotifyCts = null;
+            _saveNotifyProjectId = null;
         }
 
         private async void UpdateProjectConditions(object sender, EventArgs e)
@@ -505,6 +664,10 @@ namespace smpc_sales_app.Pages.Sales
 
             UpdateDescriptionFieldsVisibility();
 
+            // Leaving Project Quotation - no point staying connected to its real-time
+            // save-notification channel.
+            DisconnectSaveNotify();
+
             fetchQuotationDetails();
 
             Helpers.ResetControls(pnl_header);
@@ -929,6 +1092,61 @@ namespace smpc_sales_app.Pages.Sales
             fetchSalesProject();
         }
 
+        private async void ProjectAutoRefreshTimer_Tick(object sender, EventArgs e)
+        {
+            // Only meaningful for Project Quotation, only once a real (already-saved) record
+            // is open (nothing to pull for a brand-new one that hasn't been created yet), and
+            // never while the user is actively editing or building a new record - a refresh
+            // mid-edit would rebuild every tab from scratch and silently wipe unsaved changes.
+            if (!isProject || IsEdit || isNewRecord) return;
+            if (ToInt(txt_id.Text) <= 0) return;
+
+            await RunWithLoadingAsync(async () => await RefreshCurrentProjectQuotationAsync(), "Checking for updates...");
+        }
+
+        // Silent background refresh for the auto-refresh timer above - unlike
+        // fetchSalesProjectData(), this never shows a MessageBox, never fabricates a new blank
+        // project tab, and never snaps the view back to row 0. It re-fetches from the server
+        // and rebinds the SAME record (matched by id) that's already open, so another user's
+        // edits appear without yanking focus to a different version. If that record can't be
+        // found anymore (e.g. deleted), it leaves the current view untouched rather than
+        // guessing.
+        private async Task RefreshCurrentProjectQuotationAsync()
+        {
+            if (!isProject) return;
+
+            int currentId = ToInt(txt_id.Text);
+            if (currentId <= 0) return;
+
+            SalesProjectList refreshedData = await ProjectService.GetProjects();
+            if (refreshedData?.SalesQuotation == null) return;
+
+            var latestQuotations = refreshedData.SalesQuotation
+                .OrderByDescending(q => VersionNoAsInt(q.version_no))
+                .ThenByDescending(q => VersionNoAsInt(q.sub_version_no))
+                .ToList();
+
+            DataTable refreshedTable = JsonHelper.ToDataTable(latestQuotations);
+
+            int matchedRow = -1;
+            for (int i = 0; i < refreshedTable.Rows.Count; i++)
+            {
+                if (ToInt(refreshedTable.Rows[i]["id"]) == currentId)
+                {
+                    matchedRow = i;
+                    break;
+                }
+            }
+
+            if (matchedRow == -1) return; // record no longer present - leave the view as-is
+
+            SalesProjectListData = refreshedData;
+            transactionProjectDataTable = refreshedTable;
+            selectedProjectRow = matchedRow;
+
+            fetchSalesProject();
+        }
+
         private async void fetchSalesProject()
         {
             // async void with no unhandled exception guard: any error in here (bad
@@ -942,6 +1160,10 @@ namespace smpc_sales_app.Pages.Sales
 
             string selectedId = this.transactionProjectDataTable.Rows[this.selectedProjectRow]["id"].ToString();
             int selectedIdInt = int.Parse(selectedId);
+
+            // Listen for real-time "someone else saved this" notifications for whichever
+            // project is actually open now - no-ops if already connected to this same id.
+            EnsureSaveNotifyConnected(selectedId);
 
             // Filter each list using LINQ Where()
             List<SalesQuotationModel> filtered = SalesProjectListData.SalesQuotation
