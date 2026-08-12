@@ -382,6 +382,10 @@
     <Compile Include="Pages\Sales\PumpItemModal.Designer.cs">
       <DependentUpon>PumpItemModal.cs</DependentUpon>
     </Compile>
+    <Compile Include="Pages\Sales\StockCheckModal.cs" />
+    <Compile Include="Pages\Sales\StockCheckModal.Designer.cs">
+      <DependentUpon>StockCheckModal.cs</DependentUpon>
+    </Compile>
     <Compile Include="Pages\Sales\PurchaseRequisition.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -512,18 +516,21 @@
     <Compile Include="Services\Sales\Models\ItemBomListModel.cs" />
     <Compile Include="Services\Sales\Models\ItemImageModel.cs" />
     <Compile Include="Services\Sales\Models\OpportunityModel.cs" />
+    <Compile Include="Services\Sales\Models\AvailableStockModel.cs" />
     <Compile Include="Services\Sales\Models\ItemModel.cs" />
     <Compile Include="Services\Sales\Models\ItemSpecsModel.cs" />
     <Compile Include="Services\Sales\Models\OrderDetailsModel.cs" />
     <Compile Include="Services\Sales\Models\OrderList.cs" />
     <Compile Include="Services\Sales\Models\OrderModel.cs" />
     <Compile Include="Services\Sales\Models\Project.cs" />
+    <Compile Include="Services\Sales\Models\StockReservationModel.cs" />
     <Compile Include="Services\Sales\Models\SalesCanvasModel.cs" />
     <Compile Include="Services\Sales\Models\SalesQuotationModel.cs" />
     <Compile Include="Services\Sales\Models\SalesQuotationQuick.cs" />
     <Compile Include="Services\Sales\Models\SalesQuotationList.cs" />
     <Compile Include="Services\Sales\Models\ShipModel.cs" />
     <Compile Include="Services\Sales\Models\UnitOfMeasurementModel.cs" />
+    <Compile Include="Services\Sales\ItemStockCheckService.cs" />
     <Compile Include="Services\Sales\OpportunityService.cs" />
     <Compile Include="Services\Sales\OrderService.cs" />
     <Compile Include="Services\Sales\ProjectService.cs" />

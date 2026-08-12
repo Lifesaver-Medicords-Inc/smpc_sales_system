@@ -373,6 +373,10 @@ namespace smpc_sales_system.Pages.Sales
             this.txt_item_set_description.Name = "txt_item_set_description";
             this.txt_item_set_description.Size = new System.Drawing.Size(468, 93);
             this.txt_item_set_description.TabIndex = 167;
+            this.txt_item_set_description.Text = "SIMPLEX/ DUPLEX/ TRIPLEX PUMP TYPE - brand & general name of components\r\nQTY: " +
+    "\r\nMODEL: (pump model)\r\nCAPACITY:\r\nTDH: total dynamic head = \"head\" spec\r\nPUMP" +
+    " CASING:\r\nIMPELLER:\r\nSUCTION:\r\nDISCHARGE:\r\nMOTOR:\r\nTANK:\r\nPANELBOARD:\r\nNOTE: (s" +
+    "pace for additional input)";
             // 
             // txt_size_up_4
             // 

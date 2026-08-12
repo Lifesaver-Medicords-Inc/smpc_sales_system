@@ -185,6 +185,7 @@
             this.item_id = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.quick_item_code = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.quick_item_name = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.quick_inv_stock = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.quick_qty = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.quick_unit_of_measure = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.man_days = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -1447,6 +1448,7 @@
             this.item_id,
             this.quick_item_code,
             this.quick_item_name,
+            this.quick_inv_stock,
             this.quick_qty,
             this.quick_unit_of_measure,
             this.man_days,
@@ -1467,7 +1469,10 @@
             this.dgv_quick_quote_details.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgv_quick_quote_details_CellClick);
             this.dgv_quick_quote_details.CellContentDoubleClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgv_quick_quote_details_CellContentDoubleClick);
             this.dgv_quick_quote_details.CellEndEdit += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgv_quick_quote_details_CellEndEdit);
+            this.dgv_quick_quote_details.CellFormatting += new System.Windows.Forms.DataGridViewCellFormattingEventHandler(this.dgv_quick_quote_details_CellFormatting);
+            this.dgv_quick_quote_details.CellMouseDown += new System.Windows.Forms.DataGridViewCellMouseEventHandler(this.dgv_quick_quote_details_CellMouseDown);
             this.dgv_quick_quote_details.CellValueChanged += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgv_quick_quote_details_CellValueChanged);
+            this.dgv_quick_quote_details.DataBindingComplete += new System.Windows.Forms.DataGridViewBindingCompleteEventHandler(this.dgv_quick_quote_details_DataBindingComplete);
             // 
             // quick_id
             // 
@@ -1548,9 +1553,25 @@
             this.quick_item_name.Name = "quick_item_name";
             this.quick_item_name.ReadOnly = true;
             this.quick_item_name.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-            // 
+            //
+            // quick_inv_stock
+            //
+            // Unbound - not part of the quotation's own DataTable, populated from
+            // ERP_API's /inventory/item_stocks/available at runtime (see
+            // RefreshStockIndicator/RefreshAllStockIndicators in Quotation.cs). Icon-only:
+            // dgv_quick_quote_details_CellFormatting replaces whatever number's actually
+            // in the cell with just a flag glyph, red when short and black otherwise -
+            // clicking the column (see dgv_quick_quote_details_CellClick) opens the stock
+            // checker either way.
+            this.quick_inv_stock.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.quick_inv_stock.FillWeight = 30F;
+            this.quick_inv_stock.HeaderText = "INV.";
+            this.quick_inv_stock.Name = "quick_inv_stock";
+            this.quick_inv_stock.ReadOnly = true;
+            this.quick_inv_stock.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            //
             // quick_qty
-            // 
+            //
             this.quick_qty.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
             this.quick_qty.DataPropertyName = "qty";
             dataGridViewCellStyle9.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
@@ -2684,6 +2705,7 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn item_id;
         private System.Windows.Forms.DataGridViewTextBoxColumn quick_item_code;
         private System.Windows.Forms.DataGridViewTextBoxColumn quick_item_name;
+        private System.Windows.Forms.DataGridViewTextBoxColumn quick_inv_stock;
         private System.Windows.Forms.DataGridViewTextBoxColumn quick_qty;
         private System.Windows.Forms.DataGridViewTextBoxColumn quick_unit_of_measure;
         private System.Windows.Forms.DataGridViewTextBoxColumn man_days;

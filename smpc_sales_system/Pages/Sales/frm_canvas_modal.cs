@@ -37,13 +37,21 @@ namespace smpc_sales_system.Pages.Sales
         private async void fetchBpiSuppliers()
         {
             var data = await ProjectService.GetSuppliers();
-            var canvas_data = await ProjectService.GetSuppliers();
+            // data comes back null (not an empty list) when the request itself failed -
+            // RequestToApi's shared catch already popped a MessageBox for that, so just
+            // bail rather than NullReferenceException-ing on data.BpiSuppliers next.
+            if (data == null) return;
+
             List<BpiSuppliers> suppliersList = data.BpiSuppliers;
 
             //var view_data = await ProjectService.GetCanvasView();
             //List<SalesCanvasView> viewList = view_data.sales_canvas_sheet_view;
 
-            if (suppliersList == null || !suppliersList.Any())
+            // Was "if (suppliersList == null || !suppliersList.Any())" - inverted, so the
+            // one case this could ever run was when suppliersList was already empty/null,
+            // and it would NullReferenceException calling .Where on a null list. Filtering
+            // only makes sense once there's something to filter.
+            if (suppliersList != null && suppliersList.Any())
             {
                 var filteredData = suppliersList
                     .Where(s => s.item_id.ToString() == this.items_id)

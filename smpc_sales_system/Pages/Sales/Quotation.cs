@@ -3203,6 +3203,16 @@ namespace smpc_sales_app.Pages.Sales
                     HandleModelSelectionClick(e.RowIndex, dgv_quick_quote_details);
                 }
 
+                // INV. Column - stock checker. Always opens on click, flagged or not (the
+                // icon just tells you whether there's a shortage - it doesn't gate
+                // whether you can check/reserve). Not gated on !IsView: checking stock is
+                // a read (and, for a manager, a reservation release) that's still useful
+                // while just viewing a saved quotation.
+                if (dgv_quick_quote_details.Columns[e.ColumnIndex].Name == "quick_inv_stock")
+                {
+                    HandleStockCheckClick(e.RowIndex, dgv_quick_quote_details);
+                }
+
                 ConnectGridviewToDescriptionText(e.RowIndex, dgv_quick_quote_details);
                 ComputeByReferenceHierarchy();
 
@@ -3550,6 +3560,336 @@ namespace smpc_sales_app.Pages.Sales
             }
         }
 
+        // Cache of the last-fetched available stock per item, keyed by item_id - avoids
+        // re-hitting /inventory/item_stocks/available on every keystroke/repaint. Cleared
+        // per item on qty edit (the row's own required qty changing doesn't change the
+        // server-side numbers, but re-fetching keeps "reserved" honest against what other
+        // quotations are doing concurrently).
+        private readonly Dictionary<int, AvailableStockModel> _availableStockByItemId = new Dictionary<int, AvailableStockModel>();
+
+        // Repaints every row's INV. cell after the grid's DataSource is (re)assigned -
+        // unbound columns don't survive a DataSource swap, so this is what puts the
+        // numbers (and, through them, the flag icon) back after every load/reload (see
+        // the DataBindingComplete wire-up in Quotation.Designer.cs).
+        private void dgv_quick_quote_details_DataBindingComplete(object sender, DataGridViewBindingCompleteEventArgs e)
+        {
+            RefreshAllStockIndicators(dgv_quick_quote_details);
+        }
+
+        private void RefreshAllStockIndicators(DataGridView dgv)
+        {
+            for (int i = 0; i < dgv.Rows.Count; i++)
+            {
+                if (dgv.Rows[i].IsNewRow) continue;
+                RefreshStockIndicator(i, dgv);
+            }
+        }
+
+        // Fetches (or reuses the cached) available stock for this row's item and writes
+        // it into the quick_inv_stock cell - dgv_quick_quote_details_CellFormatting then
+        // replaces that number with just the flag icon before it's ever seen (see INV.'s
+        // remarks in Quotation.Designer.cs), but the real number still has to land here
+        // first since that's what the formatting check compares against quick_qty. async
+        // void, fire-and-forget, matching this file's existing convention for UI-triggered
+        // API calls (see UpdateProjectConditions etc.) - a slow/failed lookup just leaves
+        // the cell blank rather than blocking the grid.
+        //
+        // Writes effective available (this row's own reservation, if any, added back) -
+        // raw available already nets out every active reservation including this row's
+        // own, so a line already sitting on exactly the stock it reserved would otherwise
+        // red-flag itself for a "shortage" that's really just its own already-secured
+        // stock. A different quotation's line for the same item has no reservation of its
+        // own to add back, so it still correctly sees the real, lower number.
+        private async void RefreshStockIndicator(int rowIndex, DataGridView dgv)
+        {
+            if (rowIndex < 0 || rowIndex >= dgv.Rows.Count || dgv.Rows[rowIndex].IsNewRow) return;
+            if (!dgv.Columns.Contains("quick_inv_stock") || !dgv.Columns.Contains("item_id")) return;
+
+            var itemIdValue = dgv.Rows[rowIndex].Cells["item_id"].Value;
+            if (!int.TryParse(itemIdValue?.ToString(), out int itemId) || itemId <= 0) return;
+
+            int quickId = 0;
+            if (dgv.Columns.Contains("quick_id"))
+            {
+                int.TryParse(dgv.Rows[rowIndex].Cells["quick_id"].Value?.ToString(), out quickId);
+            }
+
+            try
+            {
+                if (!_availableStockByItemId.TryGetValue(itemId, out AvailableStockModel stock))
+                {
+                    stock = await ItemStockCheckService.GetAvailableStock(itemId);
+                    _availableStockByItemId[itemId] = stock;
+                }
+
+                int ownReservedQty = 0;
+                if (quickId > 0)
+                {
+                    var reservation = await ItemStockCheckService.GetReservation(quickId);
+                    if (reservation != null) ownReservedQty = reservation.qty;
+                }
+
+                if (rowIndex < dgv.Rows.Count && !dgv.Rows[rowIndex].IsNewRow)
+                {
+                    dgv.Rows[rowIndex].Cells["quick_inv_stock"].Value = stock.available + ownReservedQty;
+                    dgv.InvalidateRow(rowIndex);
+                }
+            }
+            catch (Exception)
+            {
+                // Stock lookup is a convenience indicator, not part of the save path -
+                // swallow rather than pop a MessageBox for every row on a flaky network.
+            }
+        }
+
+        // INV. is icon-only - no stock number displayed, just the flag glyph, red when
+        // this row is short and black otherwise. The actual available number still lives
+        // in this same cell underneath (written by RefreshStockIndicator) purely so this
+        // method has something to compare quick_qty against; it just never reaches the
+        // screen. Left as a real DataGridViewTextBoxColumn (not a custom-painted one)
+        // since CellFormatting is the pattern this grid already leans on elsewhere for
+        // computed display values.
+        private void dgv_quick_quote_details_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
+        {
+            if (e.RowIndex < 0 || e.RowIndex >= dgv_quick_quote_details.Rows.Count) return;
+            if (dgv_quick_quote_details.Columns[e.ColumnIndex].Name != "quick_inv_stock") return;
+            if (dgv_quick_quote_details.Rows[e.RowIndex].IsNewRow) return;
+
+            if (!int.TryParse(e.Value?.ToString(), out int available)) return;
+
+            int required = 0;
+            if (dgv_quick_quote_details.Columns.Contains("quick_qty"))
+            {
+                int.TryParse(dgv_quick_quote_details.Rows[e.RowIndex].Cells["quick_qty"].Value?.ToString(), out required);
+            }
+
+            bool isShort = required > 0 && available < required;
+            e.Value = "\U0001F6A9"; // same flag glyph either way - only the color changes
+            e.CellStyle.ForeColor = isShort ? Color.Red : Color.Black;
+            e.CellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            e.FormattingApplied = true;
+        }
+
+        // Right-clicking the QTY column's header opens the stock checker - unlike a
+        // per-row click, this isn't gated on any row being flagged, since RESERVE needs
+        // to work even when nothing's currently short (see HandleStockCheckClick). Wired
+        // to dgv_quick_quote_details.CellMouseDown in Quotation.Designer.cs; header cells
+        // report RowIndex == -1.
+        private void dgv_quick_quote_details_CellMouseDown(object sender, DataGridViewCellMouseEventArgs e)
+        {
+            if (e.RowIndex != -1 || e.Button != MouseButtons.Right) return;
+            if (dgv_quick_quote_details.Columns[e.ColumnIndex].Name != "quick_qty") return;
+
+            HandleStockCheckClick(-1, dgv_quick_quote_details);
+        }
+
+        // Opens the stock checker for the whole quotation - every line item that has
+        // both an item and a nonzero QTY, regardless of which row (if any) triggered it
+        // (matching the "PROJECTED INVENTORY" mockup, which shows every item at once, not
+        // one item per screen). Items with required qty 0 are skipped per the same
+        // mockup's notes.
+        //
+        // RESERVE is a plain manual toggle in the modal now - nothing reserves a line on
+        // its own anymore (see quick_quotation_service.go), so each line's actual
+        // reservation status is looked up fresh here rather than assumed.
+        private async void HandleStockCheckClick(int rowIndex, DataGridView dgv)
+        {
+            // rowIndex isn't used to filter anything - this always opens the same
+            // full-quotation list regardless of what triggered it (right-clicking QTY's
+            // header passes -1, since that's not a real row). Kept as a parameter in case
+            // a future "scroll to/highlight this row" tweak wants it.
+            if (!dgv.Columns.Contains("item_id")) return;
+
+            var lines = new List<StockCheckRow>();
+            DateTime? expiresAt = dtp_valid_until.Value.Date;
+
+            for (int i = 0; i < dgv.Rows.Count; i++)
+            {
+                var row = dgv.Rows[i];
+                if (row.IsNewRow) continue;
+
+                if (!int.TryParse(row.Cells["item_id"].Value?.ToString(), out int itemId) || itemId <= 0) continue;
+
+                int.TryParse(row.Cells["quick_qty"].Value?.ToString(), out int requiredQty);
+                if (requiredQty <= 0) continue;
+
+                // A brand-new, not-yet-saved line has no id yet (CreateSalesQuotationQuick
+                // hasn't run for it), so there's nothing to attach a reservation to - but
+                // stock/availability is still worth showing. QuickId stays 0 for these;
+                // StockCheckModal disables RESERVE for any row with QuickId <= 0 rather
+                // than hiding the row entirely.
+                int.TryParse(row.Cells["quick_id"].Value?.ToString(), out int quickId);
+                int.TryParse(row.Cells["quick_based_id"].Value?.ToString(), out int quotationId);
+                string referenceCode = row.Cells["reference_code"].Value?.ToString();
+
+                string itemName = dgv.Columns.Contains("quick_item_name")
+                    ? row.Cells["quick_item_name"].Value?.ToString()
+                    : null;
+                if (string.IsNullOrWhiteSpace(itemName) && dgv.Columns.Contains("quick_item_code"))
+                {
+                    itemName = row.Cells["quick_item_code"].Value?.ToString();
+                }
+
+                AvailableStockModel stock;
+                bool isReserved = false;
+                int ownReservedQty = 0;
+                try
+                {
+                    if (!_availableStockByItemId.TryGetValue(itemId, out stock))
+                    {
+                        stock = await ItemStockCheckService.GetAvailableStock(itemId);
+                        _availableStockByItemId[itemId] = stock;
+                    }
+
+                    if (quickId > 0)
+                    {
+                        var reservation = await ItemStockCheckService.GetReservation(quickId);
+                        isReserved = reservation != null;
+                        // Stock.available already nets this line's own reservation out of
+                        // the shared pool - StockCheckModal adds it back (EffectiveAvailable)
+                        // so this line doesn't flag itself as short of stock it already has.
+                        if (reservation != null) ownReservedQty = reservation.qty;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Failed to check stock for \"{itemName}\": {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    continue;
+                }
+
+                lines.Add(new StockCheckRow
+                {
+                    ItemId = itemId,
+                    ItemName = itemName,
+                    QuickId = quickId,
+                    QuotationId = quotationId,
+                    RequiredQty = requiredQty,
+                    Stock = stock,
+                    IsReserved = isReserved,
+                    OwnReservedQty = ownReservedQty,
+                    ExpiresAt = expiresAt,
+                    ReferenceCode = referenceCode
+                });
+            }
+
+            if (lines.Count == 0)
+            {
+                MessageBox.Show("No line items with an item and a QTY yet.", "Nothing To Check", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            var modal = new StockCheckModal(lines, line => HandleCanvasSelectionClick(-1, line.ItemId.ToString()));
+            modal.ShowDialog();
+
+            if (modal.ChangedQuickIds.Count > 0)
+            {
+                // SAVE actually reserved/released something on the server, so the
+                // cached available-stock numbers for those items are now stale -
+                // without this, the next time this same quotation checks stock (still
+                // the same Quotation instance/cache) it'd keep showing the old figures
+                // until the whole screen was closed and reopened.
+                var affectedItemIds = new HashSet<int>(
+                    lines.FindAll(l => modal.ChangedQuickIds.Contains(l.QuickId)).ConvertAll(l => l.ItemId));
+
+                foreach (var affectedItemId in affectedItemIds)
+                {
+                    _availableStockByItemId.Remove(affectedItemId);
+                }
+
+                RefreshAllStockIndicators(dgv);
+            }
+
+            // Lines that weren't saved yet but got RESERVE checked anyway - queued here,
+            // actually reserved once the quotation is saved and these lines get real ids
+            // (see ApplyPendingReservationsAsync, called right after a successful save).
+            foreach (var referenceCode in modal.PendingReserveReferenceCodes)
+            {
+                _pendingReservationReferenceCodes.Add(referenceCode);
+            }
+        }
+
+        // reference_code of every not-yet-saved line a user checked RESERVE for in
+        // StockCheckModal - there's nothing to reserve yet (no SalesQuotationQuick id),
+        // so the intent waits here until the quotation is actually saved.
+        private readonly HashSet<string> _pendingReservationReferenceCodes = new HashSet<string>();
+
+        // Called right after a successful save+reload (see IsQuickQuote) - by then, any
+        // line that was pending now has a real quick_id, since fetchQuotationDetails()
+        // rebinds dgv_quick_quote_details fresh from the server. Matches back on
+        // reference_code, the one thing that survives that rebind unchanged.
+        private async Task ApplyPendingReservationsAsync()
+        {
+            if (_pendingReservationReferenceCodes.Count == 0) return;
+            if (!dgv_quick_quote_details.Columns.Contains("reference_code")) return;
+
+            var applied = new List<string>();
+            var failures = new List<string>();
+            var affectedItemIds = new HashSet<int>();
+
+            foreach (DataGridViewRow row in dgv_quick_quote_details.Rows)
+            {
+                if (row.IsNewRow) continue;
+
+                string referenceCode = row.Cells["reference_code"].Value?.ToString();
+                if (string.IsNullOrEmpty(referenceCode) || !_pendingReservationReferenceCodes.Contains(referenceCode))
+                    continue;
+
+                int.TryParse(row.Cells["quick_id"].Value?.ToString(), out int quickId);
+                if (quickId <= 0)
+                {
+                    // Still not saved somehow (e.g. save failed for this specific line) -
+                    // leave it pending rather than silently dropping the intent.
+                    continue;
+                }
+
+                int.TryParse(row.Cells["item_id"].Value?.ToString(), out int itemId);
+                int.TryParse(row.Cells["quick_qty"].Value?.ToString(), out int qty);
+                int.TryParse(row.Cells["quick_based_id"].Value?.ToString(), out int quotationId);
+
+                if (itemId <= 0 || qty <= 0)
+                {
+                    // Item/qty got cleared before saving - nothing sensible left to
+                    // reserve, so just drop the stale intent instead of erroring.
+                    applied.Add(referenceCode);
+                    continue;
+                }
+
+                try
+                {
+                    await ItemStockCheckService.CreateReservation(itemId, qty, quickId, quotationId, dtp_valid_until.Value.Date);
+                    affectedItemIds.Add(itemId);
+                    applied.Add(referenceCode);
+                }
+                catch (Exception ex)
+                {
+                    failures.Add($"{referenceCode}: {ex.Message}");
+                }
+            }
+
+            foreach (var referenceCode in applied)
+            {
+                _pendingReservationReferenceCodes.Remove(referenceCode);
+            }
+
+            if (affectedItemIds.Count > 0)
+            {
+                foreach (var itemId in affectedItemIds)
+                {
+                    _availableStockByItemId.Remove(itemId);
+                }
+                RefreshAllStockIndicators(dgv_quick_quote_details);
+            }
+
+            if (failures.Count > 0)
+            {
+                MessageBox.Show(
+                    "The quotation saved, but some pending reservations couldn't be applied:\n" + string.Join("\n", failures),
+                    "Some Reservations Failed",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+            }
+        }
+
         public List<Dictionary<string, object>> SelectedImages { get; private set; }
         // Selected images picked via the IMAGES column, keyed by the grid row index they
         // belong to. Previously a single shared "SelectedImages" field was applied to every
@@ -3870,6 +4210,12 @@ namespace smpc_sales_app.Pages.Sales
                     // 🎨 Style as Single Item
                     int addedRowIndex = dataSource.Rows.Count - 1;
                     Helpers.SalesItemRowStyler.ApplyStyle(dgv, addedRowIndex, "single");
+
+                    // Show available stock for the item just picked before the user has
+                    // even typed a QTY yet. Uses addedRowIndex, not rowIndex - see the
+                    // styling call just above, which is why that's the grid position the
+                    // new row actually lands on.
+                    RefreshStockIndicator(addedRowIndex, dgv);
                 //}
             }
 
@@ -3910,6 +4256,17 @@ namespace smpc_sales_app.Pages.Sales
         // silently changing footer totals. ComputeFooterTotals is the live path.
         private void dgv_quick_quote_details_CellEndEdit(object sender, DataGridViewCellEventArgs e)
         {
+            // Re-check stock the moment QTY changes, so the red flag reflects what was
+            // just typed rather than whatever it was when the item was first picked. The
+            // flag icon lives on INV. (see dgv_quick_quote_details_CellFormatting), a
+            // different cell than the one just edited, so it needs an explicit repaint -
+            // WinForms only auto-refreshes the cell that was actually being edited.
+            if (e.RowIndex >= 0 && dgv_quick_quote_details.Columns[e.ColumnIndex].Name == "quick_qty" &&
+                dgv_quick_quote_details.Columns.Contains("quick_inv_stock"))
+            {
+                dgv_quick_quote_details.InvalidateCell(dgv_quick_quote_details.Columns["quick_inv_stock"].Index, e.RowIndex);
+            }
+
             //var value = dgv_quick_quote_details.Rows[e.RowIndex].Cells["quick_qty"].Value;
 
             //if (int.TryParse(value?.ToString(), out int qty) && qty != 0)
@@ -5741,6 +6098,13 @@ namespace smpc_sales_app.Pages.Sales
 
                             MessageBox.Show("Quotation Successfully saved");
                             await RunWithLoadingAsync(async () => await fetchQuotationDetails(), "Loading quotation, please wait...");
+
+                            // Same as IsQuickQuote() - this finalize path also inserts fresh
+                            // SalesQuotationQuick rows (parentData["id"] = 0 above), so any
+                            // RESERVE checked before finalizing was queued against a
+                            // reference_code, not a real id. Apply it now that the reload
+                            // gave these lines real ids.
+                            await ApplyPendingReservationsAsync();
 
                             SetNewFormMode(false);
                         }
