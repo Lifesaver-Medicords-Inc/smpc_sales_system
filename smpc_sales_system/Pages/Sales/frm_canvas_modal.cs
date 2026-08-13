@@ -1,4 +1,5 @@
 ﻿using smpc_app.Services.Helpers;
+using smpc_inventory_app.Pages.Item;
 using smpc_sales_app.Services.Helpers;
 using smpc_sales_system.Models;
 using smpc_sales_system.Services.Sales;
@@ -21,10 +22,17 @@ namespace smpc_sales_system.Pages.Sales
         string items_id { get; set; }
         DataTable bpi { get; set; }
         DataTable bpi_items { get; set; }
+
+        // Every supplier set up for this item, name-resolved, that ISN'T already a row on
+        // the sheet - the candidate list ADD SUPPLIER hands to SupplierPickerModal. Kept
+        // in sync as rows get added so re-opening the picker doesn't offer a duplicate.
+        private List<EligibleSupplier> _eligibleSuppliers = new List<EligibleSupplier>();
+
         public frm_canvas_modal(string item_id, DataTable dt, DataTable dt2)
         {
             InitializeComponent();
             this.items_id = item_id;
+            this.bpi = dt; // was dropped entirely before - needed to resolve a supplier's actual name below
             this.bpi_items = dt2;
             fetchBpiSuppliers();
         }
@@ -32,6 +40,26 @@ namespace smpc_sales_system.Pages.Sales
         private async void fetchCanvasSheet()
         {
 
+        }
+
+        // A supplier's real name lives in bpi (general BPI info), keyed by
+        // general_based_id - BpiSuppliers only carries based_id (that same key) and a
+        // supplier_code, which is why the grid used to show "S#0008" instead of an actual
+        // name. Falls back to the code, then a placeholder, if bpi wasn't passed in or
+        // doesn't have this supplier (e.g. Quotation.cs's bpi_general is customer-focused
+        // and may not always include every supplier).
+        private string ResolveSupplierName(int basedId, string fallbackCode)
+        {
+            if (bpi != null && bpi.Columns.Contains("general_based_id") && bpi.Columns.Contains("branch_name"))
+            {
+                DataRow[] rows = bpi.Select($"general_based_id = {basedId}");
+                if (rows.Length > 0 && !string.IsNullOrWhiteSpace(rows[0]["branch_name"]?.ToString()))
+                {
+                    return rows[0]["branch_name"].ToString();
+                }
+            }
+
+            return string.IsNullOrWhiteSpace(fallbackCode) ? "(unnamed supplier)" : fallbackCode;
         }
 
         private async void fetchBpiSuppliers()
@@ -53,15 +81,80 @@ namespace smpc_sales_system.Pages.Sales
             // only makes sense once there's something to filter.
             if (suppliersList != null && suppliersList.Any())
             {
-                var filteredData = suppliersList
-                    .Where(s => s.item_id.ToString() == this.items_id)
-                    .Select(s => new
+                // Rows already on the sheet - this runs again after ADD SUPPLIER closes
+                // (see btn_add_bpi_Click), so without this every already-added row would
+                // get duplicated alongside its fresh copy from this re-fetch.
+                var alreadyOnSheet = new HashSet<int>();
+                foreach (DataGridViewRow row in dataGridView1.Rows)
+                {
+                    if (row.IsNewRow) continue;
+                    if (int.TryParse(row.Cells["supplier_id"].Value?.ToString(), out int existingId))
                     {
-                        supplier_code = s.supplier_code
+                        alreadyOnSheet.Add(existingId);
+                    }
+                }
+
+                var eligible = suppliersList
+                    .Where(s => s.item_id.ToString() == this.items_id && !alreadyOnSheet.Contains(s.based_id))
+                    .Select(s => new EligibleSupplier
+                    {
+                        SupplierId = s.based_id,
+                        SupplierName = ResolveSupplierName(s.based_id, s.supplier_code)
                     })
                     .ToList();
-                dataGridView1.DataSource = filteredData;
+
+                _eligibleSuppliers = eligible;
+
+                // Grid is populated manually (not via DataSource) so ADD SUPPLIER's
+                // counterpart (SupplierPickerModal) could add rows the same way if it's
+                // ever wired back in - a data-bound DataGridView can't take Rows.Add()
+                // calls.
+                //
+                // Iterating a snapshot (.ToList()), not "eligible" itself - AddSupplierRow
+                // calls _eligibleSuppliers.RemoveAll(...), and _eligibleSuppliers IS
+                // eligible (same list, assigned just above), so mutating it while this
+                // foreach is still enumerating it threw "Collection was modified".
+                foreach (var supplier in eligible.ToList())
+                {
+                    AddSupplierRow(supplier);
+                }
             }
+        }
+
+        // Shared by the initial fetch above and ADD SUPPLIER - appends one row and takes
+        // it out of the "still eligible to add" pool so the picker won't offer the same
+        // supplier twice.
+        private void AddSupplierRow(EligibleSupplier supplier)
+        {
+            int rowIndex = dataGridView1.Rows.Add();
+            var row = dataGridView1.Rows[rowIndex];
+            row.Cells["supplier_id"].Value = supplier.SupplierId;
+            row.Cells["Column1"].Value = supplier.SupplierName;
+
+            _eligibleSuppliers.RemoveAll(s => s.SupplierId == supplier.SupplierId);
+        }
+
+        // Goes straight to the Business Partner module to register a supplier there,
+        // rather than picking from ones already tied to this item (that's what
+        // SupplierPickerModal was for - still here, just not wired to this button
+        // anymore, in case a "pick an existing one" entry point is wanted elsewhere
+        // later). Passing items_id as canvassForm is what lets BusinessPartnerInfo offer
+        // "Temporary Supplier" as an entity type in there - the quick, no-formal-
+        // onboarding option that fits adding someone just to get a canvass quote from.
+        //
+        // Doesn't add anything to the sheet automatically on close - BusinessPartnerInfo
+        // is a full add/edit screen with no "return what I just created" contract, so
+        // there's nothing here to grab. Re-running fetchBpiSuppliers() at least means a
+        // supplier who got tied to this item while that screen was open (or on a previous
+        // visit) will show up next time - see class remarks on ADD SUPPLIER's counterpart
+        // if that's later brought back for this button.
+        private void btn_add_bpi_Click(object sender, EventArgs e)
+        {
+            var modal = new BusnessPartnerInfoModal(items_id);
+            modal.StartPosition = FormStartPosition.CenterParent;
+            modal.ShowDialog();
+
+            fetchBpiSuppliers();
         }
 
             private void dataGridView1_CellEndEdit(object sender, DataGridViewCellEventArgs e)
@@ -143,12 +236,6 @@ namespace smpc_sales_system.Pages.Sales
             {
                 MessageBox.Show("Success");
             }
-        }
-
-        private void btn_add_bpi_Click(object sender, EventArgs e)
-        {
-            //smpc_inventory_app.Pages.canvasForm canvas = new smpc_inventory_app.Pages.canvasForm();
-            //canvas.Show();
         }
     }
 }

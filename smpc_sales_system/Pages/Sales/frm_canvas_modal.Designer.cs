@@ -142,18 +142,23 @@ namespace smpc_sales_system.Pages.Sales
             this.dataGridView1.CellEndEdit += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridView1_CellEndEdit);
             // 
             // supplier_id
-            // 
-            this.supplier_id.DataPropertyName = "supplier_id";
+            //
+            // Not data-bound - frm_canvas_modal.AddSupplierRow sets this cell directly, so
+            // there's nothing here for a DataPropertyName to bind against.
             this.supplier_id.HeaderText = "supplier_id";
             this.supplier_id.Name = "supplier_id";
+            this.supplier_id.ReadOnly = true;
             this.supplier_id.Visible = false;
-            // 
+            //
             // Column1
-            // 
+            //
+            // Shows the supplier's resolved name (see frm_canvas_modal.ResolveSupplierName),
+            // not the raw supplier_code it used to bind to - ReadOnly since it's only ever
+            // set by AddSupplierRow, never typed.
             this.Column1.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.Column1.DataPropertyName = "supplier_code";
             this.Column1.HeaderText = "SUPPLIERS";
             this.Column1.Name = "Column1";
+            this.Column1.ReadOnly = true;
             // 
             // NetPrice
             // 

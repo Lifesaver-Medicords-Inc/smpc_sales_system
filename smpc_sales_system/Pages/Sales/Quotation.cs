@@ -3642,13 +3642,14 @@ namespace smpc_sales_app.Pages.Sales
             }
         }
 
-        // INV. is icon-only - no stock number displayed, just the flag glyph, red when
-        // this row is short and black otherwise. The actual available number still lives
-        // in this same cell underneath (written by RefreshStockIndicator) purely so this
-        // method has something to compare quick_qty against; it just never reaches the
-        // screen. Left as a real DataGridViewTextBoxColumn (not a custom-painted one)
-        // since CellFormatting is the pattern this grid already leans on elsewhere for
-        // computed display values.
+        // INV. is icon-only, and only shows anything at all when this row is actually
+        // short - a good/covered row is just blank, not a black flag, so the flag itself
+        // reads as "something needs attention here" rather than a status indicator every
+        // row has. The actual available number still lives in this same cell underneath
+        // (written by RefreshStockIndicator) purely so this method has something to
+        // compare quick_qty against; it just never reaches the screen. Left as a real
+        // DataGridViewTextBoxColumn (not a custom-painted one) since CellFormatting is the
+        // pattern this grid already leans on elsewhere for computed display values.
         private void dgv_quick_quote_details_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
         {
             if (e.RowIndex < 0 || e.RowIndex >= dgv_quick_quote_details.Rows.Count) return;
@@ -3664,8 +3665,8 @@ namespace smpc_sales_app.Pages.Sales
             }
 
             bool isShort = required > 0 && available < required;
-            e.Value = "\U0001F6A9"; // same flag glyph either way - only the color changes
-            e.CellStyle.ForeColor = isShort ? Color.Red : Color.Black;
+            e.Value = isShort ? "\U0001F6A9" : "";
+            e.CellStyle.ForeColor = Color.Red;
             e.CellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
             e.FormattingApplied = true;
         }
