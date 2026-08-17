@@ -6,6 +6,7 @@ using smpc_sales_app.Services.Helpers;
 using smpc_sales_app.Services.Sales;
 using smpc_sales_system.Models;
 using smpc_sales_system.Services.Sales;
+using smpc_sales_system.Services.Sales.Models;
 using smpc_sales_system.Services.Setup;
 using System;
 using System.Collections.Generic;
@@ -38,6 +39,12 @@ namespace smpc_sales_system.Pages.Sales
         public event EventHandler CellClicked;
         public event EventHandler CellClickedModel;
         public event EventHandler CellClickedCanvas;
+        // Raised when the INV. column is clicked or the QTY column header is
+        // right-clicked (both gated by _isEditable, same as every other picker on this
+        // grid) - Quotation.cs owns the actual stock-check logic (it already has this
+        // exact machinery for Quick Quote), so this just asks it to run that logic
+        // against this tab's own grid instead of duplicating it here.
+        public event EventHandler CellClickedStock;
         public event EventHandler FinalTxtBoxClicked;
         public event EventHandler DeleteReferenceCode;
         public event EventHandler GetEngineerUsers;
@@ -52,6 +59,16 @@ namespace smpc_sales_system.Pages.Sales
             AttachCellValuechangedEventProjectItems(dgv_project_items);
             AttachCellValuechangedEventWiring(dgv_wiring);
             dgv_project_items.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+
+            // Clicking a header on either grid was re-sorting rows by that column, which
+            // silently detaches them from the reference_code/hierarchy ordering these two
+            // grids depend on (parent/child components, wiring sets) - disable it on every
+            // column instead of editing each one's SortMode individually in the designer.
+            foreach (DataGridViewColumn col in dgv_project_items.Columns)
+                col.SortMode = DataGridViewColumnSortMode.NotSortable;
+            foreach (DataGridViewColumn col in dgv_wiring.Columns)
+                col.SortMode = DataGridViewColumnSortMode.NotSortable;
+
             setProjectWirings();
 
             //Default hide wiring
@@ -720,6 +737,7 @@ namespace smpc_sales_system.Pages.Sales
                 }
 
                 DgvProjectItems.DataSource = stringTable;
+                RefreshAllStockIndicators();
 
                 // Seed SelectedImagesByRow from what was already saved for this tab, so a
                 // row the user doesn't touch this session still saves with its existing
@@ -961,6 +979,10 @@ namespace smpc_sales_system.Pages.Sales
                     newRow["bom_id"] = bomid;
 
                     dt.Rows.InsertAt(newRow, index);
+
+                    // Show available stock for the item just picked, before the user has
+                    // even typed a QTY yet - same as Quick Quote's GetItemData.
+                    RefreshStockIndicator(index);
                 }
             }
 
@@ -975,6 +997,8 @@ namespace smpc_sales_system.Pages.Sales
             newRow.Cells["item_id"].Value = itemid;
             newRow.Cells["project_items_model"].Value = model;
             // add styles soon
+
+            RefreshStockIndicator(index - 1);
         }
 
 
@@ -993,6 +1017,7 @@ namespace smpc_sales_system.Pages.Sales
             newRow.Cells["project_items_components"].Value = itemName;
             newRow.Cells["project_items_model"].Value = model;
 
+            RefreshStockIndicator(index);
 
             DataGridViewCellStyle cellStyle = new DataGridViewCellStyle
             {
@@ -1313,6 +1338,117 @@ namespace smpc_sales_system.Pages.Sales
             e.Cancel = true;
         }
 
+        // ---- Stock tracking (INV. column) ----
+        //
+        // Mirrors Quick Quote's quick_inv_stock setup in Quotation.cs, adapted to this
+        // grid's own column names (item_id is the same, but qty is "project_items_qty"
+        // and the per-line saved id is "project_items_id"/"items_id" instead of
+        // "quick_id"). Kept as its own small cache here rather than sharing Quotation.cs's
+        // _availableStockByItemId - Quotation.cs invalidates entries there and calls
+        // ClearStockCache below on this tab too whenever a reservation it applied would
+        // have changed the number, so the two stay in sync without this tab needing direct
+        // access to Quotation.cs's internals.
+        private readonly Dictionary<int, AvailableStockModel> _availableStockByItemId = new Dictionary<int, AvailableStockModel>();
+
+        public void ClearStockCache(int itemId)
+        {
+            _availableStockByItemId.Remove(itemId);
+        }
+
+        public void RefreshAllStockIndicators()
+        {
+            for (int i = 0; i < dgv_project_items.Rows.Count; i++)
+            {
+                if (dgv_project_items.Rows[i].IsNewRow) continue;
+                RefreshStockIndicator(i);
+            }
+        }
+
+        // async void, fire-and-forget, matching Quotation.cs's RefreshStockIndicator - a
+        // slow/failed lookup just leaves the cell blank instead of blocking the grid.
+        private async void RefreshStockIndicator(int rowIndex)
+        {
+            if (rowIndex < 0 || rowIndex >= dgv_project_items.Rows.Count || dgv_project_items.Rows[rowIndex].IsNewRow) return;
+            if (!dgv_project_items.Columns.Contains("project_inv_stock") || !dgv_project_items.Columns.Contains("item_id")) return;
+
+            var itemIdValue = dgv_project_items.Rows[rowIndex].Cells["item_id"].Value;
+            if (!int.TryParse(itemIdValue?.ToString(), out int itemId) || itemId <= 0) return;
+
+            int.TryParse(dgv_project_items.Rows[rowIndex].Cells["project_items_id"].Value?.ToString(), out int lineId);
+
+            try
+            {
+                if (!_availableStockByItemId.TryGetValue(itemId, out AvailableStockModel stock))
+                {
+                    stock = await ItemStockCheckService.GetAvailableStock(itemId);
+                    _availableStockByItemId[itemId] = stock;
+                }
+
+                int ownReservedQty = 0;
+                if (lineId > 0)
+                {
+                    var reservation = await ItemStockCheckService.GetReservation(lineId, "sales_project_item");
+                    if (reservation != null) ownReservedQty = reservation.qty;
+                }
+
+                if (rowIndex < dgv_project_items.Rows.Count && !dgv_project_items.Rows[rowIndex].IsNewRow)
+                {
+                    dgv_project_items.Rows[rowIndex].Cells["project_inv_stock"].Value = stock.available + ownReservedQty;
+                    dgv_project_items.InvalidateRow(rowIndex);
+                }
+            }
+            catch (Exception)
+            {
+                // Convenience indicator, not part of the save path - swallow rather than
+                // pop a MessageBox for every row on a flaky network.
+            }
+        }
+
+        // Icon-only, same rule as Quick Quote's INV. column - blank unless this row is
+        // actually short.
+        private void dgv_project_items_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
+        {
+            if (e.RowIndex < 0 || e.RowIndex >= dgv_project_items.Rows.Count) return;
+            if (dgv_project_items.Columns[e.ColumnIndex].Name != "project_inv_stock") return;
+            if (dgv_project_items.Rows[e.RowIndex].IsNewRow) return;
+
+            if (!int.TryParse(e.Value?.ToString(), out int available)) return;
+
+            int required = 0;
+            if (dgv_project_items.Columns.Contains("project_items_qty"))
+            {
+                int.TryParse(dgv_project_items.Rows[e.RowIndex].Cells["project_items_qty"].Value?.ToString(), out required);
+            }
+
+            bool isShort = required > 0 && available < required;
+            e.Value = isShort ? "\U0001F6A9" : "";
+            e.CellStyle.ForeColor = Color.Red;
+            e.CellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            e.FormattingApplied = true;
+        }
+
+        // Right-clicking the QTY column header opens the stock checker for this tab,
+        // same as Quick Quote's equivalent on dgv_quick_quote_details.
+        private void dgv_project_items_CellMouseDown(object sender, DataGridViewCellMouseEventArgs e)
+        {
+            if (e.RowIndex != -1 || e.Button != MouseButtons.Right) return;
+            if (dgv_project_items.Columns[e.ColumnIndex].Name != "project_items_qty") return;
+            if (!_isEditable) return;
+
+            CellClickedStock?.Invoke(this, EventArgs.Empty);
+        }
+
+        // Hard guard on top of reference_code.ReadOnly (Designer.cs) - cancels editing at
+        // the moment it's about to start, for this column specifically. CODE is an
+        // auto-generated hierarchy/tracking id, never meant to be hand-edited.
+        private void dgv_project_items_CellBeginEdit(object sender, DataGridViewCellCancelEventArgs e)
+        {
+            if (e.ColumnIndex >= 0 && dgv_project_items.Columns[e.ColumnIndex].Name == "reference_code")
+            {
+                e.Cancel = true;
+            }
+        }
+
         private void dgv_project_items_CellClick(object sender, DataGridViewCellEventArgs e)
         {
             if (e.RowIndex < 0 || e.ColumnIndex < 0)
@@ -1328,6 +1464,13 @@ namespace smpc_sales_system.Pages.Sales
             if (dgv_project_items.Columns[e.ColumnIndex].Name == "project_items_components")
             {
                 CellClicked?.Invoke(this, EventArgs.Empty);
+            }
+
+            // INV. column - always opens the stock checker on click, flagged or not,
+            // same as Quick Quote's equivalent column.
+            if (dgv_project_items.Columns[e.ColumnIndex].Name == "project_inv_stock")
+            {
+                CellClickedStock?.Invoke(this, EventArgs.Empty);
             }
 
             if (dgv_project_items.Columns[e.ColumnIndex].Name == "project_items_model")
@@ -1507,6 +1650,19 @@ namespace smpc_sales_system.Pages.Sales
         {
             string Id = dgv.Rows[index].Cells["item_id"].Value.ToString();
 
+            // Same guard as Quotation.cs's HandleModelSelectionClick - a row with no
+            // component picked yet has item_id "0", and ModelModal has no way to scope
+            // its list from that (its item_name_id lookup finds nothing and falls back to
+            // showing the entire unfiltered catalog, e.g. PUMP always appearing regardless
+            // of which row was clicked). Block it here instead of opening the modal.
+            if (string.IsNullOrWhiteSpace(Id) || Id == "0")
+            {
+                MessageBox.Show(
+                    "It doesn't have a component, that's why it can't select any models. Please select a component first.",
+                    "No Component Selected", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             ModelModal createModal = new ModelModal(ItemList, BomHead, BomDetails, Id);
             DialogResult result = createModal.ShowDialog();
 
@@ -1626,6 +1782,61 @@ namespace smpc_sales_system.Pages.Sales
 
                 // Optionally refresh DataGridView
                 //dgv.Refresh();
+            }
+        }
+
+        // Deleting a row (select via row header, press Delete - AllowUserToDeleteRows is
+        // on) used to just remove that single bound row, leaving gaps in reference_code
+        // and orphaned children behind if the deleted row was a parent. Same fix as
+        // Quotation.cs's dgv_quick_quote_details: cascade-delete the row's whole subtree,
+        // then renumber everything so the codes stay gapless and hierarchical.
+        private void dgv_project_items_UserDeletingRow(object sender, DataGridViewRowCancelEventArgs e)
+        {
+            e.Cancel = true;
+
+            if (e.Row.IsNewRow) return;
+
+            string referenceCode = e.Row.Cells["reference_code"].Value?.ToString();
+            if (string.IsNullOrWhiteSpace(referenceCode)) return;
+
+            DeleteRowsByReferenceCode(e.Row.Index, dgv_project_items);
+            RenumberReferenceCodes(dgv_project_items);
+        }
+
+        // Walks the grid's rows in their current display order and rebuilds every
+        // reference_code from scratch so numbering stays gapless after a delete -
+        // top-level items are renumbered 1, 2, 3... in order, and every descendant keeps
+        // its original sub-level suffix but adopts its (possibly renumbered) parent's new
+        // top-level number, so e.g. "3.3.1" becomes "2.3.1" if the row that used to be
+        // "3" is now "2".
+        private void RenumberReferenceCodes(DataGridView dgv)
+        {
+            if (!(dgv.DataSource is DataTable dataSource) || !dataSource.Columns.Contains("reference_code"))
+                return;
+
+            int topLevelCounter = 0;
+            string currentNewTopPrefix = null;
+
+            foreach (DataRow row in dataSource.Rows)
+            {
+                string oldCode = row["reference_code"]?.ToString();
+                if (string.IsNullOrWhiteSpace(oldCode))
+                    continue;
+
+                string[] segments = oldCode.Split('.');
+
+                if (segments.Length == 1)
+                {
+                    topLevelCounter++;
+                    currentNewTopPrefix = topLevelCounter.ToString();
+                    row["reference_code"] = currentNewTopPrefix;
+                }
+                else
+                {
+                    string newTopPrefix = currentNewTopPrefix ?? segments[0];
+                    string suffix = string.Join(".", segments.Skip(1));
+                    row["reference_code"] = $"{newTopPrefix}.{suffix}";
+                }
             }
         }
 
@@ -1892,6 +2103,15 @@ namespace smpc_sales_system.Pages.Sales
         public EventHandler CellEdited;
         private void dgv_project_items_CellEndEdit(object sender, DataGridViewCellEventArgs e)
         {
+            // Re-check stock the moment QTY changes, same as Quick Quote's equivalent -
+            // the flag lives on a different cell (project_inv_stock), so it needs an
+            // explicit repaint to reflect what was just typed.
+            if (e.RowIndex >= 0 && dgv_project_items.Columns[e.ColumnIndex].Name == "project_items_qty" &&
+                dgv_project_items.Columns.Contains("project_inv_stock"))
+            {
+                dgv_project_items.InvalidateCell(dgv_project_items.Columns["project_inv_stock"].Index, e.RowIndex);
+            }
+
             // The actual recompute (ComputeByReferenceHierarchy + ComputeReferenceNonHierarchy,
             // which also now sets the DISCOUNT column - see ComputeReferenceNonHierarchy) runs
             // via CellEdited -> Quotation.Cell_EditedUC -> RecomputeParentTotals ->

@@ -192,6 +192,7 @@ namespace smpc_sales_system.Pages.Sales
             this.project_items_model = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.project_items_item_inv_type = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.project_items_qty = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.project_inv_stock = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.man_days = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.labor_rate = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.project_items_list_price = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -926,6 +927,7 @@ namespace smpc_sales_system.Pages.Sales
             this.project_items_components,
             this.project_items_model,
             this.project_items_item_inv_type,
+            this.project_inv_stock,
             this.project_items_qty,
             this.man_days,
             this.labor_rate,
@@ -955,11 +957,15 @@ namespace smpc_sales_system.Pages.Sales
             this.dgv_project_items.RowHeadersDefaultCellStyle = dataGridViewCellStyle6;
             this.dgv_project_items.Size = new System.Drawing.Size(1092, 408);
             this.dgv_project_items.TabIndex = 151;
+            this.dgv_project_items.CellBeginEdit += new System.Windows.Forms.DataGridViewCellCancelEventHandler(this.dgv_project_items_CellBeginEdit);
             this.dgv_project_items.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgv_project_items_CellClick);
             this.dgv_project_items.CellEndEdit += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgv_project_items_CellEndEdit);
             this.dgv_project_items.CellValueChanged += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgv_project_items_CellValueChanged);
             this.dgv_project_items.DataError += new System.Windows.Forms.DataGridViewDataErrorEventHandler(this.dgv_project_items_DataError);
-            // 
+            this.dgv_project_items.CellFormatting += new System.Windows.Forms.DataGridViewCellFormattingEventHandler(this.dgv_project_items_CellFormatting);
+            this.dgv_project_items.CellMouseDown += new System.Windows.Forms.DataGridViewCellMouseEventHandler(this.dgv_project_items_CellMouseDown);
+            this.dgv_project_items.UserDeletingRow += new System.Windows.Forms.DataGridViewRowCancelEventHandler(this.dgv_project_items_UserDeletingRow);
+            //
             // bs_project_components
             // 
             this.bs_project_components.DataMember = "tbl_project_components";
@@ -1525,6 +1531,8 @@ namespace smpc_sales_system.Pages.Sales
             this.reference_code.DataPropertyName = "reference_code";
             this.reference_code.HeaderText = "CODE";
             this.reference_code.Name = "reference_code";
+            // Auto-generated hierarchy/tracking id - never meant to be hand-edited.
+            this.reference_code.ReadOnly = true;
             this.reference_code.Width = 50;
             // 
             // project_items_components
@@ -1558,7 +1566,22 @@ namespace smpc_sales_system.Pages.Sales
             this.project_items_qty.MinimumWidth = 40;
             this.project_items_qty.Name = "project_items_qty";
             this.project_items_qty.Width = 40;
-            // 
+            //
+            // project_inv_stock
+            //
+            // Icon-only stock shortage indicator, same convention as Quick Quote's
+            // quick_inv_stock column - blank if this line's item has enough available
+            // stock, a red flag if not. Not bound to a real data field (DataPropertyName
+            // left unset) - RefreshStockIndicator/RefreshAllStockIndicators in ItemSetUC.cs
+            // write the actual available number into this cell after each load/refresh,
+            // and dgv_project_items_CellFormatting replaces that with just the icon before
+            // it's ever seen, same as the Quick Quote grid.
+            this.project_inv_stock.HeaderText = "INV.";
+            this.project_inv_stock.Name = "project_inv_stock";
+            this.project_inv_stock.ReadOnly = true;
+            this.project_inv_stock.Width = 40;
+            this.project_inv_stock.DefaultCellStyle.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            //
             // man_days
             // 
             this.man_days.DataPropertyName = "man_days";
@@ -1839,6 +1862,7 @@ namespace smpc_sales_system.Pages.Sales
         private System.Windows.Forms.DataGridViewTextBoxColumn project_items_model;
         private System.Windows.Forms.DataGridViewTextBoxColumn project_items_item_inv_type;
         private System.Windows.Forms.DataGridViewTextBoxColumn project_items_qty;
+        private System.Windows.Forms.DataGridViewTextBoxColumn project_inv_stock;
         private System.Windows.Forms.DataGridViewTextBoxColumn man_days;
         private System.Windows.Forms.DataGridViewTextBoxColumn labor_rate;
         private System.Windows.Forms.DataGridViewTextBoxColumn project_items_list_price;

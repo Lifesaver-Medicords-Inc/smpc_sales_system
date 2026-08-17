@@ -1,4 +1,3 @@
-using smpc_sales_app.Services.Sales;
 using smpc_sales_system.Services.Sales.Models;
 using System;
 using System.Collections.Generic;
@@ -45,18 +44,20 @@ namespace smpc_sales_system.Pages.Sales
     // parentheses).
     //
     // RESERVE is a plain manual checkbox, editable freely by any sales user while this
-    // modal is open - it does NOT call the backend on every click. Nothing is applied
-    // until SAVE is pressed, which then compares each row's checkbox against what it
-    // started as and only touches the lines that actually changed
-    // (CreateStockReservation for newly checked, ReleaseStockReservation for newly
-    // unchecked). CANCEL discards everything typed/toggled here.
+    // modal is open - it never calls the backend itself, for ANY line, saved or not.
+    // There's no "SAVE" here anymore: reservations are only ever actually created/
+    // released once the whole Sales Quotation itself is saved, so a reservation can
+    // never exist for a quotation that was never committed. Clicking OK just hands back
+    // which lines changed (PendingChangesByReferenceCode); Quotation.cs holds onto that
+    // and applies it right after a successful quotation save, once every line - new or
+    // pre-existing - has a real id to reserve against (see ApplyPendingReservationsAsync).
+    // CANCEL discards whatever was toggled in this session.
     //
-    // A line that hasn't been saved yet (QuickId <= 0) has nothing to attach a
-    // reservation to, but the checkbox is still checkable - checking it just records
-    // the intent in PendingReserveReferenceCodes instead of calling the backend.
-    // Quotation.cs holds onto that intent and actually reserves the stock right after
-    // the quotation is saved and the line gets a real id (see
-    // ApplyPendingReservationsAsync).
+    // Because nothing is committed here, reopening this modal before the quotation is
+    // actually saved needs to show what the user already asked for, not just the last
+    // true backend state - see Quotation.cs's HandleStockCheckClick, which layers any
+    // already-pending choice on top of the real GetReservation() result before building
+    // each StockCheckRow.
     //
     // STOCK/PROJ. for a line that already has its own reservation are shown net of that
     // line's own hold added back (see EffectiveAvailable) - Stock.available already
@@ -68,13 +69,11 @@ namespace smpc_sales_system.Pages.Sales
     // has this" shortage.
     public partial class StockCheckModal : Form
     {
-        // Every quick_id whose reservation was actually created/released by the last
-        // SAVE, so the caller can refresh what it treats as reserved.
-        public HashSet<int> ChangedQuickIds { get; } = new HashSet<int>();
-
-        // reference_code of every not-yet-saved line that got checked this SAVE - see
-        // class remarks.
-        public List<string> PendingReserveReferenceCodes { get; } = new List<string>();
+        // reference_code -> the state the user wants that line to end up in (true =
+        // reserved, false = released), for every row whose checkbox no longer matches
+        // what it started as. Empty if OK is clicked with nothing changed, or always
+        // empty if CANCEL is clicked.
+        public Dictionary<string, bool> PendingChangesByReferenceCode { get; } = new Dictionary<string, bool>();
 
         // Quotation.cs supplies this - opening frm_canvas_modal needs bpi_general/
         // bpi_items, which live over there, not here, so SEND REQUEST just hands back
@@ -118,17 +117,17 @@ namespace smpc_sales_system.Pages.Sales
                 if (isUnsaved)
                 {
                     // No SalesQuotationQuick id yet to attach a reservation to (see
-                    // Quotation.cs's HandleStockCheckClick) - still checkable though;
-                    // checking it just queues the intent (see PendingReserveReferenceCodes)
-                    // rather than calling the backend immediately.
+                    // Quotation.cs's HandleStockCheckClick) - still checkable though; it
+                    // just waits on the quotation save the same as an already-saved
+                    // line's toggle now does.
                     gridRow.DefaultCellStyle.ForeColor = Color.DimGray;
                     anyUnsaved = true;
                 }
             }
 
             lbl_reserve_note.Text = anyUnsaved
-                ? "Toggle RESERVE for any line, then press SAVE to apply. Lines marked \"not saved yet\" will be reserved automatically once you save the whole quotation."
-                : "Toggle RESERVE for any line, then press SAVE to apply - nothing changes until you save.";
+                ? "Toggle RESERVE for any line, then press OK. Nothing is actually reserved/released until you save the whole quotation - including lines marked \"not saved yet\"."
+                : "Toggle RESERVE for any line, then press OK. Nothing is actually reserved/released until you save the whole quotation.";
         }
 
         private void StockCheckModal_Load(object sender, EventArgs e)
@@ -159,7 +158,7 @@ namespace smpc_sales_system.Pages.Sales
 
         // Standard WinForms idiom: a DataGridViewCheckBoxColumn's edit doesn't commit
         // (so its Value isn't up to date yet) until the cell loses focus, unless you
-        // force it here - needed since SAVE reads every row's current checkbox Value,
+        // force it here - needed since OK reads every row's current checkbox Value,
         // including whichever cell was clicked last and may still be "current".
         private void dgv_projected_inventory_CurrentCellDirtyStateChanged(object sender, EventArgs e)
         {
@@ -171,10 +170,9 @@ namespace smpc_sales_system.Pages.Sales
 
         // Blocks checking RESERVE when there isn't enough available stock to cover this
         // line's required qty (STOCK 0 is just the extreme case of this - a shortage is
-        // a shortage whether it's 0 or "have 2, need 5"). Unlike the actual
-        // reserve/release calls, this is purely local validation - nothing's been sent
-        // to the backend yet at this point (see class remarks on SAVE being what
-        // applies changes), so reverting the checkbox here has nothing to undo.
+        // a shortage whether it's 0 or "have 2, need 5"). This is purely local
+        // validation - nothing's ever sent to the backend from this modal at all (see
+        // class remarks), so reverting the checkbox here has nothing to undo.
         private void dgv_projected_inventory_CellValueChanged(object sender, DataGridViewCellEventArgs e)
         {
             if (e.RowIndex < 0) return;
@@ -208,104 +206,26 @@ namespace smpc_sales_system.Pages.Sales
             }
         }
 
-        private async void btn_save_Click(object sender, EventArgs e)
+        // No backend calls here at all anymore - just records which lines actually
+        // changed (checkbox no longer matches line.IsReserved, which itself may already
+        // reflect an earlier pending choice - see Quotation.cs's HandleStockCheckClick)
+        // and hands that back via PendingChangesByReferenceCode. Quotation.cs is what
+        // actually calls CreateReservation/ReleaseReservation, and only once, once the
+        // whole quotation has actually been saved.
+        private void btn_ok_Click(object sender, EventArgs e)
         {
             dgv_projected_inventory.EndEdit();
-
-            var toReserve = new List<StockCheckRow>();
-            var toRelease = new List<StockCheckRow>();
-            PendingReserveReferenceCodes.Clear();
 
             foreach (DataGridViewRow gridRow in dgv_projected_inventory.Rows)
             {
                 var line = gridRow.Tag as StockCheckRow;
                 if (line == null) continue;
+                if (string.IsNullOrEmpty(line.ReferenceCode)) continue;
 
                 bool nowChecked = gridRow.Cells["col_reserve"].Value is bool b && b;
                 if (nowChecked == line.IsReserved) continue;
 
-                if (line.QuickId <= 0)
-                {
-                    // Not saved yet - nothing to attach a reservation to right now (and
-                    // nothing to release either, since an unsaved line was never
-                    // reserved in the first place). Queue the intent instead; Quotation.cs
-                    // applies it once this line has a real id.
-                    if (nowChecked && !string.IsNullOrEmpty(line.ReferenceCode))
-                    {
-                        PendingReserveReferenceCodes.Add(line.ReferenceCode);
-                    }
-                    continue;
-                }
-
-                if (nowChecked) toReserve.Add(line);
-                else toRelease.Add(line);
-            }
-
-            if (toReserve.Count == 0 && toRelease.Count == 0)
-            {
-                DialogResult = DialogResult.OK;
-                Close();
-                return;
-            }
-
-            if (toRelease.Count > 0)
-            {
-                var names = string.Join(", ", toRelease.ConvertAll(l => l.ItemName));
-                var confirm = MessageBox.Show(
-                    $"This will release reserved stock for: {names}. It won't be automatically re-reserved - continue?",
-                    "Confirm Changes",
-                    MessageBoxButtons.YesNo,
-                    MessageBoxIcon.Warning);
-
-                if (confirm != DialogResult.Yes) return;
-            }
-
-            btn_save.Enabled = false;
-            btn_close.Enabled = false;
-
-            var failures = new List<string>();
-
-            foreach (var line in toReserve)
-            {
-                try
-                {
-                    await ItemStockCheckService.CreateReservation(line.ItemId, line.RequiredQty, line.QuickId, line.QuotationId, line.ExpiresAt);
-                    line.IsReserved = true;
-                    ChangedQuickIds.Add(line.QuickId);
-                }
-                catch (Exception ex)
-                {
-                    failures.Add($"{line.ItemName}: {ex.Message}");
-                }
-            }
-
-            foreach (var line in toRelease)
-            {
-                try
-                {
-                    await ItemStockCheckService.ReleaseReservation(line.QuickId);
-                    line.IsReserved = false;
-                    ChangedQuickIds.Add(line.QuickId);
-                }
-                catch (Exception ex)
-                {
-                    failures.Add($"{line.ItemName}: {ex.Message}");
-                }
-            }
-
-            btn_save.Enabled = true;
-            btn_close.Enabled = true;
-
-            if (failures.Count > 0)
-            {
-                MessageBox.Show(
-                    "Some changes couldn't be applied:\n" + string.Join("\n", failures),
-                    "Some Changes Failed",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Error);
-                // Leave the modal open so the checkboxes still reflect what the user
-                // asked for and they can retry SAVE rather than losing the edits.
-                return;
+                PendingChangesByReferenceCode[line.ReferenceCode] = nowChecked;
             }
 
             DialogResult = DialogResult.OK;
@@ -314,8 +234,10 @@ namespace smpc_sales_system.Pages.Sales
 
         private void btn_close_Click(object sender, EventArgs e)
         {
-            // Discards whatever's been toggled - nothing was ever sent to the backend
-            // until SAVE, so there's nothing to undo here.
+            // Discards whatever's been toggled this session - PendingChangesByReferenceCode
+            // stays empty, so Quotation.cs has nothing new to apply. Anything that was
+            // already pending from a previous OK (on an earlier open of this modal) is
+            // untouched either way, since that lives on the Quotation form, not here.
             DialogResult = DialogResult.Cancel;
             Close();
         }

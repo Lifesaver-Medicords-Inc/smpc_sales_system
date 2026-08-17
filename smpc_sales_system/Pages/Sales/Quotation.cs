@@ -647,7 +647,7 @@ namespace smpc_sales_app.Pages.Sales
                 quick_tab.Height = 507;
             }
         }
-        private void btn_quick_quote_Click(object sender, EventArgs e)
+        private async void btn_quick_quote_Click(object sender, EventArgs e)
         {
             //1028, 2354
             this.btn_quick_quote.BackColor = Color.FromArgb(255, 128, 128);
@@ -668,10 +668,15 @@ namespace smpc_sales_app.Pages.Sales
             // save-notification channel.
             DisconnectSaveNotify();
 
-            fetchQuotationDetails();
-
             Helpers.ResetControls(pnl_header);
             ResetControls(pnl_footer);
+
+            // Same loading overlay + button lock used for Project Quotation's equivalent
+            // (btn_project_Click) - this previously fired fetchQuotationDetails() without
+            // awaiting it, so the handler returned (and buttons stayed clickable) before the
+            // fetch had even reached its first await, and nothing locked the screen while
+            // bind() repopulated pnl_header/pnl_footer.
+            await RunWithLoadingAsync(async () => await fetchQuotationDetails(), "Loading...");
         }
 
         // Short/Long Description (txt_short_description, txt_long_description, and their
@@ -714,7 +719,7 @@ namespace smpc_sales_app.Pages.Sales
             // ItemSetUC (with its own item/wiring/final grids) - all of that is empty/stale
             // until it finishes, so cover the whole switch-to-Project-Quotation flow with the
             // same loading overlay + button lock used for Quick Quote.
-            await RunWithLoadingAsync(async () => await fetchSalesProjectData(), "Loading project quotation, please wait...");
+            await RunWithLoadingAsync(async () => await fetchSalesProjectData(), "Loading...");
         }
 
         // Every SalesProjectHistory row for the whole current project - every tab's item set
@@ -871,9 +876,13 @@ namespace smpc_sales_app.Pages.Sales
             toolstrip_quotation.Enabled = false;
             dgv_quick_quote_details.Enabled = false;
 
-            // Show a loading overlay on the grid while the (potentially large) quotation list
-            // is fetched and bound - this call can take a noticeable moment.
-            Helpers.Loading.ShowLoading(dgv_quick_quote_details, "Fetching quotations...");
+            // Cover pnl_header/pnl_footer too, not just the grid - bind() (below) fills
+            // both of those from the same fetch, so leaving them uncovered meant the header/
+            // footer fields visibly popped in (or briefly showed blank/reset text - see
+            // btn_quick_quote_Click, which clears them right after kicking this off) instead
+            // of staying hidden behind the overlay until everything is actually ready.
+            Control[] loadingTargets = { pnl_header, pnl_footer, dgv_quick_quote_details };
+            Helpers.Loading.ShowLoading(loadingTargets, "Loading...");
 
             try
             {
@@ -909,13 +918,21 @@ namespace smpc_sales_app.Pages.Sales
                     if (ownedIndexes.Count == 0)
                     {
                         MessageBox.Show("You have no saved quotations yet. Click New to create one.");
-                        Helpers.ResetReadOnlyControls(panels);
+                        // Stay locked/read-only here (matches the rest of the blank/view state) -
+                        // "New Quote" is what should unlock the fields, not just landing on this
+                        // module with nothing to show yet.
+
+                        // bind() (which normally sets these off isFinalized) never runs here
+                        // since there's no record - without this, Finalize/Sales Order were left
+                        // at whatever SetNewFormMode(false) set them to (Finalize enabled), even
+                        // though there's nothing to finalize yet.
+                        btn_finalize.Enabled = false;
+                        btn_sales_order.Enabled = false;
                     }
                     else
                     {
                         SelectedRow = ownedIndexes[0];
 
-                        await Task.Delay(2000); // optional wait
                         bind(transactionList, SelectedRow, true);
 
                         createFilterViewDgvQuickQouteDetails();
@@ -926,15 +943,17 @@ namespace smpc_sales_app.Pages.Sales
                 {
                     MessageBox.Show("Please create a new data!");
 
-                    Helpers.ResetReadOnlyControls(panels);
+                    // Same as above - leave the form locked; "New Quote" unlocks it.
                     //pnl_header.Enabled = true;
                     //pnl_footer.Enabled = true;
 
+                    btn_finalize.Enabled = false;
+                    btn_sales_order.Enabled = false;
                 }
             }
             finally
             {
-                Helpers.Loading.HideLoading(dgv_quick_quote_details);
+                Helpers.Loading.HideLoading(loadingTargets);
                 toolstrip_quotation.Enabled = true;
             }
         }
@@ -1067,6 +1086,7 @@ namespace smpc_sales_app.Pages.Sales
                 UC.CellClicked += Cell_ClickedUC;
                 UC.CellClicked += Cell_EditedUC;
                 UC.CellClickedModel += CellClickedModelUC;
+                UC.CellClickedStock += ItemSetUC_CellClickedStock;
                 //UC.DeleteReferenceCode += DeleteRowsByReferenceCode;
 
                 // Add the UserControl to the new tab
@@ -1232,6 +1252,7 @@ namespace smpc_sales_app.Pages.Sales
                 UC.CellClicked += Cell_ClickedUC;
                 UC.CellEdited += Cell_EditedUC;
                 UC.CellClickedModel += CellClickedModelUC;
+                UC.CellClickedStock += ItemSetUC_CellClickedStock;
                 //UC.DeleteReferenceCode += DeleteRowsByReferenceCode;
 
                 //UC.ItemChanged += ItemChanged;
@@ -1655,7 +1676,11 @@ namespace smpc_sales_app.Pages.Sales
                     // Refetch so SalesProjectListData (and therefore Change History) reflects
                     // what was actually just saved instead of staying stale until the user
                     // happens to navigate away and back.
-                    await RunWithLoadingAsync(async () => await fetchSalesProjectData(), "Loading project quotation, please wait...");
+                    await RunWithLoadingAsync(async () => await fetchSalesProjectData(), "Loading...");
+
+                    // Every tab's rows now have real project_items_id values from the reload -
+                    // apply any RESERVE/release toggled in a tab's stock checker before this save.
+                    await ApplyPendingProjectReservationsAsync();
                 }
                 else
                     MessageBox.Show($"Insert error: {response.message}");
@@ -1682,7 +1707,10 @@ namespace smpc_sales_app.Pages.Sales
                     // Same reason as the isNewRecord branch - without this, the newly
                     // auto-generated Change History entries (project fields, multipliers,
                     // per-tab changes) wouldn't show up until the next unrelated refresh.
-                    await RunWithLoadingAsync(async () => await fetchSalesProjectData(), "Loading project quotation, please wait...");
+                    await RunWithLoadingAsync(async () => await fetchSalesProjectData(), "Loading...");
+
+                    // Same as the isNewRecord branch above.
+                    await ApplyPendingProjectReservationsAsync();
                 }
                 else
                     MessageBox.Show($"Update error: {response.message}");
@@ -3121,7 +3149,13 @@ namespace smpc_sales_app.Pages.Sales
                             // IF SUCCESS
 
                             MessageBox.Show("Quotation Successfully saved");
-                            await RunWithLoadingAsync(async () => await fetchQuotationDetails(), "Loading quotation, please wait...");
+                            await RunWithLoadingAsync(async () => await fetchQuotationDetails(), "Loading...");
+
+                            // Any RESERVE/release toggled in StockCheckModal before this
+                            // save is still just pending intent (see
+                            // _pendingReservationByReferenceCode) - every line now has a
+                            // real id after that reload, so apply it for real.
+                            await ApplyPendingReservationsAsync();
 
                             SetNewFormMode(false);
                         }
@@ -3158,6 +3192,90 @@ namespace smpc_sales_app.Pages.Sales
             }
         }
         private int selectedItem;
+
+        // Hard guard on top of reference_code.ReadOnly (Designer.cs) - cancels editing at
+        // the moment it's about to start, for this column specifically, regardless of
+        // whatever let typing through despite ReadOnly being set. CODE is an auto-generated
+        // hierarchy/tracking id (drives reservation matching and parent/child computation),
+        // never meant to be hand-edited.
+        private void dgv_quick_quote_details_CellBeginEdit(object sender, DataGridViewCellCancelEventArgs e)
+        {
+            if (e.ColumnIndex >= 0 && dgv_quick_quote_details.Columns[e.ColumnIndex].Name == "reference_code")
+            {
+                e.Cancel = true;
+            }
+        }
+
+        // Deleting a row (select via row header, press Delete - AllowUserToDeleteRows is
+        // on, default WinForms behavior) used to just remove that single bound row,
+        // leaving gaps in reference_code (delete "2" out of 1/2/3 -> left with 1/3
+        // instead of 1/2) and orphaned children behind if the deleted row was a parent
+        // (its "2.1"/"2.2" sub-items stuck around with no visible parent). Handle the
+        // deletion ourselves: cascade-delete the row's whole subtree (same helper the
+        // "re-select model" flow already uses), then renumber everything so the codes
+        // stay gapless and hierarchical.
+        private void dgv_quick_quote_details_UserDeletingRow(object sender, DataGridViewRowCancelEventArgs e)
+        {
+            e.Cancel = true;
+
+            if (e.Row.IsNewRow) return;
+
+            string referenceCode = e.Row.Cells["reference_code"].Value?.ToString();
+            if (string.IsNullOrWhiteSpace(referenceCode)) return;
+
+            DeleteRowsByReferenceCode(e.Row.Index, dgv_quick_quote_details);
+            RenumberReferenceCodes(dgv_quick_quote_details);
+        }
+
+        // Walks the grid's rows in their current display order and rebuilds every
+        // reference_code from scratch so numbering stays gapless after a delete -
+        // top-level items are renumbered 1, 2, 3... in order, and every descendant keeps
+        // its original sub-level suffix but adopts its (possibly renumbered) parent's new
+        // top-level number, so e.g. "3.3.1" becomes "2.3.1" if the row that used to be
+        // "3" is now "2".
+        private void RenumberReferenceCodes(DataGridView dgv)
+        {
+            // Same DataView-vs-DataTable unwrap as DeleteRowsByReferenceCode - the grid is
+            // bound to a DataView, not a DataTable, whenever an existing quotation is
+            // loaded, which "dgv.DataSource is DataTable" doesn't match.
+            DataTable dataSource = dgv.DataSource as DataTable ?? (dgv.DataSource as DataView)?.Table;
+            if (dataSource == null || !dataSource.Columns.Contains("reference_code"))
+                return;
+
+            bool wasUpdating = isUpdatingHierarchy;
+            isUpdatingHierarchy = true;
+
+            int topLevelCounter = 0;
+            string currentNewTopPrefix = null;
+
+            foreach (DataRow row in dataSource.Rows)
+            {
+                string oldCode = row["reference_code"]?.ToString();
+                if (string.IsNullOrWhiteSpace(oldCode))
+                    continue;
+
+                string[] segments = oldCode.Split('.');
+
+                if (segments.Length == 1)
+                {
+                    topLevelCounter++;
+                    currentNewTopPrefix = topLevelCounter.ToString();
+                    row["reference_code"] = currentNewTopPrefix;
+                }
+                else
+                {
+                    string newTopPrefix = currentNewTopPrefix ?? segments[0];
+                    string suffix = string.Join(".", segments.Skip(1));
+                    row["reference_code"] = $"{newTopPrefix}.{suffix}";
+                }
+            }
+
+            isUpdatingHierarchy = wasUpdating;
+
+            ComputeByReferenceHierarchy();
+            ComputeReferenceNonHierarchy();
+            ComputeFooterTotals();
+        }
 
         private void dgv_quick_quote_details_CellClick(object sender, DataGridViewCellEventArgs e)
         {
@@ -3205,10 +3323,10 @@ namespace smpc_sales_app.Pages.Sales
 
                 // INV. Column - stock checker. Always opens on click, flagged or not (the
                 // icon just tells you whether there's a shortage - it doesn't gate
-                // whether you can check/reserve). Not gated on !IsView: checking stock is
-                // a read (and, for a manager, a reservation release) that's still useful
-                // while just viewing a saved quotation.
-                if (dgv_quick_quote_details.Columns[e.ColumnIndex].Name == "quick_inv_stock")
+                // whether you can check/reserve). Gated on !IsView, same as the other
+                // line-editing columns above - checking/reserving stock is an Add/Edit
+                // action, not something available while just viewing a saved quotation.
+                if (dgv_quick_quote_details.Columns[e.ColumnIndex].Name == "quick_inv_stock" && !IsView)
                 {
                     HandleStockCheckClick(e.RowIndex, dgv_quick_quote_details);
                 }
@@ -3478,7 +3596,19 @@ namespace smpc_sales_app.Pages.Sales
 
         private void HandleModelSelectionClick(int RowIndex, DataGridView dgv)
         {
-            string Id = dgv.Rows[RowIndex].Cells["item_id"].Value.ToString();
+            string Id = dgv.Rows[RowIndex].Cells["item_id"].Value?.ToString();
+
+            // No component picked yet for this row - item_id is blank, and passing that
+            // straight into ModelModal's constructor is what threw the raw "Input string
+            // was not in a correct format" FormatException. Catch it here instead with a
+            // message that actually tells the user what to do.
+            if (string.IsNullOrWhiteSpace(Id) || Id == "0")
+            {
+                MessageBox.Show(
+                    "It doesn't have a component, that's why it can't select any models. Please select a component first.",
+                    "No Component Selected", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
 
             ModelModal createModal = new ModelModal(ItemList, BomHead, BomDetails, Id);
             DialogResult result = createModal.ShowDialog();
@@ -3531,7 +3661,13 @@ namespace smpc_sales_app.Pages.Sales
         // Selected item from item list
         private void HandleItemSelectionClick(int rowIndex, DataGridView dgv)
         {
-            counterReference++;
+            // Was counterReference++ - a running counter that only ever goes up, so it
+            // drifted away from what's actually on the grid the moment anything got
+            // deleted/renumbered (e.g. grid shows 1, 2 but counterReference was already at
+            // 4 from earlier adds, so the next item became "5" instead of "3"). Recompute
+            // from the grid's real current max every time instead, so it's always correct
+            // regardless of delete/renumber history.
+            counterReference = GetMaxTopLevelReferenceCode(dgv) + 1;
             SalesItemModal itemModal = new SalesItemModal(ItemList, BomHead, BomDetails);
             DialogResult r = itemModal.ShowDialog();
 
@@ -3571,6 +3707,11 @@ namespace smpc_sales_app.Pages.Sales
         // unbound columns don't survive a DataSource swap, so this is what puts the
         // numbers (and, through them, the flag icon) back after every load/reload (see
         // the DataBindingComplete wire-up in Quotation.Designer.cs).
+        //
+        // Runs regardless of IsView - the flag itself is still worth seeing while just
+        // viewing a saved quotation (it's useful, at-a-glance info either way); it's only
+        // the check/reserve interaction that's Add/Edit-only (see dgv_quick_quote_details_
+        // CellClick / CellMouseDown).
         private void dgv_quick_quote_details_DataBindingComplete(object sender, DataGridViewBindingCompleteEventArgs e)
         {
             RefreshAllStockIndicators(dgv_quick_quote_details);
@@ -3680,6 +3821,8 @@ namespace smpc_sales_app.Pages.Sales
         {
             if (e.RowIndex != -1 || e.Button != MouseButtons.Right) return;
             if (dgv_quick_quote_details.Columns[e.ColumnIndex].Name != "quick_qty") return;
+            // Same Add/Edit-only gate as the INV. column click - see dgv_quick_quote_details_CellClick.
+            if (IsView) return;
 
             HandleStockCheckClick(-1, dgv_quick_quote_details);
         }
@@ -3751,6 +3894,19 @@ namespace smpc_sales_app.Pages.Sales
                         // so this line doesn't flag itself as short of stock it already has.
                         if (reservation != null) ownReservedQty = reservation.qty;
                     }
+
+                    // Nothing actually changes in the backend until the quotation itself
+                    // is saved (see ApplyPendingReservationsAsync), so if this line already
+                    // has an unsaved pending choice from an earlier OK, that choice - not
+                    // the true-but-not-yet-applied backend state - is what the checkbox
+                    // should show on reopen. ownReservedQty deliberately stays the real
+                    // backend figure either way - the shared available pool genuinely
+                    // hasn't moved yet for a pending-but-unapplied reservation.
+                    if (!string.IsNullOrEmpty(referenceCode) &&
+                        _pendingReservationByReferenceCode.TryGetValue(referenceCode, out bool pendingState))
+                    {
+                        isReserved = pendingState;
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -3782,45 +3938,32 @@ namespace smpc_sales_app.Pages.Sales
             var modal = new StockCheckModal(lines, line => HandleCanvasSelectionClick(-1, line.ItemId.ToString()));
             modal.ShowDialog();
 
-            if (modal.ChangedQuickIds.Count > 0)
+            // Nothing was actually reserved/released just now, for any line - OK only
+            // hands back which lines changed. Merge those in (overwriting any earlier
+            // pending choice for the same line) so ApplyPendingReservationsAsync can act
+            // on all of it, together, right after the quotation itself is actually saved.
+            foreach (var change in modal.PendingChangesByReferenceCode)
             {
-                // SAVE actually reserved/released something on the server, so the
-                // cached available-stock numbers for those items are now stale -
-                // without this, the next time this same quotation checks stock (still
-                // the same Quotation instance/cache) it'd keep showing the old figures
-                // until the whole screen was closed and reopened.
-                var affectedItemIds = new HashSet<int>(
-                    lines.FindAll(l => modal.ChangedQuickIds.Contains(l.QuickId)).ConvertAll(l => l.ItemId));
-
-                foreach (var affectedItemId in affectedItemIds)
-                {
-                    _availableStockByItemId.Remove(affectedItemId);
-                }
-
-                RefreshAllStockIndicators(dgv);
-            }
-
-            // Lines that weren't saved yet but got RESERVE checked anyway - queued here,
-            // actually reserved once the quotation is saved and these lines get real ids
-            // (see ApplyPendingReservationsAsync, called right after a successful save).
-            foreach (var referenceCode in modal.PendingReserveReferenceCodes)
-            {
-                _pendingReservationReferenceCodes.Add(referenceCode);
+                _pendingReservationByReferenceCode[change.Key] = change.Value;
             }
         }
 
-        // reference_code of every not-yet-saved line a user checked RESERVE for in
-        // StockCheckModal - there's nothing to reserve yet (no SalesQuotationQuick id),
-        // so the intent waits here until the quotation is actually saved.
-        private readonly HashSet<string> _pendingReservationReferenceCodes = new HashSet<string>();
+        // reference_code -> the state a line should end up in (true = reserved, false =
+        // released), for every line whose RESERVE checkbox was toggled in StockCheckModal
+        // and confirmed with OK - for ANY line, not just unsaved ones. Nothing actually
+        // calls CreateReservation/ReleaseReservation until the quotation itself is saved
+        // (see ApplyPendingReservationsAsync below), so a reservation change can never
+        // outlive a quotation edit that was never committed.
+        private readonly Dictionary<string, bool> _pendingReservationByReferenceCode = new Dictionary<string, bool>();
 
-        // Called right after a successful save+reload (see IsQuickQuote) - by then, any
-        // line that was pending now has a real quick_id, since fetchQuotationDetails()
-        // rebinds dgv_quick_quote_details fresh from the server. Matches back on
-        // reference_code, the one thing that survives that rebind unchanged.
+        // Called right after a successful save+reload (see IsQuickQuote/
+        // FinalizeQuickQuotation) - by then, every line (new or pre-existing) has its real
+        // quick_id, since fetchQuotationDetails() rebinds dgv_quick_quote_details fresh
+        // from the server. Matches back on reference_code, the one thing that survives
+        // that rebind unchanged.
         private async Task ApplyPendingReservationsAsync()
         {
-            if (_pendingReservationReferenceCodes.Count == 0) return;
+            if (_pendingReservationByReferenceCode.Count == 0) return;
             if (!dgv_quick_quote_details.Columns.Contains("reference_code")) return;
 
             var applied = new List<string>();
@@ -3832,7 +3975,8 @@ namespace smpc_sales_app.Pages.Sales
                 if (row.IsNewRow) continue;
 
                 string referenceCode = row.Cells["reference_code"].Value?.ToString();
-                if (string.IsNullOrEmpty(referenceCode) || !_pendingReservationReferenceCodes.Contains(referenceCode))
+                if (string.IsNullOrEmpty(referenceCode) ||
+                    !_pendingReservationByReferenceCode.TryGetValue(referenceCode, out bool shouldReserve))
                     continue;
 
                 int.TryParse(row.Cells["quick_id"].Value?.ToString(), out int quickId);
@@ -3844,21 +3988,30 @@ namespace smpc_sales_app.Pages.Sales
                 }
 
                 int.TryParse(row.Cells["item_id"].Value?.ToString(), out int itemId);
-                int.TryParse(row.Cells["quick_qty"].Value?.ToString(), out int qty);
-                int.TryParse(row.Cells["quick_based_id"].Value?.ToString(), out int quotationId);
-
-                if (itemId <= 0 || qty <= 0)
-                {
-                    // Item/qty got cleared before saving - nothing sensible left to
-                    // reserve, so just drop the stale intent instead of erroring.
-                    applied.Add(referenceCode);
-                    continue;
-                }
 
                 try
                 {
-                    await ItemStockCheckService.CreateReservation(itemId, qty, quickId, quotationId, dtp_valid_until.Value.Date);
-                    affectedItemIds.Add(itemId);
+                    if (shouldReserve)
+                    {
+                        int.TryParse(row.Cells["quick_qty"].Value?.ToString(), out int qty);
+                        int.TryParse(row.Cells["quick_based_id"].Value?.ToString(), out int quotationId);
+
+                        if (itemId <= 0 || qty <= 0)
+                        {
+                            // Item/qty got cleared before saving - nothing sensible left
+                            // to reserve, so just drop the stale intent instead of erroring.
+                            applied.Add(referenceCode);
+                            continue;
+                        }
+
+                        await ItemStockCheckService.CreateReservation(itemId, qty, quickId, quotationId, dtp_valid_until.Value.Date);
+                    }
+                    else
+                    {
+                        await ItemStockCheckService.ReleaseReservation(quickId);
+                    }
+
+                    if (itemId > 0) affectedItemIds.Add(itemId);
                     applied.Add(referenceCode);
                 }
                 catch (Exception ex)
@@ -3869,7 +4022,7 @@ namespace smpc_sales_app.Pages.Sales
 
             foreach (var referenceCode in applied)
             {
-                _pendingReservationReferenceCodes.Remove(referenceCode);
+                _pendingReservationByReferenceCode.Remove(referenceCode);
             }
 
             if (affectedItemIds.Count > 0)
@@ -3884,8 +4037,215 @@ namespace smpc_sales_app.Pages.Sales
             if (failures.Count > 0)
             {
                 MessageBox.Show(
-                    "The quotation saved, but some pending reservations couldn't be applied:\n" + string.Join("\n", failures),
-                    "Some Reservations Failed",
+                    "The quotation saved, but some pending reservation changes couldn't be applied:\n" + string.Join("\n", failures),
+                    "Some Reservation Changes Failed",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+            }
+        }
+
+        // Project Quotation's counterpart to the CellClicked/CellClickedModel wiring -
+        // ItemSetUC raises CellClickedStock (INV. column click or right-click on the QTY
+        // header, both already gated by _isEditable there) and this runs the actual
+        // stock-check logic against that tab's own grid, reusing the same StockCheckModal/
+        // _pendingReservationByReferenceCode/HandleCanvasSelectionClick machinery Quick
+        // Quote already uses.
+        private void ItemSetUC_CellClickedStock(object sender, EventArgs e)
+        {
+            if (sender is ItemSetUC uc)
+            {
+                HandleProjectStockCheckClick(uc);
+            }
+        }
+
+        // Same shape as HandleStockCheckClick above, adapted to dgv_project_items' own
+        // column names (project_items_qty instead of quick_qty, project_items_id/"items_id"
+        // instead of quick_id, and no per-row based_id column - the project's own id and
+        // Valid Until apply to every tab alike, so they're read directly from this form's
+        // own controls instead). Reservations for project lines are tagged with source_type
+        // "sales_project_item" (see ItemStockCheckService.GetReservation/CreateReservation)
+        // so their line ids - a completely separate id space from SalesQuotationQuick's -
+        // never collide with Quick Quote's reservations for the same item.
+        private async void HandleProjectStockCheckClick(ItemSetUC uc)
+        {
+            var dgv = uc.DgvProjectItems;
+            if (dgv == null || !dgv.Columns.Contains("item_id")) return;
+
+            var lines = new List<StockCheckRow>();
+            DateTime? expiresAt = dtp_valid_until.Value.Date;
+            int quotationId = ToInt(txt_id.Text);
+
+            for (int i = 0; i < dgv.Rows.Count; i++)
+            {
+                var row = dgv.Rows[i];
+                if (row.IsNewRow) continue;
+
+                if (!int.TryParse(row.Cells["item_id"].Value?.ToString(), out int itemId) || itemId <= 0) continue;
+
+                int.TryParse(row.Cells["project_items_qty"].Value?.ToString(), out int requiredQty);
+                if (requiredQty <= 0) continue;
+
+                // A brand-new, not-yet-saved line has no id yet, same as Quick Quote's
+                // quickId == 0 case - lineId stays 0 and StockCheckModal disables RESERVE
+                // for it rather than hiding the row entirely.
+                int.TryParse(row.Cells["project_items_id"].Value?.ToString(), out int lineId);
+                string referenceCode = row.Cells["reference_code"].Value?.ToString();
+
+                string itemName = dgv.Columns.Contains("project_items_components")
+                    ? row.Cells["project_items_components"].Value?.ToString()
+                    : null;
+
+                AvailableStockModel stock;
+                bool isReserved = false;
+                int ownReservedQty = 0;
+                try
+                {
+                    if (!_availableStockByItemId.TryGetValue(itemId, out stock))
+                    {
+                        stock = await ItemStockCheckService.GetAvailableStock(itemId);
+                        _availableStockByItemId[itemId] = stock;
+                    }
+
+                    if (lineId > 0)
+                    {
+                        var reservation = await ItemStockCheckService.GetReservation(lineId, "sales_project_item");
+                        isReserved = reservation != null;
+                        if (reservation != null) ownReservedQty = reservation.qty;
+                    }
+
+                    if (!string.IsNullOrEmpty(referenceCode) &&
+                        _pendingReservationByReferenceCode.TryGetValue(referenceCode, out bool pendingState))
+                    {
+                        isReserved = pendingState;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Failed to check stock for \"{itemName}\": {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    continue;
+                }
+
+                lines.Add(new StockCheckRow
+                {
+                    ItemId = itemId,
+                    ItemName = itemName,
+                    QuickId = lineId,
+                    QuotationId = quotationId,
+                    RequiredQty = requiredQty,
+                    Stock = stock,
+                    IsReserved = isReserved,
+                    OwnReservedQty = ownReservedQty,
+                    ExpiresAt = expiresAt,
+                    ReferenceCode = referenceCode
+                });
+            }
+
+            if (lines.Count == 0)
+            {
+                MessageBox.Show("No line items with an item and a QTY yet.", "Nothing To Check", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            var modal = new StockCheckModal(lines, line => HandleCanvasSelectionClick(-1, line.ItemId.ToString()));
+            modal.ShowDialog();
+
+            foreach (var change in modal.PendingChangesByReferenceCode)
+            {
+                _pendingReservationByReferenceCode[change.Key] = change.Value;
+            }
+        }
+
+        // Extends ApplyPendingReservationsAsync (below it, right after this) to also cover
+        // every Project Quotation tab currently in tabControl2 - called from the exact same
+        // places, right after a Project save/finalize reload gives every tab's rows their
+        // real project_items_id. Safe to always run regardless of isProject: a Quick Quote
+        // pending reference_code will simply never match any row in a project tab's grid
+        // (and vice versa), so calling both costs nothing extra in the common case.
+        private async Task ApplyPendingProjectReservationsAsync()
+        {
+            if (_pendingReservationByReferenceCode.Count == 0) return;
+
+            int quotationId = ToInt(txt_id.Text);
+            var applied = new List<string>();
+            var failures = new List<string>();
+            var affectedItemIds = new HashSet<int>();
+            var affectedTabs = new List<ItemSetUC>();
+
+            foreach (TabPage tab in tabControl2.TabPages)
+            {
+                if (!(tab.Controls.Count > 0 && tab.Controls[0] is ItemSetUC uc)) continue;
+
+                var dgv = uc.DgvProjectItems;
+                if (dgv == null || !dgv.Columns.Contains("reference_code")) continue;
+
+                foreach (DataGridViewRow row in dgv.Rows)
+                {
+                    if (row.IsNewRow) continue;
+
+                    string referenceCode = row.Cells["reference_code"].Value?.ToString();
+                    if (string.IsNullOrEmpty(referenceCode) ||
+                        !_pendingReservationByReferenceCode.TryGetValue(referenceCode, out bool shouldReserve))
+                        continue;
+
+                    int.TryParse(row.Cells["project_items_id"].Value?.ToString(), out int lineId);
+                    if (lineId <= 0) continue; // still not saved somehow - leave it pending
+
+                    int.TryParse(row.Cells["item_id"].Value?.ToString(), out int itemId);
+
+                    try
+                    {
+                        if (shouldReserve)
+                        {
+                            int.TryParse(row.Cells["project_items_qty"].Value?.ToString(), out int qty);
+                            if (itemId <= 0 || qty <= 0) { applied.Add(referenceCode); continue; }
+                            await ItemStockCheckService.CreateReservation(itemId, qty, lineId, quotationId, dtp_valid_until.Value.Date, "sales_project_item");
+                        }
+                        else
+                        {
+                            await ItemStockCheckService.ReleaseReservation(lineId, "sales_project_item");
+                        }
+
+                        if (itemId > 0) affectedItemIds.Add(itemId);
+                        if (!affectedTabs.Contains(uc)) affectedTabs.Add(uc);
+                        applied.Add(referenceCode);
+                    }
+                    catch (Exception ex)
+                    {
+                        failures.Add($"{referenceCode}: {ex.Message}");
+                    }
+                }
+            }
+
+            foreach (var referenceCode in applied)
+            {
+                _pendingReservationByReferenceCode.Remove(referenceCode);
+            }
+
+            if (affectedItemIds.Count > 0)
+            {
+                foreach (var itemId in affectedItemIds)
+                {
+                    _availableStockByItemId.Remove(itemId);
+                    foreach (TabPage tab in tabControl2.TabPages)
+                    {
+                        if (tab.Controls.Count > 0 && tab.Controls[0] is ItemSetUC anyUc)
+                        {
+                            anyUc.ClearStockCache(itemId);
+                        }
+                    }
+                }
+
+                foreach (var uc in affectedTabs)
+                {
+                    uc.RefreshAllStockIndicators();
+                }
+            }
+
+            if (failures.Count > 0)
+            {
+                MessageBox.Show(
+                    "The project quotation saved, but some pending reservation changes couldn't be applied:\n" + string.Join("\n", failures),
+                    "Some Reservation Changes Failed",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Warning);
             }
@@ -4121,7 +4481,14 @@ namespace smpc_sales_app.Pages.Sales
         {
             int max = 0;
 
-            if (!(dgv?.DataSource is DataTable dataSource) || !dataSource.Columns.Contains("reference_code"))
+            // Same DataView-vs-DataTable unwrap as DeleteRowsByReferenceCode/
+            // RenumberReferenceCodes - viewing/editing an existing quotation binds this
+            // grid to a DataView, not a DataTable, which "dgv.DataSource is DataTable"
+            // doesn't match. That silently made this always return 0 on an existing
+            // quotation, so newly added items reused/collided with codes already in use
+            // instead of continuing from the real max.
+            DataTable dataSource = dgv?.DataSource as DataTable ?? (dgv?.DataSource as DataView)?.Table;
+            if (dataSource == null || !dataSource.Columns.Contains("reference_code"))
                 return max;
 
             foreach (DataRow row in dataSource.Rows)
@@ -4322,7 +4689,21 @@ namespace smpc_sales_app.Pages.Sales
             {
                 Helpers.Loading.HideLoading(targets);
                 Helpers.SetButtonsEnabled(this, true);
+                ReapplyFinalizeButtonState();
             }
+        }
+
+        // Helpers.SetButtonsEnabled(this, true) above is a blanket re-enable with no
+        // awareness of isFinalized or whether a record is even loaded - every load that
+        // goes through RunWithLoadingAsync (including landing on a totally blank form
+        // with nothing to finalize yet, per the earlier fetchQuotationDetails() fix) was
+        // stomping right back over that and leaving Finalize/Sales Order clickable again
+        // the instant loading finished. Reapply the real rule immediately after.
+        private void ReapplyFinalizeButtonState()
+        {
+            bool hasRecord = ToInt(txt_id.Text) > 0;
+            btn_finalize.Enabled = hasRecord && !isFinalized;
+            btn_sales_order.Enabled = hasRecord && isFinalized;
         }
 
         private async void Quotation_Load(object sender, EventArgs e)
@@ -4341,7 +4722,7 @@ namespace smpc_sales_app.Pages.Sales
             // empty at this point and only get filled once LoadExistingRecord() finishes
             // fetching from the server (whichever of the two it turns out to be) - cover that
             // gap with a loading overlay and lock every button on the form.
-            await RunWithLoadingAsync(async () => await LoadExistingRecord(), "Loading quotation, please wait...");
+            await RunWithLoadingAsync(async () => await LoadExistingRecord(), "Loading...");
 
         }
         CurrentUserModel CurrentUser { get; set; }
@@ -4557,8 +4938,15 @@ namespace smpc_sales_app.Pages.Sales
                 Helpers.BindControls(pnlList, HeaderList, SelectedRow);
 
                 // LEM - Button visibility condition
+                // Was gated on string.IsNullOrEmpty(txt_id.Text) - txt_id is only ever
+                // populated by Helpers.BindControls' loose Name-Contains-column-name
+                // matching, which isn't guaranteed to have run/matched by this point. sId
+                // (parsed straight from HeaderList a few lines up) is the same "is this a
+                // real, already-saved record" signal without that dependency, so an already
+                // finalized quotation can no longer have FINALIZE re-enabled just because
+                // txt_id happened to still be blank when this ran.
                 isFinalized = Convert.ToBoolean(HeaderList.Rows[SelectedRow]["is_finalized"]);
-                btn_finalize.Enabled = !isFinalized || string.IsNullOrEmpty(txt_id.Text);
+                btn_finalize.Enabled = !isFinalized || sId <= 0;
                 btn_sales_order.Enabled = isFinalized;
 
                 btn_new_version.Visible = !isFinalized;
@@ -4714,7 +5102,7 @@ namespace smpc_sales_app.Pages.Sales
         private void ValidUntilDate()
         {
             var date = dtp_date.Value;
-            var noOfDays = txt_validays.Text;
+            var noOfDays = txt_validity_days.Text;
 
             if (string.IsNullOrEmpty(noOfDays))
             {
@@ -4727,7 +5115,7 @@ namespace smpc_sales_app.Pages.Sales
             }
             else
             {
-                txt_validays.Text = "30";
+                txt_validity_days.Text = "30";
                 dtp_valid_until.Value = date.AddDays(30);
             }
         }
@@ -4884,6 +5272,7 @@ namespace smpc_sales_app.Pages.Sales
                 UC.CellChangedProject += Cell_DataChanged;
                 UC.CellClicked += Cell_ClickedUC;
                 UC.CellClickedModel += CellClickedModelUC;
+                UC.CellClickedStock += ItemSetUC_CellClickedStock;
                 UC.CellEdited += Cell_EditedUC;
                 UC.FinalTxtBoxClicked += FinalTxtBoxClicked;
                 UC.HandleItemSelectionClick += HandleItemSelectionClick;
@@ -4908,14 +5297,14 @@ namespace smpc_sales_app.Pages.Sales
 
                 // This branch returns early, before the shared "new quotations always
                 // default to 30 days" line below ever runs - so clicking New while in
-                // Project mode left txt_validays blank instead of reset to 30 like Quick
+                // Project mode left txt_validity_days blank instead of reset to 30 like Quick
                 // Quote's New already does.
-                txt_validays.Text = "30";
+                txt_validity_days.Text = "30";
                 return;
             }
 
             //for new quatations always 30 days
-            txt_validays.Text = "30";
+            txt_validity_days.Text = "30";
             counterReference = 0;
             SelectedRowIndex = 0;
         }
@@ -5246,7 +5635,7 @@ namespace smpc_sales_app.Pages.Sales
                     // bind() call finishes - RunWithLoadingAsync covers those too (and disables
                     // every button on the form) so a slow server response can't be raced by a
                     // click.
-                    await RunWithLoadingAsync(async () => await fetchQuotationDetails(), "Loading quotation, please wait...");
+                    await RunWithLoadingAsync(async () => await fetchQuotationDetails(), "Loading...");
                 }
             }
         }
@@ -5559,6 +5948,7 @@ namespace smpc_sales_app.Pages.Sales
                 //plus events function
                 myControl.CellClicked += Cell_ClickedUC;
                 myControl.CellClickedModel += CellClickedModelUC;
+                myControl.CellClickedStock += ItemSetUC_CellClickedStock;
                 myControl.CellEdited += Cell_EditedUC;
                 myControl.FinalTxtBoxClicked += FinalTxtBoxClicked;
                 myControl.setMultiplier(fetchMultiplierData());
@@ -5753,18 +6143,38 @@ namespace smpc_sales_app.Pages.Sales
             }
         }
 
-        private void btn_finalize_Click(object sender, EventArgs e)
+        private async void btn_finalize_Click(object sender, EventArgs e)
         {
             if (MessageBox.Show("Are you sure you want to finalize?", "Confirm", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
             {
-                if (isProject)
-                    FinalizeProjectQuotation();
-                else
-                    FinalizeQuickQuotation();
+                // Lock every button for the whole finalize operation - previously the
+                // button stayed clickable while the (async) save was still in flight, so
+                // clicking Finalize again before it finished could race past the
+                // duplicate-document_no check and insert a second finalized copy of the
+                // same quotation (one of them ending up double-prefixed, e.g. "FQ#FQ#0003",
+                // since the second click read back the first click's not-yet-committed
+                // "FQ#..." value as its own starting point).
+                Helpers.SetButtonsEnabled(this, false);
+                try
+                {
+                    if (isProject)
+                        await FinalizeProjectQuotation();
+                    else
+                        await FinalizeQuickQuotation();
+                }
+                finally
+                {
+                    Helpers.SetButtonsEnabled(this, true);
+                    // The blanket re-enable above doesn't know about the isFinalized rule
+                    // (see bind()'s btn_finalize.Enabled = !isFinalized || sId <= 0) - reapply
+                    // it so a just-finalized (or already-finalized) quotation doesn't have
+                    // Finalize re-enabled out from under that.
+                    btn_finalize.Enabled = !isFinalized;
+                }
             }
         }
 
-        private async void FinalizeProjectQuotation()
+        private async Task FinalizeProjectQuotation()
         {
             // No customer selected (txt_customer_id is only ever populated by the
             // "Select Customer" dialog in btn_add_customer_Click) - block finalize
@@ -5863,8 +6273,11 @@ namespace smpc_sales_app.Pages.Sales
             // doesn't break those lookups.
             if (pnl_quotation.ContainsKey("document_no") && pnl_quotation["document_no"] is string documentNo)
             {
-                string tempDocNo = documentNo.StartsWith("Q#") ? documentNo.Substring(2) : documentNo;
-                tempDocNo = "FQ#" + tempDocNo;
+                // Same fix as FinalizeQuickQuotation - strip both prefixes (NormalizeDocumentNo)
+                // before re-adding "FQ#", so re-finalizing an already-finalized project doesn't
+                // produce a never-before-seen "FQ#FQ#..." string that slips past the duplicate
+                // check right below.
+                string tempDocNo = "FQ#" + NormalizeDocumentNo(documentNo);
                 pnl_quotation["document_no"] = tempDocNo;
             }
             else
@@ -5902,13 +6315,17 @@ namespace smpc_sales_app.Pages.Sales
                 isNewRecord = false;
                 IsEdit = false;
 
-                await RunWithLoadingAsync(async () => await fetchSalesProjectData(), "Loading project quotation, please wait...");
+                await RunWithLoadingAsync(async () => await fetchSalesProjectData(), "Loading...");
+
+                // Same as IsProject()'s save handling - every tab's rows now have real
+                // project_items_id values, so any pending RESERVE/release can actually apply.
+                await ApplyPendingProjectReservationsAsync();
             }
             else
                 MessageBox.Show($"Insert error: {response.message}");
         }
 
-        private async void FinalizeQuickQuotation()
+        private async Task FinalizeQuickQuotation()
         {
             // No customer selected (txt_customer_id is only ever populated by the
             // "Select Customer" dialog in btn_add_customer_Click) - block finalize
@@ -6052,9 +6469,15 @@ namespace smpc_sales_app.Pages.Sales
                     // regardless of the "Q#"/"FQ#" prefix, so this doesn't break those.
                     if (parentData.ContainsKey("document_no") && parentData["document_no"] is string documentNo)
                     {
-                        string tempDocNo = documentNo.StartsWith("Q#") ? documentNo.Substring(2) : documentNo;
-
-                        tempDocNo = "FQ#" + tempDocNo;
+                        // Was only stripping a leading "Q#" - re-finalizing a record whose
+                        // document_no already had "FQ#" baked in (i.e. clicking Finalize
+                        // again on an already-finalized quotation) left that "FQ#" in place
+                        // and prepended a second one ("FQ#FQ#0003"), which is a string that
+                        // had never existed before - so the duplicate-document_no guard right
+                        // below never caught it and happily inserted another "finalized" copy.
+                        // NormalizeDocumentNo strips both prefixes, so the bare number always
+                        // gets exactly one "FQ#" regardless of what was already stored.
+                        string tempDocNo = "FQ#" + NormalizeDocumentNo(documentNo);
 
                         parentData["document_no"] = tempDocNo;
                     }
@@ -6098,7 +6521,7 @@ namespace smpc_sales_app.Pages.Sales
                             toolstrip_quotation.Enabled = true;
 
                             MessageBox.Show("Quotation Successfully saved");
-                            await RunWithLoadingAsync(async () => await fetchQuotationDetails(), "Loading quotation, please wait...");
+                            await RunWithLoadingAsync(async () => await fetchQuotationDetails(), "Loading...");
 
                             // Same as IsQuickQuote() - this finalize path also inserts fresh
                             // SalesQuotationQuick rows (parentData["id"] = 0 above), so any
@@ -6231,8 +6654,16 @@ namespace smpc_sales_app.Pages.Sales
                 // below - that's the one place every "view an existing document" path goes
                 // through, so seeding lives there instead of being duplicated per-caller.
 
+                // Opening a quotation this way (straight from a documentNo, e.g. from
+                // Opportunities/Orders) used to call ResetReadOnlyControls unconditionally,
+                // making every header/footer textbox instantly editable on load regardless
+                // of finalized status - the same bug family as the Finalize-stays-enabled
+                // issue. Loading a record should always land in view mode (locked); Edit is
+                // what unlocks it, and bind() below still governs button enablement off
+                // isFinalized.
                 Panel[] panels = { pnl_header, pnl_footer };
-                Helpers.ResetReadOnlyControls(panels);
+                Helpers.ReadOnlyControls(panels);
+                dgv_quick_quote_details.ReadOnly = true;
 
                 //pnl_header.Enabled = true;
                 //pnl_footer.Enabled = true;
@@ -6294,8 +6725,10 @@ namespace smpc_sales_app.Pages.Sales
                 transactionProjectDataTable = JsonHelper.ToDataTable(filteredSalesQuotation);
 
 
+                // Same fix as FetchQuotationDetailsByDocumentNo above - loading should
+                // always land in locked/view mode, not editable, regardless of isFinalized.
                 Panel[] panels = { pnl_header, pnl_footer };
-                Helpers.ResetReadOnlyControls(panels);
+                Helpers.ReadOnlyControls(panels);
 
                 toolstrip_quotation.Enabled = false;
                 dgv_quick_quote_details.Enabled = true;
@@ -6431,6 +6864,14 @@ namespace smpc_sales_app.Pages.Sales
             }
 
             IsView = false;
+
+            // dgv_quick_quote_details_DataBindingComplete is what normally populates the
+            // INV. flags, but that only fires on a DataSource swap - this grid is already
+            // bound (Edit doesn't reload it), so without this the flags would stay blank
+            // (as they should while IsView was still true) until something else happened
+            // to rebind the grid.
+            RefreshAllStockIndicators(dgv_quick_quote_details);
+
             string customerId = txt_customer_id.Text;
 
             // NOTE: previously called GetLatestDate() here, which forced dtp_date.Value = DateTime.Now
@@ -6514,7 +6955,7 @@ namespace smpc_sales_app.Pages.Sales
         private void GetLatestDate()
         {
             dtp_date.Value = DateTime.Now;
-            txt_validays.Text = "30";
+            txt_validity_days.Text = "30";
         }
         private void ChangeDocumentType()
         {
@@ -6533,7 +6974,13 @@ namespace smpc_sales_app.Pages.Sales
             btn_update.Visible = !isTrue;
             btn_print.Visible = !isTrue;
             //tssb_Print.Visible = !isTrue;
-            btn_finalize.Enabled = !isTrue;
+            // Was unconditionally "!isTrue" - fine for a brand-new record, but this method
+            // also runs right after fetchQuotationDetails()/bind() reloads an existing
+            // record (see the finalize/save success paths below), and bind() had already
+            // correctly disabled Finalize for an already-finalized quotation via isFinalized.
+            // Blindly re-enabling it here undid that, letting Finalize be clicked again on a
+            // quotation that's already finalized.
+            btn_finalize.Enabled = !isTrue && !isFinalized;
 
             // Show action button
             btn_savee.Visible = isTrue;
@@ -6606,7 +7053,7 @@ namespace smpc_sales_app.Pages.Sales
             SetNewFormMode(false);
             SetFormEditMode("Close");
 
-            await RunWithLoadingAsync(async () => await LoadExistingRecord(), "Loading quotation, please wait...");
+            await RunWithLoadingAsync(async () => await LoadExistingRecord(), "Loading...");
 
             Panel[] panels = { pnl_header, pnl_footer };
             Helpers.ReadOnlyControls(panels);
@@ -6633,7 +7080,16 @@ namespace smpc_sales_app.Pages.Sales
 
             string referenceCode = dgv.Rows[RowIndex].Cells["reference_code"].Value.ToString();
 
-            if (dgv.DataSource is DataTable dataSource)
+            // The grid isn't always bound straight to a DataTable - viewing/editing an
+            // existing quotation binds it to a DataView instead (see
+            // createFilterViewDgvQuickQouteDetails), which "dgv.DataSource is DataTable"
+            // doesn't match. That silently no-op'd this whole method (and the delete-row
+            // renumbering that calls it) for every already-saved quotation - only brand
+            // new, not-yet-saved ones (bound straight to a DataTable) actually deleted
+            // anything. Unwrap the DataView to its underlying Table so both cases work.
+            DataTable dataSource = dgv.DataSource as DataTable ?? (dgv.DataSource as DataView)?.Table;
+
+            if (dataSource != null)
             {
 
                 // Collect rows to delete (avoid modifying collection while iterating)

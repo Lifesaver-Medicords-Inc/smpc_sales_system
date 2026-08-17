@@ -132,7 +132,7 @@
             this.label8 = new System.Windows.Forms.Label();
             this.label7 = new System.Windows.Forms.Label();
             this.label6 = new System.Windows.Forms.Label();
-            this.txt_validays = new System.Windows.Forms.TextBox();
+            this.txt_validity_days = new System.Windows.Forms.TextBox();
             this.label11 = new System.Windows.Forms.Label();
             this.label10 = new System.Windows.Forms.Label();
             this.txt_document_no = new System.Windows.Forms.TextBox();
@@ -928,14 +928,14 @@
             this.label6.TabIndex = 61;
             this.label6.Text = "WARRANTY";
             // 
-            // txt_validays
+            // txt_validity_days
             // 
-            this.txt_validays.Location = new System.Drawing.Point(471, 37);
-            this.txt_validays.Name = "txt_validays";
-            this.txt_validays.Size = new System.Drawing.Size(103, 20);
-            this.txt_validays.TabIndex = 63;
-            this.txt_validays.Text = "30";
-            this.txt_validays.TextChanged += new System.EventHandler(this.txt_days_TextChanged);
+            this.txt_validity_days.Location = new System.Drawing.Point(471, 37);
+            this.txt_validity_days.Name = "txt_validity_days";
+            this.txt_validity_days.Size = new System.Drawing.Size(103, 20);
+            this.txt_validity_days.TabIndex = 63;
+            this.txt_validity_days.Text = "30";
+            this.txt_validity_days.TextChanged += new System.EventHandler(this.txt_days_TextChanged);
             // 
             // label11
             // 
@@ -1364,7 +1364,7 @@
             this.pnl_header.Controls.Add(this.txt_document_no);
             this.pnl_header.Controls.Add(this.label10);
             this.pnl_header.Controls.Add(this.label11);
-            this.pnl_header.Controls.Add(this.txt_validays);
+            this.pnl_header.Controls.Add(this.txt_validity_days);
             this.pnl_header.Controls.Add(this.label6);
             this.pnl_header.Controls.Add(this.label7);
             this.pnl_header.Controls.Add(this.label8);
@@ -1466,6 +1466,7 @@
             this.dgv_quick_quote_details.Name = "dgv_quick_quote_details";
             this.dgv_quick_quote_details.Size = new System.Drawing.Size(1160, 1932);
             this.dgv_quick_quote_details.TabIndex = 2;
+            this.dgv_quick_quote_details.CellBeginEdit += new System.Windows.Forms.DataGridViewCellCancelEventHandler(this.dgv_quick_quote_details_CellBeginEdit);
             this.dgv_quick_quote_details.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgv_quick_quote_details_CellClick);
             this.dgv_quick_quote_details.CellContentDoubleClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgv_quick_quote_details_CellContentDoubleClick);
             this.dgv_quick_quote_details.CellEndEdit += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgv_quick_quote_details_CellEndEdit);
@@ -1473,7 +1474,8 @@
             this.dgv_quick_quote_details.CellMouseDown += new System.Windows.Forms.DataGridViewCellMouseEventHandler(this.dgv_quick_quote_details_CellMouseDown);
             this.dgv_quick_quote_details.CellValueChanged += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgv_quick_quote_details_CellValueChanged);
             this.dgv_quick_quote_details.DataBindingComplete += new System.Windows.Forms.DataGridViewBindingCompleteEventHandler(this.dgv_quick_quote_details_DataBindingComplete);
-            // 
+            this.dgv_quick_quote_details.UserDeletingRow += new System.Windows.Forms.DataGridViewRowCancelEventHandler(this.dgv_quick_quote_details_UserDeletingRow);
+            //
             // Quote_Terms
             // 
             this.Quote_Terms.Controls.Add(this.QuotationTermsPanel);
@@ -2248,6 +2250,7 @@
             this.reference_code.DataPropertyName = "reference_code";
             this.reference_code.HeaderText = "CODE";
             this.reference_code.Name = "reference_code";
+            this.reference_code.ReadOnly = true;
             this.reference_code.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
             // 
             // item_id
@@ -2288,15 +2291,9 @@
             this.quick_item_name.Name = "quick_item_name";
             this.quick_item_name.ReadOnly = true;
             this.quick_item_name.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-            //
+            // 
             // quick_inv_stock
-            //
-            // Icon-only and blank unless this row is short - dgv_quick_quote_details_
-            // CellFormatting (Quotation.cs) is what actually decides what shows here.
-            // NOTE: this comment (and others like it in this file) gets wiped whenever the
-            // form is edited in the Visual Studio designer - InitializeComponent is fully
-            // regenerated from the component tree, which doesn't preserve hand-written
-            // comments, only actual property/event values.
+            // 
             this.quick_inv_stock.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
             this.quick_inv_stock.FillWeight = 17.40802F;
             this.quick_inv_stock.HeaderText = "INV.";
@@ -2594,7 +2591,7 @@
         private System.Windows.Forms.TextBox txt_document_no;
         private System.Windows.Forms.Label label10;
         private System.Windows.Forms.Label label11;
-        private System.Windows.Forms.TextBox txt_validays;
+        private System.Windows.Forms.TextBox txt_validity_days;
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.Label label8;

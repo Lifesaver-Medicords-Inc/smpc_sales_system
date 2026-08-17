@@ -113,11 +113,19 @@ namespace smpc_sales_app.Pages.Sales
         private async Task   FetchQuotationDetails()
         {
             SalesQuotationList data = await QuotationService.GetQuotations();
-            transactionList = JsonHelper.ToDataTable(data.SalesQuotation.AsEnumerable()
+
+            // data / data.SalesQuotation can legitimately come back null (e.g. no
+            // finalized quotations exist yet) - .AsEnumerable() silently passes a null
+            // straight through, and the chained .Where() then throws
+            // "ArgumentNullException: Value cannot be null. Parameter name: source"
+            // instead of just meaning "nothing to show yet".
+            var salesQuotations = data?.SalesQuotation ?? Enumerable.Empty<SalesQuotationModel>();
+
+            transactionList = JsonHelper.ToDataTable(salesQuotations
             .Where(q => q.document_no != null &&
                 q.document_no.Contains("FQ"))
             .ToList());
-            childList = JsonHelper.ToDataTable(data.SalesQuotationQuick);
+            childList = JsonHelper.ToDataTable(data?.SalesQuotationQuick);
         }
         private async Task FetchProject()
         {

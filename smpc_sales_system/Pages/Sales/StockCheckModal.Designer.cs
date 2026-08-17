@@ -36,7 +36,7 @@ namespace smpc_sales_system.Pages.Sales
             this.col_proj = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.col_reserve = new System.Windows.Forms.DataGridViewCheckBoxColumn();
             this.lbl_reserve_note = new System.Windows.Forms.Label();
-            this.btn_save = new System.Windows.Forms.Button();
+            this.btn_ok = new System.Windows.Forms.Button();
             this.btn_close = new System.Windows.Forms.Button();
             this.btn_send_request = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dgv_projected_inventory)).BeginInit();
@@ -126,15 +126,15 @@ namespace smpc_sales_system.Pages.Sales
             this.lbl_reserve_note.TabIndex = 2;
             this.lbl_reserve_note.Text = "";
             //
-            // btn_save
+            // btn_ok
             //
-            this.btn_save.Location = new System.Drawing.Point(235, 340);
-            this.btn_save.Name = "btn_save";
-            this.btn_save.Size = new System.Drawing.Size(100, 28);
-            this.btn_save.TabIndex = 3;
-            this.btn_save.Text = "SAVE";
-            this.btn_save.UseVisualStyleBackColor = true;
-            this.btn_save.Click += new System.EventHandler(this.btn_save_Click);
+            this.btn_ok.Location = new System.Drawing.Point(235, 340);
+            this.btn_ok.Name = "btn_ok";
+            this.btn_ok.Size = new System.Drawing.Size(100, 28);
+            this.btn_ok.TabIndex = 3;
+            this.btn_ok.Text = "OK";
+            this.btn_ok.UseVisualStyleBackColor = true;
+            this.btn_ok.Click += new System.EventHandler(this.btn_ok_Click);
             //
             // btn_close
             //
@@ -164,7 +164,7 @@ namespace smpc_sales_system.Pages.Sales
             this.Controls.Add(this.lbl_title);
             this.Controls.Add(this.dgv_projected_inventory);
             this.Controls.Add(this.lbl_reserve_note);
-            this.Controls.Add(this.btn_save);
+            this.Controls.Add(this.btn_ok);
             this.Controls.Add(this.btn_close);
             this.Controls.Add(this.btn_send_request);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
@@ -190,7 +190,7 @@ namespace smpc_sales_system.Pages.Sales
         private System.Windows.Forms.DataGridViewTextBoxColumn col_proj;
         private System.Windows.Forms.DataGridViewCheckBoxColumn col_reserve;
         private System.Windows.Forms.Label lbl_reserve_note;
-        private System.Windows.Forms.Button btn_save;
+        private System.Windows.Forms.Button btn_ok;
         private System.Windows.Forms.Button btn_close;
         private System.Windows.Forms.Button btn_send_request;
     }
