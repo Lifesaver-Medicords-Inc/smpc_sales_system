@@ -35,6 +35,7 @@ namespace smpc_sales_system.Pages.Sales
             this.col_arrow = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.col_proj = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.col_reserve = new System.Windows.Forms.DataGridViewCheckBoxColumn();
+            this.col_approval = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.lbl_reserve_note = new System.Windows.Forms.Label();
             this.btn_ok = new System.Windows.Forms.Button();
             this.btn_close = new System.Windows.Forms.Button();
@@ -64,13 +65,14 @@ namespace smpc_sales_system.Pages.Sales
             this.col_stock,
             this.col_arrow,
             this.col_proj,
-            this.col_reserve});
+            this.col_reserve,
+            this.col_approval});
             this.dgv_projected_inventory.Location = new System.Drawing.Point(15, 45);
             this.dgv_projected_inventory.MultiSelect = false;
             this.dgv_projected_inventory.Name = "dgv_projected_inventory";
             this.dgv_projected_inventory.RowTemplate.Height = 26;
             this.dgv_projected_inventory.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.dgv_projected_inventory.Size = new System.Drawing.Size(430, 260);
+            this.dgv_projected_inventory.Size = new System.Drawing.Size(510, 260);
             this.dgv_projected_inventory.TabIndex = 1;
             this.dgv_projected_inventory.CellFormatting += new System.Windows.Forms.DataGridViewCellFormattingEventHandler(this.dgv_projected_inventory_CellFormatting);
             this.dgv_projected_inventory.CurrentCellDirtyStateChanged += new System.EventHandler(this.dgv_projected_inventory_CurrentCellDirtyStateChanged);
@@ -114,21 +116,29 @@ namespace smpc_sales_system.Pages.Sales
             this.col_reserve.Name = "col_reserve";
             this.col_reserve.Width = 65;
             //
+            // col_approval
+            //
+            this.col_approval.HeaderText = "APPROVAL";
+            this.col_approval.Name = "col_approval";
+            this.col_approval.ReadOnly = true;
+            this.col_approval.Width = 80;
+            this.col_approval.DefaultCellStyle.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            //
             // lbl_reserve_note
             //
             this.lbl_reserve_note.AutoSize = true;
             this.lbl_reserve_note.ForeColor = System.Drawing.Color.Gray;
             this.lbl_reserve_note.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.5F);
             this.lbl_reserve_note.Location = new System.Drawing.Point(15, 312);
-            this.lbl_reserve_note.MaximumSize = new System.Drawing.Size(430, 0);
+            this.lbl_reserve_note.MaximumSize = new System.Drawing.Size(510, 0);
             this.lbl_reserve_note.Name = "lbl_reserve_note";
-            this.lbl_reserve_note.Size = new System.Drawing.Size(430, 15);
+            this.lbl_reserve_note.Size = new System.Drawing.Size(510, 15);
             this.lbl_reserve_note.TabIndex = 2;
             this.lbl_reserve_note.Text = "";
             //
             // btn_ok
             //
-            this.btn_ok.Location = new System.Drawing.Point(235, 340);
+            this.btn_ok.Location = new System.Drawing.Point(315, 340);
             this.btn_ok.Name = "btn_ok";
             this.btn_ok.Size = new System.Drawing.Size(100, 28);
             this.btn_ok.TabIndex = 3;
@@ -138,7 +148,7 @@ namespace smpc_sales_system.Pages.Sales
             //
             // btn_close
             //
-            this.btn_close.Location = new System.Drawing.Point(345, 340);
+            this.btn_close.Location = new System.Drawing.Point(425, 340);
             this.btn_close.Name = "btn_close";
             this.btn_close.Size = new System.Drawing.Size(100, 28);
             this.btn_close.TabIndex = 4;
@@ -160,7 +170,7 @@ namespace smpc_sales_system.Pages.Sales
             //
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(460, 385);
+            this.ClientSize = new System.Drawing.Size(540, 385);
             this.Controls.Add(this.lbl_title);
             this.Controls.Add(this.dgv_projected_inventory);
             this.Controls.Add(this.lbl_reserve_note);
@@ -189,6 +199,7 @@ namespace smpc_sales_system.Pages.Sales
         private System.Windows.Forms.DataGridViewTextBoxColumn col_arrow;
         private System.Windows.Forms.DataGridViewTextBoxColumn col_proj;
         private System.Windows.Forms.DataGridViewCheckBoxColumn col_reserve;
+        private System.Windows.Forms.DataGridViewTextBoxColumn col_approval;
         private System.Windows.Forms.Label lbl_reserve_note;
         private System.Windows.Forms.Button btn_ok;
         private System.Windows.Forms.Button btn_close;

@@ -33,14 +33,47 @@ namespace smpc_sales_app.Services.Sales
             return list[0];
         }
 
+        // Batched counterpart to GetAvailableStock(int) above - one request for every
+        // item's available stock instead of one request per distinct item on the grid.
+        // item_id=0 already means "every item" server-side (see GetAvailableStock's own
+        // remark); this just keeps the whole list back instead of only its first row.
+        // Used by RefreshAllStockIndicators (Quotation.cs / ItemSetUC.cs) to prefetch once
+        // per grid (re)bind instead of firing one fire-and-forget request per row, which
+        // was both slow and, under enough concurrent rows, occasionally tripped
+        // "An error occurred while sending the request" once per row that lost the race.
+        //
+        // silent: true - this backs a purely informational indicator (the INV. column /
+        // shortage flag), so a failed prefetch shouldn't interrupt the user with an
+        // exception dialog; rows just fall back to no indicator for whichever items
+        // didn't make it into the cache (see RequestToApi.SendRequestAsync's silent param).
+        public static async Task<List<AvailableStockModel>> GetAllAvailableStock()
+        {
+            var response = await RequestToApi<ApiResponseModel<List<AvailableStockModel>>>.Get($"{url}?item_id=0", silent: true);
+            return response?.Data ?? new List<AvailableStockModel>();
+        }
+
         // Reports whether a quotation line currently has a manual reservation - called
-        // once per line when the stock-check modal opens, since nothing reserves a line
-        // automatically anymore (see the RESERVE checkbox on StockCheckModal). Returns
-        // null when there's nothing reserved for that line, not an error.
-        public static async Task<StockReservationModel> GetReservation(int sourceId, string sourceType = "sales_quotation")
+        // once per line both when the stock-check modal opens (explicit, wants a real
+        // error if it fails) and from the background per-row INV. indicator refresh
+        // (RefreshStockIndicator in Quotation.cs / ItemSetUC.cs, silent - see silent
+        // param below). Returns null when there's nothing reserved for that line, not an
+        // error.
+        //
+        // silent: true skips RequestToApi's own MessageBox on failure, same as
+        // GetAllAvailableStock above. RefreshStockIndicator already wraps its own call to
+        // this in a try/catch specifically to "swallow rather than pop a MessageBox for
+        // every row on a flaky network" - but that catch never actually ran, because
+        // RequestToApi.SendRequestAsync catches the exception itself and shows its own
+        // box first, then returns default(T) instead of rethrowing. With enough rows
+        // refreshing in the background across a long session (RefreshAllStockIndicators
+        // fires on every grid (re)bind, with nothing stopping multiple runs overlapping),
+        // that meant one popup per failed row, repeating every time the background
+        // refresh ran again - silent: true actually lets that swallow-not-popup intent
+        // take effect.
+        public static async Task<StockReservationModel> GetReservation(int sourceId, string sourceType = "sales_quotation", bool silent = false)
         {
             var response = await RequestToApi<ApiResponseModel<StockReservationModel>>.Get(
-                $"{reservation_url}?source_type={sourceType}&source_id={sourceId}");
+                $"{reservation_url}?source_type={sourceType}&source_id={sourceId}", silent: silent);
             return response?.Data;
         }
 

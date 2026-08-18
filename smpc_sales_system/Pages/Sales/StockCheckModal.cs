@@ -34,6 +34,12 @@ namespace smpc_sales_system.Pages.Sales
         // "this unsaved line wants RESERVE" back to its real row afterward - see
         // Quotation.cs's ApplyPendingReservationsAsync.
         public string ReferenceCode { get; set; }
+        // "Pending"/"Approved"/null (never reserved) - a dispatcher/inventory manager
+        // hasn't necessarily signed off yet even when IsReserved is true, since Pending
+        // already holds the stock (see ERP_API's Status doc comment on StockReservation).
+        // Purely informational here - RESERVE stays a free checkbox for the sales side
+        // either way, the approval queue lives in the Dispatching app.
+        public string ReservationStatus { get; set; }
     }
 
     // Per-quotation stock checker opened by clicking the INV. column (flagged or not) or
@@ -113,6 +119,11 @@ namespace smpc_sales_system.Pages.Sales
                 gridRow.Cells["col_arrow"].Value = "▶";
                 gridRow.Cells["col_proj"].Value = projected;
                 gridRow.Cells["col_reserve"].Value = line.IsReserved;
+                // Blank if never reserved - "Pending"/"Approved" otherwise, straight from
+                // whatever the reservation's Status came back as server-side. Purely
+                // informational; the dispatcher/inventory manager's approval queue is a
+                // separate screen in the Dispatching app, not here.
+                gridRow.Cells["col_approval"].Value = line.IsReserved ? (line.ReservationStatus ?? "Pending") : string.Empty;
 
                 if (isUnsaved)
                 {

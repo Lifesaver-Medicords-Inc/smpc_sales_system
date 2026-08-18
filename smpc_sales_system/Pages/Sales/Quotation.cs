@@ -3130,6 +3130,16 @@ namespace smpc_sales_app.Pages.Sales
                     if (parentData.ContainsKey("sales_quotation_quick"))
                     {
 
+                        // Grab both now, before anything below resets/reloads them -
+                        // Insert() always creates a fresh row on an edit (isSubVersion),
+                        // orphaning the old quick_id/header id (snapshot is a no-op when
+                        // this isn't an edit - see SnapshotReservedReferenceCodesAsync).
+                        // documentNo is what MigrateSnapshottedReservationsAsync uses to
+                        // find this same save's new ids afterward - captured here because
+                        // Helpers.ResetControls(pnl_header) below blanks txt_document_no.
+                        var reservationSnapshot = await SnapshotReservedReferenceCodesAsync(dgv_quick_quote_details);
+                        string savedDocumentNo = txt_document_no.Text;
+
                         var isSuccess = await QuotationService.Insert(parentData);
 
                         if (isSuccess.Success)
@@ -3156,6 +3166,10 @@ namespace smpc_sales_app.Pages.Sales
                             // _pendingReservationByReferenceCode) - every line now has a
                             // real id after that reload, so apply it for real.
                             await ApplyPendingReservationsAsync();
+
+                            // Carry over whatever was already reserved before this edit onto
+                            // the new version's ids (see SnapshotReservedReferenceCodesAsync).
+                            await MigrateSnapshottedReservationsAsync(savedDocumentNo, reservationSnapshot);
 
                             SetNewFormMode(false);
                         }
@@ -3717,12 +3731,57 @@ namespace smpc_sales_app.Pages.Sales
             RefreshAllStockIndicators(dgv_quick_quote_details);
         }
 
-        private void RefreshAllStockIndicators(DataGridView dgv)
+        // Was: fire one RefreshStockIndicator per row, each independently hitting
+        // /inventory/item_stocks/available for its own item - fine for one or two rows,
+        // but a quotation with many distinct items fired that many concurrent
+        // fire-and-forget requests at once, and losing that race (or just a flaky
+        // network moment) meant "An error occurred while sending the request" popping up
+        // once per row that failed. GetAllAvailableStock() below does the equivalent of
+        // every row's lookup in a single request instead, so at most one such error can
+        // ever surface here - and since it's silent (see GetAllAvailableStock's remarks),
+        // now not even that: a failed prefetch just leaves whichever items didn't cache
+        // showing no indicator, the same "convenience, not critical" fallback this screen
+        // already used per-row.
+        //
+        // _refreshingStockIndicators guards against a second class of the same symptom:
+        // this is called from many places (row add/edit, tab switches, DataBindingComplete,
+        // etc.) as async void/fire-and-forget, with nothing stopping two calls from being
+        // in flight at once. Each in-flight call still loops every row and calls
+        // RefreshStockIndicator -> GetReservation per row (not batched the way available
+        // stock is - see GetReservation's own remarks) - so several overlapping calls
+        // during a busy editing session meant several times as many concurrent reservation
+        // lookups, which is exactly what was flooding /inventory/item_stocks/reservations
+        // and popping "An error occurred while sending the request" over and over. Skipping
+        // a redundant concurrent pass is safe here since this only ever reflects current
+        // grid state - the next call (there's always another one coming) picks up whatever
+        // this one would have.
+        private bool _refreshingStockIndicators = false;
+
+        private async void RefreshAllStockIndicators(DataGridView dgv)
         {
-            for (int i = 0; i < dgv.Rows.Count; i++)
+            if (_refreshingStockIndicators) return;
+            _refreshingStockIndicators = true;
+
+            try
             {
-                if (dgv.Rows[i].IsNewRow) continue;
-                RefreshStockIndicator(i, dgv);
+                var all = await ItemStockCheckService.GetAllAvailableStock();
+                foreach (var stock in all)
+                {
+                    _availableStockByItemId[stock.item_id] = stock;
+                }
+
+                for (int i = 0; i < dgv.Rows.Count; i++)
+                {
+                    if (dgv.Rows[i].IsNewRow) continue;
+                    // Sequential, not fire-and-forget - see _refreshingStockIndicators'
+                    // remarks above for why this needs to actually finish, not just start,
+                    // before the guard releases.
+                    await RefreshStockIndicator(i, dgv);
+                }
+            }
+            finally
+            {
+                _refreshingStockIndicators = false;
             }
         }
 
@@ -3741,7 +3800,13 @@ namespace smpc_sales_app.Pages.Sales
         // red-flag itself for a "shortage" that's really just its own already-secured
         // stock. A different quotation's line for the same item has no reservation of its
         // own to add back, so it still correctly sees the real, lower number.
-        private async void RefreshStockIndicator(int rowIndex, DataGridView dgv)
+        // Task, not void - RefreshAllStockIndicators awaits this per row (sequentially,
+        // not Task.WhenAll) so the whole pass finishes, and _refreshingStockIndicators
+        // stays true, for as long as the actual per-row reservation lookups are still in
+        // flight - see RefreshAllStockIndicators' own remarks. Existing fire-and-forget
+        // call sites (e.g. after adding a single new row) still compile unchanged; a
+        // discarded Task behaves the same as the old async void did for them.
+        private async Task RefreshStockIndicator(int rowIndex, DataGridView dgv)
         {
             if (rowIndex < 0 || rowIndex >= dgv.Rows.Count || dgv.Rows[rowIndex].IsNewRow) return;
             if (!dgv.Columns.Contains("quick_inv_stock") || !dgv.Columns.Contains("item_id")) return;
@@ -3766,7 +3831,10 @@ namespace smpc_sales_app.Pages.Sales
                 int ownReservedQty = 0;
                 if (quickId > 0)
                 {
-                    var reservation = await ItemStockCheckService.GetReservation(quickId);
+                    // silent: true - see ItemStockCheckService.GetReservation's remarks;
+                    // this background refresh already means to swallow a failure here, not
+                    // pop a MessageBox per row.
+                    var reservation = await ItemStockCheckService.GetReservation(quickId, silent: true);
                     if (reservation != null) ownReservedQty = reservation.qty;
                 }
 
@@ -4039,6 +4107,144 @@ namespace smpc_sales_app.Pages.Sales
                 MessageBox.Show(
                     "The quotation saved, but some pending reservation changes couldn't be applied:\n" + string.Join("\n", failures),
                     "Some Reservation Changes Failed",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+            }
+        }
+
+        // Reservations are tied to a specific line's quick_id (see CreateReservation's
+        // sourceId param) and that line's quick_based_id as quotation_id - but editing a
+        // saved quotation always Insert()s a brand new SalesQuotationQuick row on save
+        // (Update() is dead code - see Sales_Quotation_Bug_Report_2026-08-03.md #6), so
+        // every line gets a new quick_id and the header gets a new id. Left alone, a
+        // reservation placed on Q#0001 stays pointed at Q#0001's now-orphaned ids forever:
+        // it silently stops showing as reserved on the doc the user is actually looking
+        // at (the new Q#0002), even though it's still holding stock server-side.
+        //
+        // Same story applies to Finalize - it also always inserts fresh rows (see the
+        // finalize save handler's own comment above its ApplyPendingReservationsAsync
+        // call), whether or not the doc was edited first, so this isn't gated on
+        // isSubVersion. Call this BEFORE the save/reload (so quick_id on screen still
+        // points at the OLD, still-valid row) to snapshot which reference_codes currently
+        // have an active reservation. A brand-new, never-saved quotation naturally has no
+        // quick_id yet on any row, so this is a cheap no-op for that case.
+        private async Task<Dictionary<string, StockReservationModel>> SnapshotReservedReferenceCodesAsync(DataGridView dgv)
+        {
+            var snapshot = new Dictionary<string, StockReservationModel>();
+            if (!dgv.Columns.Contains("reference_code") || !dgv.Columns.Contains("quick_id")) return snapshot;
+
+            foreach (DataGridViewRow row in dgv.Rows)
+            {
+                if (row.IsNewRow) continue;
+
+                string referenceCode = row.Cells["reference_code"].Value?.ToString();
+                if (string.IsNullOrEmpty(referenceCode)) continue;
+
+                int.TryParse(row.Cells["quick_id"].Value?.ToString(), out int oldQuickId);
+                if (oldQuickId <= 0) continue;
+
+                var reservation = await ItemStockCheckService.GetReservation(oldQuickId);
+                if (reservation != null)
+                {
+                    snapshot[referenceCode] = reservation;
+                }
+            }
+
+            return snapshot;
+        }
+
+        // Second half of the pair above - call AFTER fetchQuotationDetails() has refreshed
+        // the class-level `data` field with this save's real, post-save ids.
+        //
+        // Deliberately does NOT read the "new" ids off dgv_quick_quote_details (only the
+        // PRE-save snapshot above does that): fetchQuotationDetails() picks which record to
+        // land the grid on via GetOwnedRowIndexes()[0] - "this user's first owned record in
+        // the list", not "the record that was just saved" - so after a reload the grid can
+        // easily be showing a *different* document than the one this save just created a
+        // new version of, and reading quick_id/quick_based_id off it would silently
+        // "migrate" the reservation onto the wrong document's ids (this is exactly what
+        // happened the first time this shipped - the reservation just kept re-landing on
+        // Q#0001 because that's whatever fetchQuotationDetails() happened to bind to, not
+        // because the migration didn't run).
+        //
+        // `data` (repopulated by that same reload) holds every version of every owned
+        // document regardless of which one ended up bound to the grid, so resolve the new
+        // header/line ids from there instead - keyed by documentNo (stable across an edit;
+        // only version_no/sub_version_no actually change - see DocumentIncrementer only
+        // ever being called from New/New Version/Duplicate, never Edit) plus reference_code
+        // (stable across a re-save, same key ApplyPendingReservationsAsync matches on).
+        private async Task MigrateSnapshottedReservationsAsync(string documentNo, Dictionary<string, StockReservationModel> snapshot)
+        {
+            if (snapshot.Count == 0) return;
+            if (string.IsNullOrEmpty(documentNo)) return;
+            if (data?.SalesQuotation == null || data.SalesQuotationQuick == null) return;
+
+            // Deliberately NOT ordering by version_no/sub_version_no here the way
+            // fetchQuotationDetails() does (OrderByDescending(VersionNoAsInt(version_no))
+            // .ThenByDescending(VersionNoAsInt(sub_version_no))) - GetNextSubVersionNo
+            // compares a *stripped* "Q#" prefix against allTransactions' still-prefixed
+            // document_no column ("0001" vs "Q#0001"), which never matches, so every edit's
+            // latestRow lookup comes back null and sub_version_no is effectively always "0".
+            // Every same-document_no row then ties on version ordering, and ties resolve to
+            // whichever row the API happened to list first (the original, oldest one) - the
+            // same wrong-record failure mode this whole migration exists to fix in the first
+            // place. Insert() always creates a brand new row with a higher id than anything
+            // before it, so ordering by the row's own id instead is immune to that bug and
+            // to however version/sub-version numbering is or isn't working. Normalized
+            // (NormalizeDocumentNo) the same way FetchQuotationDetailsByDocumentNo compares
+            // them, so Finalize (which sends "FQ#" + the bare number, not the original
+            // "Q#..." string) still matches back to the same family.
+            var newHeader = data.SalesQuotation
+                .Where(q => NormalizeDocumentNo(q.document_no) == NormalizeDocumentNo(documentNo))
+                .OrderByDescending(q => q.id)
+                .FirstOrDefault();
+
+            if (newHeader == null) return;
+
+            var newLinesByReferenceCode = data.SalesQuotationQuick
+                .Where(q => q.based_id == newHeader.id)
+                .GroupBy(q => q.reference_code)
+                .ToDictionary(g => g.Key, g => g.First());
+
+            var failures = new List<string>();
+
+            foreach (var entry in snapshot)
+            {
+                string referenceCode = entry.Key;
+                var oldReservation = entry.Value;
+
+                if (!newLinesByReferenceCode.TryGetValue(referenceCode, out var newLine))
+                    continue; // this line no longer exists in the new version - nothing to migrate it onto
+
+                int newQuickId = newLine.id;
+                int newQuotationId = newHeader.id;
+
+                // Already on the right line/doc - nothing to move.
+                if (newQuickId == oldReservation.source_id && newQuotationId == oldReservation.quotation_id)
+                    continue;
+
+                try
+                {
+                    // Release the old hold first, then re-create it on the new line/doc -
+                    // the old id is no longer a row on screen (fetchQuotationDetails()
+                    // replaced it), but the reservation itself still exists server-side
+                    // under that id until explicitly released.
+                    await ItemStockCheckService.ReleaseReservation(oldReservation.source_id);
+                    await ItemStockCheckService.CreateReservation(
+                        oldReservation.item_id, oldReservation.qty, newQuickId, newQuotationId,
+                        oldReservation.expires_at);
+                }
+                catch (Exception ex)
+                {
+                    failures.Add($"{referenceCode}: {ex.Message}");
+                }
+            }
+
+            if (failures.Count > 0)
+            {
+                MessageBox.Show(
+                    "The quotation saved, but the following existing reservations couldn't be carried over to the new version:\n" + string.Join("\n", failures),
+                    "Some Reservations Couldn't Be Migrated",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Warning);
             }
@@ -6510,6 +6716,19 @@ namespace smpc_sales_app.Pages.Sales
                     if (parentData.ContainsKey("sales_quotation_quick"))
                     {
 
+                        // Grab this now, while dgv_quick_quote_details.quick_id still points
+                        // at the pre-finalize row - the DataSource gets swapped for an empty
+                        // clone a few lines below on success, and Insert() below always
+                        // creates fresh rows either way (see the comment further down).
+                        // parentData["document_no"] was overwritten with tempDocNo ("FQ#" +
+                        // the bare number) above - that's exactly what got sent as the new
+                        // document_no, and MigrateSnapshottedReservationsAsync needs that
+                        // (not the pre-finalize "Q#..." string) to find this save's new ids.
+                        // tempDocNo itself is out of scope by here (declared inside the
+                        // earlier if-block), so read it back off parentData instead.
+                        var reservationSnapshot = await SnapshotReservedReferenceCodesAsync(dgv_quick_quote_details);
+                        string savedDocumentNo = parentData["document_no"].ToString();
+
                         var isSuccess = await QuotationService.Insert(parentData);
 
                         if (isSuccess.Success)
@@ -6529,6 +6748,10 @@ namespace smpc_sales_app.Pages.Sales
                             // reference_code, not a real id. Apply it now that the reload
                             // gave these lines real ids.
                             await ApplyPendingReservationsAsync();
+
+                            // Same reasoning as IsQuickQuote() - carry over whatever was
+                            // already reserved before finalizing onto FQ#'s new ids.
+                            await MigrateSnapshottedReservationsAsync(savedDocumentNo, reservationSnapshot);
 
                             SetNewFormMode(false);
                         }

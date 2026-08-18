@@ -1355,18 +1355,52 @@ namespace smpc_sales_system.Pages.Sales
             _availableStockByItemId.Remove(itemId);
         }
 
-        public void RefreshAllStockIndicators()
+        // See Quotation.cs's RefreshAllStockIndicators for why this prefetches once via
+        // GetAllAvailableStock() instead of letting every row's RefreshStockIndicator fire
+        // its own request - same fix, same reasoning (one request instead of one per
+        // distinct item, and silent so a failed prefetch doesn't pop an error dialog).
+        //
+        // _refreshingStockIndicators guards against overlapping calls the same way
+        // Quotation.cs's own copy does - this is called from several places as
+        // fire-and-forget, and each row's RefreshStockIndicator still makes its own
+        // (unbatched) reservation lookup, so multiple calls in flight at once meant that
+        // many times the concurrent reservation requests, which is what was flooding
+        // /inventory/item_stocks/reservations and popping "An error occurred while sending
+        // the request" repeatedly.
+        private bool _refreshingStockIndicators = false;
+
+        public async void RefreshAllStockIndicators()
         {
-            for (int i = 0; i < dgv_project_items.Rows.Count; i++)
+            if (_refreshingStockIndicators) return;
+            _refreshingStockIndicators = true;
+
+            try
             {
-                if (dgv_project_items.Rows[i].IsNewRow) continue;
-                RefreshStockIndicator(i);
+                var all = await ItemStockCheckService.GetAllAvailableStock();
+                foreach (var stock in all)
+                {
+                    _availableStockByItemId[stock.item_id] = stock;
+                }
+
+                for (int i = 0; i < dgv_project_items.Rows.Count; i++)
+                {
+                    if (dgv_project_items.Rows[i].IsNewRow) continue;
+                    // Sequential, not fire-and-forget - so the guard above stays true for
+                    // as long as the actual per-row reservation lookups are still in flight,
+                    // not just until this loop finishes kicking them off.
+                    await RefreshStockIndicator(i);
+                }
+            }
+            finally
+            {
+                _refreshingStockIndicators = false;
             }
         }
 
-        // async void, fire-and-forget, matching Quotation.cs's RefreshStockIndicator - a
-        // slow/failed lookup just leaves the cell blank instead of blocking the grid.
-        private async void RefreshStockIndicator(int rowIndex)
+        // Task, not void - RefreshAllStockIndicators above awaits this per row. Existing
+        // fire-and-forget call sites elsewhere still compile unchanged; a discarded Task
+        // behaves the same as the old async void did for them.
+        private async Task RefreshStockIndicator(int rowIndex)
         {
             if (rowIndex < 0 || rowIndex >= dgv_project_items.Rows.Count || dgv_project_items.Rows[rowIndex].IsNewRow) return;
             if (!dgv_project_items.Columns.Contains("project_inv_stock") || !dgv_project_items.Columns.Contains("item_id")) return;
@@ -1387,7 +1421,10 @@ namespace smpc_sales_system.Pages.Sales
                 int ownReservedQty = 0;
                 if (lineId > 0)
                 {
-                    var reservation = await ItemStockCheckService.GetReservation(lineId, "sales_project_item");
+                    // silent: true - see ItemStockCheckService.GetReservation's remarks;
+                    // this background refresh already means to swallow a failure here, not
+                    // pop a MessageBox per row.
+                    var reservation = await ItemStockCheckService.GetReservation(lineId, "sales_project_item", silent: true);
                     if (reservation != null) ownReservedQty = reservation.qty;
                 }
 

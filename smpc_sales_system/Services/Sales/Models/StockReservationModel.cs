@@ -15,5 +15,12 @@ namespace smpc_sales_system.Services.Sales.Models
         public int quotation_id { get; set; }
         public DateTime reserved_at { get; set; }
         public DateTime? expires_at { get; set; }
+
+        // "Pending" until a dispatcher/inventory manager approves or rejects it (see
+        // ERP_API's ReservationApprovalAccessCode) - still holds the stock either way,
+        // Rejected is the only status that doesn't (and a rejected row won't come back
+        // here at all, since GetReservation only returns each line's newest one and a
+        // rejected reservation is functionally "not reserved" going forward).
+        public string status { get; set; }
     }
 }

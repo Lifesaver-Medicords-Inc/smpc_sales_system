@@ -41,7 +41,13 @@ namespace smpc_sales_app.Services.Helpers
 
         static CookieContainer cookieContainer = new CookieContainer();
 
-        static private async Task<T> SendRequestAsync(string url, HttpMethod method, string body = null)
+        // silent: true skips the MessageBox this method otherwise always pops on any
+        // exception (network error, timeout, etc.) - for a call that backs a purely
+        // informational/convenience UI element (e.g. the sales quotation grid's per-item
+        // stock indicator), a transient failure shouldn't interrupt the user with a raw
+        // exception dialog; the caller just gets default(T) back and falls back
+        // accordingly, same as it already does for a clean "no data" response.
+        static private async Task<T> SendRequestAsync(string url, HttpMethod method, string body = null, bool silent = false)
         {
             // Create an HttpClientHandler and assign the CookieContainer to it
             HttpClientHandler handler = new HttpClientHandler
@@ -97,7 +103,10 @@ namespace smpc_sales_app.Services.Helpers
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show("Exception: " + ex.Message, "Error ");
+                    if (!silent)
+                    {
+                        MessageBox.Show("Exception: " + ex.Message, "Error ");
+                    }
                     return default(T);  // Return default value of T in case of exception
                 }
             }
@@ -130,9 +139,9 @@ namespace smpc_sales_app.Services.Helpers
             return await SendRequestAsync(url, HttpMethod.Put, jsonContent);
         }
         // GET Method
-        public static async Task<T> Get(string url)
+        public static async Task<T> Get(string url, bool silent = false)
         {
-            return await SendRequestAsync(url, HttpMethod.Get);
+            return await SendRequestAsync(url, HttpMethod.Get, silent: silent);
         }
         //DELETE Method
         static internal async Task<T> Delete(string url, HttpContent data)
