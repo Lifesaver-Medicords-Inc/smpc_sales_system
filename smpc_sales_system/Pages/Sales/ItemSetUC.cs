@@ -1975,6 +1975,23 @@ namespace smpc_sales_system.Pages.Sales
 
         private void AssignModel(int index, DataGridView dgv)
         {
+            // A PUMP row's model comes exclusively from SIZE UP -> FINAL (spec §5.1.4),
+            // never from this grid's generic ModelModal - that's true whether the row is
+            // still the template's blank placeholder (item_id "0", which is what the
+            // guard below would otherwise mislabel as "no component" even though
+            // COMPONENTS plainly says PUMP) or already filled by FINAL (item_id set, but
+            // ModelModal's full unscoped catalog is still the wrong picker for it). Catch
+            // it here, before the item_id check, with a message that actually explains
+            // why this row's model isn't editable here.
+            string components = dgv.Rows[index].Cells["project_items_components"].Value?.ToString()?.Trim();
+            if (string.Equals(components, "PUMP", StringComparison.OrdinalIgnoreCase))
+            {
+                MessageBox.Show(
+                    "Pump models are selected through SIZE UP / FINAL, not here. Use the FINAL list to add or change a pump.",
+                    "Use FINAL for Pump Models", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
             string Id = dgv.Rows[index].Cells["item_id"].Value.ToString();
 
             // Same guard as Quotation.cs's HandleModelSelectionClick - a row with no
