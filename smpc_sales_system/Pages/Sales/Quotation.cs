@@ -1257,6 +1257,7 @@ namespace smpc_sales_app.Pages.Sales
 
                 //UC.ItemChanged += ItemChanged;
                 UC.FinalTxtBoxClicked += FinalTxtBoxClicked;
+                UC.SizeUpClicked += SizeUpClicked;
                 //UC.SetUnitsOfMeasure(CacheData.UoM, CacheData.UoM);
 
                 DataView multipliers = new DataView(dt_multiplier);
@@ -3165,11 +3166,11 @@ namespace smpc_sales_app.Pages.Sales
                             // save is still just pending intent (see
                             // _pendingReservationByReferenceCode) - every line now has a
                             // real id after that reload, so apply it for real.
-                            await ApplyPendingReservationsAsync();
+                            var appliedReferenceCodes = await ApplyPendingReservationsAsync(savedDocumentNo);
 
                             // Carry over whatever was already reserved before this edit onto
                             // the new version's ids (see SnapshotReservedReferenceCodesAsync).
-                            await MigrateSnapshottedReservationsAsync(savedDocumentNo, reservationSnapshot);
+                            await MigrateSnapshottedReservationsAsync(savedDocumentNo, reservationSnapshot, appliedReferenceCodes);
 
                             SetNewFormMode(false);
                         }
@@ -4029,42 +4030,92 @@ namespace smpc_sales_app.Pages.Sales
         // quick_id, since fetchQuotationDetails() rebinds dgv_quick_quote_details fresh
         // from the server. Matches back on reference_code, the one thing that survives
         // that rebind unchanged.
-        private async Task ApplyPendingReservationsAsync()
+        // Resolves the lines this save actually wrote, keyed by reference_code, and hands
+        // back the header id they belong to.
+        //
+        // Deliberately does NOT read ids off dgv_quick_quote_details. fetchQuotationDetails()
+        // rebinds the grid to GetOwnedRowIndexes()[0] - "this user's first owned record",
+        // not "the record that was just saved" - so after a reload the grid is usually
+        // showing a different document than the one being saved. reference_codes are only
+        // per-quotation sequence numbers ("1", "1.1", "2"), so they collide across
+        // documents constantly, and matching on them against whatever the grid happens to
+        // hold lands the write on that other document's quick_id/quick_based_id. That is
+        // the "the reservation keeps coming back to Q#0001" bug - Q#0001 is simply the
+        // user's oldest owned record, so it is what the grid falls back to every time.
+        //
+        // `data` (repopulated by that same reload) holds every version of every owned
+        // document regardless of which one the grid bound to, so resolve from there
+        // instead - keyed by documentNo (stable across an edit; only version_no/
+        // sub_version_no change) and ordered by the row's own id, since Insert() always
+        // writes a brand new row with a higher id than anything before it. Normalized
+        // (NormalizeDocumentNo) so Finalize's "FQ#" still matches back to the same family.
+        private Dictionary<string, SalesQuotationQuicksModel> ResolveSavedQuickLines(string documentNo, out int quotationId)
         {
-            if (_pendingReservationByReferenceCode.Count == 0) return;
-            if (!dgv_quick_quote_details.Columns.Contains("reference_code")) return;
+            quotationId = 0;
 
+            if (string.IsNullOrEmpty(documentNo)) return null;
+            if (data?.SalesQuotation == null || data.SalesQuotationQuick == null) return null;
+
+            var header = data.SalesQuotation
+                .Where(q => NormalizeDocumentNo(q.document_no) == NormalizeDocumentNo(documentNo))
+                .OrderByDescending(q => q.id)
+                .FirstOrDefault();
+
+            if (header == null) return null;
+
+            quotationId = header.id;
+
+            return data.SalesQuotationQuick
+                .Where(q => q.based_id == header.id && !string.IsNullOrEmpty(q.reference_code))
+                .GroupBy(q => q.reference_code)
+                .ToDictionary(g => g.Key, g => g.First());
+        }
+
+        // Returns the reference_codes it actually acted on, so the snapshot migration that
+        // runs straight after can skip them - both halves can hold an entry for the same
+        // line (unchecking RESERVE on a line that was already reserved queues a release
+        // here AND leaves that line in the pre-save snapshot), and without this the
+        // migration would faithfully re-create the hold that was just released.
+        private async Task<HashSet<string>> ApplyPendingReservationsAsync(string documentNo)
+        {
             var applied = new List<string>();
+            if (_pendingReservationByReferenceCode.Count == 0) return new HashSet<string>();
+
+            var savedLines = ResolveSavedQuickLines(documentNo, out int quotationId);
+            if (savedLines == null)
+            {
+                // Couldn't identify the document that was just saved. Leaving the intent
+                // pending is the safe failure here - falling back to the grid is exactly
+                // what put the hold on the wrong document in the first place.
+                MessageBox.Show(
+                    "The quotation saved, but the reservation changes couldn't be applied - the saved document couldn't be identified. Reopen the quotation and set RESERVE again.",
+                    "Reservation Changes Not Applied",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+                return new HashSet<string>();
+            }
+
             var failures = new List<string>();
             var affectedItemIds = new HashSet<int>();
 
-            foreach (DataGridViewRow row in dgv_quick_quote_details.Rows)
+            foreach (var pending in _pendingReservationByReferenceCode.ToList())
             {
-                if (row.IsNewRow) continue;
+                string referenceCode = pending.Key;
+                bool shouldReserve = pending.Value;
 
-                string referenceCode = row.Cells["reference_code"].Value?.ToString();
-                if (string.IsNullOrEmpty(referenceCode) ||
-                    !_pendingReservationByReferenceCode.TryGetValue(referenceCode, out bool shouldReserve))
-                    continue;
+                // Not a line of the document that was just saved (a leftover intent from
+                // another doc still open in this session) - leave it pending.
+                if (!savedLines.TryGetValue(referenceCode, out var line)) continue;
 
-                int.TryParse(row.Cells["quick_id"].Value?.ToString(), out int quickId);
-                if (quickId <= 0)
-                {
-                    // Still not saved somehow (e.g. save failed for this specific line) -
-                    // leave it pending rather than silently dropping the intent.
-                    continue;
-                }
-
-                int.TryParse(row.Cells["item_id"].Value?.ToString(), out int itemId);
+                // Saved without an id somehow (e.g. that specific line failed) - leave it
+                // pending rather than silently dropping the intent.
+                if (line.id <= 0) continue;
 
                 try
                 {
                     if (shouldReserve)
                     {
-                        int.TryParse(row.Cells["quick_qty"].Value?.ToString(), out int qty);
-                        int.TryParse(row.Cells["quick_based_id"].Value?.ToString(), out int quotationId);
-
-                        if (itemId <= 0 || qty <= 0)
+                        if (line.item_id <= 0 || line.qty <= 0)
                         {
                             // Item/qty got cleared before saving - nothing sensible left
                             // to reserve, so just drop the stale intent instead of erroring.
@@ -4072,14 +4123,15 @@ namespace smpc_sales_app.Pages.Sales
                             continue;
                         }
 
-                        await ItemStockCheckService.CreateReservation(itemId, qty, quickId, quotationId, dtp_valid_until.Value.Date);
+                        await ItemStockCheckService.CreateReservation(
+                            line.item_id, line.qty, line.id, quotationId, dtp_valid_until.Value.Date);
                     }
                     else
                     {
-                        await ItemStockCheckService.ReleaseReservation(quickId);
+                        await ItemStockCheckService.ReleaseReservation(line.id);
                     }
 
-                    if (itemId > 0) affectedItemIds.Add(itemId);
+                    if (line.item_id > 0) affectedItemIds.Add(line.item_id);
                     applied.Add(referenceCode);
                 }
                 catch (Exception ex)
@@ -4110,6 +4162,8 @@ namespace smpc_sales_app.Pages.Sales
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Warning);
             }
+
+            return new HashSet<string>(applied);
         }
 
         // Reservations are tied to a specific line's quick_id (see CreateReservation's
@@ -4173,38 +4227,27 @@ namespace smpc_sales_app.Pages.Sales
         // only version_no/sub_version_no actually change - see DocumentIncrementer only
         // ever being called from New/New Version/Duplicate, never Edit) plus reference_code
         // (stable across a re-save, same key ApplyPendingReservationsAsync matches on).
-        private async Task MigrateSnapshottedReservationsAsync(string documentNo, Dictionary<string, StockReservationModel> snapshot)
+        //
+        // alreadyApplied is whatever ApplyPendingReservationsAsync just acted on. Both
+        // halves can hold an entry for the same line - unchecking RESERVE on a line that
+        // was already reserved queues a release there and still leaves that line in this
+        // pre-save snapshot - and the release has to win, so those codes are skipped here.
+        private async Task MigrateSnapshottedReservationsAsync(string documentNo, Dictionary<string, StockReservationModel> snapshot, HashSet<string> alreadyApplied = null)
         {
             if (snapshot.Count == 0) return;
             if (string.IsNullOrEmpty(documentNo)) return;
             if (data?.SalesQuotation == null || data.SalesQuotationQuick == null) return;
 
-            // Deliberately NOT ordering by version_no/sub_version_no here the way
-            // fetchQuotationDetails() does (OrderByDescending(VersionNoAsInt(version_no))
-            // .ThenByDescending(VersionNoAsInt(sub_version_no))) - GetNextSubVersionNo
-            // compares a *stripped* "Q#" prefix against allTransactions' still-prefixed
-            // document_no column ("0001" vs "Q#0001"), which never matches, so every edit's
-            // latestRow lookup comes back null and sub_version_no is effectively always "0".
-            // Every same-document_no row then ties on version ordering, and ties resolve to
-            // whichever row the API happened to list first (the original, oldest one) - the
-            // same wrong-record failure mode this whole migration exists to fix in the first
-            // place. Insert() always creates a brand new row with a higher id than anything
-            // before it, so ordering by the row's own id instead is immune to that bug and
-            // to however version/sub-version numbering is or isn't working. Normalized
-            // (NormalizeDocumentNo) the same way FetchQuotationDetailsByDocumentNo compares
-            // them, so Finalize (which sends "FQ#" + the bare number, not the original
-            // "Q#..." string) still matches back to the same family.
-            var newHeader = data.SalesQuotation
-                .Where(q => NormalizeDocumentNo(q.document_no) == NormalizeDocumentNo(documentNo))
-                .OrderByDescending(q => q.id)
-                .FirstOrDefault();
-
-            if (newHeader == null) return;
-
-            var newLinesByReferenceCode = data.SalesQuotationQuick
-                .Where(q => q.based_id == newHeader.id)
-                .GroupBy(q => q.reference_code)
-                .ToDictionary(g => g.Key, g => g.First());
+            // Resolved off `data` rather than the grid, and ordered by the row's own id
+            // rather than version_no/sub_version_no - see ResolveSavedQuickLines for why
+            // both of those matter. In short: sub_version_no is effectively always "0"
+            // (GetNextSubVersionNo compares a stripped "0001" against a still-prefixed
+            // "Q#0001", so its lookup never matches), which makes every same-document row
+            // tie on version ordering and resolve to whichever the API listed first - the
+            // oldest one. Insert() always writes a higher id, so id ordering is immune to
+            // that.
+            var newLinesByReferenceCode = ResolveSavedQuickLines(documentNo, out int newQuotationId);
+            if (newLinesByReferenceCode == null) return;
 
             var failures = new List<string>();
 
@@ -4213,14 +4256,38 @@ namespace smpc_sales_app.Pages.Sales
                 string referenceCode = entry.Key;
                 var oldReservation = entry.Value;
 
-                if (!newLinesByReferenceCode.TryGetValue(referenceCode, out var newLine))
-                    continue; // this line no longer exists in the new version - nothing to migrate it onto
+                // ApplyPendingReservationsAsync already had its say on this line - don't
+                // undo it by re-creating the hold it just released.
+                if (alreadyApplied != null && alreadyApplied.Contains(referenceCode)) continue;
+
+                if (!newLinesByReferenceCode.TryGetValue(referenceCode, out var newLine) || newLine.qty <= 0)
+                {
+                    // The line was deleted, or its QTY zeroed, in this version. The old
+                    // hold still exists server-side under an id nothing on screen points
+                    // at any more, so it would go on holding stock until the expiry sweep
+                    // eventually caught it - release it now instead of orphaning it.
+                    try
+                    {
+                        await ItemStockCheckService.ReleaseReservation(oldReservation.source_id);
+                    }
+                    catch (Exception ex)
+                    {
+                        failures.Add($"{referenceCode}: {ex.Message}");
+                    }
+                    continue;
+                }
 
                 int newQuickId = newLine.id;
-                int newQuotationId = newHeader.id;
 
-                // Already on the right line/doc - nothing to move.
-                if (newQuickId == oldReservation.source_id && newQuotationId == oldReservation.quotation_id)
+                // QTY is part of what has to carry over, not just the ids. The hold was
+                // placed for whatever the line said at the time, so an edit that cuts QTY
+                // from 5 to 3 has to move the hold down to 3 - re-issuing with
+                // oldReservation.qty would leave all 5 held, and a save that happens not to
+                // change the ids would skip the update altogether. Compare QTY alongside
+                // the ids and re-issue whenever any of the three moved.
+                if (newQuickId == oldReservation.source_id &&
+                    newQuotationId == oldReservation.quotation_id &&
+                    newLine.qty == oldReservation.qty)
                     continue;
 
                 try
@@ -4231,7 +4298,7 @@ namespace smpc_sales_app.Pages.Sales
                     // under that id until explicitly released.
                     await ItemStockCheckService.ReleaseReservation(oldReservation.source_id);
                     await ItemStockCheckService.CreateReservation(
-                        oldReservation.item_id, oldReservation.qty, newQuickId, newQuotationId,
+                        oldReservation.item_id, newLine.qty, newQuickId, newQuotationId,
                         oldReservation.expires_at);
                 }
                 catch (Exception ex)
@@ -5481,6 +5548,7 @@ namespace smpc_sales_app.Pages.Sales
                 UC.CellClickedStock += ItemSetUC_CellClickedStock;
                 UC.CellEdited += Cell_EditedUC;
                 UC.FinalTxtBoxClicked += FinalTxtBoxClicked;
+                UC.SizeUpClicked += SizeUpClicked;
                 UC.HandleItemSelectionClick += HandleItemSelectionClick;
                 //UC.DeleteReferenceCode += DeleteRowsByReferenceCode;
                 //UC.SetUnitsOfMeasure(CacheData.UoM, CacheData.UoM);
@@ -5514,43 +5582,77 @@ namespace smpc_sales_app.Pages.Sales
             counterReference = 0;
             SelectedRowIndex = 0;
         }
-        private async void FinalTxtBoxClicked(object sender, EventArgs e)
+        // Trello #044: opens the same pump picker FINAL uses, restricted to pump items
+        // only, and appends the choice to this tab's SIZE UP grid instead of replacing a
+        // single FINAL selection. Deliberately not de-duplicated against
+        // FinalTxtBoxClicked below - they diverge right after the picker closes, and
+        // this keeps the working FINAL path untouched.
+        private void SizeUpClicked(object sender, EventArgs e)
         {
-            DataTable pumps = new DataTable();
-            DataTable items = new DataTable();
+            // "Is this a pump" = ITEM NAME "PUMP" (spec §17.2, code PMP) - a required
+            // field on every item, already present on ItemList (vw_items). Deliberately
+            // NOT item_class (spec §4.2.1: "There is no ... PUMP ... class; any code or
+            // report filter still keying on one is stale") and NOT the engineering specs
+            // table (tbl_setup_item_specs.template), which only exists for an item once
+            // someone has actually filled its electrical specs in - keying on that
+            // excluded every pump that hadn't been through that separate step yet.
+            var sizeUpFilteredItems = ItemList.AsEnumerable()
+                                .Where(row => string.Equals(row["item_name"]?.ToString(), "PUMP", StringComparison.OrdinalIgnoreCase))
+                                .ToList();
 
-
-            var data = await ProjectService.GetPumpsViewList();
-
-            if (data == null || data.ItemPumpsView == null || !data.ItemPumpsView.Any())
+            if (sizeUpFilteredItems.Count == 0)
             {
                 MessageBox.Show("No pump items are set up yet. Please add pump items before using this.", "No Pump Data", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            //if (tabControl2.SelectedTab.Controls[0] is ItemSetUC currentControl)
-            //{
-            //    var data = currentControl.GetSizeUpData();
-            //    List<KeyValuePair<string, dynamic>> size_up = data.ToList();
-            //    pumps = JsonHelper.ToDataTable(size_up);
-            //}
+            DataTable sizeUpItemListPump = sizeUpFilteredItems.CopyToDataTable();
 
-            pumps = JsonHelper.ToDataTable(data.ItemPumpsView);
+            if (!(tabControl2.SelectedTab.Controls[0] is ItemSetUC sizeUpControl)) return;
 
-            List<int> pumpId = pumps.AsEnumerable()
-                                .Select(row => row.Field<int>("item_id"))
-                                .Distinct()
-                                .ToList();
+            // Multi-select picker, not ModelModal - see SizeUpPickerModal's class remarks
+            // for why this got its own modal instead of reusing/extending ModelModal.
+            // Pumps already on this tab's SIZE UP list arrive pre-checked.
+            using (var sizeUpModal = new SizeUpPickerModal(sizeUpItemListPump, sizeUpControl.GetSizeUpItemIds()))
+            {
+                if (sizeUpModal.ShowDialog() == DialogResult.OK)
+                {
+                    foreach (var pick in sizeUpModal.GetSelectedItems())
+                        sizeUpControl.AddSizeUpRow(pick.ItemId.ToString(), pick.Model);
+                }
+            }
+        }
 
-            // .CopyToDataTable() throws InvalidOperationException("The source contains no
-            // DataRows.") if the filtered sequence comes up empty - happened whenever none
-            // of ItemList's rows matched any of the pump view's item_ids (e.g. a pump item
-            // was removed from the item catalog but is still referenced in the pumps view).
-            // Filtering to a list first lets us validate before ever calling
-            // CopyToDataTable, instead of crashing.
+        private async void FinalTxtBoxClicked(object sender, EventArgs e)
+        {
+            // "Is this a pump" for the purposes of what FINAL's picker OFFERS = ITEM NAME
+            // "PUMP" (spec §17.2), same as SizeUpClicked - NOT GetPumpsViewList() (vw_
+            // PumpSpecifications). That used to gate entry to this picker entirely, so a
+            // real SIZE UP list could never fully appear if some of its pumps lacked
+            // electrical specs. GetPumpsViewList() is still used below, per pick, to look
+            // up FLA/Voltage where available - it no longer decides what's offered.
+            var data = await ProjectService.GetPumpsViewList();
+            DataTable pumps = (data?.ItemPumpsView != null) ? JsonHelper.ToDataTable(data.ItemPumpsView) : new DataTable();
+
             var filteredPumpItems = ItemList.AsEnumerable()
-                                .Where(row => int.TryParse(row["id"]?.ToString(), out int rowId) && pumpId.Contains(rowId))
+                                .Where(row => string.Equals(row["item_name"]?.ToString(), "PUMP", StringComparison.OrdinalIgnoreCase))
                                 .ToList();
+
+            // Trello #043/#049: FINAL must only offer what's actually listed in this
+            // tab's SIZE UP (spec §5.1.4: "Final Selection - dropdown limited to what is
+            // listed in Size Up"), not every pump item in the system.
+            if (tabControl2.SelectedTab.Controls[0] is ItemSetUC currentControlForFilter)
+            {
+                var sizeUpIds = currentControlForFilter.GetSizeUpItemIds();
+                if (sizeUpIds.Count == 0)
+                {
+                    MessageBox.Show("Add at least one candidate under SIZE UP before selecting FINAL.", "Size Up Required", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+                filteredPumpItems = filteredPumpItems
+                                    .Where(row => int.TryParse(row["id"]?.ToString(), out int rowId) && sizeUpIds.Contains(rowId))
+                                    .ToList();
+            }
 
             if (filteredPumpItems.Count == 0)
             {
@@ -5560,32 +5662,37 @@ namespace smpc_sales_app.Pages.Sales
 
             DataTable ItemListPump = filteredPumpItems.CopyToDataTable();
 
-            ModelModal createModal = new ModelModal(ItemListPump, BomHead, BomDetails, "0");
+            if (!(tabControl2.SelectedTab.Controls[0] is ItemSetUC currentControl2)) return;
 
-            DialogResult dr = createModal.ShowDialog();
-
-            if (dr == DialogResult.OK)
+            // Multi-select, same as SIZE UP's own picker (Trello #044/#043/#049) - reuses
+            // SizeUpPickerModal rather than a second copy of it, since the picking UI
+            // (search + checkboxes + BRAND/MODEL NAME/LIST PRICE + Save/Cancel) is
+            // identical; only what happens with the picks afterward differs. Pumps
+            // already in FINAL arrive pre-checked.
+            using (var finalModal = new SizeUpPickerModal(ItemListPump, currentControl2.GetFinalItemIds(), "Select Pumps for Final"))
             {
-                string id = (createModal.GetItemId().ToString());
-                var itemModelName = ItemList.AsEnumerable()
-                                .FirstOrDefault(row => row["id"].ToString() == id)?["item_model"].ToString();
+                if (finalModal.ShowDialog() != DialogResult.OK) return;
 
-                var FLA = pumps.AsEnumerable()
-                        .FirstOrDefault(row => row["item_title"].ToString() == "FLA" && row["item_id"].ToString() == id)?["item_value"].ToString();
-
-                var Voltage = pumps.AsEnumerable()
-                                    .FirstOrDefault(row => row["item_title"].ToString() == "VOLTAGE" && row["item_id"].ToString() == id)?["item_value"].ToString();
-
-                if (tabControl2.SelectedTab.Controls[0] is ItemSetUC currentControl2 && !FLA.IsNullOrEmpty() && !Voltage.IsNullOrEmpty()
-                    && !itemModelName.IsNullOrEmpty())
+                // FINAL's choices MUST match SIZE UP's exactly, regardless of whether
+                // FLA/VOLTAGE exist yet - added unconditionally, same as SIZE UP itself
+                // never gates on anything beyond "was it picked". A pump missing FLA/
+                // VOLTAGE just gets a blank cell here (SetFinalPumpData's own aggregate
+                // already treats an unparseable/blank FLA as 0 - see its decimal.TryParse
+                // fallback), not left out of FINAL entirely.
+                foreach (var pick in finalModal.GetSelectedItems())
                 {
-                    currentControl2.SetFinalPumpData(FLA, Voltage, itemModelName);
-                }
-                else
-                {
-                    MessageBox.Show("Final/FLA/Voltage is possible empty");
-                }
+                    if (pick.Model.IsNullOrEmpty()) continue;
 
+                    string id = pick.ItemId.ToString();
+
+                    var FLA = pumps.AsEnumerable()
+                            .FirstOrDefault(row => row["item_title"].ToString() == "FLA" && row["item_id"].ToString() == id)?["item_value"].ToString();
+
+                    var Voltage = pumps.AsEnumerable()
+                                        .FirstOrDefault(row => row["item_title"].ToString() == "VOLTAGE" && row["item_id"].ToString() == id)?["item_value"].ToString();
+
+                    currentControl2.SetFinalPumpData(FLA ?? string.Empty, Voltage ?? string.Empty, pick.Model, id);
+                }
             }
         }
         private void btn_new_version_Click(object sender, EventArgs e)
@@ -6157,6 +6264,7 @@ namespace smpc_sales_app.Pages.Sales
                 myControl.CellClickedStock += ItemSetUC_CellClickedStock;
                 myControl.CellEdited += Cell_EditedUC;
                 myControl.FinalTxtBoxClicked += FinalTxtBoxClicked;
+                myControl.SizeUpClicked += SizeUpClicked;
                 myControl.setMultiplier(fetchMultiplierData());
 
                 // Add the UserControl to the new tab
@@ -6747,11 +6855,11 @@ namespace smpc_sales_app.Pages.Sales
                             // RESERVE checked before finalizing was queued against a
                             // reference_code, not a real id. Apply it now that the reload
                             // gave these lines real ids.
-                            await ApplyPendingReservationsAsync();
+                            var appliedReferenceCodes = await ApplyPendingReservationsAsync(savedDocumentNo);
 
                             // Same reasoning as IsQuickQuote() - carry over whatever was
                             // already reserved before finalizing onto FQ#'s new ids.
-                            await MigrateSnapshottedReservationsAsync(savedDocumentNo, reservationSnapshot);
+                            await MigrateSnapshottedReservationsAsync(savedDocumentNo, reservationSnapshot, appliedReferenceCodes);
 
                             SetNewFormMode(false);
                         }
@@ -7432,8 +7540,6 @@ namespace smpc_sales_app.Pages.Sales
                 txt_percent_discount.Text = percentDiscount.ToString();
             }
 
-            decimal netSalesWithVat = netSalesTotal * 0.12m;
-
             //txt_additional_discount.Text = txt_additional_discount.Text != "" ? txt_additional_discount.Text : "0%";
 
             // Both parses below used to be unguarded decimal.Parse calls (on the raw
@@ -7451,7 +7557,18 @@ namespace smpc_sales_app.Pages.Sales
 
             decimal DiscountedTotal = netSalesTotal * AdditionalDiscount;
 
-            decimal NetAmountDue = (netSalesTotal - DiscountedTotal) + netSalesWithVat;
+            // Was "netSalesTotal * 0.12m", computed before the additional discount
+            // above was even known - so VAT was charged on the pre-discount amount
+            // instead of the discounted (NET OF VAT) base. Per spec §8.2: VAT is
+            // computed on net sales *after* the additional discount is deducted,
+            // never before - taxing the undiscounted figure overcharges VAT on
+            // money the customer never actually pays. This only changed the result
+            // when an additional discount is actually present; with none, NET OF
+            // VAT == netSalesTotal and the old and new figures are identical.
+            decimal netOfVat = netSalesTotal - DiscountedTotal;
+            decimal netSalesWithVat = netOfVat * 0.12m;
+
+            decimal NetAmountDue = netOfVat + netSalesWithVat;
 
             decimal.TryParse(Helpers.GetCleanedPriceValue(txt_cash_discount.Text), out decimal cashDiscountValue);
             decimal TotalAmountDue = NetAmountDue - cashDiscountValue;

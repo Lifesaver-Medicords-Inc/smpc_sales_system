@@ -386,6 +386,12 @@
     <Compile Include="Pages\Sales\StockCheckModal.Designer.cs">
       <DependentUpon>StockCheckModal.cs</DependentUpon>
     </Compile>
+    <Compile Include="Pages\Sales\SizeUpPickerModal.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Pages\Sales\SizeUpPickerModal.Designer.cs">
+      <DependentUpon>SizeUpPickerModal.cs</DependentUpon>
+    </Compile>
     <Compile Include="Pages\Sales\SupplierPickerModal.cs">
       <SubType>Form</SubType>
     </Compile>

@@ -46,6 +46,9 @@ namespace smpc_sales_system.Pages.Sales
         // against this tab's own grid instead of duplicating it here.
         public event EventHandler CellClickedStock;
         public event EventHandler FinalTxtBoxClicked;
+        // Trello #044/#043/#049: raised when a SIZE UP row is clicked, so Quotation.cs
+        // can open the pump picker and append the choice to this tab's SIZE UP grid.
+        public event EventHandler SizeUpClicked;
         public event EventHandler DeleteReferenceCode;
         public event EventHandler GetEngineerUsers;
 
@@ -68,6 +71,23 @@ namespace smpc_sales_system.Pages.Sales
                 col.SortMode = DataGridViewColumnSortMode.NotSortable;
             foreach (DataGridViewColumn col in dgv_wiring.Columns)
                 col.SortMode = DataGridViewColumnSortMode.NotSortable;
+
+            // Trello #044/#043/#049: SIZE UP was 5 fixed textboxes with a hard ceiling
+            // and no connection to FINAL. Spec §5.1.4: "more than five allowed,
+            // scrollable" and "Final Selection - dropdown limited to what is listed in
+            // Size Up". Replaced with dgv_size_up (declared in the Designer now, see
+            // ItemSetUC.Designer.cs) - unlimited rows, native scroll, MODEL/BRAND/LIST
+            // PRICE columns per spec's picker, restricted to pump items only same as
+            // FINAL's picker. The 5 old textboxes are hidden in the Designer, not here.
+
+            // Trello #070/#071: QTY accepted letters, and typing them into the grid's
+            // trailing blank row committed it - adding a stray item row from garbage
+            // input instead of only from an actual item selection (spec §5.1.2:
+            // "Selecting an item adds exactly one blank row... MUST NOT" skip lines).
+            // HandleNumericColumns already existed for this but was never wired to any
+            // event, so it never ran.
+            dgv_project_items.EditingControlShowing += (s, e) =>
+                HandleNumericColumns(dgv_project_items, e, new[] { "project_items_qty" });
 
             setProjectWirings();
 
@@ -309,7 +329,9 @@ namespace smpc_sales_system.Pages.Sales
                     wire_req = item["project_wiring_wire_amp"]?.ToString() ?? string.Empty,
                     description = item["project_wiring_description"]?.ToString() ?? string.Empty,
                     num_of_wires_set = item["project_wiring_num_of_wiring_set"]?.ToString() ?? string.Empty,
-                    //num_of_qty_set = item["project_wiring_num_of_qty_set"]?.ToString() ?? string.Empty,
+                    // Trello #084: was commented out, so this factor never reached the
+                    // save payload at all - the API always received an empty string here.
+                    num_of_qty_set = item["project_wiring_num_of_qty_set"]?.ToString() ?? string.Empty,
                     distance_travelled_set = item["project_wiring_distance_travelled"]?.ToString() ?? string.Empty,
                     allowance_wire_set = item["project_wiring_allowance"]?.ToString() ?? string.Empty,
                     qty = int.TryParse(item["project_wiring_qty"]?.ToString(), out int qtyVal) ? qtyVal : 0,
@@ -514,7 +536,10 @@ namespace smpc_sales_system.Pages.Sales
             {
                 foreach (DataRow row in dt.Rows)
                 {
-                    dgv_final.Rows.Add(row["id"], row["sales_project_content_id"], row["final"], row["fla"], row["voltage"]);
+                    // final_item_id is left blank here - the saved shape has no item id
+                    // column (see the Designer comment on that column), so a reloaded row
+                    // just won't pre-check/dedupe against the FINAL picker this session.
+                    dgv_final.Rows.Add(row["id"], row["sales_project_content_id"], row["final"], row["fla"], row["voltage"], null);
                 }
             }
         }
@@ -524,28 +549,60 @@ namespace smpc_sales_system.Pages.Sales
             chk_wiring.Checked = bool.Parse(Checked);
         }
 
+        // Trello #044/#043/#049: was a fixed 5-textbox scan. Kept the same method name/
+        // signature (the one call site was already commented out, but keeping it avoids
+        // surprising a future caller expecting the old shape) while reading from the
+        // grid instead.
         public Dictionary<string, dynamic> GetSizeUpData()
         {
-            Panel[] pnl = { pnl_project_content };
             Dictionary<string, dynamic> values = new Dictionary<string, dynamic>();
+            if (dgv_size_up == null) return values;
 
-            foreach (var panels in pnl)
+            int i = 1;
+            foreach (DataGridViewRow row in dgv_size_up.Rows)
             {
-                foreach (Control ctrl in panels.Controls)
-                {
-                    if (ctrl is TextBox textbox && textbox.Name.Contains("size_up"))
-                    {
-                        string key = textbox.Name.Replace("txt_", " ");
-                        dynamic val = null;
-
-                        val = textbox.Text.ToString();
-
-                        values[key] = val;
-                    }
-                }
+                values[$" size_up_{i}"] = row.Cells["size_up_model"].Value?.ToString() ?? string.Empty;
+                i++;
             }
 
             return values;
+        }
+
+        // Mirrors dgv_final_CellClick exactly - single MODEL column now, same as FINAL,
+        // so there's no longer a per-column decision to make about which cell opens
+        // the picker.
+        private void dgv_size_up_CellClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if (!_isEditable) return;
+            SizeUpClicked?.Invoke(this, EventArgs.Empty);
+        }
+
+        // Called from Quotation.cs's SizeUpClicked handler once the user picks pumps
+        // from SizeUpPickerModal (one call per selected pump - the modal itself handles
+        // multi-select). Silently ignores a re-pick of the same item instead of listing
+        // it twice.
+        public void AddSizeUpRow(string itemId, string model)
+        {
+            if (dgv_size_up == null) return;
+
+            foreach (DataGridViewRow row in dgv_size_up.Rows)
+                if (row.Cells["size_up_item_id"].Value?.ToString() == itemId) return;
+
+            dgv_size_up.Rows.Add(itemId, model);
+        }
+
+        // What FINAL selection filters against (spec §5.1.4: "Final Selection - dropdown
+        // limited to what is listed in Size Up").
+        public List<int> GetSizeUpItemIds()
+        {
+            var ids = new List<int>();
+            if (dgv_size_up == null) return ids;
+
+            foreach (DataGridViewRow row in dgv_size_up.Rows)
+                if (int.TryParse(row.Cells["size_up_item_id"].Value?.ToString(), out int id))
+                    ids.Add(id);
+
+            return ids;
         }
 
 
@@ -797,6 +854,9 @@ namespace smpc_sales_system.Pages.Sales
                     dgvRow.Cells["project_wiring_wire_amp"].Value = row["wire_req"];
                     dgvRow.Cells["project_wiring_description"].Value = row["description"];
                     dgvRow.Cells["project_wiring_num_of_wiring_set"].Value = row["num_of_wires_set"];
+                    // Trello #084: was never loaded back onto the grid, so a reopened
+                    // quote always showed this factor blank even if it had been saved.
+                    dgvRow.Cells["project_wiring_num_of_qty_set"].Value = row["num_of_qty_set"];
                     dgvRow.Cells["project_wiring_distance_travelled"].Value = row["distance_travelled_set"];
                     dgvRow.Cells["project_wiring_allowance"].Value = row["allowance_wire_set"];
                     dgvRow.Cells["project_wiring_qty"].Value = row["qty"];
@@ -895,12 +955,27 @@ namespace smpc_sales_system.Pages.Sales
         }
 
 
-        public void SetFinalPumpData(string FLA, string Voltage, string Final)
+        // Trello #044/#043/#049: FINAL's own picker is now multi-select, same as SIZE
+        // UP's - ItemId lets repeated picks (re-opening the picker, checking the same
+        // pump again) skip re-adding a duplicate row instead of piling up copies.
+        public void SetFinalPumpData(string FLA, string Voltage, string Final, string ItemId)
         {
+            if (!string.IsNullOrEmpty(ItemId))
+            {
+                foreach (DataGridViewRow existingRow in dgv_final.Rows)
+                    if (existingRow.Cells["final_item_id"].Value?.ToString() == ItemId) return;
+            }
+
             //The first parameter is Id, the 2nd paramter ContentId
             //When adding
 
-            dgv_final.Rows.Add(0,0, Final.ToString(), FLA.ToString(), Voltage.ToString());
+            dgv_final.Rows.Add(0, 0, Final.ToString(), FLA.ToString(), Voltage.ToString(), ItemId);
+
+            // Spec §5.1.4: "Additional pumps may be added (+add final pump) and are
+            // inserted into the table as further pumps without repeating the template" -
+            // only reached when the dedupe check above didn't already return, so this
+            // runs once per genuinely new FINAL pick, never on a re-pick of the same pump.
+            AddFinalPumpToItemsGrid(ItemId, Final);
 
             decimal fla_highest = 0;
             decimal voltage_highest = 0;
@@ -953,7 +1028,167 @@ namespace smpc_sales_system.Pages.Sales
                 dgv_wiring.Rows[0].Cells["project_wiring_wire_amp"].Value = fla_highest * Pump_Total_Qty * 1.25m;
 
         }
-         
+
+        // Spec §5.1.4's "+add final pump ... inserted into the table as further pumps
+        // without repeating the template" - a plain appended row, never touching any
+        // other row (template-driven or otherwise). Skips adding if a row for this exact
+        // model is already there, so re-picking the same pump in FINAL doesn't pile up
+        // duplicate line items (mirrors SetFinalPumpData's own dedupe on the FINAL grid).
+        // QTY defaults to 1 - the same starting point a manually-added item gets - and is
+        // freely editable afterward like any other row.
+        // template_id value AddFinalPumpToItemsGrid stamps its own rows with - see that
+        // method for why.
+        private const string FinalPumpTemplateId = "final_pump";
+
+        private void AddFinalPumpToItemsGrid(string itemId, string model)
+        {
+            if (string.IsNullOrEmpty(model)) return;
+
+            // dgv_project_items is normally bound to a DataTable (see the DataSource-as-
+            // DataTable pattern used everywhere else in this file, e.g.
+            // AddWiringRowsComponent) - DataGridView refuses Rows.Add()/Rows.Insert()
+            // directly on a bound grid ("Rows cannot be programmatically added ... when
+            // the control is data-bound"), so a new row has to go through the underlying
+            // DataTable instead, using its actual column names ("components"/"model"/
+            // "qty"), not the DataGridViewColumn names ("project_items_components" etc,
+            // which only apply to Cells[] access on an unbound grid).
+            if (dgv_project_items.DataSource is DataTable dataSource)
+            {
+                // A "PUMP" row identifies a pump slot regardless of where it came from -
+                // a template's own child list always includes one (blank until filled),
+                // and a row this method inserted fresh also gets "PUMP" as its
+                // components text. Matching on that instead of template_id lets both
+                // directions share one rule: already-filled with this exact model =
+                // dedupe; blank = the template's own slot waiting to be filled; neither
+                // found = fall through to inserting a brand-new row.
+                // lastPumpRowIndex tracks the last PUMP-type row seen (the template's own
+                // slot, whether blank or already filled, or a previously-added final pump)
+                // so a genuinely new pick can be inserted right next to it instead of
+                // always landing at the tail before wiring - keeps every pump clustered
+                // together regardless of how many other template rows sit between the
+                // first pump and wiring.
+                DataRow blankTemplateSlot = null;
+                int lastPumpRowIndex = -1;
+                for (int i = 0; i < dataSource.Rows.Count; i++)
+                {
+                    DataRow row = dataSource.Rows[i];
+                    if (!string.Equals(row["components"]?.ToString()?.Trim(), "PUMP", StringComparison.OrdinalIgnoreCase)) continue;
+
+                    string existingModel = row["model"]?.ToString();
+                    if (string.Equals(existingModel, model, StringComparison.OrdinalIgnoreCase)) return; // dedupe
+
+                    if (blankTemplateSlot == null && string.IsNullOrWhiteSpace(existingModel)) blankTemplateSlot = row;
+
+                    lastPumpRowIndex = i;
+                }
+
+                if (blankTemplateSlot != null)
+                {
+                    // Fill the template's own slot in place - same reference_code, same
+                    // position, no insert/renumber needed.
+                    blankTemplateSlot["item_id"] = itemId;
+                    blankTemplateSlot["model"] = model;
+                    return;
+                }
+
+                // Ordering rule: [template rows] -> [final pump rows] -> [wiring rows].
+                // A pump added after wiring rows already exist (chk_wiring was checked
+                // before FINAL was used, or a second pump is added after the first)
+                // MUST be inserted before wiring, not appended after it.
+                int wiringStartIndex = dataSource.Rows.Count;
+                for (int i = 0; i < dataSource.Rows.Count; i++)
+                {
+                    if (string.Equals(dataSource.Rows[i]["template_id"]?.ToString(), "wiring", StringComparison.OrdinalIgnoreCase))
+                    {
+                        wiringStartIndex = i;
+                        break;
+                    }
+                }
+
+                // Cluster with the last existing PUMP row rather than always inserting at
+                // the tail - if there's no PUMP row at all yet, fall back to the old
+                // before-wiring position.
+                int insertIndex = lastPumpRowIndex >= 0 ? lastPumpRowIndex + 1 : wiringStartIndex;
+
+                // Top-level reference codes are plain integers ("1", "2", ...); children
+                // hang off them as "N.1", "N.2" (see AddWiringRowsComponent/
+                // AddChildNodesFromDb). The new pump becomes the next top-level number
+                // after however many top-level rows already sit before the insertion
+                // point, and every top-level number from there on shifts up by one so
+                // reference_code stays sequential (children keep their own suffix). Since
+                // insertIndex can now land mid-list (right after a clustered pump) rather
+                // than only ever at wiringStartIndex, the renumber sweep runs to the end
+                // of the grid, not just from wiringStartIndex.
+                int TopLevelHead(string code, out string tail)
+                {
+                    int dot = code?.IndexOf('.') ?? -1;
+                    tail = dot >= 0 ? code.Substring(dot) : string.Empty;
+                    string head = dot >= 0 ? code.Substring(0, dot) : code;
+                    return int.TryParse(head, out int n) ? n : 0;
+                }
+
+                int topLevelCountBeforeInsert = 0;
+                for (int i = 0; i < insertIndex; i++)
+                {
+                    string code = dataSource.Rows[i]["reference_code"]?.ToString() ?? "";
+                    if (!code.Contains(".")) topLevelCountBeforeInsert++;
+                }
+                int newTopLevelNumber = topLevelCountBeforeInsert + 1;
+
+                for (int i = insertIndex; i < dataSource.Rows.Count; i++)
+                {
+                    var row = dataSource.Rows[i];
+                    string code = row["reference_code"]?.ToString() ?? "";
+                    int head = TopLevelHead(code, out string tail);
+                    row["reference_code"] = (head + 1) + tail;
+                }
+
+                DataRow newDataRow = dataSource.NewRow();
+                newDataRow["item_id"] = itemId;
+                newDataRow["components"] = "PUMP";
+                newDataRow["model"] = model;
+                newDataRow["qty"] = "1";
+                newDataRow["reference_code"] = newTopLevelNumber;
+                newDataRow["template_id"] = FinalPumpTemplateId;
+                dataSource.Rows.InsertAt(newDataRow, insertIndex);
+                return;
+            }
+
+            // Unbound fallback - matches SetComponentDataUnbound/AddChildNodesFromDb's
+            // own Cells[]-based row-add pattern elsewhere in this file. In practice
+            // dgv_project_items is always bound by the time FINAL is used, so this just
+            // appends (no template/wiring-position renumbering) rather than duplicating
+            // that logic for a path that shouldn't actually run.
+            foreach (DataGridViewRow row in dgv_project_items.Rows)
+            {
+                if (row.IsNewRow) continue;
+                bool isPumpRow = string.Equals(row.Cells["project_items_components"].Value?.ToString(), "Pump", StringComparison.OrdinalIgnoreCase);
+                bool sameModel = string.Equals(row.Cells["project_items_model"].Value?.ToString(), model, StringComparison.OrdinalIgnoreCase);
+                if (isPumpRow && sameModel) return;
+            }
+
+            int rowIndex = dgv_project_items.Rows.Add();
+            DataGridViewRow newRow = dgv_project_items.Rows[rowIndex];
+            newRow.Cells["item_id"].Value = itemId;
+            newRow.Cells["project_items_components"].Value = "PUMP";
+            newRow.Cells["project_items_model"].Value = model;
+            newRow.Cells["project_items_qty"].Value = "1";
+        }
+
+        // What the multi-select FINAL picker pre-checks/dedupes against - see the
+        // final_item_id Designer comment for why a row reloaded from a saved project
+        // won't appear here.
+        public List<int> GetFinalItemIds()
+        {
+            var ids = new List<int>();
+
+            foreach (DataGridViewRow row in dgv_final.Rows)
+                if (int.TryParse(row.Cells["final_item_id"].Value?.ToString(), out int id))
+                    ids.Add(id);
+
+            return ids;
+        }
+
         public DataGridView DgvProjectItems
         {
             get { return this.dgv_project_items; }
@@ -1136,12 +1371,33 @@ namespace smpc_sales_system.Pages.Sales
                 return;
 
             string lastRef = "";
-            
+
+            // Capture any pumps FINAL already added before ClearProjectItemsDgv() wipes
+            // the grid below, so picking a template (or switching back to "-- No
+            // Template --") never destroys them. The template's own PUMP row gets filled
+            // from the first one instead of staying blank (see the loop below); anything
+            // left over is re-added afterward in the finally block, the same way FINAL
+            // itself adds a pump (right before wiring).
+            var existingFinalPumps = new List<(string ItemId, string Model)>();
+            if (dgv_project_items.DataSource is DataTable existingItemsDs)
+            {
+                foreach (DataRow existingRow in existingItemsDs.Rows)
+                {
+                    string existingComponents = existingRow["components"]?.ToString()?.Trim() ?? "";
+                    string existingModel = existingRow["model"]?.ToString();
+                    if (string.Equals(existingComponents, "PUMP", StringComparison.OrdinalIgnoreCase) && !string.IsNullOrWhiteSpace(existingModel))
+                    {
+                        existingFinalPumps.Add((existingRow["item_id"]?.ToString(), existingModel));
+                    }
+                }
+            }
+            int usedFinalPumps = 0;
+
             try
             {
                 isLoadingTemplate = true;
 
-                
+
                 if (!isViewProjectItem)
                      ClearProjectItemsDgv();
 
@@ -1191,12 +1447,32 @@ namespace smpc_sales_system.Pages.Sales
                     // Create hierarchical number like 1.2.3
                     string refCode = string.Join(".", levelCounters.Where(v => v > 0));
 
-                    string indent = new string(' ', level * 4);
+                    // Level is 1-based (top-level rows are stored as Level=1, not 0) -
+                    // same convention already relied on elsewhere in this file (see the
+                    // BOM-insert path a few hundred lines down: "((int)row["level"] - 1) *
+                    // 4"). Using the raw Level here gave every row, top-level included, a
+                    // uniform +4 space offset - visually harmless-looking for deep rows
+                    // (the 4-space gaps between levels were still correct) but wrong for
+                    // level 1, which should have no indent at all. Subtract 1 to match.
+                    string indent = new string(' ', Math.Max(0, level - 1) * 4);
+                    string componentText = (row["Components"]?.ToString() ?? "").TrimStart();
 
-                    newRow["components"] = indent + (row["Components"]?.ToString() ?? "");
+                    newRow["components"] = indent + componentText;
                     newRow["item_id"] = row["ItemId"];
                     newRow["reference_code"] = refCode;
                     newRow["template_id"] = templateId;
+
+                    // Fill the template's own PUMP slot from an already-added FINAL pump
+                    // instead of leaving it blank, if one was captured above - this is
+                    // what keeps a final pump added BEFORE the template from turning into
+                    // a duplicate generic row once the template comes in.
+                    if (usedFinalPumps < existingFinalPumps.Count &&
+                        string.Equals(componentText.Trim(), "PUMP", StringComparison.OrdinalIgnoreCase))
+                    {
+                        newRow["item_id"] = existingFinalPumps[usedFinalPumps].ItemId;
+                        newRow["model"] = existingFinalPumps[usedFinalPumps].Model;
+                        usedFinalPumps++;
+                    }
 
                     dataSource.Rows.Add(newRow);
 
@@ -1210,9 +1486,23 @@ namespace smpc_sales_system.Pages.Sales
                 else
                     LastRefInt = 0;
 
+                // Any captured final pumps beyond the one that filled the template's own
+                // PUMP slot (or all of them, if there was no PUMP slot / no template was
+                // actually applied) get re-added exactly the way FINAL itself adds a pump
+                // - right before wiring, via AddFinalPumpToItemsGrid's own dedupe/insert/
+                // renumber logic.
+                for (int i = usedFinalPumps; i < existingFinalPumps.Count; i++)
+                {
+                    AddFinalPumpToItemsGrid(existingFinalPumps[i].ItemId, existingFinalPumps[i].Model);
+                }
+
                 if (chk_wiring.Checked)
                 {
-                    AddWiringRowsComponent(LastRefInt);
+                    // Not LastRefInt (stale - computed before any leftover final pumps
+                    // above were re-added) - GetMaxTopLevelReferenceCode() reads the
+                    // grid's actual current state, same reasoning already applied to
+                    // chk_wiring's own CheckedChanged handler elsewhere in this file.
+                    AddWiringRowsComponent(GetMaxTopLevelReferenceCode());
                 }
 
                 isLoadingTemplate = false;
@@ -2175,6 +2465,10 @@ namespace smpc_sales_system.Pages.Sales
             wiringTable.Columns.Add("NumberOfQtyFormat", typeof(string));
             wiringTable.Columns.Add("QtyFormat", typeof(string));
             wiringTable.Columns.Add("NoOfWiresSet", typeof(string));
+            // Trello #084: the real "# OF QTY / SET" (B) value - left blank by default,
+            // same as every other white/input cell on this table (spec §8.4). See the
+            // grouping fix above for why this was missing.
+            wiringTable.Columns.Add("NumOfQtySet", typeof(string));
             wiringTable.Columns.Add("AMPREQ", typeof(string));
 
             int counter = 1;
@@ -2199,15 +2493,30 @@ namespace smpc_sales_system.Pages.Sales
 
 
             //Grouping the columns in wiring
-            string[] NumberOfQtySet = { "project_wiring_num_of_wiring_set", "project_wiring_num_of_wiring_set_format" };
-            string NumberOfQtySetHeaderName = "#" + Environment.NewLine + " OF QTY " + Environment.NewLine + " / SET";
+            // Trello #084: this group's header literally read "# OF QTY / SET" while
+            // grouping the columns that actually hold "# OF WIRES / SET" (A) data -
+            // the two spec §8.4 factors had been collapsed into one, mislabeled column.
+            // Corrected the label here and added a second, genuinely separate group for
+            // the real "# OF QTY / SET" (B) column below.
+            string[] NumberOfWiresSet = { "project_wiring_num_of_wiring_set", "project_wiring_num_of_wiring_set_format" };
+            string NumberOfWiresSetHeaderName = "#" + Environment.NewLine + " OF WIRES " + Environment.NewLine + " / SET";
 
             Dictionary<string, string[]> FirstGrouping = new Dictionary<string, string[]>
+            {
+                { NumberOfWiresSetHeaderName, NumberOfWiresSet }
+            };
+
+            Helpers.EnableGroupHeaders(dgv_wiring, FirstGrouping);
+
+            string[] NumberOfQtySet = { "project_wiring_num_of_qty_set" };
+            string NumberOfQtySetHeaderName = "#" + Environment.NewLine + " OF QTY " + Environment.NewLine + " / SET";
+
+            Dictionary<string, string[]> QtySetGrouping = new Dictionary<string, string[]>
             {
                 { NumberOfQtySetHeaderName, NumberOfQtySet }
             };
 
-            Helpers.EnableGroupHeaders(dgv_wiring, FirstGrouping);
+            Helpers.EnableGroupHeaders(dgv_wiring, QtySetGrouping);
 
             string[] QtyHeader = { "project_wiring_qty", "project_wiring_qty_format" };
             string QtyHeaderName = "Project Inventory";
@@ -2287,7 +2596,10 @@ namespace smpc_sales_system.Pages.Sales
             //try
             //{
                 var noOfWiresCell = dgv_wiring.Rows[e.RowIndex].Cells["project_wiring_num_of_wiring_set"].Value;
-                var noOfQtyCell = dgv_wiring.Rows[e.RowIndex].Cells["project_wiring_num_of_wiring_set"].Value;
+                // Trello #084: was reading the same "# OF WIRES/SET" cell as noOfWiresCell
+                // above (squaring A instead of computing A x B), because the real B column
+                // didn't exist on the grid yet. See the column/grouping additions above.
+                var noOfQtyCell = dgv_wiring.Rows[e.RowIndex].Cells["project_wiring_num_of_qty_set"].Value;
                 var distanceTravelledCell = dgv_wiring.Rows[e.RowIndex].Cells["project_wiring_distance_travelled"].Value;
                 var allowanceWireSetCell = dgv_wiring.Rows[e.RowIndex].Cells["project_wiring_allowance"].Value;
                 var noOfSetsCell = dgv_wiring.Rows[e.RowIndex].Cells["project_wiring_qty"].Value;

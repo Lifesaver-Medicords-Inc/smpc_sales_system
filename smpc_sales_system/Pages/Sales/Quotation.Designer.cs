@@ -1119,6 +1119,11 @@
             // cmb_purpose
             // 
             this.cmb_purpose.BackColor = System.Drawing.Color.ForestGreen;
+            // Trello #021: was missing DropDownStyle, so it defaulted to the editable
+            // "DropDown" style - letting a user type outside {Budget, Bidding, Awarded}
+            // (spec §5.1). Every other closed-list combo on this form (cmb_application,
+            // cmb_ship_to, cmb_bill_to, cmb_warranty, cmb_payment_terms) already sets this.
+            this.cmb_purpose.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmb_purpose.DropDownHeight = 150;
             this.cmb_purpose.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.cmb_purpose.ForeColor = System.Drawing.SystemColors.Control;
@@ -1157,6 +1162,10 @@
             this.cmb_ship_type.BackColor = System.Drawing.Color.DeepSkyBlue;
             this.cmb_ship_type.DataSource = this.bs_ship_type;
             this.cmb_ship_type.DisplayMember = "ship_name";
+            // Trello #022: was missing DropDownStyle, so it defaulted to the editable
+            // "DropDown" style - letting a user type outside {Delivery, Pick-up}
+            // (spec §5.1 - never "COD", that is a payment term, not a ship type).
+            this.cmb_ship_type.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmb_ship_type.FormattingEnabled = true;
             this.cmb_ship_type.Location = new System.Drawing.Point(87, 147);
             this.cmb_ship_type.Name = "cmb_ship_type";
@@ -2324,7 +2333,9 @@
             dataGridViewCellStyle10.SelectionForeColor = System.Drawing.Color.Black;
             this.quick_unit_of_measure.DefaultCellStyle = dataGridViewCellStyle10;
             this.quick_unit_of_measure.FillWeight = 15.41798F;
-            this.quick_unit_of_measure.HeaderText = "UNIT";
+            // Trello #062: item table column labels are UOM, not UNIT (spec §5.1.2's
+            // item table columns list, §17.2's Unit of Measure setup).
+            this.quick_unit_of_measure.HeaderText = "UOM";
             this.quick_unit_of_measure.Name = "quick_unit_of_measure";
             this.quick_unit_of_measure.Resizable = System.Windows.Forms.DataGridViewTriState.True;
             this.quick_unit_of_measure.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
