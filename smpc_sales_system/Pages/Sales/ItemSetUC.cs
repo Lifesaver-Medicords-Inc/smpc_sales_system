@@ -1975,16 +1975,20 @@ namespace smpc_sales_system.Pages.Sales
 
         private void AssignModel(int index, DataGridView dgv)
         {
-            // A PUMP row's model comes exclusively from SIZE UP -> FINAL (spec §5.1.4),
-            // never from this grid's generic ModelModal - that's true whether the row is
-            // still the template's blank placeholder (item_id "0", which is what the
-            // guard below would otherwise mislabel as "no component" even though
-            // COMPONENTS plainly says PUMP) or already filled by FINAL (item_id set, but
-            // ModelModal's full unscoped catalog is still the wrong picker for it). Catch
-            // it here, before the item_id check, with a message that actually explains
-            // why this row's model isn't editable here.
+            // A TEMPLATE's own PUMP placeholder comes exclusively from SIZE UP -> FINAL
+            // (spec §5.1.4), never from this grid's generic ModelModal - that's true
+            // whether the row is still blank (item_id "0", which is what the guard below
+            // would otherwise mislabel as "no component" even though COMPONENTS plainly
+            // says PUMP) or already filled by FINAL (item_id set, but ModelModal's full
+            // unscoped catalog is still the wrong picker for it).
+            //
+            // This does NOT apply to a PUMP added directly as a line item (template_id ==
+            // 0) - that's just a normal component pick like any other, free to choose any
+            // model. The original fix (76bd5b5) blocked every PUMP row in this grid
+            // regardless of template linkage, which wrongly caught direct items too.
             string components = dgv.Rows[index].Cells["project_items_components"].Value?.ToString()?.Trim();
-            if (string.Equals(components, "PUMP", StringComparison.OrdinalIgnoreCase))
+            int.TryParse(dgv.Rows[index].Cells["project_items_template_id"].Value?.ToString(), out int templateIdForPumpCheck);
+            if (templateIdForPumpCheck != 0 && string.Equals(components, "PUMP", StringComparison.OrdinalIgnoreCase))
             {
                 MessageBox.Show(
                     "Pump models are selected through SIZE UP / FINAL, not here. Use the FINAL list to add or change a pump.",
