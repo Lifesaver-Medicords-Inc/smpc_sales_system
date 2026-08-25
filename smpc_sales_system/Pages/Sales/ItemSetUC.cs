@@ -1975,40 +1975,50 @@ namespace smpc_sales_system.Pages.Sales
 
         private void AssignModel(int index, DataGridView dgv)
         {
-            // A TEMPLATE's own PUMP placeholder comes exclusively from SIZE UP -> FINAL
-            // (spec §5.1.4), never from this grid's generic ModelModal - that's true
-            // whether the row is still blank (item_id "0", which is what the guard below
-            // would otherwise mislabel as "no component" even though COMPONENTS plainly
-            // says PUMP) or already filled by FINAL (item_id set, but ModelModal's full
-            // unscoped catalog is still the wrong picker for it).
-            //
-            // This does NOT apply to a PUMP added directly as a line item (template_id ==
-            // 0) - that's just a normal component pick like any other, free to choose any
-            // model. The original fix (76bd5b5) blocked every PUMP row in this grid
-            // regardless of template linkage, which wrongly caught direct items too.
+            // Reverts 76bd5b5's block-and-redirect-to-FINAL behavior for this grid
+            // entirely (confirmed wrong for Project Quotation, including a template's own
+            // PUMP placeholder - not just a directly-added PUMP line item). A PUMP row
+            // here picks its model the same way any other component does; SIZE UP/FINAL
+            // is a Quick Quote mechanism this grid never goes through.
             string components = dgv.Rows[index].Cells["project_items_components"].Value?.ToString()?.Trim();
-            int.TryParse(dgv.Rows[index].Cells["project_items_template_id"].Value?.ToString(), out int templateIdForPumpCheck);
-            if (templateIdForPumpCheck != 0 && string.Equals(components, "PUMP", StringComparison.OrdinalIgnoreCase))
-            {
-                MessageBox.Show(
-                    "Pump models are selected through SIZE UP / FINAL, not here. Use the FINAL list to add or change a pump.",
-                    "Use FINAL for Pump Models", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                return;
-            }
+            bool isPumpRow = string.Equals(components, "PUMP", StringComparison.OrdinalIgnoreCase);
 
             string Id = dgv.Rows[index].Cells["item_id"].Value.ToString();
 
-            // Same guard as Quotation.cs's HandleModelSelectionClick - a row with no
-            // component picked yet has item_id "0", and ModelModal has no way to scope
-            // its list from that (its item_name_id lookup finds nothing and falls back to
-            // showing the entire unfiltered catalog, e.g. PUMP always appearing regardless
-            // of which row was clicked). Block it here instead of opening the modal.
             if (string.IsNullOrWhiteSpace(Id) || Id == "0")
             {
-                MessageBox.Show(
-                    "It doesn't have a component, that's why it can't select any models. Please select a component first.",
-                    "No Component Selected", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
+                if (isPumpRow)
+                {
+                    // A blank PUMP slot has no item_name_id of its own for ModelModal to
+                    // scope from (its lookup finds nothing against id "0" and falls back to
+                    // the entire unfiltered catalog) - resolve any existing item named
+                    // "PUMP" purely as an anchor so ModelModal's own item_name_id lookup
+                    // scopes the list to pumps, same mechanism every already-filled
+                    // component already relies on. The anchor is never itself selected;
+                    // GetItemId() below still returns whatever the user actually picks.
+                    DataRow pumpAnchor = ItemList.AsEnumerable()
+                        .FirstOrDefault(row => string.Equals(row["item_name"]?.ToString(), "PUMP", StringComparison.OrdinalIgnoreCase));
+
+                    if (pumpAnchor == null)
+                    {
+                        MessageBox.Show(
+                            "No pump items are set up yet, so a model can't be picked here.",
+                            "No Pump Items Found", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        return;
+                    }
+
+                    Id = pumpAnchor["id"].ToString();
+                }
+                else
+                {
+                    // Same guard as Quotation.cs's HandleModelSelectionClick - a row with no
+                    // component picked yet has item_id "0", and ModelModal has no way to scope
+                    // its list from that. Block it here instead of opening the modal.
+                    MessageBox.Show(
+                        "It doesn't have a component, that's why it can't select any models. Please select a component first.",
+                        "No Component Selected", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
             }
 
             ModelModal createModal = new ModelModal(ItemList, BomHead, BomDetails, Id);
