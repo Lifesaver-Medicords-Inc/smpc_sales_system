@@ -476,6 +476,12 @@
     <Compile Include="Pages\Sales\Orders.Designer.cs">
       <DependentUpon>Orders.cs</DependentUpon>
     </Compile>
+    <Compile Include="Pages\Sales\SalesReturn.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Pages\Sales\SalesReturn.Designer.cs">
+      <DependentUpon>SalesReturn.cs</DependentUpon>
+    </Compile>
     <Compile Include="Pages\Sales\Quotation.cs">
       <SubType>UserControl</SubType>
     </Compile>
