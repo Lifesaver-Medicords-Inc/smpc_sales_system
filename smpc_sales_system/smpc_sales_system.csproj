@@ -482,6 +482,24 @@
     <Compile Include="Pages\Sales\SalesReturn.Designer.cs">
       <DependentUpon>SalesReturn.cs</DependentUpon>
     </Compile>
+    <Compile Include="Pages\Sales\SearchSalesReturn.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Pages\Sales\SearchSalesReturn.Designer.cs">
+      <DependentUpon>SearchSalesReturn.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\Sales\Modal\SalesInvoicePickerModal.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Pages\Sales\Modal\SalesInvoicePickerModal.Designer.cs">
+      <DependentUpon>SalesInvoicePickerModal.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\Sales\Modal\DeliveryReceiptPickerModal.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Pages\Sales\Modal\DeliveryReceiptPickerModal.Designer.cs">
+      <DependentUpon>DeliveryReceiptPickerModal.cs</DependentUpon>
+    </Compile>
     <Compile Include="Pages\Sales\Quotation.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -524,12 +542,20 @@
     <Compile Include="Services\Sales\SalesInvoiceService.cs" />
     <Compile Include="Services\Sales\ItemBomList.cs" />
     <Compile Include="Services\Sales\ItemService.cs" />
+    <Compile Include="Services\Sales\SalesReturnService.cs" />
+    <Compile Include="Services\Sales\SalesInvoiceRefService.cs" />
+    <Compile Include="Services\Sales\DeliveryReceiptRefService.cs" />
+    <Compile Include="Services\Sales\CustomerSoRefService.cs" />
     <Compile Include="Services\Sales\Models\AdditionalSpecsModel.cs" />
     <Compile Include="Services\Sales\Models\ApplicationModel.cs" />
     <Compile Include="Services\Sales\Models\BpiCustomer.cs" />
     <Compile Include="Services\Sales\Models\Combined.cs" />
     <Compile Include="Services\Sales\Models\CRMModel.cs" />
     <Compile Include="Services\Sales\Models\SalesInvoiceModel.cs" />
+    <Compile Include="Services\Sales\Models\SalesReturnModel.cs" />
+    <Compile Include="Services\Sales\Models\SalesInvoiceRefModel.cs" />
+    <Compile Include="Services\Sales\Models\DeliveryReceiptRefModel.cs" />
+    <Compile Include="Services\Sales\Models\CustomerSoRefModel.cs" />
     <Compile Include="Services\Sales\Models\GetBpiCustomers.cs" />
     <Compile Include="Services\Sales\Models\ItemBomListModel.cs" />
     <Compile Include="Services\Sales\Models\ItemImageModel.cs" />
@@ -643,6 +669,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Pages\Sales\SalesPrintModal.resx">
       <DependentUpon>SalesPrintModal.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Pages\Sales\SalesReturn.resx">
+      <DependentUpon>SalesReturn.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Pages\Sales\SetupSelectionModal.resx">
       <DependentUpon>SetupSelectionModal.cs</DependentUpon>

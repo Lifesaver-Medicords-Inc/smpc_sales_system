@@ -122,6 +122,19 @@ namespace smpc_sales_app.Services.Helpers
             string jsonContent = JsonConvert.SerializeObject(data);
             return await SendRequestAsync(url, HttpMethod.Post, jsonContent);
         }
+        // Nested-body overload: every document built after Orders/CRM (Sales
+        // Return, and the same shape used by Purchase Return/Credit Memo/
+        // Debit Memo on the Go side) expects one POST carrying a strongly
+        // typed header+details object in a single request, not the flat
+        // Dictionary<string, dynamic> + separate child-row call Orders.cs
+        // uses. Serializing the real object directly (instead of round-
+        // tripping it through a Dictionary first) keeps nested arrays/objects
+        // intact.
+        static internal async Task<T> Post(string url, object data)
+        {
+            string jsonContent = JsonConvert.SerializeObject(data);
+            return await SendRequestAsync(url, HttpMethod.Post, jsonContent);
+        }
         // PUT Method
         static internal async Task<T> Put(string url, HttpContent data)
         {
