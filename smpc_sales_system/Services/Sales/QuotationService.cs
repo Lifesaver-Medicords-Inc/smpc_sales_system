@@ -95,5 +95,15 @@ namespace smpc_sales_app.Services.Sales
             return response;
         }
 
+        // POST: §3.2/§6.3 REQUEST FOR ENGR. (Phase 4 item 4.1) - the explicit per-quote
+        // grant to a specific engineer. Backs RequestForEngrModal.
+        public static async Task<ApiResponseModel> RequestForEngr(int quotationId, uint engrId)
+        {
+            var response = await RequestToApi<ApiResponseModel>.Post(
+                $"{url}/{quotationId}/request_for_engr",
+                new { engr_id = engrId });
+            return response;
+        }
+
     }
 }

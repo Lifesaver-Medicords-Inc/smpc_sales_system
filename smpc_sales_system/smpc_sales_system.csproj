@@ -500,6 +500,12 @@
     <Compile Include="Pages\Sales\Modal\DeliveryReceiptPickerModal.Designer.cs">
       <DependentUpon>DeliveryReceiptPickerModal.cs</DependentUpon>
     </Compile>
+    <Compile Include="Pages\Sales\Modal\RequestForEngrModal.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Pages\Sales\Modal\RequestForEngrModal.Designer.cs">
+      <DependentUpon>RequestForEngrModal.cs</DependentUpon>
+    </Compile>
     <Compile Include="Pages\Sales\Quotation.cs">
       <SubType>UserControl</SubType>
     </Compile>

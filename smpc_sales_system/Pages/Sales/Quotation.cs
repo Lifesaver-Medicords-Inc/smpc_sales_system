@@ -6,6 +6,7 @@ using smpc_app.Services.Helpers;
 using smpc_inventory_app.Model;
 using smpc_inventory_app.Pages;
 using smpc_sales_app.Data;
+using smpc_sales_app.Pages.Sales.Modal;
 using smpc_sales_app.Services.Helpers;
 using smpc_sales_app.Services.Sales;
 using smpc_sales_system.Models;
@@ -7090,11 +7091,49 @@ namespace smpc_sales_app.Pages.Sales
             this.Parent.Controls.Add(OpportunitiesPage);
             this.Dispose();
         }
-        private void btn_request_for_engr_Click(object sender, EventArgs e)
+        // §3.2/§6.3 REQUEST FOR ENGR. (Phase 4 item 4.1) - was a dead stub that opened an
+        // old test form (ProjectTest) and did nothing else. Now makes the explicit,
+        // per-quote, per-engineer grant: opens RequestForEngrModal to pick the engineer,
+        // then POSTs it so this quotation appears on that engineer's Sales Quotation
+        // List / the engineering red box (see RequestQuotationForEngr in quotation_service.go
+        // and the rewritten vw_get_engineering_redbox_quotation_list.sql).
+        private async void btn_request_for_engr_Click(object sender, EventArgs e)
         {
-            ProjectTest pt = new ProjectTest();
-            pt.Show();
+            int sId = ToInt(txt_id.Text);
+            if (isNewRecord || sId <= 0)
+            {
+                MessageBox.Show("Please save this quotation before requesting it for engineering.",
+                    "Save Required", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
 
+            using (var modal = new RequestForEngrModal())
+            {
+                if (modal.ShowDialog() != DialogResult.OK)
+                    return;
+
+                try
+                {
+                    var response = await QuotationService.RequestForEngr(sId, modal.SelectedEngrId);
+                    if (response.Success)
+                    {
+                        MessageBox.Show("Quotation sent to engineering.", "Success",
+                            MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                    else
+                    {
+                        MessageBox.Show(response.message, "Error",
+                            MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine("RequestForEngr error: " + ex);
+                    MessageBox.Show(
+                        "We couldn't send this quotation to engineering. Please try again. If the problem continues, contact support.",
+                        "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
         }
         // Only the user who originally created a quotation (quick quote or project) is
         // allowed to edit/update it. txt_created_by is already bound to the loaded record's
