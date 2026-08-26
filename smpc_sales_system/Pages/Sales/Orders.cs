@@ -824,10 +824,16 @@ namespace smpc_sales_app.Pages.Sales
                         {
                             Dictionary<string, object> data = new Dictionary<string, object>();
 
-                            int qty = int.TryParse(item["qty"]?.ToString(), out var q) ? q : 0;
-                            int allocatedQty = int.TryParse(item["allocated_qty"]?.ToString(), out var aq) ? aq : 0;
-
-                            data.Add("status", qty <= allocatedQty ? "IN STOCK" : "CANVASS");
+                            // Deliberately NOT sending "status" here (confirmed with the user:
+                            // Activate is a one-time action, before any Job Order/Item Release
+                            // progress could exist - so this used to be harmless, but computing
+                            // it from qty/allocated_qty here duplicated - and could stomp - the
+                            // real §7.1 status the server's own recompute engine now owns for
+                            // this column. Omitting the key entirely leaves the column untouched
+                            // server-side (DbUpdate's UpdateColumns skips zero-valued fields on a
+                            // partial struct, same as every other field this payload already
+                            // leaves out) rather than writing a coarse CANVASS/IN STOCK value
+                            // over whatever's already there.
                             data.Add("order_details_id", int.TryParse(item["order_details_id"]?.ToString(), out var orderDetailsId) ? orderDetailsId : 0);
                             data.Add("based_id", orderId);
 
