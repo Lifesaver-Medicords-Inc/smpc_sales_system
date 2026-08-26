@@ -49,6 +49,12 @@ namespace smpc_sales_app.Pages.Sales
         private ClientWebSocket _websocket;
         private CancellationTokenSource _cancelTokenSource;
 
+        // fetchSalesProject() clears and rebuilds tabControl2.TabPages from scratch - two
+        // overlapping runs (rapid << PREV / NEXT >> clicks before the first fetch
+        // finishes) would both be mutating that same TabPages collection at once. Guards
+        // against that the same way ItemSetUC's own _refreshingStockIndicators does.
+        private bool _isFetchingSalesProject = false;
+
         // Polls the server every 5 minutes while a Project Quotation is open so any changes
         // another user saved in the meantime (fields, tabs, multipliers) show up here too,
         // and Change History (RenderTabHistory) stays current - see
@@ -1170,6 +1176,14 @@ namespace smpc_sales_app.Pages.Sales
 
         private async void fetchSalesProject()
         {
+            // Rapid << PREV / NEXT >> clicking (or any other trigger firing again before
+            // the previous run finished) used to start a second overlapping run against
+            // the same tabControl2 mid-rebuild. Silently skip re-entry rather than queuing
+            // or cancelling - the caller that triggered this is free to call again once the
+            // in-flight fetch actually finishes.
+            if (_isFetchingSalesProject) return;
+            _isFetchingSalesProject = true;
+
             // async void with no unhandled exception guard: any error in here (bad
             // grid data, a null cell, etc.) used to propagate as an unhandled
             // exception on the UI thread and crash the whole app instead of just
@@ -1328,6 +1342,10 @@ namespace smpc_sales_app.Pages.Sales
             catch (Exception ex)
             {
                 MessageBox.Show("Error loading project quotation: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            finally
+            {
+                _isFetchingSalesProject = false;
             }
         }
 
@@ -3172,6 +3190,17 @@ namespace smpc_sales_app.Pages.Sales
                             // Carry over whatever was already reserved before this edit onto
                             // the new version's ids (see SnapshotReservedReferenceCodesAsync).
                             await MigrateSnapshottedReservationsAsync(savedDocumentNo, reservationSnapshot, appliedReferenceCodes);
+
+                            // isSubVersion was set true by btn_edit_Click and never cleared -
+                            // every save after the first Edit click in a session kept hitting
+                            // the "isNewRecord || isSubVersion" branch above and stripping
+                            // "id", so QuotationService.Insert() created a fresh duplicate
+                            // record instead of updating the one just edited. This save has
+                            // now genuinely completed (fetchQuotationDetails() above already
+                            // reloaded it), so the sub-version intent this flag was guarding
+                            // for is done - clear it so the next Edit-then-Save in the same
+                            // session updates in place instead of duplicating again.
+                            isSubVersion = false;
 
                             SetNewFormMode(false);
                         }
