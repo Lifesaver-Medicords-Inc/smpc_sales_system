@@ -27,6 +27,18 @@ namespace smpc_sales_system.Pages.Sales
 {
     public partial class ItemSetUC : UserControl
     {
+        // Company Setup-sourced values, injected by the host (Quotation.cs, right
+        // alongside its existing ImageList assignment on every ItemSetUC it
+        // constructs) since this control has no API access of its own.
+        // Sales_Quotation_Bug_Report_2026-08-03.md #18 - both used to be hardcoded
+        // (1.186 markup, 0.12 VAT) with no company-wide setting behind either and
+        // no enforced relationship between the two numbers. Defaults here match
+        // the historical hardcoded values, so a tab built without the host
+        // injecting these (shouldn't happen, but safer than a silent $0/unmarked-
+        // up computation) behaves exactly as before.
+        public decimal MarkUpMultiplier { get; set; } = 1.186m;
+        public decimal VatRate { get; set; } = 0.12m;
+
         public event EventHandler UpdateProjectConditions;
         public event EventHandler UpdateProjectContent;
 
@@ -454,7 +466,9 @@ namespace smpc_sales_system.Pages.Sales
             decimal gross_sales = 0, vat_amount = 0, net_sales = 0;
             decimal percent_discount = 0;
             decimal net_amount_due = 0, total_amount_due = 0;
-            const decimal VAT_RATE = 0.12m;
+            // Was a hardcoded const - now the company-wide, configurable value
+            // injected by the host (see VatRate's own comment at the top of this class).
+            decimal VAT_RATE = VatRate;
 
             foreach (DataGridViewRow row in this.dgv_project_items.Rows)
             {
@@ -3046,7 +3060,7 @@ namespace smpc_sales_system.Pages.Sales
                 return NewUnitPrice;
             });
 
-            decimal TotalAmount = (totalLaborCost + totalUnitPrice) * 1.186m;
+            decimal TotalAmount = (totalLaborCost + totalUnitPrice) * MarkUpMultiplier;
             //decimal TotalAmount = (totalLaborCost + totalUnitPrice);
 
             return TotalAmount;

@@ -1079,6 +1079,8 @@ namespace smpc_sales_app.Pages.Sales
                 // ItemSetUC.ImageList was never being set anywhere, so the picker always
                 // came up empty.
                 UC.ImageList = this.ImageList;
+                UC.MarkUpMultiplier = GetCompanyMarkupMultiplier();
+                UC.VatRate = GetCompanyVatRate();
 
                 // Attach event handlers
                 UC.ButtonClicked += Button_ClickedUC;
@@ -1254,6 +1256,8 @@ namespace smpc_sales_app.Pages.Sales
                 // items_id, so passing every tab the same full table is fine.
                 UC.ImageList = this.ImageList;
                 UC.selectedImageList = dt_items_selected_images;
+                UC.MarkUpMultiplier = GetCompanyMarkupMultiplier();
+                UC.VatRate = GetCompanyVatRate();
 
                 //UC.DataChangedConditions += ItemSet_DataChanged;
                 //UC.DataChangedContent += Content_DataChanged;
@@ -3509,7 +3513,7 @@ namespace smpc_sales_app.Pages.Sales
             // AllChildTotal (each direct child's own recursively-rolled-up
             // subtree total) was computed above but never folded in here -
             // add it so grandchild+ totals actually reach the parent.
-            decimal TotalAmount = (totalLaborCost + totalUnitPrice) * 1.186m + AllChildTotal;
+            decimal TotalAmount = (totalLaborCost + totalUnitPrice) * GetCompanyMarkupMultiplier() + AllChildTotal;
             //decimal TotalAmount = (totalLaborCost + totalUnitPrice);
 
             return TotalAmount;
@@ -4765,9 +4769,11 @@ namespace smpc_sales_app.Pages.Sales
                 counterSub++;
             }
 
-            // Update the parent unit_price to total of all its descendants
-            //1.186 is for 18% VAT
-            decimal TotalCostWithMarkup = decimal.Parse(totalCost.ToString()) * 1.186m;
+            // Update the parent unit_price to total of all its descendants.
+            // Was hardcoded * 1.186m with a comment claiming "1.186 is for 18% VAT" -
+            // this is a markup figure, not VAT (confirmed with user), and 18% isn't
+            // this system's rate anywhere. See GetCompanyMarkupMultiplier's own comment.
+            decimal TotalCostWithMarkup = decimal.Parse(totalCost.ToString()) * GetCompanyMarkupMultiplier();
             dataSource.Rows[rowIndex]["unit_price"] = TotalCostWithMarkup.ToString();
 
             counterParent++;
@@ -4919,6 +4925,47 @@ namespace smpc_sales_app.Pages.Sales
             // whenever the textbox was blank or mid-edit with non-numeric text.
             decimal.TryParse(txt_cash_discount.Text, out decimal cash_disc);
             return cash_disc;
+        }
+
+        // Sales_Quotation_Bug_Report_2026-08-03.md #18 - the hierarchical BOM markup
+        // computation (GetTotalUnitPriceForChildren, GetBomDataRecursive, and
+        // ItemSetUC.cs's own copy of the former) hardcoded a bare 1.186 multiplier
+        // with no company-wide setting behind it, contradicting the separate
+        // VAT_RATE = 0.12m constant used elsewhere (one nearby comment even called
+        // 1.186 "18% VAT", which isn't this system's rate anywhere). User confirmed
+        // 1.186 is a markup figure, not VAT - both now come from Company Setup.
+        // Falls back to the historical hardcoded value only if Company hasn't
+        // loaded yet (fetchItemData() populates it asynchronously) or the row is
+        // missing/zero, so a slow fetch never silently zeroes out a price.
+        private decimal GetCompanyMarkupMultiplier()
+        {
+            var row = GetCompanyRow();
+            if (row != null)
+            {
+                decimal value = Convert.ToDecimal(row["MarkUpMultiplierPrice"]);
+                if (value > 0) return value;
+            }
+            return 1.186m;
+        }
+
+        // VatRatePercent is stored as a whole-number percentage (12 means 12%),
+        // matching how VAT is written throughout the spec ("VAT (12%)") - divide
+        // by 100 here so callers get the same 0.0-1.0 fraction VAT_RATE already was.
+        private decimal GetCompanyVatRate()
+        {
+            var row = GetCompanyRow();
+            if (row != null)
+            {
+                decimal percent = Convert.ToDecimal(row["VatRatePercent"]);
+                if (percent > 0) return percent / 100m;
+            }
+            return 0.12m;
+        }
+
+        private DataRow GetCompanyRow()
+        {
+            if (Company == null || Company.Rows.Count == 0) return null;
+            return Company.AsEnumerable().FirstOrDefault(r => r.Field<int>("Id") == 1);
         }
         // computationLoop() deleted: it was an abandoned parallel implementation of
         // ComputeFooterTotals with a *different* formula (summed all rows instead of
@@ -5566,6 +5613,8 @@ namespace smpc_sales_app.Pages.Sales
                     BackColor = Color.White
                 };
                 UC.ImageList = this.ImageList;
+                UC.MarkUpMultiplier = GetCompanyMarkupMultiplier();
+                UC.VatRate = GetCompanyVatRate();
 
                 // Attach event handlers
                 UC.ButtonClicked += Button_ClickedUC;
@@ -6287,6 +6336,8 @@ namespace smpc_sales_app.Pages.Sales
 
                 };
                 myControl.ImageList = this.ImageList;
+                myControl.MarkUpMultiplier = GetCompanyMarkupMultiplier();
+                myControl.VatRate = GetCompanyVatRate();
 
                 //plus events function
                 myControl.CellClicked += Cell_ClickedUC;

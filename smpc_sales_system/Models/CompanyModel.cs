@@ -43,6 +43,10 @@ namespace smpc_sales_system.Models
         public float MonthlyRate { get; set; }
         [JsonProperty("markup_multiplier_price")]
         public float MarkUpMultiplierPrice { get; set; }
+        // Sales_Quotation_Bug_Report_2026-08-03.md #18 - whole-number percentage
+        // (12 means 12%), matching how VAT is written throughout the spec.
+        [JsonProperty("vat_rate_percent")]
+        public float VatRatePercent { get; set; }
         [JsonProperty("currency_code")]
         public string CurrencyCode { get; set; }
         [JsonProperty("inclusions_quotation_terms")]
