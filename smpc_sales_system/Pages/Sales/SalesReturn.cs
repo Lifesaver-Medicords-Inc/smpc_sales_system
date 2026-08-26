@@ -214,11 +214,18 @@ namespace smpc_sales_app.Pages.Sales
             txt_description.ReadOnly = !editing;
             dgv_sales_return_details.ReadOnly = !editing;
 
-            btn_new.Enabled = !editing;
-            btn_search.Enabled = !editing;
+            // Visible, not just Enabled, while editing - a grayed-out-but-still-there
+            // New/Search/Prev/Next read as "maybe clickable" and were confusing mid-edit.
+            // Prev/Next's Enabled still reflects real record availability once they're
+            // visible again (nothing to page to at either end of the list) - that's a
+            // genuinely different case from "this button doesn't apply in this mode".
+            btn_new.Visible = !editing;
+            btn_search.Visible = !editing;
             btn_edit.Visible = !editing;
-            btn_prev.Enabled = !editing && _currentIndex > 0;
-            btn_next.Enabled = !editing && _currentIndex >= 0 && _currentIndex < _data.sales_return.Count - 1;
+            btn_prev.Visible = !editing;
+            btn_prev.Enabled = _currentIndex > 0;
+            btn_next.Visible = !editing;
+            btn_next.Enabled = _currentIndex >= 0 && _currentIndex < _data.sales_return.Count - 1;
             btn_save.Visible = editing;
             btn_cancel.Visible = editing;
 
