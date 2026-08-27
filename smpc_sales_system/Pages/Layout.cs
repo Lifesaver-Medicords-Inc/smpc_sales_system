@@ -36,9 +36,9 @@ namespace smpc_sales_app.Pages
         }
 
         // Phase 4.6 (UI uniformity): the main content area (tabContainer - everything
-        // left of the sidebar and RedBox) caps at 1280px and stays centered on wide/
-        // ultrawide monitors. RedBox's own panel (panel5) is left uncapped/full-width
-        // on purpose - it's persistent utility chrome, not the "page" being viewed.
+        // left of the sidebar and RedBox) always fills the full available space, no
+        // left/right margin. RedBox's own panel (panel5) is untouched either way - it's
+        // persistent utility chrome, not the "page" being viewed.
         //
         // Individual pages (Quotation.cs etc.) hardcode their own size in their own
         // code (e.g. Quotation.cs: "this.Size = new Size(1386 - 80, 950);") and are
@@ -47,11 +47,12 @@ namespace smpc_sales_app.Pages
         // its TabPage, but that left the scrollbar unreliable (it wouldn't reliably
         // appear until the whole window was maximized). Moved scrolling to the outer
         // pnl_content_capped instead (see its own AutoScroll=true in the Designer) and
-        // made tabContainer never shrink narrower than the ACTIVE tab's own page needs -
-        // so instead of a page silently clipping inside a too-small TabPage, the whole
-        // work area (tab strip included) becomes exactly as wide as the open page needs
-        // and pnl_content_capped scrolls it into view.
-        private const int MaxContentWidth = 1280;
+        // made tabContainer grow past the available space (both width and height)
+        // whenever the ACTIVE tab's own page needs more than that - so instead of a
+        // page silently clipping inside a too-small TabPage, the whole work area (tab
+        // strip included) becomes exactly as big as the open page needs and
+        // pnl_content_capped scrolls it into view. A 1280px capped/centered version of
+        // this was tried first and reverted - see RecalculateContentWidth's own comment.
 
         private void pnl_content_capped_Resize(object sender, EventArgs e)
         {
@@ -80,6 +81,18 @@ namespace smpc_sales_app.Pages
         // internal-timing surprise this hasn't anticipated - this is a purely cosmetic
         // sizing pass, so silently skipping one recalculation is far preferable to
         // crashing the app over it.
+        //
+        // Phase 4.6 (UI uniformity) history: this went through a 1280px-capped,
+        // centered "Viber-style" column first (per an earlier, explicit direction),
+        // which caused two real problems live-tested across several screens - a page
+        // narrower than the cap left a wide dead gray margin next to it (Inventory
+        // Item Stocks), and forcing tabContainer's height to always exactly match the
+        // viewport meant a page taller than the window (Project Quote, a long Sales
+        // Order with file trees below it) had no way to become scrollable at all - the
+        // bottom was simply unreachable. Per final user direction: no cap, no left/
+        // right margin, always fill the full available space - and only grow past that
+        // (triggering pnl_content_capped's own AutoScroll) when the active page
+        // genuinely needs more room than what's available, in either dimension.
         private void RecalculateContentWidth()
         {
             if (pnl_content_capped == null || tabContainer == null) return;
@@ -87,24 +100,26 @@ namespace smpc_sales_app.Pages
             try
             {
                 int availableWidth = pnl_content_capped.ClientSize.Width;
-                int cappedWidth = Math.Min(MaxContentWidth, availableWidth);
+                int availableHeight = pnl_content_capped.ClientSize.Height;
 
-                // Was Math.Max(cappedWidth, activePage.Width) - forced tabContainer to
-                // AT LEAST cappedWidth even when the open page itself is much narrower,
-                // leaving a wide gray dead strip next to the actual content instead of
-                // a page-sized, centered column. The active page's own width is what
-                // should drive this, always - 1280 only matters as the empty-state
-                // fallback (no tab open yet) below.
                 Control activePage = GetActiveTabPageControl();
-                int neededWidth = activePage != null ? activePage.Width : cappedWidth;
+                int neededWidth = availableWidth;
+                int neededHeight = availableHeight;
+
+                if (activePage != null)
+                {
+                    // chromeHeight accounts for the tab strip itself
+                    // (DisplayRectangle.Top) plus tabContainer's own border (Height -
+                    // DisplayRectangle.Bottom), measured against tabContainer's
+                    // current bounds before this call changes them.
+                    int chromeHeight = tabContainer.DisplayRectangle.Top + (tabContainer.Height - tabContainer.DisplayRectangle.Bottom);
+                    neededWidth = Math.Max(availableWidth, activePage.Width);
+                    neededHeight = Math.Max(availableHeight, activePage.Height + chromeHeight);
+                }
 
                 tabContainer.Width = neededWidth;
-                tabContainer.Height = pnl_content_capped.ClientSize.Height;
-                // Centers only when everything actually fits (neededWidth == cappedWidth);
-                // once the active page needs more room than's available, flush-left is
-                // the only position that makes sense for something you're about to
-                // scroll to see the rest of.
-                tabContainer.Left = neededWidth <= availableWidth ? (availableWidth - neededWidth) / 2 : 0;
+                tabContainer.Height = neededHeight;
+                tabContainer.Left = 0;
                 tabContainer.Top = 0;
             }
             catch (Exception)
