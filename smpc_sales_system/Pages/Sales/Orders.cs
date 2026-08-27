@@ -28,6 +28,14 @@ namespace smpc_sales_app.Pages.Sales
 {
     public partial class Orders : UserControl
     {
+        // Same pattern as RedBox.cs/Opportunities.cs: lets this control ask its host
+        // (Layout.cs's showForm) to open another document in a new tab. Needed here so
+        // the §5.25 REMARKS reference link (see UpdateRemarksReferenceLink) can open the
+        // original SO it points to, whether this Orders instance was itself opened from
+        // the sidebar or from another document's own link.
+        public delegate void TriggerNewFormDelegate(string title, Control control);
+        public event TriggerNewFormDelegate TriggerNewForm;
+
         int SelectedRow = 0;
         private string documentNo;
         // True only while this screen is being used to convert a just-finalized
@@ -60,6 +68,12 @@ namespace smpc_sales_app.Pages.Sales
 
             AFTERSALES_TV.ImageList = imageList2;
             SALES_TV.ImageList = imageList2;
+
+            // Live feedback while typing (e.g. composing a §5.25 chargeable-repair SO
+            // and typing the original SO# into REMARKS) - CheckStatus() also calls this
+            // after every load/edit-toggle, so it's covered either way, but this means
+            // the link doesn't wait on one of those to appear.
+            txt_remarks.TextChanged += (s, e) => UpdateRemarksReferenceLink();
         }
         private DataTable bpi_dt = new DataTable();
         private DataTable bpi_general = new DataTable();
@@ -1824,6 +1838,52 @@ namespace smpc_sales_app.Pages.Sales
             {
                 column.ReadOnly = isStatusCancelled || !canEdit;
             }
+
+            // Runs after every load path (bindOrder, bindOrderByDocNo) and every
+            // edit-mode toggle, so this is a single place that keeps the §5.25
+            // reference link in sync regardless of how this record got here.
+            UpdateRemarksReferenceLink();
+        }
+
+        // §5.25 - repair/replacement: "nothing chargeable" cites the closed original SO
+        // read-only from dispatching; "something chargeable" raises a new SQ/SO, and the
+        // link back to that original sale is made on the new SO's REMARKS, typed as the
+        // original SO# and rendered as a clickable link (not a dedicated reference field
+        // - the spec is explicit none is added, and the SQ carries no reference fields
+        // at all). Detects "SO#<digits>" anywhere in the free-typed text.
+        private static readonly System.Text.RegularExpressions.Regex RemarksSoRefPattern =
+            new System.Text.RegularExpressions.Regex(@"SO#(\d+)", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+
+        private void UpdateRemarksReferenceLink()
+        {
+            var match = RemarksSoRefPattern.Match(txt_remarks.Text ?? string.Empty);
+
+            if (match.Success)
+            {
+                string referencedSo = match.Groups[1].Value;
+                lnk_remarks_ref.Text = "Go to SO#" + referencedSo;
+                lnk_remarks_ref.Tag = referencedSo;
+                lnk_remarks_ref.Visible = true;
+            }
+            else
+            {
+                lnk_remarks_ref.Visible = false;
+                lnk_remarks_ref.Tag = null;
+            }
+        }
+
+        private void lnk_remarks_ref_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            string referencedSo = lnk_remarks_ref.Tag as string;
+            if (string.IsNullOrEmpty(referencedSo)) return;
+
+            // Read-only citation only, same as dispatching's own use of a closed SO
+            // (§5.4/§5.25): opens the original order in a new tab exactly like RedBox's
+            // own document links (new Orders(rawDocNo) + TriggerNewForm). It never
+            // reopens or rewrites that order - Orders.cs has no path that unlocks a
+            // CLOSED order for editing, so viewing it this way is inherently safe.
+            Orders ordersPage = new Orders(referencedSo);
+            TriggerNewForm?.Invoke("SO#" + referencedSo, ordersPage);
         }
         private void btn_edit_Click(object sender, EventArgs e)
         {

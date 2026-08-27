@@ -189,6 +189,7 @@ namespace smpc_sales_app.Pages.Sales
             this.panel1 = new System.Windows.Forms.Panel();
             this.pnl_footer = new System.Windows.Forms.Panel();
             this.txt_remarks = new System.Windows.Forms.TextBox();
+            this.lnk_remarks_ref = new System.Windows.Forms.LinkLabel();
             this.label14 = new System.Windows.Forms.Label();
             this.pnl_footer_2 = new System.Windows.Forms.Panel();
             this.label23 = new System.Windows.Forms.Label();
@@ -1539,6 +1540,7 @@ namespace smpc_sales_app.Pages.Sales
             // pnl_footer
             // 
             this.pnl_footer.Controls.Add(this.txt_remarks);
+            this.pnl_footer.Controls.Add(this.lnk_remarks_ref);
             this.pnl_footer.Controls.Add(this.label14);
             this.pnl_footer.Controls.Add(this.pnl_footer_2);
             this.pnl_footer.Dock = System.Windows.Forms.DockStyle.Bottom;
@@ -1553,7 +1555,23 @@ namespace smpc_sales_app.Pages.Sales
             this.txt_remarks.Name = "txt_remarks";
             this.txt_remarks.Size = new System.Drawing.Size(275, 20);
             this.txt_remarks.TabIndex = 163;
-            // 
+            //
+            // lnk_remarks_ref
+            //
+            // §5.25: the link back to a repair/replacement job's original SO is typed as
+            // plain text into REMARKS (no dedicated reference field - the spec is explicit
+            // none is added), so this LinkLabel sits beside the textbox rather than inside
+            // it and only appears once Orders.cs's UpdateRemarksReferenceLink() detects an
+            // "SO#<digits>" pattern in what's typed.
+            this.lnk_remarks_ref.AutoSize = true;
+            this.lnk_remarks_ref.Location = new System.Drawing.Point(370, 40);
+            this.lnk_remarks_ref.Name = "lnk_remarks_ref";
+            this.lnk_remarks_ref.Size = new System.Drawing.Size(0, 13);
+            this.lnk_remarks_ref.TabIndex = 164;
+            this.lnk_remarks_ref.TabStop = true;
+            this.lnk_remarks_ref.Visible = false;
+            this.lnk_remarks_ref.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.lnk_remarks_ref_LinkClicked);
+            //
             // label14
             // 
             this.label14.AutoSize = true;
@@ -2485,6 +2503,7 @@ namespace smpc_sales_app.Pages.Sales
         private System.Windows.Forms.TextBox txt_vat_amount;
         private System.Windows.Forms.Label label15;
         private System.Windows.Forms.TextBox txt_remarks;
+        private System.Windows.Forms.LinkLabel lnk_remarks_ref;
         private System.Windows.Forms.Label label14;
         private System.Windows.Forms.Panel panel2;
         private System.Windows.Forms.Panel panel8;

@@ -89,6 +89,15 @@ namespace smpc_sales_app.Pages
                 Opportunities OpportunitiesControl = (Opportunities)control;
                 OpportunitiesControl.TriggerNewForm += showForm;
             }
+            // §5.25 REMARKS reference link (Orders.cs): needed here, not just on
+            // redBoxControl above, since an Orders tab can be opened either from the
+            // sidebar (Sidebar_NodeMouseClick -> showForm directly) or from RedBox's own
+            // link - showForm is the one place both paths pass through.
+            else if (control is Orders)
+            {
+                Orders OrdersControl = (Orders)control;
+                OrdersControl.TriggerNewForm += showForm;
+            }
 
             //control.Width = this.Width - 235; 
             tabContainer.Height = this.Height * 2;
