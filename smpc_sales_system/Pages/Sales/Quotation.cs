@@ -1678,7 +1678,22 @@ namespace smpc_sales_app.Pages.Sales
             // and print lookups are normalized (NormalizeDocumentNo) to match regardless of
             // whether a given record has the prefix or not, so this doesn't break those.
 
-            pnl_quotation["percent_discount"] = float.TryParse(txt_additional_discount.Text, out float discount) ? discount : 0;
+            // Sales_Quotation_Bug_Report_2026-08-03.md #25 - this used to write the
+            // additional-discount INPUT into the "percent_discount" key, which
+            // GetQuotationFieldChanges/the server both treat as the COMPUTED
+            // gross-vs-net percentage (§8.2: "percent discount =
+            // ((gross sales - net sales) / gross sales) x 100"), not the header's
+            // separate additional-discount input. The additional discount itself
+            // never reached the server under its real key ("additional_discounted",
+            // what GetQuotationFieldChanges actually reads) - it was silently
+            // dropped, so it never actually applied to NET OF VAT/TOTAL AMOUNT DUE.
+            // Two separate, correctly-keyed values now:
+            pnl_quotation["additional_discounted"] = float.TryParse(txt_additional_discount.Text, out float additionalDiscount) ? additionalDiscount : 0;
+            // txt_percent_discount already holds the live-computed gross-vs-net
+            // percentage (RecomputeParentTotals writes it on every relevant edit) -
+            // reuse that displayed value rather than recomputing it a second time
+            // here, so what's sent always matches what's on screen.
+            pnl_quotation["percent_discount"] = float.TryParse(Helpers.GetCleanedPriceValue(txt_percent_discount.Text), out float computedPercentDiscount) ? computedPercentDiscount : 0;
 
             var quotation = JsonConvert.SerializeObject(pnl_quotation, Formatting.Indented);
 
@@ -3068,9 +3083,22 @@ namespace smpc_sales_app.Pages.Sales
                     parentData.Remove("id");
                 }
 
-                 
+
                 parentData["ship_to_id"] = ship_to_id;
                 //parentData["isProject"] = false;
+
+                // Sales_Quotation_Bug_Report_2026-08-03.md #25 - GetControlsValuesV2's
+                // auto-scrape derives "additional_discount" from this control's own
+                // name (txt_additional_discount, "txt_" stripped), which doesn't match
+                // the model's real json tag ("additional_discounted") - the value was
+                // silently dropped server-side, so it never actually applied to
+                // NET OF VAT/TOTAL AMOUNT DUE. Set explicitly under the correct key,
+                // same pattern as ship_to_id right above. percent_discount is the
+                // separate, live-computed gross-vs-net percentage (RecomputeParentTotals
+                // already wrote it into txt_percent_discount) - the two are genuinely
+                // different values and must not share a key.
+                parentData["additional_discounted"] = float.TryParse(txt_additional_discount.Text, out float quickAdditionalDiscount) ? quickAdditionalDiscount : 0;
+                parentData["percent_discount"] = float.TryParse(Helpers.GetCleanedPriceValue(txt_percent_discount.Text), out float quickComputedPercentDiscount) ? quickComputedPercentDiscount : 0;
 
 
                 var dataSource = Helpers.ConvertDataGridViewToDataTable(dgv_quick_quote_details);
@@ -6692,7 +6720,11 @@ namespace smpc_sales_app.Pages.Sales
                 return;
             }
 
-            pnl_quotation["percent_discount"] = float.TryParse(txt_additional_discount.Text, out float discount) ? discount : 0;
+            // Sales_Quotation_Bug_Report_2026-08-03.md #25 - same fix as the regular
+            // save path above: two separate, correctly-keyed values instead of
+            // writing the additional-discount input into "percent_discount".
+            pnl_quotation["additional_discounted"] = float.TryParse(txt_additional_discount.Text, out float additionalDiscount) ? additionalDiscount : 0;
+            pnl_quotation["percent_discount"] = float.TryParse(Helpers.GetCleanedPriceValue(txt_percent_discount.Text), out float computedPercentDiscount) ? computedPercentDiscount : 0;
 
             var quotation = JsonConvert.SerializeObject(pnl_quotation, Formatting.Indented);
 
@@ -6798,6 +6830,10 @@ namespace smpc_sales_app.Pages.Sales
 
                 parentData["ship_to_id"] = ship_to_id;
 
+                // Sales_Quotation_Bug_Report_2026-08-03.md #25 - same fix as the
+                // regular save path above.
+                parentData["additional_discounted"] = float.TryParse(txt_additional_discount.Text, out float quickFinalizeAdditionalDiscount) ? quickFinalizeAdditionalDiscount : 0;
+                parentData["percent_discount"] = float.TryParse(Helpers.GetCleanedPriceValue(txt_percent_discount.Text), out float quickFinalizeComputedPercentDiscount) ? quickFinalizeComputedPercentDiscount : 0;
 
                 var dataSource = Helpers.ConvertDataGridViewToDataTable(dgv_quick_quote_details);
                 var newDatasource = Helpers.ConvertDataTableToStringTable(dataSource);
