@@ -35,8 +35,28 @@ namespace smpc_sales_app.Pages
             Application.Exit();
         }
 
+        // Phase 4.6 (UI uniformity): brought in line with the other 5 apps' Login -
+        // required-field validation before ever calling the API, the server's own
+        // failure message when it sends one (falling back to a generic line when it
+        // doesn't), and no more leaking a raw exception to the user on an unexpected
+        // failure (this used to be the only one of the six that did).
         private async void btn_login_Click(object sender, EventArgs e)
         {
+            string employeeId = txt_employee_id.Text.Trim();
+            string password = txt_password.Text;
+
+            if (string.IsNullOrWhiteSpace(employeeId))
+            {
+                Helpers.ShowDialogMessage("error", "Employee ID is required.");
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(password))
+            {
+                Helpers.ShowDialogMessage("error", "Password is required.");
+                return;
+            }
+
             try
             {
                 var data = Helpers.GetControlsValues(pnl_auth);
@@ -62,12 +82,14 @@ namespace smpc_sales_app.Pages
                 }
                 else
                 {
-                    Helpers.ShowDialogMessage("error", "Invalid Credentials");
+                    string serverMessage = currentUser?.message;
+                    Helpers.ShowDialogMessage("error", string.IsNullOrWhiteSpace(serverMessage) ? "Invalid Credentials" : serverMessage);
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show("" + ex);
+                Debug.WriteLine("Login failed: " + ex);
+                Helpers.ShowDialogMessage("error", "Something went wrong. Please try again.");
             }
         }
 

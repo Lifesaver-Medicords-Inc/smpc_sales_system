@@ -125,16 +125,21 @@ namespace smpc_sales_app.Pages
             this.BackColor = System.Drawing.SystemColors.Control;
             this.ClientSize = new System.Drawing.Size(296, 106);
             this.Controls.Add(this.pnl_auth);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.SizableToolWindow;
+            // Phase 4.6 (UI uniformity): FixedSingle + no maximize, matching the other 5
+            // apps' Login - was the only one that let this dialog be resized. TopMost and
+            // the Enter->btn_login_Click wiring below it are also gone: TopMost was unique
+            // to this app (nobody else's Login floats above every other window), and Enter
+            // firing a login attempt every time the form merely regains focus looked like
+            // leftover debugging wiring, not intended behavior.
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            this.MaximizeBox = false;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "Login";
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "SMPC - Sales Application";
-            this.TopMost = true;
+            this.Text = "Lightspeed ERP - Sales Login";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.frm_login_FormClosing);
             this.Load += new System.EventHandler(this.frm_login_Load);
-            this.Enter += new System.EventHandler(this.btn_login_Click);
             this.pnl_auth.ResumeLayout(false);
             this.pnl_auth.PerformLayout();
             this.ResumeLayout(false);
