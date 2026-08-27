@@ -128,13 +128,19 @@ namespace smpc_sales_app.Pages
             //control.Width = this.Width - 235;
             tabContainer.Height = this.Height * 2;
             //control.Height = this.Height;
-            // Phase 4.6 (UI uniformity): was "this.Width - 550", approximating
-            // tabContainer's available width by subtracting a magic number (sidebar +
-            // RedBox + margins) from the whole form's width. Now that tabContainer caps
-            // at 1280px and no longer stretches with the form on wide monitors, that
-            // approximation would size new tabs wider than the actual (now narrower)
-            // content area on anything wider than ~1830px. Read the real width instead.
-            control.Width = tabContainer.Width;
+            // Phase 4.6 (UI uniformity): was "control.Width = this.Width - 550", forcing
+            // the page to a computed width no matter what. Tried capping that to
+            // tabContainer's own (now 1280-capped) width instead, then tried proportional
+            // Control.Scale() on top of that - both made the page itself shrink, which
+            // broke because these pages are built with fixed absolute control positions
+            // (Quotation.designer.cs has 3 Anchor/Dock declarations in 5000+ lines): a
+            // narrower page just clips or overlaps its own controls, it doesn't reflow.
+            // Per user direction: don't touch the page's width at all - it keeps its own
+            // Designer-authored size, and newTab.AutoScroll (below, already existed
+            // before this session) shows a scrollbar to pan across it whenever
+            // tabContainer ends up narrower than the page actually needs. tabContainer
+            // itself still caps/centers at 1280px on wide monitors (RecalculateContentWidth) -
+            // this only changes whether the PAGE inside it gets force-resized too.
             newTab.Controls.Add(control);
             newTab.AutoScroll = true;
             tabContainer.TabPages.Add(newTab);
