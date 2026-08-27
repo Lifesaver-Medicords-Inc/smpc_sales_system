@@ -69,6 +69,16 @@ namespace smpc_sales_system.Pages.Sales
                 Panel[] pnlList = { pnl_header, pnl_header_2, pnl_body, pnl_footer, pnl_footer_2 };
                 Helpers.BindControls(pnlList, PRList, SelectedRow);
 
+                // Live crash: IndexOutOfRangeException "There is no row at position 0"
+                // whenever PRList has zero rows (no Purchase Requisitions exist yet) -
+                // Helpers.BindControls above already no-ops safely in that case, but
+                // everything below indexes PRList.Rows[SelectedRow] directly with no
+                // such guard.
+                if (PRList == null || PRList.Rows.Count == 0 || SelectedRow < 0 || SelectedRow >= PRList.Rows.Count)
+                {
+                    return;
+                }
+
                 if (pnl_header_2.Controls["txt_doc_no"] is TextBox txtDocNo)
                 {
                     if (!txtDocNo.Text.StartsWith("PRQ#"))
