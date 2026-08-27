@@ -27,6 +27,7 @@ namespace smpc_sales_app.Pages
             // showForm like the sidebar pages), so it needs its own hook here to open a
             // Sales Order/Quotation tab when a document link inside it is clicked.
             redBoxControl.TriggerNewForm += showForm;
+            tabContainer.SelectedIndexChanged += (s, e) => RecalculateContentWidth();
 
             // Phase 4.6 (UI uniformity): set the initial capped/centered width before
             // the form is ever shown - the Resize event alone would leave tabContainer
@@ -36,9 +37,20 @@ namespace smpc_sales_app.Pages
 
         // Phase 4.6 (UI uniformity): the main content area (tabContainer - everything
         // left of the sidebar and RedBox) caps at 1280px and stays centered on wide/
-        // ultrawide monitors, shrinking to fit below that. RedBox's own panel (panel5)
-        // is left uncapped/full-width on purpose - it's persistent utility chrome, not
-        // the "page" being viewed.
+        // ultrawide monitors. RedBox's own panel (panel5) is left uncapped/full-width
+        // on purpose - it's persistent utility chrome, not the "page" being viewed.
+        //
+        // Individual pages (Quotation.cs etc.) hardcode their own size in their own
+        // code (e.g. Quotation.cs: "this.Size = new Size(1386 - 80, 950);") and are
+        // never resized to fit whatever tabContainer happens to be - see showForm.
+        // First cut of this had newTab.AutoScroll=true try to handle a page wider than
+        // its TabPage, but that left the scrollbar unreliable (it wouldn't reliably
+        // appear until the whole window was maximized). Moved scrolling to the outer
+        // pnl_content_capped instead (see its own AutoScroll=true in the Designer) and
+        // made tabContainer never shrink narrower than the ACTIVE tab's own page needs -
+        // so instead of a page silently clipping inside a too-small TabPage, the whole
+        // work area (tab strip included) becomes exactly as wide as the open page needs
+        // and pnl_content_capped scrolls it into view.
         private const int MaxContentWidth = 1280;
 
         private void pnl_content_capped_Resize(object sender, EventArgs e)
@@ -46,12 +58,27 @@ namespace smpc_sales_app.Pages
             RecalculateContentWidth();
         }
 
+        private Control GetActiveTabPageControl()
+        {
+            TabPage selected = tabContainer.SelectedTab;
+            return selected != null && selected.Controls.Count > 0 ? selected.Controls[0] : null;
+        }
+
         private void RecalculateContentWidth()
         {
-            int cappedWidth = Math.Min(MaxContentWidth, pnl_content_capped.ClientSize.Width);
-            tabContainer.Width = cappedWidth;
+            int availableWidth = pnl_content_capped.ClientSize.Width;
+            int cappedWidth = Math.Min(MaxContentWidth, availableWidth);
+
+            Control activePage = GetActiveTabPageControl();
+            int neededWidth = activePage != null ? Math.Max(cappedWidth, activePage.Width) : cappedWidth;
+
+            tabContainer.Width = neededWidth;
             tabContainer.Height = pnl_content_capped.ClientSize.Height;
-            tabContainer.Left = (pnl_content_capped.ClientSize.Width - cappedWidth) / 2;
+            // Centers only when everything actually fits (neededWidth == cappedWidth);
+            // once the active page needs more room than's available, flush-left is the
+            // only position that makes sense for something you're about to scroll to see
+            // the rest of.
+            tabContainer.Left = neededWidth <= availableWidth ? (availableWidth - neededWidth) / 2 : 0;
             tabContainer.Top = 0;
         }
 
@@ -136,21 +163,27 @@ namespace smpc_sales_app.Pages
             // (Quotation.designer.cs has 3 Anchor/Dock declarations in 5000+ lines): a
             // narrower page just clips or overlaps its own controls, it doesn't reflow.
             // Per user direction: don't touch the page's width at all - it keeps its own
-            // Designer-authored size, and newTab.AutoScroll (below, already existed
-            // before this session) shows a scrollbar to pan across it whenever
-            // tabContainer ends up narrower than the page actually needs. tabContainer
-            // itself still caps/centers at 1280px on wide monitors (RecalculateContentWidth) -
-            // this only changes whether the PAGE inside it gets force-resized too.
+            // Designer-authored/hardcoded size. Scrolling to see all of it when it's
+            // wider than the available space is now pnl_content_capped's job (see
+            // RecalculateContentWidth) rather than this TabPage's own AutoScroll, which
+            // didn't reliably trigger.
             newTab.Controls.Add(control);
-            newTab.AutoScroll = true;
             tabContainer.TabPages.Add(newTab);
             tabContainer.SelectTab(newTab);
             tabContainer.ItemSize = new Size(200, 28);
+            // SelectTab above should already raise SelectedIndexChanged and trigger this,
+            // but calling it directly here too is cheap and removes any doubt that a
+            // freshly-added tab's own width need is accounted for immediately.
+            RecalculateContentWidth();
         }
 
         private void removeTab(object sender, EventArgs e)
         {
             tabContainer.TabPages.Remove(tabContainer.SelectedTab);
+            // Same reasoning as showForm - SelectedIndexChanged should already cover this
+            // as selection shifts to another tab (or clears, if none remain), but calling
+            // it directly removes any doubt.
+            RecalculateContentWidth();
         }
         private void Sidebar_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
         {

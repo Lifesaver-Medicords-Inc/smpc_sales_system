@@ -97,6 +97,12 @@ namespace smpc_sales_app.Pages
             //
             this.pnl_content_capped.Controls.Add(this.tabContainer);
             this.pnl_content_capped.Dock = System.Windows.Forms.DockStyle.Fill;
+            // Phase 4.6 (UI uniformity): owns the scrollbar when the active page (or the
+            // capped-at-1280 tabContainer itself, on a narrower monitor than that) needs
+            // more width than what's available - see Layout.cs's RecalculateContentWidth.
+            // Moved here from the TabPage level (newTab.AutoScroll), which didn't
+            // reliably trigger.
+            this.pnl_content_capped.AutoScroll = true;
             this.pnl_content_capped.Location = new System.Drawing.Point(0, 0);
             this.pnl_content_capped.Name = "pnl_content_capped";
             this.pnl_content_capped.Size = new System.Drawing.Size(406, 428);
