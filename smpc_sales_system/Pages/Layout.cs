@@ -53,8 +53,6 @@ namespace smpc_sales_app.Pages
             tabContainer.Height = pnl_content_capped.ClientSize.Height;
             tabContainer.Left = (pnl_content_capped.ClientSize.Width - cappedWidth) / 2;
             tabContainer.Top = 0;
-
-            RescaleAllOpenTabs();
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -130,98 +128,23 @@ namespace smpc_sales_app.Pages
             //control.Width = this.Width - 235;
             tabContainer.Height = this.Height * 2;
             //control.Height = this.Height;
+            // Phase 4.6 (UI uniformity): was "this.Width - 550", approximating
+            // tabContainer's available width by subtracting a magic number (sidebar +
+            // RedBox + margins) from the whole form's width. Now that tabContainer caps
+            // at 1280px and no longer stretches with the form on wide monitors, that
+            // approximation would size new tabs wider than the actual (now narrower)
+            // content area on anything wider than ~1830px. Read the real width instead.
+            control.Width = tabContainer.Width;
             newTab.Controls.Add(control);
             newTab.AutoScroll = true;
             tabContainer.TabPages.Add(newTab);
             tabContainer.SelectTab(newTab);
             tabContainer.ItemSize = new Size(200, 28);
-
-            // Phase 4.6 (UI uniformity): was "control.Width = this.Width - 550" (a magic-
-            // number approximation of tabContainer's available width). That only ever set
-            // the page's own OUTER width - every page in this app (Quotation.cs included)
-            // is built with fixed absolute control positions and almost no Anchor/Dock, so
-            // giving the outer control a narrower width did nothing for what's INSIDE it:
-            // shrinking the window below a page's designed width just clipped content or
-            // required a scrollbar, it never made the page itself smaller. This registers
-            // the page at its true Designer-authored size and proportionally scales it
-            // (via Control.Scale, which recursively resizes every descendant control and
-            // its font) to fit whatever width is actually available, so the whole page
-            // shrinks and stays visible instead of being cut off.
-            RegisterAndScaleNewTabControl(control);
         }
 
         private void removeTab(object sender, EventArgs e)
         {
-            TabPage tab = tabContainer.SelectedTab;
-
-            if (tab != null)
-            {
-                foreach (Control control in tab.Controls)
-                {
-                    _originalControlSizes.Remove(control);
-                    _appliedScales.Remove(control);
-                }
-            }
-
-            tabContainer.TabPages.Remove(tab);
-        }
-
-        // Phase 4.6 (UI uniformity): _originalControlSizes holds each open tab's page at
-        // its true Designer-authored ("100%") size, captured once when the tab is first
-        // opened - Control.Scale is a *relative* operation (it scales from whatever size
-        // a control is currently at), so re-deriving the target scale against a moving
-        // "current" size on every resize would drift with rounding error over repeated
-        // resizes. Scaling is always computed as the delta from the last APPLIED scale
-        // (_appliedScales) to the new target, both measured against that one fixed
-        // baseline, which keeps it correct (and reversible back to exactly 100%)
-        // regardless of how many times the window is resized.
-        private readonly Dictionary<Control, Size> _originalControlSizes = new Dictionary<Control, Size>();
-        private readonly Dictionary<Control, float> _appliedScales = new Dictionary<Control, float>();
-
-        private void RegisterAndScaleNewTabControl(Control control)
-        {
-            _originalControlSizes[control] = control.Size;
-            _appliedScales[control] = 1f;
-            RescaleControl(control);
-        }
-
-        // Never scales a page above its own 100% (Designer-authored) size - this is
-        // "shrink to fit", not "stretch to fill". A page narrower than tabContainer just
-        // keeps its designed size (and, since tabContainer is itself capped/centered at
-        // 1280px, ends up centered inside it).
-        private void RescaleControl(Control control)
-        {
-            if (!_originalControlSizes.TryGetValue(control, out Size originalSize) || originalSize.Width <= 0)
-            {
-                return;
-            }
-
-            float targetScale = Math.Min(1f, (float)tabContainer.Width / originalSize.Width);
-            float currentScale = _appliedScales.TryGetValue(control, out float applied) ? applied : 1f;
-
-            // Skip near-no-op rescales - avoids paying Control.Scale's recursive cost (and
-            // its font-rounding drift) on every minor resize tick.
-            if (Math.Abs(targetScale - currentScale) < 0.01f)
-            {
-                return;
-            }
-
-            float delta = targetScale / currentScale;
-            control.Scale(new SizeF(delta, delta));
-            _appliedScales[control] = targetScale;
-        }
-
-        // Called after the content wrapper resizes (see RecalculateContentWidth) so
-        // tabs that were already open - not just newly-opened ones - rescale too.
-        private void RescaleAllOpenTabs()
-        {
-            foreach (TabPage page in tabContainer.TabPages)
-            {
-                foreach (Control control in page.Controls)
-                {
-                    RescaleControl(control);
-                }
-            }
+            tabContainer.TabPages.Remove(tabContainer.SelectedTab);
         }
         private void Sidebar_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
         {
