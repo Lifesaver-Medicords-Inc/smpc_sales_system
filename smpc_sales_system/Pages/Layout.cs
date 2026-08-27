@@ -27,6 +27,32 @@ namespace smpc_sales_app.Pages
             // showForm like the sidebar pages), so it needs its own hook here to open a
             // Sales Order/Quotation tab when a document link inside it is clicked.
             redBoxControl.TriggerNewForm += showForm;
+
+            // Phase 4.6 (UI uniformity): set the initial capped/centered width before
+            // the form is ever shown - the Resize event alone would leave tabContainer
+            // at its Designer-time placeholder size (406,428) for one frame on startup.
+            RecalculateContentWidth();
+        }
+
+        // Phase 4.6 (UI uniformity): the main content area (tabContainer - everything
+        // left of the sidebar and RedBox) caps at 1280px and stays centered on wide/
+        // ultrawide monitors, shrinking to fit below that. RedBox's own panel (panel5)
+        // is left uncapped/full-width on purpose - it's persistent utility chrome, not
+        // the "page" being viewed.
+        private const int MaxContentWidth = 1280;
+
+        private void pnl_content_capped_Resize(object sender, EventArgs e)
+        {
+            RecalculateContentWidth();
+        }
+
+        private void RecalculateContentWidth()
+        {
+            int cappedWidth = Math.Min(MaxContentWidth, pnl_content_capped.ClientSize.Width);
+            tabContainer.Width = cappedWidth;
+            tabContainer.Height = pnl_content_capped.ClientSize.Height;
+            tabContainer.Left = (pnl_content_capped.ClientSize.Width - cappedWidth) / 2;
+            tabContainer.Top = 0;
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -99,10 +125,16 @@ namespace smpc_sales_app.Pages
                 OrdersControl.TriggerNewForm += showForm;
             }
 
-            //control.Width = this.Width - 235; 
+            //control.Width = this.Width - 235;
             tabContainer.Height = this.Height * 2;
             //control.Height = this.Height;
-            control.Width = this.Width - 550;
+            // Phase 4.6 (UI uniformity): was "this.Width - 550", approximating
+            // tabContainer's available width by subtracting a magic number (sidebar +
+            // RedBox + margins) from the whole form's width. Now that tabContainer caps
+            // at 1280px and no longer stretches with the form on wide monitors, that
+            // approximation would size new tabs wider than the actual (now narrower)
+            // content area on anything wider than ~1830px. Read the real width instead.
+            control.Width = tabContainer.Width;
             newTab.Controls.Add(control);
             newTab.AutoScroll = true;
             tabContainer.TabPages.Add(newTab);

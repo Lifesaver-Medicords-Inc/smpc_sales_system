@@ -47,6 +47,7 @@ namespace smpc_sales_app.Pages
             System.Windows.Forms.TreeNode treeNode13 = new System.Windows.Forms.TreeNode("Item Entry");
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Layout));
             this.tabContainer = new System.Windows.Forms.TabControl();
+            this.pnl_content_capped = new System.Windows.Forms.Panel();
             this.panel3 = new System.Windows.Forms.Panel();
             this.Sidebar = new System.Windows.Forms.TreeView();
             this.panel4 = new System.Windows.Forms.Panel();
@@ -69,23 +70,39 @@ namespace smpc_sales_app.Pages
             this.toolStripStatusLabel4 = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripStatusLabel5 = new System.Windows.Forms.ToolStripStatusLabel();
             this.lbl_date_time = new System.Windows.Forms.ToolStripStatusLabel();
+            this.pnl_content_capped.SuspendLayout();
             this.panel3.SuspendLayout();
             this.panel4.SuspendLayout();
             this.panel5.SuspendLayout();
             this.panel1.SuspendLayout();
             this.statusStrip1.SuspendLayout();
             this.SuspendLayout();
-            // 
+            //
             // tabContainer
-            // 
-            this.tabContainer.Dock = System.Windows.Forms.DockStyle.Fill;
+            //
+            // Phase 4.6 (UI uniformity): no longer Dock=Fill - pnl_content_capped now
+            // owns that, and sizes/centers this manually (see Layout.cs's
+            // RecalculateContentWidth) so the work area caps at 1280px on wide/ultrawide
+            // monitors instead of stretching edge to edge, matching all 6 apps' new
+            // standard. RedBox (panel5) is untouched - it's fixed-width utility chrome,
+            // not the "page" being viewed.
             this.tabContainer.Location = new System.Drawing.Point(0, 0);
             this.tabContainer.Name = "tabContainer";
             this.tabContainer.SelectedIndex = 0;
             this.tabContainer.Size = new System.Drawing.Size(406, 428);
             this.tabContainer.SizeMode = System.Windows.Forms.TabSizeMode.Fixed;
             this.tabContainer.TabIndex = 0;
-            // 
+            //
+            // pnl_content_capped
+            //
+            this.pnl_content_capped.Controls.Add(this.tabContainer);
+            this.pnl_content_capped.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.pnl_content_capped.Location = new System.Drawing.Point(0, 0);
+            this.pnl_content_capped.Name = "pnl_content_capped";
+            this.pnl_content_capped.Size = new System.Drawing.Size(406, 428);
+            this.pnl_content_capped.TabIndex = 4;
+            this.pnl_content_capped.Resize += new System.EventHandler(this.pnl_content_capped_Resize);
+            //
             // panel3
             // 
             this.panel3.Controls.Add(this.Sidebar);
@@ -145,7 +162,7 @@ namespace smpc_sales_app.Pages
             // 
             // panel4
             // 
-            this.panel4.Controls.Add(this.tabContainer);
+            this.panel4.Controls.Add(this.pnl_content_capped);
             this.panel4.Controls.Add(this.panel5);
             this.panel4.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panel4.Location = new System.Drawing.Point(200, 0);
@@ -328,6 +345,7 @@ namespace smpc_sales_app.Pages
             this.Text = "SMPC -SALES SYSTEM";
             this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
             this.Load += new System.EventHandler(this.Layout_Load);
+            this.pnl_content_capped.ResumeLayout(false);
             this.panel3.ResumeLayout(false);
             this.panel4.ResumeLayout(false);
             this.panel5.ResumeLayout(false);
@@ -344,6 +362,7 @@ namespace smpc_sales_app.Pages
         #endregion
 
         private System.Windows.Forms.TabControl tabContainer;
+        private System.Windows.Forms.Panel pnl_content_capped;
         private System.Windows.Forms.Panel panel3;
         private System.Windows.Forms.TreeView Sidebar;
         private System.Windows.Forms.Panel panel4;
