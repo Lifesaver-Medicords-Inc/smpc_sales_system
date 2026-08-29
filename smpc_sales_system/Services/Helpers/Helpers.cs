@@ -226,7 +226,13 @@ namespace smpc_app.Services.Helpers
                     //}
                     if (ctrl is ComboBox)
                     {
-                        ((ComboBox)ctrl).DropDownStyle = ComboBoxStyle.Simple;
+                        // Bugs #021/#022 (Trello, "PURPOSE/SHIP TYPE dropdown text option
+                        // is editable"): locking a combo switched its DropDownStyle to
+                        // Simple, which is the one style whose text portion is a free-type
+                        // textbox - Enabled=false should mask that, but there's no reason a
+                        // "read-only" combo needs a different, typing-capable style at all.
+                        // Just disable it and leave DropDownStyle exactly as the form
+                        // designed it (DropDownList everywhere it's used).
                         ((ComboBox)ctrl).Enabled = false;
                     }
                     if (ctrl is DateTimePicker)
