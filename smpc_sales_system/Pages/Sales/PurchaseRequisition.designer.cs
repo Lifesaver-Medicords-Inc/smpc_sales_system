@@ -265,10 +265,12 @@ namespace smpc_sales_system.Pages.Sales
             // txt_contact_no
             // 
             this.txt_contact_no.Location = new System.Drawing.Point(99, 52);
+            this.txt_contact_no.MaxLength = 20;
             this.txt_contact_no.Name = "txt_contact_no";
             this.txt_contact_no.ReadOnly = true;
             this.txt_contact_no.Size = new System.Drawing.Size(153, 20);
             this.txt_contact_no.TabIndex = 256;
+            this.txt_contact_no.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txt_contact_no_KeyPress);
             // 
             // dtp_date_required
             // 

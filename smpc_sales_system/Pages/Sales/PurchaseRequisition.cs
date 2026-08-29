@@ -242,6 +242,22 @@ namespace smpc_sales_system.Pages.Sales
         {
             SavePurchaseRequisition();
         }
+
+        // Bug #023 (Trello): CONTACT NO. only had a not-empty check - any text
+        // at all, letters included, passed straight through. Restrict keystrokes
+        // to digits and the punctuation real phone numbers actually use
+        // (space, +, -, parentheses) rather than enforcing one rigid format,
+        // since this codebase has no established phone-number pattern yet
+        // (Philippine mobile/landline formats both need to fit).
+        private void txt_contact_no_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar)
+                && e.KeyChar != ' ' && e.KeyChar != '+' && e.KeyChar != '-'
+                && e.KeyChar != '(' && e.KeyChar != ')')
+            {
+                e.Handled = true;
+            }
+        }
         private async void SavePurchaseRequisition()
         {
             try
