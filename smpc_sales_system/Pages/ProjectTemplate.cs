@@ -38,24 +38,41 @@ namespace smpc_sales_system.Pages
 
         private async void ProjectTemplate_Load(object sender, EventArgs e)
         {
-            var data = await ProjectTemplatesService.GetProjectTemplates();
+            // Bug #051 (Trello, "Template Setup cannot be accessed"): none of
+            // these four fetches or their null checks were guarded, so a null
+            // response from GetProjectTemplates() (data.SalesProjectTemplate on
+            // a null data) or a null list handed to JsonHelper.ToDataTable threw
+            // unhandled the moment this screen opened.
+            try
+            {
+                var data = await ProjectTemplatesService.GetProjectTemplates();
+                if (data == null)
+                {
+                    Helpers.ShowDialogMessage("error", "Failed to load Template Setup: no data returned.");
+                    return;
+                }
 
-            Template = JsonHelper.ToDataTable(data.SalesProjectTemplate);
-            TemplateChild = JsonHelper.ToDataTable(data.sales_project_template_child);
+                Template = JsonHelper.ToDataTable(data.SalesProjectTemplate ?? new List<ProjectTemplateModel>());
+                TemplateChild = JsonHelper.ToDataTable(data.sales_project_template_child ?? new List<ProjectTemplateChildModel>());
 
-            var itemData = await ItemService.GetItem();
+                var itemData = await ItemService.GetItem();
 
-            var bomData = await ProjectService.GetBom();
-            var companyData = await CompanyService.GetAsDatatable();
+                var bomData = await ProjectService.GetBom();
+                var companyData = await CompanyService.GetAsDatatable();
 
-            if (itemData == null || bomData == null)
-                return;
+                if (itemData == null || bomData == null)
+                    return;
 
-            ItemList = JsonHelper.ToDataTable(itemData.items);
-            BomHead = JsonHelper.ToDataTable(bomData.bom_head);
-            BomDetails = JsonHelper.ToDataTable(bomData.bom_details);
+                ItemList = JsonHelper.ToDataTable(itemData.items);
+                BomHead = JsonHelper.ToDataTable(bomData.bom_head);
+                BomDetails = JsonHelper.ToDataTable(bomData.bom_details);
 
-            LoadAll();
+                LoadAll();
+            }
+            catch (Exception ex)
+            {
+                Helpers.ShowDialogMessage("error", $"Failed to load Template Setup: {ex.Message}");
+            }
         }
 
         int selectedRow = 0;
