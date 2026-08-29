@@ -979,6 +979,17 @@ namespace smpc_sales_system.Pages.Sales
             // completely separate from the Designer-configured column of the same name.
             // dgv_wiring already does this correctly; this grid never did.
             this.dgv_project_items.AutoGenerateColumns = false;
+            // Trello #072 ("New item row appears when inputting ITEM INV TYPE"):
+            // #070/#071 only closed this off for the QTY column (HandleNumericColumns
+            // rejecting letters there, so garbage text could no longer land in the
+            // grid's trailing blank row and commit it) - but AllowUserToAddRows
+            // defaulting to true meant typing into ANY column's trailing blank row,
+            // ITEM INV TYPE included, still committed a stray new row. Rows are only
+            // ever meant to come from an actual item selection (dgv_project_items.
+            // Rows.Add() below, called programmatically) - never from typing into the
+            // grid directly, so this closes the root gap rather than patching one
+            // more column at a time.
+            this.dgv_project_items.AllowUserToAddRows = false;
             this.dgv_project_items.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dgv_project_items.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.project_items_id,
