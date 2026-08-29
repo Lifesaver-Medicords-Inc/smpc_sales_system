@@ -125,10 +125,25 @@ namespace smpc_sales_system.Pages.Sales
         }
         private async void PurchaseRequisition_Load(object sender, EventArgs e)
         {
-            await FetchItemData();
-            FetchItemName();
-            FetchUOM();
-            FetchExistingPurchaseRequisitions();
+            // Bug #130 (Trello): the most likely specific crash here (an empty PR
+            // list causing an IndexOutOfRangeException) already has its own guard
+            // in bindPR below - but this whole load sequence had no try/catch at
+            // all, so ANY other failure (a network hiccup, an unexpected null from
+            // one of these four fetches) crashed the module unhandled on open,
+            // matching this report's generic "clicking Purchase Requisition
+            // throws" description. Every other _Load handler in this codebase
+            // wraps its body this way.
+            try
+            {
+                await FetchItemData();
+                FetchItemName();
+                FetchUOM();
+                FetchExistingPurchaseRequisitions();
+            }
+            catch (Exception ex)
+            {
+                Helpers.ShowDialogMessage("error", $"Failed to load Purchase Requisition: {ex.Message}");
+            }
         }
         //CLICK METHODS (BUTTONS)
         private void btn_prev_Click(object sender, EventArgs e)
