@@ -243,12 +243,31 @@ namespace smpc_app.Services.Helpers
             }
         }
 
+        // Bug #030 (Trello, "CODE should be read-only"): this unconditionally
+        // unlocked every TextBox in the panel, including the system-generated
+        // id/document/version fields - Quotation.cs's own Select-Customer path
+        // already knew this and manually relocked txt_document_no/txt_version_no/
+        // txt_sub_version_no right after calling this, but every OTHER call site
+        // (btn_edit_Click's SetFormEditMode, btn_new_version_Click, the
+        // fetch-from-elsewhere reload path) didn't, so Edit/New Version left the
+        // document's own code directly typable. CLAUDE.md's own convention: "DOC
+        // NO. and DOC DATE are header fields... system-set and read-only" -
+        // universal across every document form, so this exclusion belongs in the
+        // shared helper rather than patched at each call site.
+        private static readonly string[] SystemGeneratedFieldNames =
+            { "txt_id", "txt_document_no", "txt_version_no", "txt_sub_version_no" };
+
         public static void ResetReadOnlyControls(Panel[] pnl_list)
         {
             foreach (Panel pnl in pnl_list)
             {
                 foreach (Control ctrl in pnl.Controls)
                 {
+                    if (ctrl is TextBox && SystemGeneratedFieldNames.Contains(ctrl.Name))
+                    {
+                        continue;
+                    }
+
                     if (ctrl is TextBox)
                     {
                         ((TextBox)ctrl).ReadOnly = false;
