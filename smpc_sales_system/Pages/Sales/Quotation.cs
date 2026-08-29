@@ -856,6 +856,23 @@ namespace smpc_sales_app.Pages.Sales
             projectQuotationTerms();
         }
 
+        // Bug #024 (Trello) / spec §5.1, §14.32: entity_names is a comma-separated
+        // list of tbl_setup_bpi_entity.code values (SMPC_ERP_SPEC §17.3 -
+        // CUS=Customer, AFF=Affiliated, NAF=Non-Affiliated, BLK=Blacklisted,
+        // CLD=Closed, SUP=Supplier, TSP=Temporary Supplier). Blacklisted/Closed
+        // are excluded unconditionally, even on a branch that also carries an
+        // otherwise-allowed type.
+        private static bool IsQuotableEntity(string entityNames)
+        {
+            if (string.IsNullOrWhiteSpace(entityNames)) return false;
+
+            var codes = entityNames.Split(',').Select(c => c.Trim().ToUpperInvariant()).ToArray();
+
+            if (codes.Contains("BLK") || codes.Contains("CLD")) return false;
+
+            return codes.Contains("CUS") || codes.Contains("AFF") || codes.Contains("NAF");
+        }
+
         private async Task fetchBpiData()
         {
             Bpi_Class bpi_data = await QuotationService.GetBpiCustomers();
@@ -5986,8 +6003,16 @@ namespace smpc_sales_app.Pages.Sales
             string Title = "Business Partner Info";
             string endpoint = "/api/bpi";
 
+            // Bug #024 (Trello, "Business Partner Info Suppliers can be seen"):
+            // this only filtered by ownership - every entity type the user owns,
+            // supplier-only branches included, showed up in the quotation's own
+            // customer picker. Spec §5.1 / negative test §14.32 are explicit:
+            // Customer, Affiliated, and Non-Affiliated are the only types allowed
+            // here, and Blacklisted/Closed must never appear even if the same
+            // branch also carries one of those allowed types.
             var filtered = bpi_general.AsEnumerable()
-                           .Where(x => x.Field<string>("branch_sales_id") == CacheData.CurrentUser.employee_id);
+                           .Where(x => x.Field<string>("branch_sales_id") == CacheData.CurrentUser.employee_id)
+                           .Where(x => IsQuotableEntity(x.Field<string>("entity_names")));
 
             DataTable bpiGeneralFilter = filtered.Any()
                                          ? filtered.CopyToDataTable()
