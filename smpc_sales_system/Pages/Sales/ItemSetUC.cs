@@ -851,7 +851,13 @@ namespace smpc_sales_system.Pages.Sales
         }
         public void SetProjectWiring(DataTable dt)
         {
+            // Bug #080 (Trello, "Repeating table data for wiring"): this grid is
+            // populated by manually adding rows (dgv_wiring.Rows.Add() below), not
+            // by data-binding - DataSource = null doesn't clear rows added that way,
+            // so calling this again (switching tabs, reloading) kept stacking a new
+            // full copy of the wiring rows on top of whatever was already there.
             dgv_wiring.DataSource = null;
+            dgv_wiring.Rows.Clear();
 
             int i = 0;
 
