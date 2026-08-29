@@ -2113,7 +2113,16 @@ namespace smpc_sales_app.Pages.Sales
                         {
                             var success = await OrderService.Update(parentData);
 
-                            if (success != null)
+                            // Bug #095 (Trello, "Unable to save SALES ORDER"): RequestToApi
+                            // deserializes and returns the response body the exact same way
+                            // whether the HTTP call succeeded OR the server rejected it (400/
+                            // 500 with {"success": false, "message": "..."}) - only a network
+                            // exception or malformed body ever actually returns null. So
+                            // "success != null" was true on a rejected save too, and the code
+                            // showed "Data updated successfully" and reset the form while
+                            // nothing was actually persisted - the real reason the API gave
+                            // was there in success.message/Message and never shown.
+                            if (success != null && success.Success)
                             {
                                 MessageBox.Show("Data updated successfully");
                                 await FetchSalesOrder(true);
@@ -2121,6 +2130,10 @@ namespace smpc_sales_app.Pages.Sales
                                 // Close back out of edit mode now that the update is saved.
                                 isEditingExisting = false;
                                 CheckStatus();
+                            }
+                            else
+                            {
+                                MessageBox.Show("Failed to update Sales Order.\n" + (success?.Message ?? success?.message ?? "No response from server."));
                             }
                         }
                         else
@@ -2153,7 +2166,11 @@ namespace smpc_sales_app.Pages.Sales
 
                             var success = await OrderService.Insert(parentData);
 
-                            if (success != null)
+                            // Bug #095 (Trello) - see the matching comment on the Update
+                            // branch above: success != null was never actually gated on the
+                            // API's own success flag, so a rejected Sales Order still showed
+                            // "Data added successfully".
+                            if (success != null && success.Success)
                             {
                                 MessageBox.Show("Data added successfully");
                                 await FetchSalesOrder(true);
@@ -2163,6 +2180,10 @@ namespace smpc_sales_app.Pages.Sales
                                 // show New) instead of leaving the form sitting open in
                                 // the same editable state.
                                 ViewEnable();
+                            }
+                            else
+                            {
+                                MessageBox.Show("Failed to save Sales Order.\n" + (success?.Message ?? success?.message ?? "No response from server."));
                             }
 
                         }
