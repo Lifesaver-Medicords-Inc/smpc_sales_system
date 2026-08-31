@@ -90,6 +90,14 @@ namespace smpc_sales_app.Pages.Sales
             // will ever be auto-added.
             dgv_quick_quote_details.AutoGenerateColumns = false;
 
+            // Bug #094 (Trello): LONG DESCRIPTION is a system-computed field (pulled
+            // from ItemAdditionalSpecs, see getItemShortDescription) - it was toggled
+            // Enabled alongside SHORT DESCRIPTION, which let it be typed into like a
+            // real input. ReadOnly (not Enabled) keeps it scrollable/selectable while
+            // permanently blocking edits, independent of whatever edit-mode state
+            // SHORT DESCRIPTION is in.
+            txt_long_description.ReadOnly = true;
+
             cmb_warranty.Text = "1 year";
             //KRIS: NEED ITONG DALAWA KAPAG MAY VERSION_NO NA PERO GINAGAMIT KO NA RIN GANYAN
             this.documentNo = documentNo;
@@ -3282,6 +3290,13 @@ namespace smpc_sales_app.Pages.Sales
             }
             else
             {
+                // Bug #094 (Trello, "Persistent LONG DESCRIPTION"): when the newly
+                // selected component's item_id has no match in ItemAdditionalSpecs,
+                // this used to just log and return - leaving txt_long_description
+                // showing whatever the PREVIOUS component's description was, since
+                // nothing here ever cleared it. Clear it so switching components never
+                // carries a stale description forward.
+                txt_long_description.Text = "";
                 Console.WriteLine("Item not found.");
             }
         }
@@ -4930,7 +4945,15 @@ namespace smpc_sales_app.Pages.Sales
                     dataSource.Rows.InsertAt(newRow, rowIndex);
 
                     // 🎨 Style as Single Item
-                    int addedRowIndex = dataSource.Rows.Count - 1;
+                    // Bug #089 (Trello, "added item is different from selected item"):
+                    // this used dataSource.Rows.Count - 1 (the LAST row) as "the row we
+                    // just added" - but InsertAt(newRow, rowIndex) puts the new row AT
+                    // rowIndex, shifting everything after it (including whatever was
+                    // previously the last row) down by one. So the styling/stock-check
+                    // below was applied to an unrelated row, not the one that actually
+                    // shows the just-picked item - reading as "the wrong item" once that
+                    // mis-targeted row's styling/stock flag changed instead.
+                    int addedRowIndex = rowIndex;
                     Helpers.SalesItemRowStyler.ApplyStyle(dgv, addedRowIndex, "single");
 
                     // Show available stock for the item just picked before the user has

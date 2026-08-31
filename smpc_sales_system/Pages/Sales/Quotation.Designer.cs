@@ -1469,6 +1469,15 @@
             this.quick_net_total,
             this.quick_line_total,
             this.short_description});
+            // Bugs #089/#090 (Trello, "wrong item shown" / "extra blank cell after
+            // selecting"): rows here are only ever meant to come from the item picker
+            // (HandleItemSelectionClick -> GetItemData/GetBomDataRecursive, both call
+            // dataSource.Rows.InsertAt), never from typing directly into the grid -
+            // but AllowUserToAddRows defaulting to true meant WinForms' own native
+            // trailing blank row was always present too, so every picker-driven insert
+            // still left that native placeholder sitting there as what read like a
+            // second, empty row after the real one.
+            this.dgv_quick_quote_details.AllowUserToAddRows = false;
             this.dgv_quick_quote_details.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dgv_quick_quote_details.Enabled = false;
             this.dgv_quick_quote_details.Location = new System.Drawing.Point(3, 3);
