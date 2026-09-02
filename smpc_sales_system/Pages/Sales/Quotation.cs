@@ -664,6 +664,30 @@ namespace smpc_sales_app.Pages.Sales
         }
         private async void btn_quick_quote_Click(object sender, EventArgs e)
         {
+            // Both branches below re-fetch from the server and rebind every field, so
+            // anything typed in New/Edit is discarded by the switch. That used to happen
+            // silently. Confirm first; on proceeding, land the form in a consistent view
+            // state - previously IsEdit was cleared on the Quick Quote side only and
+            // isNewRecord on neither, so the form could be left still flagged "new" while
+            // showing reloaded data. Mirrors btn_close_Click's return-to-view sequence.
+            if (isNewRecord || IsEdit)
+            {
+                DialogResult discard = MessageBox.Show(
+                    "You have unsaved changes on this quotation."
+                        + Environment.NewLine + Environment.NewLine
+                        + "Switching views will discard them. Continue?",
+                    "Unsaved Changes", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+
+                if (discard != DialogResult.Yes)
+                    return;
+            }
+
+            IsView = true;
+            isNewRecord = false;
+            IsEdit = false;
+            SetNewFormMode(false);
+            SetFormEditMode("Close");
+
             //1028, 2354
             this.btn_quick_quote.BackColor = Color.FromArgb(255, 128, 128);
             this.btn_project.BackColor = Color.White;
@@ -709,6 +733,30 @@ namespace smpc_sales_app.Pages.Sales
 
         private async void btn_project_Click(object sender, EventArgs e)
         {
+            // Both branches below re-fetch from the server and rebind every field, so
+            // anything typed in New/Edit is discarded by the switch. That used to happen
+            // silently. Confirm first; on proceeding, land the form in a consistent view
+            // state - previously IsEdit was cleared on the Quick Quote side only and
+            // isNewRecord on neither, so the form could be left still flagged "new" while
+            // showing reloaded data. Mirrors btn_close_Click's return-to-view sequence.
+            if (isNewRecord || IsEdit)
+            {
+                DialogResult discard = MessageBox.Show(
+                    "You have unsaved changes on this quotation."
+                        + Environment.NewLine + Environment.NewLine
+                        + "Switching views will discard them. Continue?",
+                    "Unsaved Changes", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+
+                if (discard != DialogResult.Yes)
+                    return;
+            }
+
+            IsView = true;
+            isNewRecord = false;
+            IsEdit = false;
+            SetNewFormMode(false);
+            SetFormEditMode("Close");
+
             if (_websocket != null && _websocket.State == System.Net.WebSockets.WebSocketState.Open)
             {
                 _websocket.Dispose();
@@ -992,6 +1040,7 @@ namespace smpc_sales_app.Pages.Sales
         public DataTable dt_multiplier { get; set; }
         public DataTable dt_content { get; set; }
         public DataTable dt_content_final { get; set; }
+        public DataTable dt_size_up { get; set; }
         public DataTable dt_advanced_conditions { get; set; }
         public DataTable dt_items { get; set; }
         public DataTable dt_items_selected_images { get; set; }
@@ -1249,6 +1298,13 @@ namespace smpc_sales_app.Pages.Sales
             dt_multiplier = JsonHelper.ToDataTable(SalesProjectListData.sales_project_multiplier);
             dt_content = JsonHelper.ToDataTable(SalesProjectListData.sales_project_content);
             dt_content_final = JsonHelper.ToDataTable(allFinals);
+
+            // Size Up, same flatten-then-filter-per-tab shape as the finals above.
+            var allSizeUps = SalesProjectListData.sales_project_content
+                .Where(c => c.sales_project_size_up != null)
+                .SelectMany(c => c.sales_project_size_up)
+                .ToList();
+            dt_size_up = JsonHelper.ToDataTable(allSizeUps);
             dt_advanced_conditions = JsonHelper.ToDataTable(SalesProjectListData.sales_project_content_advanced_condition);
             dt_items = JsonHelper.ToDataTable(SalesProjectListData.sales_project_items);
             dt_items_selected_images = JsonHelper.ToDataTable(SalesProjectListData.sales_project_items_selected_images);
@@ -1323,8 +1379,18 @@ namespace smpc_sales_app.Pages.Sales
                 DataView contentView = new DataView(dt_content);
                 contentView.RowFilter = $"based_id = '{tab.itemset_id}'";
 
+                // Finals and size-ups hang off the CONTENT row (their
+                // sales_project_content_id is the content's content_id), not off the item
+                // set. Filtering them by tab.itemset_id conflated two different ids and only
+                // ever matched by coincidence when the two happened to be equal. Resolve
+                // this tab's content_id first and filter on that.
+                DataTable contentForTab = contentView.ToTable();
+                string contentIdForTab = contentForTab.Rows.Count > 0
+                    ? contentForTab.Rows[0]["content_id"]?.ToString() ?? "0"
+                    : "0";
+
                 DataView contentFinalView = new DataView(dt_content_final);
-                contentFinalView.RowFilter = $"sales_project_content_id = '{tab.itemset_id}'";
+                contentFinalView.RowFilter = $"sales_project_content_id = '{contentIdForTab}'";
 
                 DataView conditionsView = new DataView(dt_advanced_conditions);
                 conditionsView.RowFilter = $"based_id = '{tab.itemset_id}'";
@@ -1342,6 +1408,13 @@ namespace smpc_sales_app.Pages.Sales
                 UC.SetAdvancedPanelData(conditionsView.ToTable());
                 UC.SetContentsPanelData(contentTable);
                 UC.SetFinalData(contentFinalView.ToTable());
+
+                if (dt_size_up != null)
+                {
+                    DataView sizeUpView = new DataView(dt_size_up);
+                    sizeUpView.RowFilter = $"sales_project_content_id = '{contentIdForTab}'";
+                    UC.SetSizeUpData(sizeUpView.ToTable());
+                }
 
                 bool hasContentRow = contentTable.Rows.Count > 0;
                 UC.SetTemplateName(hasContentRow ? contentTable.Rows[0]["template_project_id"]?.ToString() ?? "0" : "0");
@@ -2795,7 +2868,43 @@ namespace smpc_sales_app.Pages.Sales
             Compare(c, "no_of_pump_set", db.no_of_pump_set, upd.no_of_pump_set);
             Compare(c, "item_set_notes", db.item_set_notes, upd.item_set_notes);
             Compare(c, "is_wiring", db.is_wiring, upd.is_wiring);
+
+            // Size Up and Final Selection are child COLLECTIONS of the content row, not
+            // scalar fields - so adding or removing a candidate pump changed none of the
+            // fields above, DiffModels concluded "no changes", and the content never
+            // entered Updated at all. The server's syncContentChildren therefore never ran
+            // and the rows were silently discarded on every save of an existing quote.
+            // (Size Up showed this plainly because it had nothing pre-existing to fall back
+            // on; Final only looked healthy because its rows had been written once by the
+            // create path.) Comparing a readable signature of each list puts the content
+            // into Updated - carrying both arrays on Item, which is what the server
+            // persists - and gives BuildAutoHistoryEntries a legible "old list => new list"
+            // Change History line for free.
+            Compare(c, "size_up", DescribeSizeUps(db.sales_project_size_up), DescribeSizeUps(upd.sales_project_size_up));
+            Compare(c, "final_selection", DescribeFinals(db.sales_project_content_final), DescribeFinals(upd.sales_project_content_final));
             return c;
+        }
+
+        // Sorted, so re-ordering the grid alone is not treated as an edit - order carries no
+        // meaning in either list. Falls back to the item id when a row has no model text.
+        private static string DescribeSizeUps(SalesProjectSizeUp[] rows)
+        {
+            if (rows == null || rows.Length == 0) return string.Empty;
+
+            return string.Join(", ", rows
+                .Select(r => string.IsNullOrWhiteSpace(r.model) ? "#" + r.item_id : r.model.Trim())
+                .OrderBy(s => s, StringComparer.OrdinalIgnoreCase));
+        }
+
+        // FLA and voltage are part of the signature because editing either on an existing
+        // FINAL row is a real change the scalar comparers above cannot see.
+        private static string DescribeFinals(SalesProjectContentFinal[] rows)
+        {
+            if (rows == null || rows.Length == 0) return string.Empty;
+
+            return string.Join(", ", rows
+                .Select(r => string.Format("{0} ({1}/{2})", (r.final ?? string.Empty).Trim(), r.fla, r.voltage))
+                .OrderBy(s => s, StringComparer.OrdinalIgnoreCase));
         }
 
         private Dictionary<string, FieldChange> GetAdvancedConditionsChanges(
@@ -4690,6 +4799,23 @@ namespace smpc_sales_app.Pages.Sales
         // and it's permanently collision-proof since no real database id is ever 0.
         private const int NewTabPlaceholderId = 0;
 
+        // BOM rows are built from BomHead/BomDetails, which don't carry a unit of
+        // measure - so BOM-sourced lines came through with a blank UOM column while
+        // lines added through the item picker (GetItemData) showed one. Both should
+        // read the same value: whatever the item carries in Item Entry. Same lookup
+        // GetItemData uses - ItemList keyed on "id".
+        private string ResolveItemUom(int itemId)
+        {
+            if (itemId <= 0 || ItemList == null || ItemList.Rows.Count == 0)
+                return "";
+
+            DataTable match = Helpers.FilterExactDataTable(ItemList, itemId.ToString(), "id");
+            if (match == null || match.Rows.Count == 0 || !match.Columns.Contains("unit_of_measure"))
+                return "";
+
+            return match.Rows[0]["unit_of_measure"]?.ToString() ?? "";
+        }
+
         private decimal GetBomDataRecursive(int rowIndex, int bomID, int itemID, DataGridView dgv, string additionalReference = null, int level = 0, HashSet<int> visited = null)
         {
             Dictionary<int, DataRow> bomHeadDict = new Dictionary<int, DataRow>();
@@ -4761,6 +4887,8 @@ namespace smpc_sales_app.Pages.Sales
             newParent["man_days"] = parentRow["man_days"];
             newParent["labor_rate"] = parentRow["labor_rate"];
             newParent["unit_price"] = Convert.ToDecimal(parentRow["production_cost"]);
+            if (dataSource.Columns.Contains("unit_of_measure"))
+                newParent["unit_of_measure"] = ResolveItemUom(Convert.ToInt32(parentRow["item_id"]));
 
             dataSource.Rows.InsertAt(newParent, rowIndex);
 
@@ -4817,6 +4945,8 @@ namespace smpc_sales_app.Pages.Sales
                     newChild["qty"] = qty;
                     newChild["unit_price"] = unitPrice.ToString();
                     newChild["reference_code"] = $"{additionalReference}.{counterSub}";
+                    if (dataSource.Columns.Contains("unit_of_measure"))
+                        newChild["unit_of_measure"] = ResolveItemUom(childItemId);
 
                     int addedChildIndex = rowIndex + 1;
 
@@ -5096,18 +5226,57 @@ namespace smpc_sales_app.Pages.Sales
         // actually finished loading.
         private async Task RunWithLoadingAsync(Func<Task> action, string message = "Loading, please wait...")
         {
+            // A dropped connection mid-load leaves the form half-populated - some grids
+            // filled, others blank - with nothing to say so and no way back except leaving
+            // the module and coming back. ApiConnection counts requests that exhausted
+            // their retries, so comparing the count either side of the load tells us
+            // whether what is now on screen is actually complete, and we can offer to run
+            // the whole load again rather than making the user rebuild their way back to
+            // it. Attempts are capped so a server that is properly down can't trap someone
+            // in a retry loop.
+            const int MaxReloadAttempts = 3;
+
             Control[] targets = GetLoadingOverlayTargets();
-            Helpers.Loading.ShowLoading(targets, message);
-            Helpers.SetButtonsEnabled(this, false);
-            try
+
+            for (int attempt = 1; ; attempt++)
             {
-                await action();
-            }
-            finally
-            {
-                Helpers.Loading.HideLoading(targets);
-                Helpers.SetButtonsEnabled(this, true);
-                ReapplyFinalizeButtonState();
+                int failuresBefore = ApiConnection.FailureCount;
+
+                Helpers.Loading.ShowLoading(targets, message);
+                Helpers.SetButtonsEnabled(this, false);
+                try
+                {
+                    await action();
+                }
+                finally
+                {
+                    Helpers.Loading.HideLoading(targets);
+                    Helpers.SetButtonsEnabled(this, true);
+                    ReapplyFinalizeButtonState();
+                }
+
+                if (ApiConnection.FailureCount == failuresBefore)
+                    return;
+
+                if (attempt >= MaxReloadAttempts)
+                {
+                    MessageBox.Show(
+                        "This screen could not finish loading and some information is missing."
+                        + Environment.NewLine + Environment.NewLine
+                        + "Close and reopen the module once the connection is back.",
+                        "Incomplete Data", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                if (MessageBox.Show(
+                        "This screen did not finish loading - some information is missing."
+                        + Environment.NewLine + Environment.NewLine
+                        + "Reload it now?",
+                        "Incomplete Data", MessageBoxButtons.RetryCancel, MessageBoxIcon.Warning)
+                    != DialogResult.Retry)
+                    return;
+
+                message = "Reloading...";
             }
         }
 
@@ -6021,6 +6190,14 @@ namespace smpc_sales_app.Pages.Sales
         DataTable PerCustomerAddressList = new DataTable();
         private void btn_add_customer_Click(object sender, EventArgs e)
         {
+            // Same read-only gate every other line-editing action on this screen already
+            // uses (dgv_quick_quote_details_CellMouseDown's "if (IsView) return;", and the
+            // "&& !IsView" on each column in CellClick). Without it the customer could be
+            // swapped on a saved quotation that's only being viewed - no New, no Edit -
+            // which contradicts the forms-open-read-only convention. IsView is false only
+            // in btn_new_Click and btn_edit_Click, so New/Edit still work normally.
+            if (IsView) return;
+
             List<int> t1 = new List<int>();
             List<string> s1 = new List<string>();
             string Title = "Business Partner Info";
@@ -6383,6 +6560,14 @@ namespace smpc_sales_app.Pages.Sales
             //        }
             //    }
             //}
+
+            // With no tabs at all (Quick Quote mode, or mid-rebuild right after
+            // tabControl2.Controls.Clear()), TabCount is 0 and lastIndex is -1 -
+            // GetTabRect(-1) throws "Index was out of range ... Parameter name: index"
+            // and surfaces as an unhandled-exception dialog on any click along the
+            // tab strip. The guard for this existed but had been commented out.
+            if (this.tabControl2.TabCount == 0)
+                return;
 
             var lastIndex = this.tabControl2.TabCount - 1;
             if (this.tabControl2.GetTabRect(lastIndex).Contains(e.Location))
@@ -7656,6 +7841,14 @@ namespace smpc_sales_app.Pages.Sales
 
         private void UpdateTextDescription()
         {
+            // SelectedRowIndex defaults to 0 and is reset to 0 on New/reload, so on an
+            // empty grid this is Rows[0] against zero rows. TextChanged also fires when
+            // the form is cleared programmatically, not just on user typing - which is
+            // exactly when the grid is empty. (Prior to AllowUserToAddRows being turned
+            // off, the phantom trailing row kept Count >= 1 and hid this.)
+            if (SelectedRowIndex < 0 || SelectedRowIndex >= dgv_quick_quote_details.Rows.Count)
+                return;
+
             dgv_quick_quote_details.Rows[SelectedRowIndex].Cells["short_description"].Value = txt_short_description.Text;
         }
 
@@ -7785,8 +7978,12 @@ namespace smpc_sales_app.Pages.Sales
 
         private void canvasToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            // Canvass Sheet Column
-            string id = dgv_quick_quote_details.Rows[SelectedRowIndex].Cells[5].Value.ToString();
+            // Canvass Sheet Column - same empty-grid guard as UpdateTextDescription:
+            // nothing to act on if there's no row under SelectedRowIndex.
+            if (SelectedRowIndex < 0 || SelectedRowIndex >= dgv_quick_quote_details.Rows.Count)
+                return;
+
+            string id = dgv_quick_quote_details.Rows[SelectedRowIndex].Cells[5].Value?.ToString() ?? "";
             HandleCanvasSelectionClick(SelectedRowIndex, id);
         }
 

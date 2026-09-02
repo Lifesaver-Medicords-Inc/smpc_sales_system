@@ -26,7 +26,7 @@
     <UpdatePeriodically>false</UpdatePeriodically>
     <UpdateRequired>false</UpdateRequired>
     <MapFileExtensions>true</MapFileExtensions>
-    <ApplicationRevision>1</ApplicationRevision>
+    <ApplicationRevision>1000</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
@@ -535,6 +535,7 @@
     <Compile Include="Services\Helpers\ApiResponseModel.cs" />
     <Compile Include="Services\Helpers\Helpers.cs" />
     <Compile Include="Services\Helpers\JsonHelper.cs" />
+    <Compile Include="Services\Helpers\ApiConnection.cs" />
     <Compile Include="Services\Helpers\RequestToApi.cs" />
     <Compile Include="Services\Purchasing\Models\PurchaseRequisitionList.cs" />
     <Compile Include="Services\Purchasing\Models\PurchaseRequisitionModel.cs" />

@@ -311,6 +311,7 @@ namespace smpc_sales_system.Pages.Sales
             }
 
             data["sales_project_content_final"] = finals;
+            data["sales_project_size_up"] = GetSizeUpData();
 
             //this is not include in panel but we need to get the value of wiring for the project
             data["is_wiring"] = chk_wiring.Checked;
@@ -567,19 +568,36 @@ namespace smpc_sales_system.Pages.Sales
         // signature (the one call site was already commented out, but keeping it avoids
         // surprising a future caller expecting the old shape) while reading from the
         // grid instead.
-        public Dictionary<string, dynamic> GetSizeUpData()
+        // Was dead code with no callers, returning a Dictionary keyed " size_up_1",
+        // " size_up_2"... (note the leading space) holding only the model string - a shape
+        // nothing could persist, and which dropped item_id entirely. Now returns the same
+        // list shape the finals use, and GetProjectContentsData actually sends it.
+        public List<SalesProjectSizeUp> GetSizeUpData()
         {
-            Dictionary<string, dynamic> values = new Dictionary<string, dynamic>();
-            if (dgv_size_up == null) return values;
+            var sizeUps = new List<SalesProjectSizeUp>();
+            if (dgv_size_up == null) return sizeUps;
 
-            int i = 1;
             foreach (DataGridViewRow row in dgv_size_up.Rows)
             {
-                values[$" size_up_{i}"] = row.Cells["size_up_model"].Value?.ToString() ?? string.Empty;
-                i++;
+                if (row.IsNewRow) continue;
+
+                string model = row.Cells["size_up_model"].Value?.ToString() ?? string.Empty;
+                int.TryParse(row.Cells["size_up_item_id"].Value?.ToString(), out int itemId);
+
+                // A row with neither an item nor a model is the grid's own empty filler,
+                // not a candidate pump.
+                if (itemId <= 0 && string.IsNullOrWhiteSpace(model)) continue;
+
+                sizeUps.Add(new SalesProjectSizeUp
+                {
+                    id = int.TryParse(row.Cells["size_up_id"]?.Value?.ToString(), out int rowId) ? rowId : 0,
+                    sales_project_content_id = 0, // server stamps this from the owning content row
+                    item_id = itemId,
+                    model = model,
+                });
             }
 
-            return values;
+            return sizeUps;
         }
 
         // Mirrors dgv_final_CellClick exactly - single MODEL column now, same as FINAL,
@@ -602,7 +620,33 @@ namespace smpc_sales_system.Pages.Sales
             foreach (DataGridViewRow row in dgv_size_up.Rows)
                 if (row.Cells["size_up_item_id"].Value?.ToString() == itemId) return;
 
-            dgv_size_up.Rows.Add(itemId, model);
+            // Set by cell name, not positionally: Rows.Add(itemId, model) relied on
+            // size_up_item_id being column 0, which stopped being true once the hidden
+            // size_up_id column was added in front of it. Naming the cells makes this
+            // independent of column order.
+            int index = dgv_size_up.Rows.Add();
+            dgv_size_up.Rows[index].Cells["size_up_item_id"].Value = itemId;
+            dgv_size_up.Rows[index].Cells["size_up_model"].Value = model;
+        }
+
+        // Loads saved Size Up rows back onto the grid, mirroring SetFinalData. Nothing did
+        // this before because Size Up was never persisted at all - see GetSizeUpData.
+        public void SetSizeUpData(DataTable dt)
+        {
+            if (dgv_size_up == null) return;
+
+            dgv_size_up.DataSource = null;
+            dgv_size_up.Rows.Clear();
+
+            if (dt == null) return;
+
+            foreach (DataRow row in dt.Rows)
+            {
+                int index = dgv_size_up.Rows.Add();
+                dgv_size_up.Rows[index].Cells["size_up_id"].Value = row.Table.Columns.Contains("id") ? row["id"] : null;
+                dgv_size_up.Rows[index].Cells["size_up_item_id"].Value = row.Table.Columns.Contains("item_id") ? row["item_id"] : null;
+                dgv_size_up.Rows[index].Cells["size_up_model"].Value = row.Table.Columns.Contains("model") ? row["model"] : null;
+            }
         }
 
         // What FINAL selection filters against (spec §5.1.4: "Final Selection - dropdown
@@ -1043,9 +1087,24 @@ namespace smpc_sales_system.Pages.Sales
             }
 
             //ECB To Controller Value AMP REQ.
-
+            // This wrote into project_wiring_wire_amp - the WIRE AMP. column - because the
+            // AMP REQ. column, though declared, was never added to the grid, so there was
+            // nowhere else to put it. Spec 8.4 keeps them distinct: AMP REQ. is the computed
+            // requirement (rows 1 and 7), WIRE AMP. is the rating of the wire actually
+            // chosen. Now that the column exists, the value goes where the comment always
+            // said it should.
+            // Spec 8.4 decides which of the two implementations of this figure wins.
+            // This one multiplied by Pump_Total_Qty - a count of "pump" rows in the item
+            // table - but 8.4's input is number_of_pumps_in_set, and 5.1.4 lists
+            // "NO. OF PUMP/SET" as the Client Needs field holding it. The two can disagree.
+            // computeECBToController reads that field (with txt_FLA, which the lines above
+            // have just set to fla_highest, satisfying 8.4's "base the calculation on the
+            // largest FLA"), so defer to it rather than keep a second, divergent copy of
+            // the formula writing to the same cell on a last-writer-wins basis.
+            // Pump_Total_Qty is left computed above only because that loop also carries an
+            // early return that guards this method; it no longer feeds the amp.
             if (chk_wiring.Checked)
-                dgv_wiring.Rows[0].Cells["project_wiring_wire_amp"].Value = fla_highest * Pump_Total_Qty * 1.25m;
+                computeECBToController();
 
         }
 
@@ -1337,6 +1396,11 @@ namespace smpc_sales_system.Pages.Sales
 
             var itemData = await ItemService.GetItem();
             var bomData = await ProjectService.GetBom();
+
+            // Both return null when the API call fails - same guard Quotation.fetchItemData
+            // already had, which this call site was missing. The template dropdown above is
+            // populated by this point and stays usable; only the item/BOM lookups are lost.
+            if (itemData == null || bomData == null) return;
 
             ItemList = JsonHelper.ToDataTable(itemData.items);
             BomHead = JsonHelper.ToDataTable(bomData.bom_head);
@@ -2543,103 +2607,84 @@ namespace smpc_sales_system.Pages.Sales
             dgv_wiring.DataSource = bs_project_wiring;
 
 
-            //Grouping the columns in wiring
-            // Trello #084: this group's header literally read "# OF QTY / SET" while
-            // grouping the columns that actually hold "# OF WIRES / SET" (A) data -
-            // the two spec §8.4 factors had been collapsed into one, mislabeled column.
-            // Corrected the label here and added a second, genuinely separate group for
-            // the real "# OF QTY / SET" (B) column below.
-            string[] NumberOfWiresSet = { "project_wiring_num_of_wiring_set", "project_wiring_num_of_wiring_set_format" };
-            string NumberOfWiresSetHeaderName = "#" + Environment.NewLine + " OF WIRES " + Environment.NewLine + " / SET";
-
-            Dictionary<string, string[]> FirstGrouping = new Dictionary<string, string[]>
+            // Grouping the columns in wiring, to match how the reference sheet reads.
+            //
+            // Each value that carries a unit is shown the way Excel shows it: one header
+            // spanning the value column and the small blank column holding its unit, so
+            // "3 | m" reads as a single "# OF QTY / SET" entry rather than two unrelated
+            // columns with a divider between them. EnableGroupHeaders paints the group
+            // label across the top half of the header and leaves the bottom half for each
+            // column's own HeaderText - so the grouped columns' own headers are blanked in
+            // the Designer, otherwise the label would appear twice.
+            //
+            // "# OF WIRES / SET" (A) is deliberately NOT grouped: it has no unit column of
+            // its own, so it keeps a plain single header. A previous version grouped A
+            // with project_wiring_num_of_wiring_set_format, but that blank column is the
+            // unit for B, not for A - which both mislabelled the column and produced the
+            // stacked "double header" look.
+            Dictionary<string, string[]> wiringGroups = new Dictionary<string, string[]>
             {
-                { NumberOfWiresSetHeaderName, NumberOfWiresSet }
+                {
+                    // Plain text, no hard-coded line breaks: the painter wraps it to the
+                    // width the group spans, matching how "ITEM INV TYPE" stacks itself on
+                    // the items grid.
+                    "# OF QTY / SET",
+                    new string[] { "project_wiring_num_of_qty_set", "project_wiring_num_of_wiring_set_format" }
+                },
+                {
+                    "Project Inventory",
+                    new string[] { "project_wiring_qty", "project_wiring_qty_format" }
+                }
             };
 
-            Helpers.EnableGroupHeaders(dgv_wiring, FirstGrouping);
-
-            string[] NumberOfQtySet = { "project_wiring_num_of_qty_set" };
-            string NumberOfQtySetHeaderName = "#" + Environment.NewLine + " OF QTY " + Environment.NewLine + " / SET";
-
-            Dictionary<string, string[]> QtySetGrouping = new Dictionary<string, string[]>
-            {
-                { NumberOfQtySetHeaderName, NumberOfQtySet }
-            };
-
-            Helpers.EnableGroupHeaders(dgv_wiring, QtySetGrouping);
-
-            string[] QtyHeader = { "project_wiring_qty", "project_wiring_qty_format" };
-            string QtyHeaderName = "Project Inventory";
-
-            Dictionary<string, string[]> SecondGrouping = new Dictionary<string, string[]>
-            {
-                { QtyHeaderName, QtyHeader }
-            };
-
-            Helpers.EnableGroupHeaders(dgv_wiring, SecondGrouping);
+            // One call, not one per group: each call registers its own Paint/CellPainting
+            // handlers on the grid, so calling it repeatedly stacks duplicate painters.
+            Helpers.EnableGroupHeaders(dgv_wiring, wiringGroups);
         }
 
         private void cmb_starting_method_SelectedIndexChanged(object sender, EventArgs e)
         {
 
-            if (wiringTable == null || wiringTable.Rows.Count == 0)
-            {
-                MessageBox.Show("Wiring table is empty"); 
+            // SelectedIndexChanged fires on programmatic changes too - the generic bind
+            // helper reassigns this combo whenever the tab is loaded or rebound after a
+            // save - so the two MessageBoxes that used to sit here ("Wiring table is
+            // empty" / "FLA and voltage are required here") popped during save and load,
+            // not just when a user picked a method. A change handler whose job is to
+            // compute a value should no-op silently when its inputs aren't ready, which
+            // is exactly what computeECBToController already does.
+            if (dgv_wiring == null || dgv_wiring.Rows.Count == 0)
                 return;
-            }
 
-            if (txt_FLA.Text == "" && txt_VOLT.Text == "")
-            {
-                MessageBox.Show("FLA and voltage are required here. It’s possible that the final values have not been set.");
+            // Was: txt_FLA.Text == "" && txt_VOLT.Text == "" - an AND, so a blank FLA with
+            // a filled VOLTAGE fell straight through to double.Parse(txt_FLA.Text) and threw
+            // a FormatException. Only FLA actually feeds the formulas below (VOLTAGE was
+            // parsed into an unused local), so require that, and TryParse it.
+            if (!double.TryParse(txt_FLA.Text, out double FLA))
                 return;
-            }
 
             if (cmb_starting_method.Text == "WYE-DELTA CLOSED" || cmb_starting_method.Text == "WYE-DELTA OPEN")
             {
-                double FLA = double.Parse(txt_FLA.Text);
-                double VOLT = double.Parse(txt_VOLT.Text);
                 double ampRequirement = FLA * 0.6 * 1.25;
 
-                foreach (DataRow row in wiringTable.Rows)
-                {
-                    if (row["Materials"].ToString() == "Controller to motor")
-                    {
-                         row["AMPREQ"] = ampRequirement;
-                        break;
-                    }
-                }
+                SetWiringAmpReq("Controller to motor", (decimal)ampRequirement);
             }
 
             if (cmb_starting_method.Text == "DIRECT ONLINE")
             {
-                double FLA = double.Parse(txt_FLA.Text);
-                
                 double ampRequirement = FLA * 1.25;
 
-                foreach (DataRow row in wiringTable.Rows)
-                {
-                    if (row["Materials"].ToString() == "Controller to motor")
-                    {
-                        row["AMPREQ"] = ampRequirement;
-                        break;
-                    }
-                }
+                SetWiringAmpReq("Controller to motor", (decimal)ampRequirement);
             }
 
             if (cmb_starting_method.Text == "SOFT STARTER")
             {
-                double FLA = double.Parse(txt_FLA.Text);
-                
-                foreach (DataRow row in wiringTable.Rows)
-                {
-                    if (row["Materials"].ToString() == "Controller to motor")
-                    {
-                        row["AMPREQ"] = FLA;
-                        break;
-                    }
-                }
+                SetWiringAmpReq("Controller to motor", (decimal)FLA);
             }
+
+            // Row 1 (ECB -> controller) shares FLA with the row 7 formulas above, so refresh
+            // it here too rather than leaving it stale until someone retypes NO. OF PUMP/SET.
+            // Safe to call unconditionally - it no-ops when FLA or the pump count is blank.
+            computeECBToController();
         }
 
         private void ComputeWiringDGV(DataGridViewCellEventArgs e)
@@ -2653,7 +2698,11 @@ namespace smpc_sales_system.Pages.Sales
                 var noOfQtyCell = dgv_wiring.Rows[e.RowIndex].Cells["project_wiring_num_of_qty_set"].Value;
                 var distanceTravelledCell = dgv_wiring.Rows[e.RowIndex].Cells["project_wiring_distance_travelled"].Value;
                 var allowanceWireSetCell = dgv_wiring.Rows[e.RowIndex].Cells["project_wiring_allowance"].Value;
-                var noOfSetsCell = dgv_wiring.Rows[e.RowIndex].Cells["project_wiring_qty"].Value;
+                // Spec 8.4: TOTAL QTY = QTY x # OF SETS. This read the QTY cell - which is
+                // overwritten with the computed qty a few lines below, so it multiplied by a
+                // stale value of the very cell being recalculated, while the real "# OF SETS"
+                // column went unused.
+                var noOfSetsCell = dgv_wiring.Rows[e.RowIndex].Cells["project_wiring_num_of_sets"].Value;
                 var costCell = dgv_wiring.Rows[e.RowIndex].Cells["project_wiring_cost"].Value;
 
                  
@@ -2675,8 +2724,11 @@ namespace smpc_sales_system.Pages.Sales
                 if (!decimal.TryParse(costCell?.ToString(), out decimal costs))
                     costs = 0;
 
-                //double WiresAndQty = noOfWires * noOfQty;
-                double qty = noOfQty * (distanceTravelled + allowanceWireSet);
+                // Spec 8.4: QTY = A x B x (C + D), where A = # OF WIRES / SET,
+                // B = # OF QTY / SET, C = DISTANCE TRAVELLED / SET, D = ALLOWANCE / WIRE / SET.
+                // A was missing from this calculation, so every wiring line came out short by
+                // the wires-per-set factor.
+                double qty = noOfWires * noOfQty * (distanceTravelled + allowanceWireSet);
                 dgv_wiring.Rows[e.RowIndex].Cells["project_wiring_qty"].Value = qty.ToString();
 
                 double totalQty = qty * noOfSets;
@@ -2753,22 +2805,47 @@ namespace smpc_sales_system.Pages.Sales
         }
 
 
+        // Both amp writers used to target the wiringTable DataTable. That only reaches the
+        // screen when setProjectWirings() built and bound it - the load path
+        // (SetProjectWiring) sets DataSource = null, clears the grid and adds rows by hand,
+        // so on any saved quote the grid is unbound and every write to wiringTable was
+        // invisible. Writing to the grid works under both paths: when the grid IS bound,
+        // setting a cell propagates back to the underlying row anyway.
+        private void SetWiringAmpReq(string materialName, decimal value)
+        {
+            if (dgv_wiring == null || dgv_wiring.Rows.Count == 0) return;
+            if (!dgv_wiring.Columns.Contains("project_wiring_amp_req")) return;
+            if (!dgv_wiring.Columns.Contains("project_wiring_materials")) return;
+
+            foreach (DataGridViewRow row in dgv_wiring.Rows)
+            {
+                if (row.IsNewRow) continue;
+
+                string material = row.Cells["project_wiring_materials"].Value?.ToString();
+                if (string.Equals(material, materialName, StringComparison.OrdinalIgnoreCase))
+                {
+                    row.Cells["project_wiring_amp_req"].Value = value;
+                    return;
+                }
+            }
+        }
+
         private void computeECBToController()
         {
             if (!string.IsNullOrWhiteSpace(txt_FLA.Text) && !string.IsNullOrWhiteSpace(txt_no_of_pump_set.Text))
             {
                 if (double.TryParse(txt_FLA.Text, out double FLA) && double.TryParse(txt_no_of_pump_set.Text, out double PumpSet))
                 {
-                    double ECB = FLA * PumpSet;
+                    // Spec 8.4: AMP (ECB -> controller, row 1)
+                    //   = FLA_of_1_pump x number_of_pumps_in_set x 1.25, 3 wires only.
+                    // The x1.25 factor was missing here, so row 1's amp requirement came
+                    // out 20% under spec - which then feeds wire selection (DESCRIPTION is
+                    // meant to offer wires matching AMP REQ. or one step above) and cost.
+                    // The controller-to-motor formulas in cmb_starting_method_SelectedIndexChanged
+                    // already apply their factors correctly.
+                    double ECB = FLA * PumpSet * 1.25;
 
-                    foreach (DataRow row in wiringTable.Rows)
-                    {
-                        if (row["Materials"] != null && row["Materials"].ToString() == "ECB To Controller")
-                        {
-                            row["AMPREQ"] = ECB;
-                            break;
-                        }
-                    }
+                    SetWiringAmpReq("ECB To Controller", (decimal)ECB);
                 }
             }
         }
@@ -2777,6 +2854,22 @@ namespace smpc_sales_system.Pages.Sales
         private void txt_no_of_pump_set_TextChanged(object sender, EventArgs e)
         {
             computeECBToController();
+        }
+
+        // Row 1's amp (FLA x NO. OF PUMP/SET x 1.25, spec 8.4) depends on FLA as much as on
+        // the pump count, but computeECBToController was only ever reached from
+        // txt_no_of_pump_set's TextChanged - so an FLA arriving from the pump's Item Entry
+        // (spec 8.4: "FLA and VOLTAGE fetched from the selected pump's Item Entry specs")
+        // left AMP REQ. on row 1 blank while row 7 populated fine from the starting-method
+        // handler.
+        private void txt_FLA_TextChanged(object sender, EventArgs e)
+        {
+            // Refresh BOTH amp rows. Row 7's formula lives in the starting-method handler,
+            // which only ran when the dropdown itself changed - so an FLA arriving later
+            // from Final Selection (SetFinalPumpData sets txt_FLA) left row 7 stale while
+            // row 1 updated. That handler is safe to call directly now: it no-ops quietly
+            // when the wiring table or FLA isn't ready, and ends by refreshing row 1.
+            cmb_starting_method_SelectedIndexChanged(this, EventArgs.Empty);
         }
 
         private void checkBox_Wiring_CheckedChanged(object sender, EventArgs e)

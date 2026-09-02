@@ -50,6 +50,7 @@ namespace smpc_sales_system.Pages.Sales
             this.Voltage = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.final_item_id = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.dgv_size_up = new System.Windows.Forms.DataGridView();
+            this.size_up_id = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.size_up_item_id = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.size_up_model = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.txt_size_up_5 = new System.Windows.Forms.TextBox();
@@ -192,9 +193,11 @@ namespace smpc_sales_system.Pages.Sales
             this.project_wiring_based_id = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.cmb_unit = new System.Windows.Forms.DataGridViewComboBoxColumn();
             this.project_wiring_materials = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.project_wiring_amp_req = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.project_wiring_wire_amp = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.project_wiring_description = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.project_wiring_num_of_wiring_set = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.project_wiring_num_of_qty_set = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.project_wiring_num_of_wiring_set_format = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.project_wiring_distance_travelled = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.project_wiring_allowance = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -358,6 +361,7 @@ namespace smpc_sales_system.Pages.Sales
             // overrides) so the two lists behave identically.
             this.dgv_size_up.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dgv_size_up.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.size_up_id,
             this.size_up_item_id,
             this.size_up_model});
             this.dgv_size_up.Location = new System.Drawing.Point(840, 26);
@@ -367,6 +371,15 @@ namespace smpc_sales_system.Pages.Sales
             this.dgv_size_up.Size = new System.Drawing.Size(276, 98);
             this.dgv_size_up.TabIndex = 172;
             this.dgv_size_up.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgv_size_up_CellClick);
+            //
+            // size_up_id
+            //
+            // The persisted row id, carried back on save so an existing Size Up row is
+            // updated rather than duplicated (and so rows dropped from the grid can be
+            // pruned server-side). Hidden - same as size_up_item_id.
+            this.size_up_id.HeaderText = "size_up_id";
+            this.size_up_id.Name = "size_up_id";
+            this.size_up_id.Visible = false;
             //
             // size_up_item_id
             //
@@ -989,7 +1002,13 @@ namespace smpc_sales_system.Pages.Sales
             // Rows.Add() below, called programmatically) - never from typing into the
             // grid directly, so this closes the root gap rather than patching one
             // more column at a time.
-            this.dgv_project_items.AllowUserToAddRows = false;
+            // Must stay true, same as dgv_quick_quote_details: items are added by
+            // clicking a row's COMPONENTS cell (dgv_project_items_CellClick raises
+            // CellClicked, which opens the item picker), so the trailing new-row IS
+            // the add-an-item affordance. Setting this false for the "stray row from
+            // ITEM INV TYPE" report removed the only way to add items at all - the
+            // stray-row problem needs to be handled on save/commit instead.
+            this.dgv_project_items.AllowUserToAddRows = true;
             this.dgv_project_items.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dgv_project_items.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.project_items_id,
@@ -1124,7 +1143,16 @@ namespace smpc_sales_system.Pages.Sales
             this.project_inv_stock.HeaderText = "INV.";
             this.project_inv_stock.Name = "project_inv_stock";
             this.project_inv_stock.ReadOnly = true;
-            this.project_inv_stock.Visible = false;
+            // Was Visible = false, which hid a feature that is otherwise fully built for
+            // this grid: the click dispatch (dgv_project_items_CellClick raises
+            // CellClickedStock), the handler (Quotation.HandleProjectStockCheckClick -
+            // availability, reservations, expiry, unsaved lines), the per-row fill
+            // (RefreshStockIndicator / RefreshAllStockIndicators, called from
+            // SetFetchedItemData) and the flag repaint (InvalidateCell on this cell) all
+            // already exist. Only the column itself was switched off, so Project Quote
+            // had no stock check while Quick Quote did. Matches quick_inv_stock.
+            this.project_inv_stock.Visible = true;
+            this.project_inv_stock.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
             this.project_inv_stock.Width = 40;
             // 
             // project_items_qty
@@ -1457,6 +1485,7 @@ namespace smpc_sales_system.Pages.Sales
             this.txt_FLA.ReadOnly = true;
             this.txt_FLA.Size = new System.Drawing.Size(66, 20);
             this.txt_FLA.TabIndex = 159;
+            this.txt_FLA.TextChanged += new System.EventHandler(this.txt_FLA_TextChanged);
             // 
             // label6
             // 
@@ -1521,9 +1550,11 @@ namespace smpc_sales_system.Pages.Sales
             this.project_wiring_based_id,
             this.cmb_unit,
             this.project_wiring_materials,
+            this.project_wiring_amp_req,
             this.project_wiring_wire_amp,
             this.project_wiring_description,
             this.project_wiring_num_of_wiring_set,
+            this.project_wiring_num_of_qty_set,
             this.project_wiring_num_of_wiring_set_format,
             this.project_wiring_distance_travelled,
             this.project_wiring_allowance,
@@ -1591,6 +1622,21 @@ namespace smpc_sales_system.Pages.Sales
             this.project_wiring_materials.MinimumWidth = 200;
             this.project_wiring_materials.Name = "project_wiring_materials";
             // 
+            // project_wiring_amp_req
+            // 
+            // Spec 8.4's "AMP REQ." (rows 1 and 7 only). The amp formulas already existed
+            // and already wrote their result into wiringTable's "AMPREQ" column
+            // (computeECBToController for row 1, cmb_starting_method_SelectedIndexChanged
+            // for row 7) - but this column was declared as a field and never instantiated
+            // or added to the grid, so the computed value had nowhere to show. Read-only:
+            // it is derived, not typed.
+            this.project_wiring_amp_req.DataPropertyName = "AMPREQ";
+            this.project_wiring_amp_req.HeaderText = "AMP REQ.";
+            this.project_wiring_amp_req.Name = "project_wiring_amp_req";
+            this.project_wiring_amp_req.ReadOnly = true;
+            this.project_wiring_amp_req.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            this.project_wiring_amp_req.Width = 60;
+            // 
             // project_wiring_wire_amp
             // 
             this.project_wiring_wire_amp.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
@@ -1609,10 +1655,25 @@ namespace smpc_sales_system.Pages.Sales
             // 
             this.project_wiring_num_of_wiring_set.DataPropertyName = "# OF WIRES / SET";
             this.project_wiring_num_of_wiring_set.FillWeight = 50F;
-            this.project_wiring_num_of_wiring_set.HeaderText = "SET";
+            this.project_wiring_num_of_wiring_set.HeaderText = "# OF WIRES / SET";
             this.project_wiring_num_of_wiring_set.MinimumWidth = 50;
             this.project_wiring_num_of_wiring_set.Name = "project_wiring_num_of_wiring_set";
-            this.project_wiring_num_of_wiring_set.Width = 50;
+            this.project_wiring_num_of_wiring_set.Width = 70;
+            // 
+            // project_wiring_num_of_qty_set
+            // 
+            // The "# OF QTY / SET" factor (model field num_of_qty_set). It was declared
+            // as a field but never instantiated or added to the grid, so every
+            // Cells["project_wiring_num_of_qty_set"] access - ComputeWiringDGV on edit,
+            // and SetProjectWiring when loading a saved quote - threw "Column named
+            // project_wiring_num_of_qty_set cannot be found". The load/compute/save
+            // paths and the model all already expected it; only this was missing.
+            this.project_wiring_num_of_qty_set.DataPropertyName = "# OF QTY / SET";
+            this.project_wiring_num_of_qty_set.FillWeight = 50F;
+            this.project_wiring_num_of_qty_set.HeaderText = "";
+            this.project_wiring_num_of_qty_set.MinimumWidth = 50;
+            this.project_wiring_num_of_qty_set.Name = "project_wiring_num_of_qty_set";
+            this.project_wiring_num_of_qty_set.Width = 70;
             // 
             // project_wiring_num_of_wiring_set_format
             // 
@@ -1642,7 +1703,7 @@ namespace smpc_sales_system.Pages.Sales
             this.project_wiring_qty.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
             this.project_wiring_qty.DataPropertyName = "QTY";
             this.project_wiring_qty.FillWeight = 50F;
-            this.project_wiring_qty.HeaderText = "QTY";
+            this.project_wiring_qty.HeaderText = "";
             this.project_wiring_qty.MinimumWidth = 50;
             this.project_wiring_qty.Name = "project_wiring_qty";
             // 
@@ -1924,6 +1985,7 @@ namespace smpc_sales_system.Pages.Sales
         private System.Windows.Forms.DataGridViewTextBoxColumn Voltage;
         private System.Windows.Forms.DataGridViewTextBoxColumn final_item_id;
         private System.Windows.Forms.DataGridView dgv_size_up;
+        private System.Windows.Forms.DataGridViewTextBoxColumn size_up_id;
         private System.Windows.Forms.DataGridViewTextBoxColumn size_up_item_id;
         private System.Windows.Forms.DataGridViewTextBoxColumn size_up_model;
         private System.Windows.Forms.DataGridViewTextBoxColumn project_items_id;

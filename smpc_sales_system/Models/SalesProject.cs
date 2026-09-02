@@ -67,6 +67,7 @@ namespace smpc_sales_system.Models
         public int template_project_id { get; set; }
         public bool is_wiring { get; set; }
         public SalesProjectContentFinal []sales_project_content_final { get; set; }
+        public SalesProjectSizeUp []sales_project_size_up { get; set; }
     }
 
     public class SalesProjectContentFinal
@@ -76,6 +77,16 @@ namespace smpc_sales_system.Models
         public string final { get; set; }
         public decimal fla { get; set; }
         public decimal voltage { get; set; }
+    }
+
+    // Size Up - spec 5.1.4's list of candidate pumps that Final Selection is limited to.
+    // Had no model, no table and no save path at all before; the grid was in-session only.
+    public class SalesProjectSizeUp
+    {
+        public int id { get; set; }
+        public int sales_project_content_id { get; set; }
+        public int item_id { get; set; }
+        public string model { get; set; }
     }
 
 

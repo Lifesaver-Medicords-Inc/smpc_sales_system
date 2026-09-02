@@ -1243,7 +1243,7 @@ namespace smpc_app.Services.Helpers
             dgv.Paint += (s, e) => DrawGroupHeaders(dgv, e, columnGroups);
 
             // Override column header painting
-            dgv.CellPainting += (s, e) => DrawGroupedHeaderCells(dgv, e);
+            dgv.CellPainting += (s, e) => DrawGroupedHeaderCells(dgv, e, columnGroups);
         }
 
         private static void DrawGroupHeaders(DataGridView dgv, PaintEventArgs e, Dictionary<string, string[]> groups)
@@ -1271,17 +1271,39 @@ namespace smpc_app.Services.Helpers
 
                 e.Graphics.DrawRectangle(Pens.Gray, headerRect);
 
+                // WordBreak lets a long group label wrap to fit the width it spans, the
+                // same way an ordinary column header does when the grid's
+                // ColumnHeadersDefaultCellStyle has WrapMode = True (e.g. "ITEM INV TYPE"
+                // stacking to three lines in a 40px column). Without it the label was
+                // drawn on one line, so callers had to hard-code Environment.NewLine into
+                // the text to break it - which produced ragged leading spaces. Explicit
+                // newlines still break where they're given, so this is additive.
                 TextRenderer.DrawText(e.Graphics, groupName,
                     dgv.ColumnHeadersDefaultCellStyle.Font,
                     headerRect, Color.Black,
-                    TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
+                    TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter |
+                    TextFormatFlags.WordBreak);
             }
         }
 
-        private static void DrawGroupedHeaderCells(DataGridView dgv, DataGridViewCellPaintingEventArgs e)
+        private static void DrawGroupedHeaderCells(DataGridView dgv, DataGridViewCellPaintingEventArgs e, Dictionary<string, string[]> columnGroups)
         {
             if (e.RowIndex == -1 && e.ColumnIndex >= 0)
             {
+                // Only take over headers that actually sit under a group label. This used
+                // to repaint EVERY header in the grid, which meant ordinary columns were
+                // drawn single-line by the TextRenderer call below and e.Handled = true
+                // suppressed the grid's own rendering - so the header style's
+                // WrapMode = True never applied and long labels like
+                // "DISTANCE TRAVELLED / SET" were truncated rather than wrapped. Ungrouped
+                // columns are now left to the grid to paint normally, which wraps them.
+                string columnName = dgv.Columns[e.ColumnIndex].Name;
+                bool isGrouped = columnGroups != null &&
+                                 columnGroups.Values.Any(cols => cols != null && cols.Contains(columnName));
+
+                if (!isGrouped)
+                    return;
+
                 e.PaintBackground(e.CellBounds, true);
 
                 Rectangle fullRect = e.CellBounds;

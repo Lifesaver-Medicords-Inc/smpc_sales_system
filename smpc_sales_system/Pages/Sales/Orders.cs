@@ -761,8 +761,17 @@ namespace smpc_sales_app.Pages.Sales
                     TV1_preview.Visible = true;
                     TV2_preview.Visible = true;
                 }
-                CheckStatus();
             }
+
+            // Outside the documentNo branch on purpose. CheckStatus() used to run only when
+            // the screen was opened FOR a specific document (converting a quotation, or
+            // following a link) - opening Sales Order straight from the sidebar passes no
+            // documentNo, so it never ran and the buttons kept whatever the designer set.
+            // That was survivable while they defaulted to visible-but-disabled; now that
+            // the approve/cancel pair defaults to hidden so the access gate fails closed,
+            // never running this left them hidden even for a user who does hold the code.
+            CheckStatus();
+
             LoadDirectory(AFTERSALES_TV, AfterSalesPath);
             LoadDirectory(SALES_TV, SalesPath);
         }
@@ -821,11 +830,25 @@ namespace smpc_sales_app.Pages.Sales
                         return;
                     }
 
+                    // SO APPROVED BY (spec 5.4: "Approval strip shows `SO APPROVED BY:`
+                    // with the approver's name"). Approving only ever sent doc/order_id/
+                    // status, so approved_by and approved_by_id stayed empty on every order
+                    // ever activated - and txt_approved_by, which Helpers.BindControls
+                    // already maps to the approved_by column, therefore had nothing to show.
+                    // Stamped here rather than at save time because the approver is whoever
+                    // clicks this, which is not necessarily whoever created the order (the
+                    // strip is a Sales Manager / CBDO action).
+                    string approverName = CacheData.CurrentUser != null
+                        ? $"{CacheData.CurrentUser.first_name} {CacheData.CurrentUser.last_name}".Trim()
+                        : string.Empty;
+
                     var parentDataHeader = new Dictionary<string, dynamic>
                         {
                             { "doc", selectedOrder["doc"] },
                             {"order_id", selectedOrder["order_id"] },
-                            { "status", "ACTIVE" }
+                            { "status", "ACTIVE" },
+                            { "approved_by", approverName },
+                            { "approved_by_id", CacheData.CurrentUser != null ? CacheData.CurrentUser.id : 0 }
                         };
 
                         DataRow[] detailRows = DetailsList != null && DetailsList.Columns.Contains("based_id")
@@ -875,6 +898,12 @@ namespace smpc_sales_app.Pages.Sales
 
                                 if(response.Success)
                                 {
+                                    // Show the approver straight away. FetchSalesOrder below
+                                    // re-binds from the server and would fill this in anyway,
+                                    // but it is fire-and-forget here (not awaited), so without
+                                    // this the strip stays blank until the next real refresh.
+                                    txt_approved_by.Text = approverName;
+
                                     MessageBox.Show("Order status updated to ACTIVE.");
                                     FetchSalesOrder(false);
                                     CheckStatus();
@@ -1778,6 +1807,27 @@ namespace smpc_sales_app.Pages.Sales
         {
             txt_doc.Text = "SO#" + (OrderList.Rows.Count + 1).ToString("D4");
         }
+        // The tbl_position_access codes for the two restricted Sales Order actions. Must
+        // match the constants of the same name in the API's order_service.go and the rows
+        // in access_modules_seed.json - the seed is what puts them in the Access Control
+        // tree so they can be granted to Sales Manager / CBDO.
+        private const string OrderApproveAccessCode = "Sales - Order.Orders.Approve";
+        private const string OrderCancelAccessCode = "Sales - Order.Orders.Cancel Order";
+
+        // Whether the logged-in user's Position has been granted an access code.
+        //
+        // CurrentUser.position.access is populated from the login response; the API only
+        // started preloading Position.Access for this, so on an older API build the list
+        // comes back empty. That fails CLOSED - an ungranted user simply doesn't see the
+        // buttons, and the server would refuse the action anyway - rather than open.
+        private bool HasAccessCode(string code)
+        {
+            var access = CacheData.CurrentUser?.position?.access;
+            if (access == null) return false;
+
+            return access.Any(a => string.Equals(a?.code, code, StringComparison.OrdinalIgnoreCase));
+        }
+
         private void CheckStatus()
         {
             bool isStatusActive = txt_status.Text == "ACTIVE";
@@ -1787,8 +1837,24 @@ namespace smpc_sales_app.Pages.Sales
             // Was `!isStatusActive`, which permanently locked Check out once an order went
             // ACTIVE. Kept enabled while ACTIVE so it can be re-run to resync item-level
             // status (see btn_check_Click) if a prior approve ran before item details existed.
-            btn_check.Enabled = hasStatus && !isStatusCancelled;
-            btn_cancel.Enabled = hasStatus && !isStatusCancelled;
+            // Spec 3.3: "Approve / cancel a Sales Order - Sales Manager or CBDO only
+            // (check + cancel buttons HIDDEN from everyone else)". Hidden, not merely
+            // disabled - a greyed button still tells an ordinary sales user this is an
+            // action that exists for them. Driven off the granted access code rather than
+            // a position-name match, so who can approve stays a Position Access setup
+            // decision (same reasoning as the server-side gate in order_service.go).
+            //
+            // This is presentation only. The real gate is server-side: the update endpoint
+            // rejects an ACTIVE/CANCELLED status from a user without the code, so hiding
+            // the buttons cannot be worked around by calling the API directly.
+            bool canApprove = HasAccessCode(OrderApproveAccessCode);
+            bool canCancelOrder = HasAccessCode(OrderCancelAccessCode);
+
+            btn_check.Visible = canApprove;
+            btn_cancel.Visible = canCancelOrder;
+
+            btn_check.Enabled = canApprove && hasStatus && !isStatusCancelled;
+            btn_cancel.Enabled = canCancelOrder && hasStatus && !isStatusCancelled;
             // Delete is only for orders that haven't gone ACTIVE yet (cleaning up
             // mistakes/duplicates) - once ACTIVE, use Cancel instead. Not applicable
             // while still creating a brand-new order (nothing saved yet to delete).
@@ -1832,7 +1898,11 @@ namespace smpc_sales_app.Pages.Sales
             txt_receiver.ReadOnly = isStatusCancelled || !canEdit;
             txt_contact_no.ReadOnly = isStatusCancelled || !canEdit;
             txt_remarks.ReadOnly = isStatusCancelled || !canEdit;
-            txt_approved_by.ReadOnly = isStatusCancelled || !canEdit;
+            // Always read-only. This line used to be inert (the control was Enabled=false),
+            // and now that it is enabled so the approver's name is legible, letting edit mode
+            // flip it writable would allow someone to type over who actually approved the
+            // order. btn_check_Click is the only thing that sets it.
+            txt_approved_by.ReadOnly = true;
 
             foreach (DataGridViewColumn column in dgv_order_sales.Columns)
             {
@@ -2075,7 +2145,13 @@ namespace smpc_sales_app.Pages.Sales
                         // can re-insert the (dynamic, per-project) header row it belongs to -
                         // the header row itself is never saved (item_id = 0 rows are skipped
                         // above).
-                        data.Add("item_set_header", item["item_set_header_name"]?.ToString() ?? "");
+                        // Guarded the same way the re-save branch above is: a missing column
+                        // throws out of the whole foreach and aborts the save before a single
+                        // detail row is written, so one absent column silently costs the
+                        // entire order rather than just its header labels.
+                        data.Add("item_set_header", dataSource.Columns.Contains("item_set_header_name")
+                            ? (item["item_set_header_name"]?.ToString() ?? "")
+                            : "");
                     }
                     else
                     {
@@ -2276,15 +2352,22 @@ namespace smpc_sales_app.Pages.Sales
             btn_next.Visible = false;
         }
 
-        // txt_created_by is read-only (system-populated, not user-editable) but was never
-        // actually being set anywhere, so it stayed blank on every new order. Filling it in
-        // here (right after BindControlsForNewOrderORexisting resets pnl_header_2, and before
-        // bindQuotation/save) means it shows "Firstname Lastname" immediately in the UI and
-        // flows into the save payload as "created_by" the same way txt_created_by's
-        // sibling controls in pnl_header_2 do.
+        // SALES EXECUTIVE - the user who saved the order.
+        //
+        // The control used to be named txt_created_by, and Helpers.BindControls maps a
+        // control to a column by its name minus the "txt_" prefix - so it looked for a
+        // "created_by" column that does not exist on an order (the model and the table both
+        // call it sales_executive). Nothing matched, so opening a saved order left the field
+        // blank; only a brand-new order showed anything, because this method filled it in
+        // directly. Renamed to txt_sales_executive so the binding finds the real column.
+        //
+        // Only the new-order paths call this, never the existing-order one, so it cannot
+        // overwrite a loaded order's original executive with whoever opened it. On a resave
+        // the box already holds the loaded value, so it round-trips unchanged - which is what
+        // keeps RedBox's "only my own orders" filter pointing at the original creator.
         private void SetCreatedByToCurrentUser()
         {
-            txt_created_by.Text = $"{CacheData.CurrentUser.first_name} {CacheData.CurrentUser.last_name}";
+            txt_sales_executive.Text = $"{CacheData.CurrentUser.first_name} {CacheData.CurrentUser.last_name}";
         }
     }
 }

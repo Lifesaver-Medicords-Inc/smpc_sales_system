@@ -107,9 +107,17 @@ namespace smpc_sales_system.Services.Sales
         }
 
     
+        // RequestToApi.SendRequestAsync returns default(T) - null - whenever the call
+        // itself fails (it shows its own "Exception: ..." message box first), and also when
+        // the body comes back empty. Both of these dereferenced .Data straight off that
+        // result, so a single API blip turned into a NullReferenceException inside the
+        // service rather than a null the caller could handle. Quotation.fetchItemData
+        // already checks GetBom() for null; it just never got the chance.
         public static async Task<DataTable> GetAsDatatableBom()
         {
             var response = await RequestToApi<ApiResponseModel<List<ItemBomListModel.ItemBomList>>>.Get(url_bom);
+            if (response == null) return null;
+
             DataTable BomList = JsonHelper.ToDataTable(response.Data);
             return BomList;
         }
@@ -118,6 +126,8 @@ namespace smpc_sales_system.Services.Sales
         public static async Task<BomList> GetBom()
         {
             var response = await RequestToApi<ApiResponseModel<BomList>>.Get(url_bom);
+            if (response == null) return null;
+
             BomList bomData = response.Data;
             return bomData;
         }

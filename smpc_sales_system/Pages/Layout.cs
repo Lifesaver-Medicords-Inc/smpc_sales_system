@@ -213,6 +213,15 @@ namespace smpc_sales_app.Pages
             // wider than the available space is now pnl_content_capped's job (see
             // RecalculateContentWidth) rather than this TabPage's own AutoScroll, which
             // didn't reliably trigger.
+            // Pages can resize themselves after being added - Quotation, for one, sets
+            // its own Height to 950 for Quick Quote and 2354 for Project Quotation when
+            // you switch between them. Without watching for that, tabContainer keeps the
+            // height it was given for the shorter layout, the taller content is clipped,
+            // and pnl_content_capped never grows enough to show a scrollbar - so the
+            // bottom of Project Quotation simply can't be reached. Recalculating on the
+            // page's own SizeChanged covers any page that does this, not just Quotation.
+            control.SizeChanged += (s, e) => RecalculateContentWidth();
+
             newTab.Controls.Add(control);
             tabContainer.TabPages.Add(newTab);
             tabContainer.SelectTab(newTab);

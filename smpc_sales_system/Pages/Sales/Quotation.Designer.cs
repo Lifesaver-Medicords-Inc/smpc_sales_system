@@ -1477,7 +1477,11 @@
             // trailing blank row was always present too, so every picker-driven insert
             // still left that native placeholder sitting there as what read like a
             // second, empty row after the real one.
-            this.dgv_quick_quote_details.AllowUserToAddRows = false;
+            // Must stay true: the trailing new-row is the only entry point for adding a
+            // line - HandleItemSelectionClick opens the item picker from a click on that
+            // row's ITEM CODE cell (dgv_quick_quote_details_CellClick). Setting this false
+            // for the "extra blank cell" report removed the ability to add items at all.
+            this.dgv_quick_quote_details.AllowUserToAddRows = true;
             this.dgv_quick_quote_details.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dgv_quick_quote_details.Enabled = false;
             this.dgv_quick_quote_details.Location = new System.Drawing.Point(3, 3);

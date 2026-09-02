@@ -1,4 +1,4 @@
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using smpc_sales_app.Data;
 using smpc_sales_app.Pages.Sales;
 using smpc_sales_system;
@@ -41,76 +41,136 @@ namespace smpc_sales_app.Services.Helpers
 
         static CookieContainer cookieContainer = new CookieContainer();
 
-        // silent: true skips the MessageBox this method otherwise always pops on any
-        // exception (network error, timeout, etc.) - for a call that backs a purely
-        // informational/convenience UI element (e.g. the sales quotation grid's per-item
-        // stock indicator), a transient failure shouldn't interrupt the user with a raw
-        // exception dialog; the caller just gets default(T) back and falls back
-        // accordingly, same as it already does for a clean "no data" response.
-        static private async Task<T> SendRequestAsync(string url, HttpMethod method, string body = null, bool silent = false)
+        // Callers universally read response.Data straight off the result, so handing back
+        // null on failure turned every unreachable-API call into a NullReferenceException
+        // inside the service layer (ItemService.GetItem, ProjectService.GetBom, and 40-odd
+        // others all have the same shape). An empty envelope keeps .Data null - which every
+        // caller's existing "no data" path already handles - instead of crashing first.
+        private static T EmptyResponse()
         {
-            // Create an HttpClientHandler and assign the CookieContainer to it
-            HttpClientHandler handler = new HttpClientHandler
+            try
             {
-                CookieContainer = cookieContainer
-            };
-            using (HttpClient client = new HttpClient(handler))
+                return Activator.CreateInstance<T>();
+            }
+            catch
             {
-                try
-                {
-                    HttpContent content = null;
-                    // If no content is provided, create an empty StringContent with Content-Type set to "application/json"
-                    if (content == null && method != HttpMethod.Get)
-                    {
-                        content = new StringContent(body, Encoding.UTF8, "application/json");
-                    }
-                    // Create the HttpRequestMessage with the specified method (GET, POST, PUT, DELETE)
-                    var requestMessage = new HttpRequestMessage(method, baseUrl + url)
-                    {
-                        Content = content
-                    };
-                    if (CacheData.SessionToken != "")
-                    {
-                        client.DefaultRequestHeaders.Add("Authorization", CacheData.SessionToken);
-                    }
-                    // Perform the HTTP request asynchronously
-                    HttpResponseMessage response = await client.SendAsync(requestMessage);
-                    // Check if the response is successful
-                    if (response.IsSuccessStatusCode)
-                    {
-                        string responseContent = await response.Content.ReadAsStringAsync();
-                        if (string.IsNullOrEmpty(CacheData.SessionToken))
-                        {
-                            List<String> tokenResponseArr = response.Headers.GetValues("Set-Cookie").ToList();
-                            string token = ExtractToken(tokenResponseArr[0]);
-                            CacheData.SessionToken = token;
-                        }
-                        // Optionally, you can parse the responseContent into an object of type T
-                        T result = JsonConvert.DeserializeObject<T>(responseContent);
-                        // Display the response content (for debugging purposes)
-                        //MessageBox.Show(responseContent, "API Response");
-                        return result; // Return the parsed result
-                    }
-                    else
-                    {
-                        string responseContent = await response.Content.ReadAsStringAsync();
-                        // Optionally, you can parse the responseContent into an object of type T
-                        T result = JsonConvert.DeserializeObject<T>(responseContent);
-                        // Display the response content (for debugging purposes)
-                        //MessageBox.Show(responseContent, "API Response");
-                        return result; // Return the
-                    }
-                }
-                catch (Exception ex)
-                {
-                    if (!silent)
-                    {
-                        MessageBox.Show("Exception: " + ex.Message, "Error ");
-                    }
-                    return default(T);  // Return default value of T in case of exception
-                }
+                return default(T);
             }
         }
+
+        // silent: true skips the connection-error dialog this method otherwise shows once
+        // a request has exhausted its retries - for a call that backs a purely
+        // informational/convenience UI element (e.g. the sales quotation grid's per-item
+        // stock indicator), a transient failure shouldn't interrupt the user; the caller
+        // just gets an empty envelope back and falls back accordingly, same as it already
+        // does for a clean "no data" response. It is still counted as a failure, so the
+        // owning screen can still offer to reload.
+        static private async Task<T> SendRequestAsync(string url, HttpMethod method, string body = null, bool silent = false)
+        {
+            // Retries only ever apply to GET - see ApiConnection.IsRetryable for why a
+            // write is never replayed.
+            int maxAttempts = method == HttpMethod.Get ? ApiConnection.GetAttempts : 1;
+            Exception lastError = null;
+
+            for (int attempt = 1; attempt <= maxAttempts; attempt++)
+            {
+                // Both the handler and the client are rebuilt per attempt: an
+                // HttpRequestMessage cannot be re-sent, and a disposed client cannot be
+                // reused. The CookieContainer is a shared static, so the session survives.
+                HttpClientHandler handler = new HttpClientHandler
+                {
+                    CookieContainer = cookieContainer
+                };
+
+                using (HttpClient client = new HttpClient(handler))
+                {
+                    try
+                    {
+                        HttpContent content = null;
+                        if (method != HttpMethod.Get)
+                        {
+                            content = new StringContent(body, Encoding.UTF8, "application/json");
+                        }
+
+                        var requestMessage = new HttpRequestMessage(method, baseUrl + url)
+                        {
+                            Content = content
+                        };
+
+                        if (CacheData.SessionToken != "")
+                        {
+                            client.DefaultRequestHeaders.Add("Authorization", CacheData.SessionToken);
+                        }
+
+                        HttpResponseMessage response = await client.SendAsync(requestMessage);
+
+                        if (response.IsSuccessStatusCode)
+                        {
+                            string responseContent = await response.Content.ReadAsStringAsync();
+
+                            // Only the login endpoint issues a Set-Cookie; every other call
+                            // succeeds without one. HttpResponseHeaders.GetValues THROWS
+                            // ("The given header was not found") rather than returning null
+                            // when the header is absent, so any successful non-login response
+                            // arriving while the token is still empty - anything the login
+                            // screen itself fetches before sign-in - blew up here. TryGetValues
+                            // is the non-throwing form: capture the token when it's actually
+                            // present, otherwise carry on.
+                            if (string.IsNullOrEmpty(CacheData.SessionToken)
+                                && response.Headers.TryGetValues("Set-Cookie", out var setCookieValues))
+                            {
+                                List<String> tokenResponseArr = setCookieValues.ToList();
+                                if (tokenResponseArr.Count > 0)
+                                {
+                                    string token = ExtractToken(tokenResponseArr[0]);
+                                    CacheData.SessionToken = token;
+                                }
+                            }
+
+                            // An empty body deserializes to null without throwing, which is
+                            // the other way callers ended up dereferencing null - treat it
+                            // the same as a failure and hand back an empty envelope.
+                            T okResult = JsonConvert.DeserializeObject<T>(responseContent);
+                            return okResult ?? EmptyResponse();
+                        }
+                        else
+                        {
+                            // A status code is a real answer from the server, not a transport
+                            // failure - never retried, and not counted as a connection
+                            // failure. It still carries the API's own
+                            // {"Success":false,"message":...} envelope, which callers inspect.
+                            string responseContent = await response.Content.ReadAsStringAsync();
+                            T errResult = JsonConvert.DeserializeObject<T>(responseContent);
+                            return errResult ?? EmptyResponse();
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        lastError = ex;
+
+                        if (attempt < maxAttempts && ApiConnection.IsRetryable(method, ex))
+                        {
+                            await Task.Delay(ApiConnection.BackoffFor(attempt));
+                            continue;
+                        }
+
+                        break;
+                    }
+                }
+            }
+
+            // Out of attempts. Record it either way - a screen that suppressed the dialog
+            // still needs to know its data is incomplete.
+            ApiConnection.NoteFailure();
+
+            if (!silent && lastError != null)
+            {
+                ApiConnection.ShowError(url, lastError);
+            }
+
+            return EmptyResponse();
+        }
+
         //// POST Method
         static async Task<T> Post(string url, HttpContent data)
         {
