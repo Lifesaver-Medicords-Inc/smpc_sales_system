@@ -66,8 +66,10 @@ namespace smpc_sales_system.Pages.Sales
         // is always the bare number. Stripping both sides the same way before comparing
         // means lookups work for old and new records alike, without needing a database
         // migration to clean up the existing prefixed values.
+        // Delegates to the shared DocumentNo helper (fully qualified - this file uses the
+        // sibling smpc_sales_app.Services.Helpers namespace, so it can't rely on a short name).
         private static string NormalizeDocumentNo(string docNo) =>
-            string.IsNullOrEmpty(docNo) ? docNo : Regex.Replace(docNo, @"FQ#|Q#", "").Trim();
+            smpc_app.Services.Helpers.DocumentNo.Strip(docNo);
 
         //FETCHERS OF DATA METHODS
         private async Task fetchItemData()

@@ -211,7 +211,7 @@ namespace smpc_sales_system.Pages.Sales
                 {
                     ClientName = LookupBranchName(bpiGeneral, (int)order.customer_id),
                     ProjectName = string.IsNullOrWhiteSpace(order.project_name) ? "-" : order.project_name,
-                    DocumentNoDisplay = "SO#" + StripDocPrefix(order.doc),
+                    DocumentNoDisplay = smpc_app.Services.Helpers.DocumentNo.Apply(order.doc, "SO#"),
                     DocumentNoRaw = StripDocPrefix(order.doc),
                     IsOrder = true,
                     Status = needsProcurement ? "PREPARING" : "DISPATCHING",
@@ -245,7 +245,7 @@ namespace smpc_sales_system.Pages.Sales
                 {
                     ClientName = LookupBranchName(bpiGeneral, q.customer_id),
                     ProjectName = string.IsNullOrWhiteSpace(q.project_name) ? "-" : q.project_name,
-                    DocumentNoDisplay = docPrefix + StripDocPrefix(q.document_no),
+                    DocumentNoDisplay = smpc_app.Services.Helpers.DocumentNo.Apply(q.document_no, docPrefix),
                     DocumentNoRaw = StripDocPrefix(q.document_no),
                     IsOrder = false,
                     Status = q.is_finalized ? "QUOTED" : "BIDDING",
@@ -513,15 +513,10 @@ namespace smpc_sales_system.Pages.Sales
             return rows.Length > 0 ? rows[0]["branch_name"]?.ToString() : "Unknown";
         }
 
-        private static string StripDocPrefix(string doc)
-        {
-            if (string.IsNullOrEmpty(doc))
-                return doc;
-            if (doc.StartsWith("FQ#")) return doc.Substring(3);
-            if (doc.StartsWith("SO#")) return doc.Substring(3);
-            if (doc.StartsWith("Q#")) return doc.Substring(2);
-            return doc;
-        }
+        // Delegates to the shared DocumentNo helper (fully qualified - this file uses the
+        // sibling smpc_sales_app.Services.Helpers namespace, so it can't rely on a short name).
+        private static string StripDocPrefix(string doc) =>
+            smpc_app.Services.Helpers.DocumentNo.Strip(doc);
 
         private static string FormatMonthYear(string dateStr)
         {

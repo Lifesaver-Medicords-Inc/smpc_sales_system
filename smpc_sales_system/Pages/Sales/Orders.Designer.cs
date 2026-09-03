@@ -30,14 +30,14 @@ namespace smpc_sales_app.Pages.Sales
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle17 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle18 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle19 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle20 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle21 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle22 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle23 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle24 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle5 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle6 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle7 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle8 = new System.Windows.Forms.DataGridViewCellStyle();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Orders));
             this.quick_quotes = new System.Windows.Forms.BindingSource(this.components);
             this.dataSet1 = new System.Data.DataSet();
@@ -144,7 +144,6 @@ namespace smpc_sales_app.Pages.Sales
             this.discountpriceDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.notesDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.bomiddgv = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.item_set_header_name = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.itemiddgv = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.statusproject = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.bs_project_items = new System.Windows.Forms.BindingSource(this.components);
@@ -672,14 +671,14 @@ namespace smpc_sales_app.Pages.Sales
             this.dgv_order_sales.AllowUserToDeleteRows = false;
             this.dgv_order_sales.AutoGenerateColumns = false;
             this.dgv_order_sales.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
-            dataGridViewCellStyle17.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle17.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle17.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle17.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle17.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle17.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle17.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dgv_order_sales.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle17;
+            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dgv_order_sales.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
             this.dgv_order_sales.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dgv_order_sales.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.order_details_id,
@@ -722,8 +721,8 @@ namespace smpc_sales_app.Pages.Sales
             // number1
             // 
             this.number1.DataPropertyName = "numbering";
-            dataGridViewCellStyle18.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            this.number1.DefaultCellStyle = dataGridViewCellStyle18;
+            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            this.number1.DefaultCellStyle = dataGridViewCellStyle2;
             this.number1.FillWeight = 30.55143F;
             this.number1.HeaderText = "#";
             this.number1.Name = "number1";
@@ -842,8 +841,8 @@ namespace smpc_sales_app.Pages.Sales
             // unitprice
             // 
             this.unitprice.DataPropertyName = "list_price";
-            dataGridViewCellStyle19.Format = "c2";
-            this.unitprice.DefaultCellStyle = dataGridViewCellStyle19;
+            dataGridViewCellStyle3.Format = "c2";
+            this.unitprice.DefaultCellStyle = dataGridViewCellStyle3;
             this.unitprice.FillWeight = 98.33942F;
             this.unitprice.HeaderText = "LIST PRICE";
             this.unitprice.Name = "unitprice";
@@ -851,8 +850,8 @@ namespace smpc_sales_app.Pages.Sales
             // linetotal
             // 
             this.linetotal.DataPropertyName = "total_price";
-            dataGridViewCellStyle20.Format = "c2";
-            this.linetotal.DefaultCellStyle = dataGridViewCellStyle20;
+            dataGridViewCellStyle4.Format = "c2";
+            this.linetotal.DefaultCellStyle = dataGridViewCellStyle4;
             this.linetotal.FillWeight = 98.33942F;
             this.linetotal.HeaderText = "TOTAL PRICE";
             this.linetotal.Name = "linetotal";
@@ -877,14 +876,14 @@ namespace smpc_sales_app.Pages.Sales
             this.dgv_project.AllowUserToDeleteRows = false;
             this.dgv_project.AutoGenerateColumns = false;
             this.dgv_project.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
-            dataGridViewCellStyle21.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle21.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle21.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle21.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle21.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle21.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle21.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dgv_project.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle21;
+            dataGridViewCellStyle5.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle5.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle5.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle5.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle5.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle5.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle5.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dgv_project.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle5;
             this.dgv_project.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dgv_project.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.number,
@@ -905,8 +904,7 @@ namespace smpc_sales_app.Pages.Sales
             this.notesDataGridViewTextBoxColumn,
             this.bomiddgv,
             this.itemiddgv,
-            this.statusproject,
-            this.item_set_header_name});
+            this.statusproject});
             this.dgv_project.DataSource = this.bs_project_items;
             this.dgv_project.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dgv_project.Location = new System.Drawing.Point(0, 0);
@@ -918,8 +916,8 @@ namespace smpc_sales_app.Pages.Sales
             // number
             // 
             this.number.DataPropertyName = "number";
-            dataGridViewCellStyle22.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            this.number.DefaultCellStyle = dataGridViewCellStyle22;
+            dataGridViewCellStyle6.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            this.number.DefaultCellStyle = dataGridViewCellStyle6;
             this.number.FillWeight = 26.5718F;
             this.number.HeaderText = "#";
             this.number.Name = "number";
@@ -969,9 +967,9 @@ namespace smpc_sales_app.Pages.Sales
             // listpriceproject
             // 
             this.listpriceproject.DataPropertyName = "list_price_per_unit";
-            dataGridViewCellStyle23.Format = "C2";
-            dataGridViewCellStyle23.NullValue = null;
-            this.listpriceproject.DefaultCellStyle = dataGridViewCellStyle23;
+            dataGridViewCellStyle7.Format = "C2";
+            dataGridViewCellStyle7.NullValue = null;
+            this.listpriceproject.DefaultCellStyle = dataGridViewCellStyle7;
             this.listpriceproject.FillWeight = 100.1291F;
             this.listpriceproject.HeaderText = "LIST PRICE";
             this.listpriceproject.Name = "listpriceproject";
@@ -979,8 +977,8 @@ namespace smpc_sales_app.Pages.Sales
             // componenttotalproject
             // 
             this.componenttotalproject.DataPropertyName = "component_total";
-            dataGridViewCellStyle24.Format = "C2";
-            this.componenttotalproject.DefaultCellStyle = dataGridViewCellStyle24;
+            dataGridViewCellStyle8.Format = "C2";
+            this.componenttotalproject.DefaultCellStyle = dataGridViewCellStyle8;
             this.componenttotalproject.FillWeight = 100.1291F;
             this.componenttotalproject.HeaderText = "TOTAL PRICE";
             this.componenttotalproject.Name = "componenttotalproject";
@@ -1048,23 +1046,6 @@ namespace smpc_sales_app.Pages.Sales
             this.bomiddgv.HeaderText = "bom_id";
             this.bomiddgv.Name = "bomiddgv";
             this.bomiddgv.Visible = false;
-            // 
-            // item_set_header_name
-            // 
-            // Hidden, and carried purely so the value survives the save. bindProject writes
-            // the itemset's tab name onto every real item row under it, but
-            // Helpers.ConvertDataGridViewToDataTable builds its table from the grid's
-            // COLUMNS, not from the bound DataSource - so with no column here the value
-            // never reached SaveSalesOrder, and reading item["item_set_header_name"] threw
-            // "Column 'item_set_header_name' does not belong to table" on every save of a
-            // project-sourced order. Every other layer of this pipeline already exists
-            // (OrderDetailsModel.item_set_header, the API's ItemSetHeader, the
-            // tbl_trans_sales_order_details column, and SalesPrintModal's header
-            // reconstruction) - this column was the only missing link.
-            this.item_set_header_name.DataPropertyName = "item_set_header_name";
-            this.item_set_header_name.HeaderText = "item_set_header_name";
-            this.item_set_header_name.Name = "item_set_header_name";
-            this.item_set_header_name.Visible = false;
             // 
             // itemiddgv
             // 
@@ -1815,11 +1796,6 @@ namespace smpc_sales_app.Pages.Sales
             // 
             this.btn_cancel.BackColor = System.Drawing.Color.Red;
             this.btn_cancel.Enabled = false;
-            // Hidden by default so the restricted-action gate fails CLOSED:
-            // CheckStatus() reveals this only for a user whose Position holds the
-            // access code (spec 3.3). Defaulting to visible would flash it to
-            // everyone on any path that renders before CheckStatus runs.
-            this.btn_cancel.Visible = false;
             this.btn_cancel.FlatAppearance.BorderColor = System.Drawing.Color.White;
             this.btn_cancel.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
             this.btn_cancel.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(255)))), ((int)(((byte)(128)))));
@@ -1833,6 +1809,7 @@ namespace smpc_sales_app.Pages.Sales
             this.btn_cancel.TabIndex = 172;
             this.btn_cancel.Text = "CANCEL";
             this.btn_cancel.UseVisualStyleBackColor = false;
+            this.btn_cancel.Visible = false;
             this.btn_cancel.Click += new System.EventHandler(this.btn_cancel_Click);
             // 
             // txt_vat_amount
@@ -1849,17 +1826,13 @@ namespace smpc_sales_app.Pages.Sales
             this.btn_check.BackgroundImage = global::smpc_sales_system.Properties.Resources.check;
             this.btn_check.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
             this.btn_check.Enabled = false;
-            // Hidden by default so the restricted-action gate fails CLOSED:
-            // CheckStatus() reveals this only for a user whose Position holds the
-            // access code (spec 3.3). Defaulting to visible would flash it to
-            // everyone on any path that renders before CheckStatus runs.
-            this.btn_check.Visible = false;
             this.btn_check.ImeMode = System.Windows.Forms.ImeMode.NoControl;
             this.btn_check.Location = new System.Drawing.Point(466, 99);
             this.btn_check.Name = "btn_check";
             this.btn_check.Size = new System.Drawing.Size(80, 23);
             this.btn_check.TabIndex = 165;
             this.btn_check.UseVisualStyleBackColor = true;
+            this.btn_check.Visible = false;
             this.btn_check.Click += new System.EventHandler(this.btn_check_Click);
             // 
             // label19
@@ -1874,13 +1847,9 @@ namespace smpc_sales_app.Pages.Sales
             // 
             // txt_approved_by
             // 
-            // Read-only rather than disabled: this is stamped by btn_check_Click, never
-            // typed, so it was correctly non-interactive - but a disabled TextBox greys its
-            // text out, which is a poor way to show the one thing the approval strip exists
-            // to display (spec 5.4). ReadOnly keeps it just as untypeable and legible.
-            this.txt_approved_by.ReadOnly = true;
             this.txt_approved_by.Location = new System.Drawing.Point(270, 100);
             this.txt_approved_by.Name = "txt_approved_by";
+            this.txt_approved_by.ReadOnly = true;
             this.txt_approved_by.Size = new System.Drawing.Size(157, 20);
             this.txt_approved_by.TabIndex = 171;
             // 

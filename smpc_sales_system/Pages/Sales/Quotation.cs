@@ -1569,47 +1569,23 @@ namespace smpc_sales_app.Pages.Sales
         }
 
         // For creating new quotation or version
+        // The document number for a brand-new quote is now assigned by the SERVER on save,
+        // not here (assignNewQuotationDocNo, ERP_API). It has to be: quick and project quotes
+        // share ONE document_no sequence, but each screen only loads its own half, so the old
+        // client-side "max across both tables" computed a number from a partial list and
+        // collided with the other kind (a new Quick Quote landing on Q#0003 when Q#0003 was
+        // already a project quote). The real number is unknown until the save returns and the
+        // list reloads, so show a placeholder rather than a concrete number that will change.
+        // A New Version keeps its real number (bind() sets it; this method isn't called there).
+        // A dash, not "Q#0005" - the real number is assigned by the server on save (it owns
+        // the shared quick+project sequence), so showing a concrete number here would be a
+        // guess that changes after saving. "-" reads as "none yet"; the real number appears
+        // once the save returns and the list reloads.
+        private const string PendingDocNoPlaceholder = "-";
+
         private void DocumentIncrementer()
         {
-            string docNum;
-            int maxDocNum = 0;
-
-            // Check BOTH DataTables to find the global maximum document number
-            foreach (DataTable table in new[] { transactionList, transactionProjectDataTable })
-            {
-                if (table.Rows.Count > 0)
-                {
-                    foreach (DataRow row in table.Rows)
-                    {
-                        if (row["document_no"] != DBNull.Value && !string.IsNullOrEmpty(row["document_no"].ToString()))
-                        {
-                            if (int.TryParse(row["document_no"].ToString(), out int documentNumber))
-                            {
-                                if (documentNumber > maxDocNum)
-                                {
-                                    maxDocNum = documentNumber;
-                                }
-                            }
-                            else
-                            {
-                                string digitsOnly = new string(row["document_no"].ToString().Where(char.IsDigit).ToArray());
-
-                                if (!string.IsNullOrEmpty(digitsOnly) && int.TryParse(digitsOnly, out int extractedNumber))
-                                {
-                                    if (extractedNumber > maxDocNum)
-                                    {
-                                        maxDocNum = extractedNumber;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            // Increment the max number found across both tables
-            docNum = (maxDocNum + 1).ToString().PadLeft(4, '0');
-            txt_document_no.Text = "Q#" + docNum;
+            txt_document_no.Text = PendingDocNoPlaceholder;
         }
 
         private void btn_save_Click(object sender, EventArgs e)
@@ -3330,6 +3306,16 @@ namespace smpc_sales_app.Pages.Sales
 
                         if (isSuccess.Success)
                         {
+                            // The server assigns the real document number now (it owns the
+                            // shared quick+project sequence), so txt_document_no held only the
+                            // "(assigned on save)" placeholder. Read the number the server
+                            // actually saved from the response and use THAT for the reservation
+                            // migration below, which matches on document_no - the placeholder
+                            // would never match the real record.
+                            string serverDocNo = ExtractSavedDocumentNo(isSuccess.Data);
+                            if (!string.IsNullOrEmpty(serverDocNo))
+                                savedDocumentNo = serverDocNo;
+
                             //// this should await a response in the future if the response is success proceed to create if not notify the user
                             Helpers.ResetControls(pnl_header);
                             //Helpers.ResetControls(pnl_footer);
@@ -5539,6 +5525,15 @@ namespace smpc_sales_app.Pages.Sales
                 btn_new_version.Visible = !isFinalized;
                 btn_duplicate.Visible = !isFinalized;
 
+                // REQUEST FOR ENGR. hands a saved quote to an engineer (spec §5.1, §3.3).
+                // Same lifecycle as New Version: shown only for a saved, not-yet-finalized
+                // record. This button was hard-hidden in the designer and never re-shown,
+                // which is why no quote ever reached the engineering Sales Quotation List
+                // (the engineering view filters on is_requested_for_engr, set only by this
+                // button's POST). Finalized quotes are immutable, so there is nothing for an
+                // engineer to edit - hence !isFinalized, matching btn_edit/btn_new_version.
+                btn_request_for_engr.Visible = !isFinalized;
+
                 btn_edit.Visible = !isFinalized;
                 btn_add_customer.Visible = !isFinalized;
 
@@ -5549,17 +5544,11 @@ namespace smpc_sales_app.Pages.Sales
                     {
                         if (control is TextBox textBox && textBox.Name.Contains("txt_document_no"))
                         {
-                            string docNo = textBox.Text;
-
-                            if (!docNo.StartsWith("Q#") && !docNo.StartsWith("FQ#"))
-                            {
-                                textBox.Text = isFinalized ? $"FQ#{docNo}" : $"Q#{docNo}";
-                            }
-                            else if (docNo.StartsWith("Q#") && isFinalized)
-                            {
-                                // Replace "Q#" with "FQ#"
-                                textBox.Text = "FQ#" + docNo.Substring(2);
-                            }
+                            // Exactly one prefix, chosen by finalized state. Apply strips any
+                            // existing prefix first, so this can never double, and the old
+                            // hand-written "Q#" -> "FQ#" swap is now inherent: a finalized
+                            // record shows FQ#, a draft shows Q#.
+                            textBox.Text = DocumentNo.Apply(textBox.Text, isFinalized ? "FQ#" : "Q#");
                         }
                     }
                 }
@@ -5828,6 +5817,16 @@ namespace smpc_sales_app.Pages.Sales
 
                 txt_project_name.Clear();
                 txt_project_name.ReadOnly = false;
+
+                // Stamp the creator, exactly as the Quick Quote branch above does. Without
+                // this, a new PROJECT quote saved created_by empty (the box was blanked by
+                // ResetControls at the top of this handler and the project branch never
+                // refilled it) - and FilterToCurrentUserQuotations treats an empty created_by
+                // as "belongs to nobody", so it fails OPEN and shows the quote to every sales
+                // user. Spec §3.3: a sales exec sees only their own quotations. This is what
+                // makes the Search / Project List modal filter actually apply to project
+                // quotes, the same way it already does for quick quotes.
+                txt_created_by.Text = CacheData.CurrentUser.first_name + " " + CacheData.CurrentUser.last_name;
 
                 this.tabControl2.Controls.Clear();
                 MessageBox.Show("No project data found. Creating a new entry.", "Empty Data", MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -6359,6 +6358,18 @@ namespace smpc_sales_app.Pages.Sales
         // transactionList/transactionProjectDataTable themselves stay untouched - other
         // logic in this file (document numbering, version lookups, save/edit) still needs
         // the full, unfiltered data to keep working correctly.
+        // Pulls document_no out of an Insert response. The create endpoint echoes back the
+        // saved record with the server-assigned number, but ApiResponseModel.Data is dynamic
+        // (Newtonsoft hands it back as a JObject), so read it defensively and return null if
+        // the shape isn't what we expect rather than throwing.
+        private static string ExtractSavedDocumentNo(object data)
+        {
+            if (data is Newtonsoft.Json.Linq.JObject obj)
+                return obj["document_no"]?.ToString();
+
+            return null;
+        }
+
         private DataTable FilterToCurrentUserQuotations(DataTable source)
         {
             DataTable filtered = source.Clone();
@@ -6933,7 +6944,7 @@ namespace smpc_sales_app.Pages.Sales
                 // before re-adding "FQ#", so re-finalizing an already-finalized project doesn't
                 // produce a never-before-seen "FQ#FQ#..." string that slips past the duplicate
                 // check right below.
-                string tempDocNo = "FQ#" + NormalizeDocumentNo(documentNo);
+                string tempDocNo = DocumentNo.Apply(documentNo, "FQ#");
                 pnl_quotation["document_no"] = tempDocNo;
             }
             else
@@ -7141,7 +7152,7 @@ namespace smpc_sales_app.Pages.Sales
                         // below never caught it and happily inserted another "finalized" copy.
                         // NormalizeDocumentNo strips both prefixes, so the bare number always
                         // gets exactly one "FQ#" regardless of what was already stored.
-                        string tempDocNo = "FQ#" + NormalizeDocumentNo(documentNo);
+                        string tempDocNo = DocumentNo.Apply(documentNo, "FQ#");
 
                         parentData["document_no"] = tempDocNo;
                     }
@@ -7245,7 +7256,7 @@ namespace smpc_sales_app.Pages.Sales
         }
         private void btn_print_Click(object sender, EventArgs e)
         {
-            string documentNo = Regex.Replace(txt_document_no.Text, @"FQ#|Q#", "").Trim();
+            string documentNo = DocumentNo.Strip(txt_document_no.Text);
             if (isProject)
             {
                 // Project Quotation has its own Inclusions/Exclusions/Terms rich text boxes
@@ -7275,8 +7286,10 @@ namespace smpc_sales_app.Pages.Sales
         // lookups below is always the bare number. Stripping both sides the same way before
         // comparing means lookups work for old and new records alike, without needing a
         // database migration to clean up the existing prefixed values.
-        private static string NormalizeDocumentNo(string docNo) =>
-            string.IsNullOrEmpty(docNo) ? docNo : Regex.Replace(docNo, @"FQ#|Q#", "").Trim();
+        // Delegates to the shared DocumentNo helper so quote/order prefix handling can't
+        // drift apart again. Kept as a thin wrapper rather than replacing every call site, so
+        // this stays a one-line change with the existing callers untouched.
+        private static string NormalizeDocumentNo(string docNo) => DocumentNo.Strip(docNo);
 
         // version_no/sub_version_no are stored as strings but represent integers -
         // OrderByDescending(q => q.version_no) sorts them lexicographically ("9" > "10"), so
@@ -7686,6 +7699,10 @@ namespace smpc_sales_app.Pages.Sales
             btn_new.Visible = !isTrue;
             btn_duplicate.Visible = !isTrue;
             btn_new_version.Visible = !isTrue;
+            // Hidden while creating a brand-new (unsaved) quote - REQUEST FOR ENGR. requires
+            // a saved record (its handler blocks otherwise). bind() re-shows it for a loaded,
+            // non-finalized record.
+            btn_request_for_engr.Visible = !isTrue;
             btn_search.Visible = !isTrue;
             btn_prev.Visible = !isTrue;
             btn_next.Visible = !isTrue;
@@ -7841,6 +7858,15 @@ namespace smpc_sales_app.Pages.Sales
 
         private void UpdateTextDescription()
         {
+            // btn_close_Click sets IsView = true, THEN calls Helpers.ResetControls(panels) -
+            // a blind textBox.Text = "" over every textbox in pnl_header/pnl_footer, which
+            // includes txt_short_description. If it held text, clearing it fires this same
+            // TextChanged handler as a side effect of closing the form, not of the user
+            // editing the row. There is nothing to write back to the grid while merely
+            // returning to view mode, so bail out first - same guard already used elsewhere
+            // in this file (e.g. the dgv_quick_quote_details cell-click gates, ~L3501-3533).
+            if (IsView) return;
+
             // SelectedRowIndex defaults to 0 and is reset to 0 on New/reload, so on an
             // empty grid this is Rows[0] against zero rows. TextChanged also fires when
             // the form is cleared programmatically, not just on user typing - which is
@@ -7849,7 +7875,21 @@ namespace smpc_sales_app.Pages.Sales
             if (SelectedRowIndex < 0 || SelectedRowIndex >= dgv_quick_quote_details.Rows.Count)
                 return;
 
-            dgv_quick_quote_details.Rows[SelectedRowIndex].Cells["short_description"].Value = txt_short_description.Text;
+            // Belt-and-braces: the count check above is what actually threw in production
+            // (System.ArgumentOutOfRangeException inside DataGridViewRowCollection.SharedRow,
+            // called from this indexer) - a WinForms-internal inconsistency right after the
+            // grid's DataSource is rebound (LoadExistingRecord, just before ResetControls
+            // runs), which a plain Rows.Count comparison can't see coming. The IsView guard
+            // above is the real fix for THIS crash; this catch is defense against the same
+            // framework quirk recurring from some other, not-yet-hit call path.
+            try
+            {
+                dgv_quick_quote_details.Rows[SelectedRowIndex].Cells["short_description"].Value = txt_short_description.Text;
+            }
+            catch (ArgumentOutOfRangeException ex)
+            {
+                Serilog.Log.Warning(ex, "UpdateTextDescription: grid row collection was in a transient inconsistent state (SelectedRowIndex={SelectedRowIndex}, Rows.Count={RowCount})", SelectedRowIndex, dgv_quick_quote_details.Rows.Count);
+            }
         }
 
         // ComputeDgvHierarchy() deleted: dead code (never called from any wired
@@ -7983,8 +8023,19 @@ namespace smpc_sales_app.Pages.Sales
             if (SelectedRowIndex < 0 || SelectedRowIndex >= dgv_quick_quote_details.Rows.Count)
                 return;
 
-            string id = dgv_quick_quote_details.Rows[SelectedRowIndex].Cells[5].Value?.ToString() ?? "";
-            HandleCanvasSelectionClick(SelectedRowIndex, id);
+            // Same defense as UpdateTextDescription's try/catch: Rows.Count passing the
+            // check above does not guarantee Rows[index] itself won't throw
+            // (System.ArgumentOutOfRangeException inside DataGridViewRowCollection.SharedRow) -
+            // a WinForms-internal race right after the grid's DataSource is rebound.
+            try
+            {
+                string id = dgv_quick_quote_details.Rows[SelectedRowIndex].Cells[5].Value?.ToString() ?? "";
+                HandleCanvasSelectionClick(SelectedRowIndex, id);
+            }
+            catch (ArgumentOutOfRangeException ex)
+            {
+                Serilog.Log.Warning(ex, "canvasToolStripMenuItem_Click: grid row collection was in a transient inconsistent state (SelectedRowIndex={SelectedRowIndex}, Rows.Count={RowCount})", SelectedRowIndex, dgv_quick_quote_details.Rows.Count);
+            }
         }
 
         private void quotationTerms()
@@ -8396,7 +8447,7 @@ namespace smpc_sales_app.Pages.Sales
         }
         private void printShow()
         {
-            string documentNo = Regex.Replace(txt_document_no.Text, @"FQ#|Q#", "").Trim();
+            string documentNo = DocumentNo.Strip(txt_document_no.Text);
             if (isProject)
             {
                 // Same fix as btn_print_Click - use the Project Quotation's own

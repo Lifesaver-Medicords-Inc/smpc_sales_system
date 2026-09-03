@@ -123,7 +123,10 @@ namespace smpc_sales_app.Services.Helpers
                                 if (tokenResponseArr.Count > 0)
                                 {
                                     string token = ExtractToken(tokenResponseArr[0]);
-                                    CacheData.SessionToken = token;
+                                    if (!string.IsNullOrEmpty(token))
+                                    {
+                                        CacheData.SessionToken = token;
+                                    }
                                 }
                             }
 
@@ -227,20 +230,28 @@ namespace smpc_sales_app.Services.Helpers
             string jsonContent = JsonConvert.SerializeObject(data);
             return await SendRequestAsync(url, HttpMethod.Delete, jsonContent);
         }
+        // Returns null when the cookie carries no Authorization value, rather than throwing.
+        // This computed the Substring BEFORE testing tokenEndIndex for -1, so a Set-Cookie
+        // with no trailing semicolon threw ArgumentOutOfRangeException on the line above the
+        // check meant to handle exactly that case; and a cookie with no "Authorization=" at
+        // all left IndexOf at -1, putting the start index at 13 and slicing from the middle
+        // of whatever was there. Both surfaced as a bare exception dialog at login.
+        // Matches the same helper in the inventory, accounting and engineering apps.
         private static string ExtractToken(string cookieString)
         {
-            // Find the starting index of the token (after 'Authorization=')
-            int tokenStartIndex = cookieString.IndexOf("Authorization=") + "Authorization=".Length;
-            // Find the ending index of the token (before the first semicolon)
+            if (string.IsNullOrEmpty(cookieString)) return null;
+
+            const string marker = "Authorization=";
+            int markerIndex = cookieString.IndexOf(marker);
+            if (markerIndex < 0) return null;
+
+            int tokenStartIndex = markerIndex + marker.Length;
             int tokenEndIndex = cookieString.IndexOf(";", tokenStartIndex);
-            // Extract the token
-            string token = cookieString.Substring(tokenStartIndex, tokenEndIndex - tokenStartIndex);
-            // If the semicolon is not found (for example, if there is no expiry info), extract until the end of the string
-            if (tokenEndIndex == -1)
-            {
-                token = cookieString.Substring(tokenStartIndex);
-            }
-            return token;
+
+            // No semicolon means there is no expiry info after it - take the rest.
+            return tokenEndIndex < 0
+                ? cookieString.Substring(tokenStartIndex)
+                : cookieString.Substring(tokenStartIndex, tokenEndIndex - tokenStartIndex);
         }
     }
 }

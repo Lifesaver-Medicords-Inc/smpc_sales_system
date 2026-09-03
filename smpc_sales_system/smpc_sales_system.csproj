@@ -26,7 +26,8 @@
     <UpdatePeriodically>false</UpdatePeriodically>
     <UpdateRequired>false</UpdateRequired>
     <MapFileExtensions>true</MapFileExtensions>
-    <ApplicationRevision>1000</ApplicationRevision>
+    <UpdateUrl>http://localhost/smpc_sales_system/</UpdateUrl>
+    <ApplicationRevision>1002</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
@@ -533,6 +534,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Services\Auth\AuthServices.cs" />
     <Compile Include="Services\Helpers\ApiResponseModel.cs" />
+    <Compile Include="Services\Helpers\DocumentNo.cs" />
     <Compile Include="Services\Helpers\Helpers.cs" />
     <Compile Include="Services\Helpers\JsonHelper.cs" />
     <Compile Include="Services\Helpers\ApiConnection.cs" />

@@ -21,7 +21,7 @@ namespace smpc_sales_system.Pages
             InitializeComponent();
             this.DT = data;
             this.documentNum = doc_no;
-            label1.Text = "Versions for " + "Q#" +doc_no;
+            label1.Text = "Versions for " + smpc_app.Services.Helpers.DocumentNo.Apply(doc_no, "Q#");
         }
 
         private void dataGridView1_CellClick(object sender, DataGridViewCellEventArgs e)

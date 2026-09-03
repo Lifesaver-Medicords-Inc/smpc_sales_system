@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
 using smpc_sales_system.Services.Sales.Models;
@@ -27,7 +27,7 @@ namespace smpc_sales_app.Pages.Sales.Modal
                 int rowIndex = dgv_invoices.Rows.Add();
                 var row = dgv_invoices.Rows[rowIndex];
                 row.Cells["col_id"].Value = inv.id;
-                row.Cells["col_doc_no"].Value = "SI#" + inv.doc_no;
+                row.Cells["col_doc_no"].Value = smpc_app.Services.Helpers.DocumentNo.Apply(inv.doc_no.ToString(), "SI#");
                 row.Cells["col_customer"].Value = inv.customer;
                 row.Cells["col_doc_date"].Value = inv.doc_date;
                 row.Cells["col_so"].Value = inv.reference_doc_so;

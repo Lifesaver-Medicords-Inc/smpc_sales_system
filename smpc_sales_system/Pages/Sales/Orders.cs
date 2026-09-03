@@ -804,8 +804,8 @@ namespace smpc_sales_app.Pages.Sales
             {
                 string docIdValue = ((TextBox)pnl_header_2.Controls["txt_doc"]).Text;
                 string docnoValue = ((TextBox)pnl_header_2.Controls["txt_document_no"]).Text;
-                docIdValue = docIdValue.StartsWith("SO#") ? docIdValue.Substring(3) : docIdValue;
-                docnoValue = docnoValue.StartsWith("FQ#") ? docnoValue.Substring(3) : docnoValue;
+                docIdValue = DocumentNo.Strip(docIdValue);
+                docnoValue = DocumentNo.Strip(docnoValue);
 
                 if (int.TryParse(docIdValue, out int selectedDoc) && selectedDoc > 0)
                 {
@@ -936,8 +936,8 @@ namespace smpc_sales_app.Pages.Sales
             {
                 string docIdValue = ((TextBox)pnl_header_2.Controls["txt_doc"]).Text;
                 string docnoValue = ((TextBox)pnl_header_2.Controls["txt_document_no"]).Text;
-                docIdValue = docIdValue.StartsWith("SO#") ? docIdValue.Substring(3) : docIdValue;
-                docnoValue = docnoValue.StartsWith("FQ#") ? docnoValue.Substring(3) : docnoValue;
+                docIdValue = DocumentNo.Strip(docIdValue);
+                docnoValue = DocumentNo.Strip(docnoValue);
 
                 if (int.TryParse(docIdValue, out int selectedDoc) && selectedDoc > 0)
                 {
@@ -980,7 +980,7 @@ namespace smpc_sales_app.Pages.Sales
             try
             {
                 string docIdValue = ((TextBox)pnl_header_2.Controls["txt_doc"]).Text;
-                docIdValue = docIdValue.StartsWith("SO#") ? docIdValue.Substring(3) : docIdValue;
+                docIdValue = DocumentNo.Strip(docIdValue);
 
                 if (!int.TryParse(docIdValue, out int selectedDoc) || selectedDoc <= 0)
                 {
@@ -1080,8 +1080,7 @@ namespace smpc_sales_app.Pages.Sales
         }
         private void btn_print_Click(object sender, EventArgs e)
         {
-            string documentNo = txt_doc.Text.Trim();
-            documentNo = documentNo.Replace("SO#", "").Trim();
+            string documentNo = DocumentNo.Strip(txt_doc.Text);
             SalesPrintModal printPage = new SalesPrintModal(false, false, documentNo);
             int screenHeight = Screen.PrimaryScreen.Bounds.Height;
             printPage.Height = (int)(screenHeight);
@@ -1737,30 +1736,31 @@ namespace smpc_sales_app.Pages.Sales
             {
                 foreach (Control control in pnl.Controls)
                 {
-                    if (control is TextBox textBox && textBox.Name.Contains("txt_document_no"))
+                    if (!(control is TextBox textBox)) continue;
+
+                    // Exact names, not Contains: "txt_doc" is a substring of "txt_document_no",
+                    // so the old code fired several Contains blocks on the same control that
+                    // only happened to net out. DocumentNo.Apply strips any existing prefix
+                    // before adding one, so re-decoration is idempotent and can never produce
+                    // the doubled "FQ#Q#..." / "SO#FQ#...". Only these two controls exist.
+                    if (textBox.Name == "txt_document_no")
                     {
-                        if (!textBox.Text.StartsWith("FQ#"))
-                        {
-                            textBox.Text = "FQ#" + textBox.Text;
-                        }
+                        // The finalized-quote reference this SO was created from.
+                        textBox.Text = DocumentNo.Apply(textBox.Text, "FQ#");
                     }
-                    if (control is TextBox textBox2 && textBox2.Name.Contains("txt_doc"))
+                    else if (textBox.Name == "txt_doc")
                     {
-                        if (!textBox2.Text.StartsWith("SO#"))
-                        {
-                            textBox2.Text = "SO#" + textBox2.Text;
-                        }
-                    }
-                    if (control is TextBox textBox3 && textBox3.Name.Contains("txt_document_no"))
-                    {
-                        if (textBox3.Text.StartsWith("SO#"))
-                        {
-                            textBox3.Text = textBox3.Text.Substring(3);
-                        }
+                        // The SO's own number.
+                        textBox.Text = DocumentNo.Apply(textBox.Text, "SO#");
                     }
                 }
             }
         }
+        // Delegates to the shared DocumentNo helper, which also collapses doubled prefixes
+        // (e.g. "FQ#Q#0007" -> "0007") rather than stripping only one. Kept as a thin wrapper
+        // so existing call sites are untouched.
+        private static string StripDocPrefix(string value) => DocumentNo.Strip(value);
+
         private Dictionary<string, dynamic> MergeDictionaries(params Dictionary<string, dynamic>[] dictionaries)
         {
             var mergedDict = new Dictionary<string, dynamic>();
@@ -1805,7 +1805,7 @@ namespace smpc_sales_app.Pages.Sales
         }
         private void SOIncrementer()
         {
-            txt_doc.Text = "SO#" + (OrderList.Rows.Count + 1).ToString("D4");
+            txt_doc.Text = DocumentNo.Apply((OrderList.Rows.Count + 1).ToString("D4"), "SO#");
         }
         // The tbl_position_access codes for the two restricted Sales Order actions. Must
         // match the constants of the same name in the API's order_service.go and the rows
@@ -1904,6 +1904,12 @@ namespace smpc_sales_app.Pages.Sales
             // order. btn_check_Click is the only thing that sets it.
             txt_approved_by.ReadOnly = true;
 
+            // Same rule for SALES EXECUTIVE: it is the user who saved the order, stamped by
+            // SetCreatedByToCurrentUser, not something the user types. It sits on pnl_header_2,
+            // which ResetReadOnlyControls above unlocks wholesale in edit mode - so without
+            // this it became typeable on Edit. Pin it read-only in every state.
+            txt_sales_executive.ReadOnly = true;
+
             foreach (DataGridViewColumn column in dgv_order_sales.Columns)
             {
                 column.ReadOnly = isStatusCancelled || !canEdit;
@@ -1953,7 +1959,7 @@ namespace smpc_sales_app.Pages.Sales
             // reopens or rewrites that order - Orders.cs has no path that unlocks a
             // CLOSED order for editing, so viewing it this way is inherently safe.
             Orders ordersPage = new Orders(referencedSo);
-            TriggerNewForm?.Invoke("SO#" + referencedSo, ordersPage);
+            TriggerNewForm?.Invoke(DocumentNo.Apply(referencedSo, "SO#"), ordersPage);
         }
         private void btn_edit_Click(object sender, EventArgs e)
         {
@@ -2031,11 +2037,16 @@ namespace smpc_sales_app.Pages.Sales
 
                 if (parentDataHeader2.ContainsKey("doc") && parentDataHeader2["doc"] is string documentNo)
                 {
-                    parentDataHeader2["doc"] = documentNo.StartsWith("SO#") ? documentNo.Substring(3) : documentNo;
+                    parentDataHeader2["doc"] = DocumentNo.Strip(documentNo);
                 }
                 if (parentDataHeader2.ContainsKey("document_no") && parentDataHeader2["document_no"] is string document_no)
                 {
-                    parentDataHeader2["document_no"] = document_no.StartsWith("FQ#") ? document_no.Substring(3) : document_no;
+                    // Store the bare number. This stripped only "FQ#", so a source that still
+                    // carried "Q#" (e.g. an SO built before the reference was normalized) was
+                    // saved as "Q#0007" instead of "0007" - which then displayed as
+                    // "FQ#Q#0007" once UpdateTextBoxes re-applied the prefix. Strip every
+                    // prefix so what's stored matches the bare-number rows (SO id 1 = "0004").
+                    parentDataHeader2["document_no"] = StripDocPrefix(document_no);
                 }
 
                 var columnsToConvert = new List<string> { "ship_to_id", "bill_to_id", "customer_id", "quotation_id", "ref_po" };
@@ -2062,7 +2073,7 @@ namespace smpc_sales_app.Pages.Sales
                 }
 
                 List<Dictionary<string, dynamic>> orderDetailsList = new List<Dictionary<string, dynamic>>();
-                string docNumber = txt_doc.Text.StartsWith("SO#") ? txt_doc.Text.Substring(3) : txt_doc.Text;
+                string docNumber = DocumentNo.Strip(txt_doc.Text);
                 bool isExistingDoc = OrderList.Rows.Cast<DataRow>().Any(row => row["doc"].ToString() == docNumber);
                 bool InSalesOrderDGV = false;
 

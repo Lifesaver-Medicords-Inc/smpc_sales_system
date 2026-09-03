@@ -74,13 +74,10 @@ namespace smpc_sales_system.Pages.Sales
                 {
                     string documentNo = dgv_sales_opportunities.Rows[e.RowIndex].Cells["document_no"].Value.ToString();
                     string versionNo = dgv_sales_opportunities.Rows[e.RowIndex].Cells["version_no"].Value.ToString();
-                    if (documentNo.StartsWith("Q#"))
-                    {
-                        documentNo = documentNo.Substring(2);
-                    }
+                    documentNo = smpc_app.Services.Helpers.DocumentNo.Strip(documentNo);
 
                     Quotation quotationPage = new Quotation(documentNo, versionNo);
-                    string title = "Q#"+documentNo;
+                    string title = smpc_app.Services.Helpers.DocumentNo.Apply(documentNo, "Q#");
                     TriggerNewForm?.Invoke(title, quotationPage);
 
                 }
@@ -94,10 +91,7 @@ namespace smpc_sales_system.Pages.Sales
                     string versionNo = dgv_sales_opportunities.Rows[e.RowIndex].Cells["version_no"].Value.ToString();
                     string subVersionNo = dgv_sales_opportunities.Rows[e.RowIndex].Cells["sub_version_no"].Value.ToString();
 
-                    if (documentNo.StartsWith("Q#"))
-                    {
-                        documentNo = documentNo.Substring(2);
-                    }
+                    documentNo = smpc_app.Services.Helpers.DocumentNo.Strip(documentNo);
                     Quotation quotationPage = new Quotation(documentNo, versionNo, subVersionNo, true);
                     this.Parent.Controls.Add(quotationPage);
                     this.Hide();
@@ -296,7 +290,7 @@ namespace smpc_sales_system.Pages.Sales
                 {
                     string documentNo = row["document_no"].ToString();
                     string versionNo = row["version_no"].ToString();
-                    row["combined_column"] = $"Q#{documentNo}-{versionNo}";
+                    row["combined_column"] = $"{smpc_app.Services.Helpers.DocumentNo.Apply(documentNo, "Q#")}-{versionNo}";
                 }
             }
         }

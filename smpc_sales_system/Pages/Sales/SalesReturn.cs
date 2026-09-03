@@ -1,4 +1,4 @@
-using smpc_app.Services.Helpers;
+﻿using smpc_app.Services.Helpers;
 using smpc_sales_app.Pages.Sales.Modal;
 using smpc_sales_app.Services.Sales;
 using smpc_sales_system.Services.Sales.Models;
@@ -113,7 +113,7 @@ namespace smpc_sales_app.Pages.Sales
             cmb_ref_doc_type.Text = h.ref_doc_type;
             txt_ref_doc_id.Text = h.ref_doc_id.ToString();
             txt_ref_doc_no.Text = h.ref_doc_no;
-            txt_document_no.Text = "SRT#" + h.doc_no;
+            txt_document_no.Text = DocumentNo.Apply(h.doc_no.ToString(), "SRT#");
             if (DateTime.TryParse(h.doc_date, out DateTime docDate)) dtp_date.Value = docDate;
             if (DateTime.TryParse(h.expected_returned_date, out DateTime expDate)) dtp_expected_returned_date.Value = expDate;
             txt_transaction_type.Text = h.transaction_type;
@@ -300,7 +300,7 @@ namespace smpc_sales_app.Pages.Sales
 
             foreach (var h in _data.sales_return)
             {
-                table.Rows.Add("SRT#" + h.doc_no, h.customer_name, h.ref_doc_no, h.is_approved ? "Approved" : "Pending");
+                table.Rows.Add(DocumentNo.Apply(h.doc_no.ToString(), "SRT#"), h.customer_name, h.ref_doc_no, h.is_approved ? "Approved" : "Pending");
             }
 
             using (var search = new SearchSalesReturn("Sales Return List", table))
@@ -408,7 +408,7 @@ namespace smpc_sales_app.Pages.Sales
                 txt_salesperson.Text = header.sales_person;
                 txt_currency.Text = header.currency;
                 txt_ref_doc_id.Text = header.id.ToString();
-                txt_ref_doc_no.Text = "SI#" + header.doc_no;
+                txt_ref_doc_no.Text = DocumentNo.Apply(header.doc_no.ToString(), "SI#");
 
                 _suppressGridEvents = true;
                 dgv_sales_return_details.Rows.Clear();
@@ -464,7 +464,7 @@ namespace smpc_sales_app.Pages.Sales
                 txt_address.Text = dr.address;
                 txt_salesperson.Text = dr.sales_executive;
                 txt_ref_doc_id.Text = dr.id.ToString();
-                txt_ref_doc_no.Text = "DR#" + dr.doc_no;
+                txt_ref_doc_no.Text = DocumentNo.Apply(dr.doc_no.ToString(), "DR#");
                 // A Delivery Receipt carries no currency/sales period of its
                 // own anywhere in the schema explored for this build (nor
                 // does the customer_so view used below) - left blank rather

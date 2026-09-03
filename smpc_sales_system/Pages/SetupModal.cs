@@ -63,10 +63,7 @@ namespace smpc_sales_app.Pages
                     {
                         string documentNo = row["document_no"].ToString();
 
-                        if (!documentNo.StartsWith("Q#"))
-                        {
-                            row["document_no"] = "Q#" + documentNo;
-                        }
+                        row["document_no"] = DocumentNo.Apply(documentNo, "Q#");
                     }
                 }
 
