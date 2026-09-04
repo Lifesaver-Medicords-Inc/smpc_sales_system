@@ -166,6 +166,7 @@
             this.txt_customer_id = new System.Windows.Forms.TextBox();
             this.cmb_payment_terms = new System.Windows.Forms.ComboBox();
             this.btn_request_for_engr = new System.Windows.Forms.Button();
+            this.chk_requested_for_engr = new System.Windows.Forms.CheckBox();
             this.txt_id = new System.Windows.Forms.TextBox();
             this.UnitPriceColumnContextMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.canvasToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -1298,8 +1299,26 @@
             this.btn_request_for_engr.TabIndex = 113;
             this.btn_request_for_engr.Text = "REQUEST FOR ENGR.";
             this.btn_request_for_engr.UseVisualStyleBackColor = false;
-            this.btn_request_for_engr.Visible = false;
+            this.btn_request_for_engr.Visible = true;
             this.btn_request_for_engr.Click += new System.EventHandler(this.btn_request_for_engr_Click);
+            //
+            // chk_requested_for_engr
+            //
+            // Read-only status indicator, not an input - mirrors is_requested_for_engr
+            // (set only by btn_request_for_engr's POST, never unset). Disabled the same
+            // way txt_percent_discount is for a computed/derived value, so it can't be
+            // toggled by hand. Anchored the same as the button so it tracks it on resize.
+            this.chk_requested_for_engr.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.chk_requested_for_engr.AutoSize = true;
+            this.chk_requested_for_engr.Enabled = false;
+            this.chk_requested_for_engr.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.chk_requested_for_engr.Location = new System.Drawing.Point(812, 214);
+            this.chk_requested_for_engr.Name = "chk_requested_for_engr";
+            this.chk_requested_for_engr.Size = new System.Drawing.Size(151, 17);
+            this.chk_requested_for_engr.TabIndex = 114;
+            this.chk_requested_for_engr.Text = "REQUESTED FOR ENGR.";
+            this.chk_requested_for_engr.UseVisualStyleBackColor = true;
+            this.chk_requested_for_engr.Visible = true;
             // 
             // txt_id
             // 
@@ -1342,6 +1361,7 @@
             this.pnl_header.Controls.Add(this.txt_sub_version_no);
             this.pnl_header.Controls.Add(this.txt_id);
             this.pnl_header.Controls.Add(this.btn_request_for_engr);
+            this.pnl_header.Controls.Add(this.chk_requested_for_engr);
             this.pnl_header.Controls.Add(this.cmb_payment_terms);
             this.pnl_header.Controls.Add(this.txt_customer_id);
             this.pnl_header.Controls.Add(this.btn_project);
@@ -2583,6 +2603,7 @@
         private System.Windows.Forms.TextBox txt_sub_version_no;
         private System.Windows.Forms.TextBox txt_id;
         private System.Windows.Forms.Button btn_request_for_engr;
+        private System.Windows.Forms.CheckBox chk_requested_for_engr;
         private System.Windows.Forms.ComboBox cmb_payment_terms;
         private System.Windows.Forms.TextBox txt_customer_id;
         private System.Windows.Forms.Button btn_project;

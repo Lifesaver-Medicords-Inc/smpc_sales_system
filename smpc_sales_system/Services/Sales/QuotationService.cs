@@ -96,12 +96,25 @@ namespace smpc_sales_app.Services.Sales
         }
 
         // POST: §3.2/§6.3 REQUEST FOR ENGR. (Phase 4 item 4.1) - the explicit per-quote
-        // grant to a specific engineer. Backs RequestForEngrModal.
-        public static async Task<ApiResponseModel> RequestForEngr(int quotationId, uint engrId)
+        // grant. Checking REQUEST FOR ENGR. is the whole action (changed 2026-09-03,
+        // user decision - no engineer picker anymore, no engr_id to send). Every
+        // engineer sees every checked quotation on a shared list; see
+        // GetEngineeringQuotationListByEngr on the API side.
+        public static async Task<ApiResponseModel> RequestForEngr(int quotationId)
         {
             var response = await RequestToApi<ApiResponseModel>.Post(
                 $"{url}/{quotationId}/request_for_engr",
-                new { engr_id = engrId });
+                new { });
+            return response;
+        }
+
+        // POST: reverses RequestForEngr above - added on user request so the button
+        // toggles (REQUEST FOR ENGR. / CANCEL REQUEST) instead of being one-way.
+        public static async Task<ApiResponseModel> CancelRequestForEngr(int quotationId)
+        {
+            var response = await RequestToApi<ApiResponseModel>.Post(
+                $"{url}/{quotationId}/cancel_request_for_engr",
+                new { });
             return response;
         }
 

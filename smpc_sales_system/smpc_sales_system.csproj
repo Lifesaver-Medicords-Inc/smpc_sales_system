@@ -27,7 +27,7 @@
     <UpdateRequired>false</UpdateRequired>
     <MapFileExtensions>true</MapFileExtensions>
     <UpdateUrl>http://localhost/smpc_sales_system/</UpdateUrl>
-    <ApplicationRevision>1002</ApplicationRevision>
+    <ApplicationRevision>1004</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
@@ -364,6 +364,7 @@
     <Compile Include="Pages\Sales\ItemSetUC.Designer.cs">
       <DependentUpon>ItemSetUC.cs</DependentUpon>
     </Compile>
+    <Compile Include="Pages\Sales\SalesItemGridEditor.cs" />
     <Compile Include="Pages\ModelModal.cs">
       <SubType>Form</SubType>
     </Compile>

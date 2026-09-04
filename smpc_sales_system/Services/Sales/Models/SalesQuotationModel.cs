@@ -44,5 +44,14 @@ namespace smpc_sales_system.Services.Sales.Models
         public string created_by { get; set; }
         public double discounted_amount { get; set; }
         public bool is_project { get; set; }
+
+        // Added for the REQUESTED FOR ENGR. status checkbox on the quotation form
+        // (Quotation.cs bind()) - without these the API's is_requested_for_engr/
+        // requested_engr_name/requested_for_engr_date fields (set by
+        // RequestQuotationForEngr) get silently dropped by JsonHelper.ToDataTable,
+        // same gap as QuotationRedboxListModel.cs had for the Engineering grid.
+        public bool is_requested_for_engr { get; set; }
+        public string requested_engr_name { get; set; }
+        public string requested_for_engr_date { get; set; }
     }
 }

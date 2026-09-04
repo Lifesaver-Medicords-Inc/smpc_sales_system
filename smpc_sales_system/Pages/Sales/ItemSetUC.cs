@@ -270,6 +270,17 @@ namespace smpc_sales_system.Pages.Sales
             return data;
         }
 
+        // A combo's SelectedValue as an int, or 0 when there is no usable selection.
+        // Guards the three ways it can be unusable: null (nothing picked), a DataRowView
+        // (bound before its ValueMember resolved - the same case GetControlsValues skips),
+        // and anything that simply isn't a number.
+        private static int SelectedIdOrZero(ComboBox combo)
+        {
+            if (combo?.SelectedValue == null) return 0;
+            if (combo.SelectedValue is DataRowView) return 0;
+            return int.TryParse(combo.SelectedValue.ToString(), out int id) ? id : 0;
+        }
+
         public Dictionary<string, dynamic>  GetProjectContentsData()
         {
             Panel[] pnl_content = { pnl_project_content };
@@ -300,6 +311,11 @@ namespace smpc_sales_system.Pages.Sales
                 {
                     id = int.TryParse(final["Id"]?.ToString(), out int tempId) ? tempId : 0,
                     sales_project_content_id = int.TryParse(final["content_id"]?.ToString(), out int tempContentId) ? tempContentId : 0,
+                    // Persist which pump this row actually is, so it survives a reload -
+                    // see SalesProjectContentFinal.item_id. Without this the duplicate
+                    // guard in SetFinalPumpData is dead for every reloaded row.
+                    item_id = final.Table.Columns.Contains("final_item_id")
+                        && int.TryParse(final["final_item_id"]?.ToString(), out int tempItemId) ? tempItemId : 0,
                     final = final["final"]?.ToString() ?? string.Empty,
                     fla = decimal.TryParse(final["fla"]?.ToString(), out decimal tempFla) ? tempFla : 0,
                     voltage = decimal.TryParse(final["voltage"]?.ToString(), out decimal tempVoltage) ? tempVoltage : 0,
@@ -315,8 +331,28 @@ namespace smpc_sales_system.Pages.Sales
 
             //this is not include in panel but we need to get the value of wiring for the project
             data["is_wiring"] = chk_wiring.Checked;
-            data["template_project_id"] = cmb_template_project.SelectedValue;
-            data["assign_engineer_user_id"] = cmb_assign_engineer_user_id.SelectedValue;
+            // Both of these are non-nullable ints on SalesProjectContent, but a ComboBox
+            // with nothing selected hands back null - "-- No Template --" is exactly that,
+            // and ASSIGNED ENGR. is empty until wiring is filled in. Sending the raw value
+            // put a null in the payload and the save died deserializing it:
+            // "Error converting value {null} to type 'System.Int32'. Path
+            // 'template_project_id'". Nothing selected means 0, which is what the column
+            // already stores for "no template".
+            data["template_project_id"] = SelectedIdOrZero(cmb_template_project);
+
+            // Never let a combo that FAILED TO LOAD erase a stored value (2026-09-04).
+            // SelectedIdOrZero cannot tell "the user chose nothing" apart from "the
+            // dropdown is empty because its fetch died", and both come back as 0 - which
+            // the save then writes over a real engineer id. That is exactly how the
+            // existing rows got zeroed. When the box is empty but we know what was
+            // loaded, the loaded value wins; an explicit change still overrides it,
+            // because then the combo has a selection and this never fires.
+            int selectedEngineer = SelectedIdOrZero(cmb_assign_engineer_user_id);
+            if (selectedEngineer == 0 && _pendingAssignedEngineerId > 0
+                && cmb_assign_engineer_user_id.Items.Count == 0)
+                selectedEngineer = _pendingAssignedEngineerId;
+
+            data["assign_engineer_user_id"] = selectedEngineer;
 
             return data;
         }
@@ -376,6 +412,21 @@ namespace smpc_sales_system.Pages.Sales
             {
                 DataRow item = projectSource.Rows[rowIndex];
                 if (item == null) continue;
+
+                // Skip the grid's own blank filler row rather than saving it as a real
+                // item (fixed 2026-09-04). Same rule GetSizeUpData/GetFinalData already
+                // apply: a row with no item, no BOM/component label and no reference
+                // code carries nothing worth persisting - it is empty space in the grid,
+                // not a candidate row. Without this, a blank row saved once (items_id 98
+                // is exactly this shape: item_id 0, reference_code "", components "") and
+                // CompareRef's int.Parse in SetFetchedItemData throws "Input string was
+                // not in a correct format" on every future load of that quote, because
+                // "".Split('.') yields one empty segment that isn't a number.
+                bool hasItem = int.TryParse(item["item_id"]?.ToString(), out int filterItemId) && filterItemId > 0;
+                bool hasComponentLabel = !string.IsNullOrWhiteSpace(item["project_items_components"]?.ToString());
+                bool hasReferenceCode = !string.IsNullOrWhiteSpace(item["reference_code"]?.ToString());
+                if (!hasItem && !hasComponentLabel && !hasReferenceCode)
+                    continue;
 
                 var spi = new SalesProjectItems
                 {
@@ -538,12 +589,97 @@ namespace smpc_sales_system.Pages.Sales
         {
             Panel[] pnls = { pnl_project_content };
             Helpers.BindControls(pnls, dt);
+
+            // BindControls does set cmb_assign_engineer_user_id, but it is a no-op here:
+            // the combo has no DataSource yet (ItemSetUC_Load fills it asynchronously,
+            // later), and assigning SelectedValue to an unbound ComboBox does nothing.
+            // So the fetched engineer has to be held until that load finishes - see the
+            // restore block in ItemSetUC_Load. Same shape as SetTemplateName/txt_template_id.
+            _pendingAssignedEngineerId = 0;
+            if (dt != null && dt.Rows.Count > 0 && dt.Columns.Contains("assign_engineer_user_id")
+                && int.TryParse(dt.Rows[0]["assign_engineer_user_id"]?.ToString(), out int engrId))
+            {
+                _pendingAssignedEngineerId = engrId;
+
+                // If the load already ran (a rebind on an open form), apply it now -
+                // nothing else will.
+                if (cmb_assign_engineer_user_id.DataSource != null && engrId > 0)
+                    cmb_assign_engineer_user_id.SelectedValue = engrId;
+            }
         }
+
+        // The assign_engineer_user_id read off the content row, waiting for the engineer
+        // dropdown to finish loading so it can actually be selected. 0 means "none".
+        private int _pendingAssignedEngineerId;
 
         public void SetTemplateName(string template_id)
         {
             txt_template_id.Text = template_id;
         }
+        // FLA / VOLTAGE are DERIVED from the FINAL list, not typed - spec 8.4 feeds both
+        // amp formulas from them, and "with multiple pumps, base the calculation on the
+        // largest FLA", hence the max rather than the last row.
+        //
+        // Extracted 2026-09-03. This ran only inside SetFinalPumpData - the interactive
+        // "pick a final pump" path - so on a REOPENED quote the finals loaded into the
+        // grid but FLA and VOLTAGE came back blank. Both amp formulas bail on an
+        // unparseable FLA, so AMP REQ. on rows 1 and 7 stayed empty on every saved quote
+        // until someone re-picked a pump. Same shape as the other load-path gaps found
+        // today: the interactive path derived state that the load path never restored.
+        private void RefreshFlaVoltageFromFinals()
+        {
+            if (dgv_final == null) return;
+
+            decimal fla_highest = 0;
+            decimal voltage_highest = 0;
+
+            foreach (DataGridViewRow row in dgv_final.Rows)
+            {
+                if (row.IsNewRow) continue;
+
+                decimal fla = decimal.TryParse(row.Cells["Fla"].Value?.ToString() ?? "0", out var fl) ? fl : 0m;
+                decimal voltage = decimal.TryParse(row.Cells["Voltage"].Value?.ToString() ?? "0", out var vol) ? vol : 0m;
+
+                if (fla > fla_highest) fla_highest = fla;
+                if (voltage > voltage_highest) voltage_highest = voltage;
+            }
+
+            // Nothing usable on the list - leave whatever is on screen rather than
+            // stamping "0" over it.
+            if (fla_highest <= 0 && voltage_highest <= 0) return;
+
+            txt_FLA.Text = fla_highest.ToString();
+            txt_VOLT.Text = voltage_highest.ToString();
+        }
+
+        // Recomputes the two AMP REQ. cells spec 8.4 defines as formulas: row 1
+        // (ECB -> controller) and row 7 (controller -> motor, per starting method).
+        // Called after the wiring grid is loaded - NOT from SetFinalData, which runs
+        // earlier in the load sequence while dgv_wiring is still empty, and
+        // SetWiringAmpReq no-ops on an empty grid.
+        // Guards against re-entry: this calls the starting-method handler, which writes
+        // into dgv_wiring, whose own cell-changed handler recomputes the row totals.
+        // None of those currently loop back here, but this is the one place every
+        // trigger funnels through, so it is the right place to make that safe.
+        private bool _refreshingWiringAmps;
+
+        private void RefreshWiringAmpRequirements()
+        {
+            if (_refreshingWiringAmps) return;
+            if (dgv_wiring == null || dgv_wiring.Rows.Count == 0) return;
+
+            _refreshingWiringAmps = true;
+            try
+            {
+                computeECBToController();                                  // row 1
+                cmb_starting_method_SelectedIndexChanged(this, EventArgs.Empty); // row 7
+            }
+            finally
+            {
+                _refreshingWiringAmps = false;
+            }
+        }
+
         public void SetFinalData(DataTable dt)
         {
 
@@ -551,11 +687,19 @@ namespace smpc_sales_system.Pages.Sales
             {
                 foreach (DataRow row in dt.Rows)
                 {
-                    // final_item_id is left blank here - the saved shape has no item id
-                    // column (see the Designer comment on that column), so a reloaded row
-                    // just won't pre-check/dedupe against the FINAL picker this session.
-                    dgv_final.Rows.Add(row["id"], row["sales_project_content_id"], row["final"], row["fla"], row["voltage"], null);
+                    // final_item_id now comes back with the row (item_id is persisted as
+                    // of 2026-09-03). It used to be left blank because the saved shape had
+                    // no item id - which quietly disabled SetFinalPumpData's duplicate
+                    // guard for every reloaded row, so re-picking a pump already on the
+                    // list appended a second copy and the next save stored both.
+                    object itemId = dt.Columns.Contains("item_id") ? row["item_id"] : null;
+                    dgv_final.Rows.Add(row["id"], row["sales_project_content_id"], row["final"], row["fla"], row["voltage"], itemId);
                 }
+
+                // Derive FLA / VOLTAGE from what was just loaded - see
+                // RefreshFlaVoltageFromFinals. The amp cells themselves are refreshed
+                // later, once the wiring grid exists (SetProjectWiring).
+                RefreshFlaVoltageFromFinals();
             }
         }
 
@@ -600,6 +744,41 @@ namespace smpc_sales_system.Pages.Sales
             return sizeUps;
         }
 
+        // Counterpart to GetSizeUpData for the FINAL grid. GetProjectContent (the Sales
+        // save path) built this list inline; pulling it out lets a caller that does NOT
+        // want the whole content dictionary read just this one grid - specifically the
+        // Engineering app's Sales Quotation page, which sends the rest of the content
+        // back exactly as fetched on purpose and only lets an engineer's Size Up / Final
+        // / item table / wiring edits through (§3.2).
+        public List<SalesProjectContentFinal> GetFinalData()
+        {
+            var finals = new List<SalesProjectContentFinal>();
+            if (dgv_final == null) return finals;
+
+            foreach (DataGridViewRow row in dgv_final.Rows)
+            {
+                if (row.IsNewRow) continue;
+
+                string model = row.Cells["Final"].Value?.ToString() ?? string.Empty;
+                int.TryParse(row.Cells["final_item_id"].Value?.ToString(), out int itemId);
+
+                // Same "empty filler row" rule GetSizeUpData applies.
+                if (itemId <= 0 && string.IsNullOrWhiteSpace(model)) continue;
+
+                finals.Add(new SalesProjectContentFinal
+                {
+                    id = int.TryParse(row.Cells["Id"]?.Value?.ToString(), out int rowId) ? rowId : 0,
+                    sales_project_content_id = int.TryParse(row.Cells["content_Id"]?.Value?.ToString(), out int contentId) ? contentId : 0,
+                    item_id = itemId,
+                    final = model,
+                    fla = decimal.TryParse(row.Cells["Fla"].Value?.ToString(), out decimal fla) ? fla : 0,
+                    voltage = decimal.TryParse(row.Cells["Voltage"].Value?.ToString(), out decimal voltage) ? voltage : 0,
+                });
+            }
+
+            return finals;
+        }
+
         // Mirrors dgv_final_CellClick exactly - single MODEL column now, same as FINAL,
         // so there's no longer a per-column decision to make about which cell opens
         // the picker.
@@ -627,6 +806,10 @@ namespace smpc_sales_system.Pages.Sales
             int index = dgv_size_up.Rows.Add();
             dgv_size_up.Rows[index].Cells["size_up_item_id"].Value = itemId;
             dgv_size_up.Rows[index].Cells["size_up_model"].Value = model;
+
+            // Size Up is what FINAL may be chosen from, so a change here can change the
+            // pump behind FLA. Cheap to refresh and keeps the amps from going stale.
+            RefreshWiringAmpRequirements();
         }
 
         // Loads saved Size Up rows back onto the grid, mirroring SetFinalData. Nothing did
@@ -834,8 +1017,18 @@ namespace smpc_sales_system.Pages.Sales
 
                 int CompareRef(string a, string b)
                 {
-                    var aParts = a.Split('.').Select(int.Parse).ToArray();
-                    var bParts = b.Split('.').Select(int.Parse).ToArray();
+                    // TryParse, not Parse (fixed 2026-09-04): a blank reference_code -
+                    // whether from a legacy row saved before GetProjectItems started
+                    // filtering them out, or any other unexpected value - split into one
+                    // empty segment, and int.Parse("") threw FormatException ("Input
+                    // string was not in a correct format"), aborting the ENTIRE item load
+                    // for every row in the tab, not just the bad one. An unparseable
+                    // segment now sorts as 0, the same way a missing segment already does
+                    // a few lines down, so the bad row just sorts first instead of taking
+                    // the whole grid down with it.
+                    int ParseSegment(string s) => int.TryParse(s, out int n) ? n : 0;
+                    var aParts = a.Split('.').Select(ParseSegment).ToArray();
+                    var bParts = b.Split('.').Select(ParseSegment).ToArray();
 
                     int length = Math.Max(aParts.Length, bParts.Length);
 
@@ -937,6 +1130,11 @@ namespace smpc_sales_system.Pages.Sales
 
                 i++;
             }
+
+            // The grid now exists, so the two computed AMP REQ. cells can be filled in.
+            // Doing this here rather than in SetFinalData is deliberate: that runs earlier
+            // in the load sequence, while this grid is still empty.
+            RefreshWiringAmpRequirements();
         }
 
         private void ApplyRowStyles()
@@ -1024,10 +1222,27 @@ namespace smpc_sales_system.Pages.Sales
         // pump again) skip re-adding a duplicate row instead of piling up copies.
         public void SetFinalPumpData(string FLA, string Voltage, string Final, string ItemId)
         {
-            if (!string.IsNullOrEmpty(ItemId))
+            // Duplicate guard. Matches on the pump's item id, and falls back to the model
+            // name when either side has no item id - rows saved before finals carried an
+            // item_id (2026-09-03) still come back with it blank, and without the fallback
+            // those legacy rows skip the check entirely and can be added a second time.
+            // Mirrors finalIdentity() on the server, which now backstops the same rule.
+            foreach (DataGridViewRow existingRow in dgv_final.Rows)
             {
-                foreach (DataGridViewRow existingRow in dgv_final.Rows)
-                    if (existingRow.Cells["final_item_id"].Value?.ToString() == ItemId) return;
+                if (existingRow.IsNewRow) continue;
+
+                string existingItemId = existingRow.Cells["final_item_id"].Value?.ToString();
+
+                if (!string.IsNullOrEmpty(ItemId) && !string.IsNullOrEmpty(existingItemId))
+                {
+                    if (existingItemId == ItemId) return;
+                    continue;
+                }
+
+                string existingModel = existingRow.Cells["Final"].Value?.ToString();
+                if (!string.IsNullOrWhiteSpace(existingModel)
+                    && string.Equals(existingModel.Trim(), (Final ?? string.Empty).Trim(), StringComparison.OrdinalIgnoreCase))
+                    return;
             }
 
             //The first parameter is Id, the 2nd paramter ContentId
@@ -1041,34 +1256,9 @@ namespace smpc_sales_system.Pages.Sales
             // runs once per genuinely new FINAL pick, never on a re-pick of the same pump.
             AddFinalPumpToItemsGrid(ItemId, Final);
 
-            decimal fla_highest = 0;
-            decimal voltage_highest = 0;
-            decimal fla_total = 0;
             decimal Pump_Total_Qty = 0;
 
-
-            foreach (DataGridViewRow row in dgv_final.Rows)
-            {
-
-                if (row.IsNewRow) continue;
-
-                decimal fla = decimal.TryParse(row.Cells["fla"].Value?.ToString() ?? "0", out var fl) ? fl : 0m;
-                decimal voltage = decimal.TryParse(row.Cells["voltage"].Value?.ToString() ?? "0", out var vol) ? vol : 0m;
-
-                if (fla > fla_highest)
-                {
-                    fla_highest = fla;
-                }
-                if (voltage > voltage_highest)
-                {
-                    voltage_highest = voltage;
-                }
-
-                fla_total += fla;
-            }
-
-            txt_FLA.Text = fla_highest.ToString();
-            txt_VOLT.Text = voltage_highest.ToString();
+            RefreshFlaVoltageFromFinals();
 
             foreach (DataGridViewRow row in dgv_project_items.Rows)
             {
@@ -1103,8 +1293,10 @@ namespace smpc_sales_system.Pages.Sales
             // the formula writing to the same cell on a last-writer-wins basis.
             // Pump_Total_Qty is left computed above only because that loop also carries an
             // early return that guards this method; it no longer feeds the amp.
+            // FINAL is where FLA comes from, so both computed rows are stale now - not
+            // just row 1, which is all this used to refresh.
             if (chk_wiring.Checked)
-                computeECBToController();
+                RefreshWiringAmpRequirements();
 
         }
 
@@ -1273,6 +1465,26 @@ namespace smpc_sales_system.Pages.Sales
             get { return this.dgv_project_items; }
         }
 
+        // Declare up front that this control is showing an EXISTING record, before any
+        // data is pushed into it (2026-09-04).
+        //
+        // isViewProjectItem is what stops cb_template_project_SelectedIndexChanged from
+        // clearing the items grid and re-applying the template (and, with it, re-adding
+        // the wiring block) on a quote that already has its items. Until now the only
+        // thing that set it was the END of SetFetchedItemData, which makes the protection
+        // a RACE: ItemSetUC_Load is async, and the moment it finishes awaiting the
+        // engineer/template fetches it assigns cmb_template_project.SelectedValue, which
+        // fires that handler. Whether the flag is set in time depends purely on whether
+        // the caller managed to call SetFetchedItemData during that await window.
+        //
+        // Sales happens to win that race; the Engineering page adds the control to its tab
+        // (starting the load) and only calls SetFetchedItemData afterwards, so it is
+        // relying on the same accident. Calling this first makes it deterministic.
+        public void MarkAsExistingRecord()
+        {
+            isViewProjectItem = true;
+        }
+
         // BOUND TO DATASOURCE
         public void SetComponentData(int index, string itemid, string itemName, string size, string model, string bomid)
         {
@@ -1385,7 +1597,27 @@ namespace smpc_sales_system.Pages.Sales
             cmb_assign_engineer_user_id.DataSource = engineers ?? new List<EngineerModel>();
             cmb_assign_engineer_user_id.DisplayMember = nameof(EngineerModel.FullName);
             cmb_assign_engineer_user_id.ValueMember = nameof(EngineerModel.Id);
-            cmb_assign_engineer_user_id.SelectedIndex = -1;
+
+            // Restore the saved engineer instead of blanking the box (fixed 2026-09-04).
+            //
+            // This load handler is async and runs AFTER SetContentsPanelData has already
+            // bound the content row, so the unconditional "SelectedIndex = -1" that used
+            // to sit here threw away the assign_engineer_user_id that had just been
+            // restored. It was worse than a display bug: GetProjectContentsData sends
+            // SelectedIdOrZero(cmb_assign_engineer_user_id), so a blank box saved as 0 and
+            // every re-save of a reopened quote silently WIPED the assigned engineer.
+            // 9 of 11 content rows are already sitting at 0 because of this, 5 of them
+            // with is_wiring = 1 - rows that are supposed to name an engineer.
+            //
+            // cmb_template_project two blocks down never had this problem because it
+            // stashes its fetched id in txt_template_id and re-applies it after binding.
+            // _pendingAssignedEngineerId is the same trick for this combo; it just never
+            // got one. Still clears to -1 for a genuinely new item set, which is where
+            // that line was actually right.
+            if (_pendingAssignedEngineerId > 0)
+                cmb_assign_engineer_user_id.SelectedValue = _pendingAssignedEngineerId;
+            else
+                cmb_assign_engineer_user_id.SelectedIndex = -1;
 
             var dt = await ProjectTemplatesService.GetProjectTemplates();
 
@@ -1582,11 +1814,16 @@ namespace smpc_sales_system.Pages.Sales
 
                 if (chk_wiring.Checked)
                 {
-                    // Not LastRefInt (stale - computed before any leftover final pumps
-                    // above were re-added) - GetMaxTopLevelReferenceCode() reads the
-                    // grid's actual current state, same reasoning already applied to
-                    // chk_wiring's own CheckedChanged handler elsewhere in this file.
-                    AddWiringRowsComponent(GetMaxTopLevelReferenceCode());
+                    // Routed through AddWiringRowsComponentProject (fixed 2026-09-04).
+                    // This used to call AddWiringRowsComponent directly, which is the raw
+                    // inserter with NO duplicate protection - the guard lives one level up
+                    // in AddWiringRowsComponentProject. So every time this template path
+                    // ran against a grid that already held a wiring block, it appended a
+                    // second one. Its sibling trigger (chk_wiring's own CheckedChanged)
+                    // always went through the guarded wrapper; only this call site skipped
+                    // it. The wrapper computes the same GetMaxTopLevelReferenceCode() this
+                    // did, so behaviour is unchanged when there is genuinely nothing there.
+                    AddWiringRowsComponentProject();
                 }
 
                 isLoadingTemplate = false;
@@ -1642,6 +1879,51 @@ namespace smpc_sales_system.Pages.Sales
             }
         }
 
+        // The four component rows AddWiringRowsComponent inserts as one block. Used to
+        // recognise a wiring row after a save/reload, when the in-session "wiring"
+        // template_id marker is gone - see IsWiringComponentRow.
+        private static readonly string[] WiringComponentNames =
+        {
+            "WIRING MATERIALS",
+            "CTL-MOTOR",
+            "CTL-ECB",
+            "WIRING LABOR",
+        };
+
+        // Is this row part of the wiring block?
+        //
+        // AddWiringRowsComponent stamps template_id = "wiring" on the rows it adds, and
+        // both the duplicate guard and the removal below used to test ONLY that. But
+        // template_id is an integer column in tbl_trans_sales_project_items (its live
+        // values are 0, 1 and 2 - never the string "wiring"), so the marker exists only
+        // for the session that created the rows and is gone the moment the quote is
+        // saved and reloaded. On an existing quote that broke both directions:
+        //
+        //   * ticking WIRING added a SECOND full block, because the guard could not see
+        //     the block already loaded from the database
+        //   * unticking it removed nothing at all, for the same reason
+        //
+        // Falling back to the component name fixes both without a schema change, since
+        // the names are already persisted. Children are stored indented ("    CTL-MOTOR"),
+        // hence the trim.
+        private static bool IsWiringComponentRow(string templateId, string components)
+        {
+            if (string.Equals(templateId, "wiring", StringComparison.OrdinalIgnoreCase))
+                return true;
+
+            string name = (components ?? string.Empty).Trim();
+            if (name.Length == 0)
+                return false;
+
+            foreach (string wiringName in WiringComponentNames)
+            {
+                if (string.Equals(name, wiringName, StringComparison.OrdinalIgnoreCase))
+                    return true;
+            }
+
+            return false;
+        }
+
         private void RemoveWiringRowsComponentByBaseReference()
         {
             DataTable dataSource = dgv_project_items.DataSource as DataTable;
@@ -1649,8 +1931,9 @@ namespace smpc_sales_system.Pages.Sales
                 return;
 
             var rowsToRemove = dataSource.AsEnumerable()
-                .Where(r =>
-                    r.Field<string>("template_id") == "wiring")
+                .Where(r => IsWiringComponentRow(
+                    r.Table.Columns.Contains("template_id") ? r["template_id"]?.ToString() : null,
+                    r.Table.Columns.Contains("components") ? r["components"]?.ToString() : null))
                 .ToList();
 
             foreach (DataRow row in rowsToRemove)
@@ -1696,6 +1979,17 @@ namespace smpc_sales_system.Pages.Sales
         {
             _isEditable = editable;
             Helpers.SetControlsEditable(this, editable);
+
+            // SIZE UP and FINAL are never typed into - both are filled by their picker
+            // (SizeUpPickerModal, reached by clicking the grid), and their rows carry an
+            // item_id that free text could not supply. The designer marks both grids
+            // ReadOnly, but SetControlsEditable walks every DataGridView it finds and
+            // blanket-assigns ReadOnly = !editable, which quietly undid that the moment a
+            // tab went editable - in Sales on Edit, and in the Engineering app always,
+            // since it calls SetEditable(true) on load. Re-lock them here, after the
+            // helper has had its say.
+            if (dgv_size_up != null) dgv_size_up.ReadOnly = true;
+            if (dgv_final != null) dgv_final.ReadOnly = true;
         }
 
         // MULTIPLIER (project_items_multiplier) is a combo box column bound to a fixed list
@@ -2851,9 +3145,12 @@ namespace smpc_sales_system.Pages.Sales
         }
 
 
+        // NO. OF PUMP/SET feeds row 1's formula directly (FLA x pumps x 1.25). Refreshes
+        // both computed rows rather than just row 1 - see RefreshWiringAmpRequirements,
+        // the single entry point every trigger uses.
         private void txt_no_of_pump_set_TextChanged(object sender, EventArgs e)
         {
-            computeECBToController();
+            RefreshWiringAmpRequirements();
         }
 
         // Row 1's amp (FLA x NO. OF PUMP/SET x 1.25, spec 8.4) depends on FLA as much as on
@@ -2877,12 +3174,27 @@ namespace smpc_sales_system.Pages.Sales
             WiringVisible(chk_wiring.Checked);
 
             AddWiringRowsComponentProject();
+
+            // Ticking WIRING is the first moment the grid exists, so this is where the
+            // computed cells get their initial values. Its absence is why re-ticking the
+            // box appeared to "fix" the computation - that was the only path that ever
+            // ended up refreshing them on an already-loaded quote.
+            if (chk_wiring.Checked)
+                RefreshWiringAmpRequirements();
         }
 
         private void AddWiringRowsComponentProject()
         {
-            //validate the duplication of wiring rows
-            if (dgv_project_items.Rows.Cast<DataGridViewRow>().Any(r => !r.IsNewRow && r.Cells["project_items_template_id"].Value?.ToString() == "wiring"))
+            // Validate against duplicating the wiring block. This used to compare only
+            // template_id to "wiring", which is an in-session marker that does not
+            // survive a save (template_id is an integer column) - so on a reloaded quote
+            // the guard saw nothing and ticking WIRING appended a second full block.
+            // IsWiringComponentRow also recognises the block by component name, which is
+            // persisted, so the guard now holds for loaded rows too.
+            if (dgv_project_items.Rows.Cast<DataGridViewRow>().Any(r => !r.IsNewRow
+                    && IsWiringComponentRow(
+                        r.Cells["project_items_template_id"].Value?.ToString(),
+                        r.Cells["project_items_components"].Value?.ToString())))
                 return;
 
             if (chk_wiring.Checked)

@@ -390,7 +390,10 @@ namespace smpc_sales_system.Pages.Sales
             // size_up_model
             //
             this.size_up_model.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.size_up_model.HeaderText = "MODEL";
+            // "SIZE UP" rather than "MODEL" (user decision, 2026-09-03) - the grid now
+            // names itself, the same way the FINAL grid's own column does, so the
+            // separate label42 above it is redundant and hidden below.
+            this.size_up_model.HeaderText = "SIZE UP";
             this.size_up_model.Name = "size_up_model";
             this.size_up_model.ReadOnly = true;
             //
@@ -677,6 +680,10 @@ namespace smpc_sales_system.Pages.Sales
             this.label42.Size = new System.Drawing.Size(56, 13);
             this.label42.TabIndex = 125;
             this.label42.Text = "SIZE UP";
+            // Superseded by the grid's own "SIZE UP" column header. Hidden rather than
+            // deleted: the layout is absolute-positioned, so hiding looks identical to
+            // removing it while staying trivially reversible.
+            this.label42.Visible = false;
             // 
             // label41
             // 

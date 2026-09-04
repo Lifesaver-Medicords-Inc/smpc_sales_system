@@ -74,6 +74,14 @@ namespace smpc_sales_system.Models
     {
         public int id { get; set; }
         public int sales_project_content_id { get; set; }
+        // item_id added 2026-09-03. Finals had no item id, so a row reloaded from the
+        // database came back with a blank final_item_id - and that is the column
+        // ItemSetUC.SetFinalPumpData compares against to reject a pump already on the
+        // list. With it blank the guard could never match, so re-picking the same pump
+        // after a reload appended a duplicate row instead of being ignored, and the
+        // next save wrote both. Size Up always had item_id, which is why its own
+        // picker guard (AddSizeUpRow) never had this problem.
+        public int item_id { get; set; }
         public string final { get; set; }
         public decimal fla { get; set; }
         public decimal voltage { get; set; }

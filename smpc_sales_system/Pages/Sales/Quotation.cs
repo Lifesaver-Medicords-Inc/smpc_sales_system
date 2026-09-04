@@ -702,6 +702,7 @@ namespace smpc_sales_app.Pages.Sales
             IsEdit = false;
 
             UpdateDescriptionFieldsVisibility();
+            UpdateRequestForEngrVisibility();
 
             // Leaving Project Quotation - no point staying connected to its real-time
             // save-notification channel.
@@ -729,6 +730,20 @@ namespace smpc_sales_app.Pages.Sales
             label33.Visible = show;
             txt_short_description.Visible = show;
             txt_long_description.Visible = show;
+        }
+
+        // REQUEST FOR ENGR. and its status checkbox - Project Quotation only (user
+        // decision): Quick Quote has no Size Up / item table / wiring sub-structure for
+        // an engineer to actually edit (those are Project-only concepts - ItemSetUC,
+        // sales_project_item_set, sales_project_wiring), and Engineering's detail page
+        // only ever looks a quotation up via /sales/projects (project_name != "" only),
+        // so a Quick Quote sent for engineering could never even be opened there. Same
+        // pnl_header control either way, shown/hidden by tab like
+        // UpdateDescriptionFieldsVisibility above - not duplicated per mode.
+        private void UpdateRequestForEngrVisibility()
+        {
+            btn_request_for_engr.Visible = isProject;
+            chk_requested_for_engr.Visible = isProject;
         }
 
         private async void btn_project_Click(object sender, EventArgs e)
@@ -776,6 +791,7 @@ namespace smpc_sales_app.Pages.Sales
             isProject = true;
 
             UpdateDescriptionFieldsVisibility();
+            UpdateRequestForEngrVisibility();
 
             // fetchSalesProjectData() fetches from the server and then (via fetchSalesProject())
             // rebuilds the header/footer fields, the multiplier grid and every per-tab
@@ -1671,6 +1687,12 @@ namespace smpc_sales_app.Pages.Sales
 
             pnl_quotation["project_name"] = txt_project_name.Text.Trim();
 
+            // Same key-mismatch fix as IsQuickQuote() - GetControlsValues auto-scrapes
+            // chk_requested_for_engr to "requested_for_engr", not the model's real
+            // "is_requested_for_engr". Set explicitly so a Project Quote checked before
+            // its first save carries the flag into this same insert.
+            pnl_quotation["is_requested_for_engr"] = chk_requested_for_engr.Checked;
+
             if (string.IsNullOrWhiteSpace(txt_project_name.Text))
             {
                 MessageBox.Show("Please enter a valid project name. The project name cannot be empty or consist only of spaces.",
@@ -2038,20 +2060,32 @@ namespace smpc_sales_app.Pages.Sales
             List<SalesProjectContent> ContentMatchedTab = new List<SalesProjectContent>();
             List<SalesProjectAdvancedConditions> AdvanceConditionMatchedTab = new List<SalesProjectAdvancedConditions>();
 
+            // Whether the payload actually carried these two, as opposed to omitting them
+            // or sending null. See the note on the diff assignments below - this cannot be
+            // inferred afterwards, because DeserializeSingleFromTab never returns null.
+            bool payloadHasContent = TabCarriesValue(matchedTab, "sales_project_content");
+            bool payloadHasCondition = TabCarriesValue(matchedTab, "sales_project_content_advanced_condition");
+
             if (matchedTab != null)
             {
-                var content = DeserializeSingleFromTab<SalesProjectContent>(matchedTab, "sales_project_content");
-                if (content != null)
+                if (payloadHasContent)
                 {
-                    content.based_id = itemSetId;
-                    ContentMatchedTab.Add(content);
+                    var content = DeserializeSingleFromTab<SalesProjectContent>(matchedTab, "sales_project_content");
+                    if (content != null)
+                    {
+                        content.based_id = itemSetId;
+                        ContentMatchedTab.Add(content);
+                    }
                 }
 
-                var advCondition = DeserializeSingleFromTab<SalesProjectAdvancedConditions>(matchedTab, "sales_project_content_advanced_condition");
-                if (advCondition != null)
+                if (payloadHasCondition)
                 {
-                    advCondition.based_id = itemSetId;
-                    AdvanceConditionMatchedTab.Add(advCondition);
+                    var advCondition = DeserializeSingleFromTab<SalesProjectAdvancedConditions>(matchedTab, "sales_project_content_advanced_condition");
+                    if (advCondition != null)
+                    {
+                        advCondition.based_id = itemSetId;
+                        AdvanceConditionMatchedTab.Add(advCondition);
+                    }
                 }
             }
 
@@ -2060,8 +2094,26 @@ namespace smpc_sales_app.Pages.Sales
             List<SalesProjectHistory> HistoryMatchedTab = DeserializeFromTab<SalesProjectHistory>(matchedTab, "sales_project_history");
 
             tabDiff.SalesProjectItemSet = DiffModels(db.ItemSets, newItemSets, x => x.itemset_id, GetItemSetChanges);
-            tabDiff.SalesProjectContent = DiffModels(db.Contents, ContentMatchedTab, x => x.content_id, GetContentChanges);
-            tabDiff.SalesProjectContentAdvancedCondition = DiffModels(db.Conditions, AdvanceConditionMatchedTab, x => x.conditions_id, GetAdvancedConditionsChanges);
+            // Only diff these two when the payload actually carried them. Diffing a
+            // payload that didn't is destructive, and silently so:
+            // DeserializeSingleFromTab returns new T() - never null - for a missing or
+            // null key, and an empty T has content_id/conditions_id 0. Diffed by that id
+            // the REAL row looks Removed and the empty one Added, so the save deletes the
+            // content row and inserts a blank one in its place. That is what produced
+            // "content remove: The DELETE statement conflicted with the REFERENCE
+            // constraint fk_tbl_trans_sales_project_content_sales_project_size_up" on an
+            // Engineering save: the foreign key from Size Up is the only thing that
+            // stopped it. A content row with no Size Up children had nothing to stop it.
+            //
+            // An omitted key means "this client isn't touching this", which is exactly
+            // what the Engineering page does for the parts an engineer may not edit - so
+            // the correct diff is an empty one, not a deletion.
+            tabDiff.SalesProjectContent = payloadHasContent
+                ? DiffModels(db.Contents, ContentMatchedTab, x => x.content_id, GetContentChanges)
+                : new ModelUpdateDiff<SalesProjectContent>();
+            tabDiff.SalesProjectContentAdvancedCondition = payloadHasCondition
+                ? DiffModels(db.Conditions, AdvanceConditionMatchedTab, x => x.conditions_id, GetAdvancedConditionsChanges)
+                : new ModelUpdateDiff<SalesProjectAdvancedConditions>();
             tabDiff.SalesProjectItems = DiffModels(db.Items, ItemsMatchedTab, x => x.items_id, GetItemFieldChanges);
             tabDiff.SalesProjectWirings = DiffModels(db.Wiring, WiringMatchedTab, x => x.id, GetWiringChanges);
             tabDiff.SalesProjectHistory = DiffModels(db.History, HistoryMatchedTab, x => (int)x.history_id, GetHistoryChanges);
@@ -2192,6 +2244,15 @@ namespace smpc_sales_app.Pages.Sales
             if (value == null) return "-";
             var text = value.ToString();
             return string.IsNullOrWhiteSpace(text) ? "-" : text;
+        }
+
+        // Did the payload actually carry a value under this key? DeserializeSingleFromTab
+        // deliberately returns new T() rather than null for a missing/null key, so the
+        // caller cannot tell "absent" from "present but empty" after the fact - and for
+        // an id-keyed diff those two mean opposite things.
+        private static bool TabCarriesValue(Dictionary<string, object> tab, string key)
+        {
+            return tab != null && tab.ContainsKey(key) && tab[key] != null;
         }
 
         private T DeserializeSingleFromTab<T>(Dictionary<string, object> tab, string key) where T : class, new()
@@ -3210,6 +3271,16 @@ namespace smpc_sales_app.Pages.Sales
                 parentData["additional_discounted"] = float.TryParse(txt_additional_discount.Text, out float quickAdditionalDiscount) ? quickAdditionalDiscount : 0;
                 parentData["percent_discount"] = float.TryParse(Helpers.GetCleanedPriceValue(txt_percent_discount.Text), out float quickComputedPercentDiscount) ? quickComputedPercentDiscount : 0;
 
+                // Same key-mismatch as above: GetControlsValuesV2's auto-scrape derives
+                // "requested_for_engr" from chk_requested_for_engr's own name, which
+                // doesn't match the model's real json tag ("is_requested_for_engr") - set
+                // explicitly. This is what lets REQUEST FOR ENGR. be checked on a brand-new,
+                // not-yet-saved quotation (btn_request_for_engr_Click just marks the
+                // checkbox pending in that case, no id-scoped API call): is_requested_for_engr
+                // lives on this same tbl_trans_sales_quotation row, so it rides along in this
+                // same INSERT instead of needing a separate call afterward.
+                parentData["is_requested_for_engr"] = chk_requested_for_engr.Checked;
+
 
                 var dataSource = Helpers.ConvertDataGridViewToDataTable(dgv_quick_quote_details);
                 var newDatasource = Helpers.ConvertDataTableToStringTable(dataSource);
@@ -3863,41 +3934,10 @@ namespace smpc_sales_app.Pages.Sales
         }
 
         // Selected item from item list
+        // Delegates to SalesItemGridEditor - see the _itemGridEditor field.
         private void HandleItemSelectionClick(int rowIndex, DataGridView dgv)
         {
-            // Was counterReference++ - a running counter that only ever goes up, so it
-            // drifted away from what's actually on the grid the moment anything got
-            // deleted/renumbered (e.g. grid shows 1, 2 but counterReference was already at
-            // 4 from earlier adds, so the next item became "5" instead of "3"). Recompute
-            // from the grid's real current max every time instead, so it's always correct
-            // regardless of delete/renumber history.
-            counterReference = GetMaxTopLevelReferenceCode(dgv) + 1;
-            SalesItemModal itemModal = new SalesItemModal(ItemList, BomHead, BomDetails);
-            DialogResult r = itemModal.ShowDialog();
-
-            if (r == DialogResult.OK)
-            {
-                int itemid = itemModal.GetParentItemId();
-
-                if (itemModal.isBom)
-                {
-                    int bomID = itemModal.GetBomResult();
-                    GetBomDataRecursive(rowIndex, bomID, itemid, dgv);
-                    counterParent = 1;
-                }
-                else if (itemModal.isItem)
-                {
-                    GetItemData(rowIndex, itemid, dgv, null);
-                }
-                else
-                {
-                    // Invalid/unmatched case
-                    MessageBox.Show("Invalid selection. The chosen item could not be matched to an Item or BOM.",
-                                    "Invalid Selection",
-                                    MessageBoxButtons.OK,
-                                    MessageBoxIcon.Error);
-                }
-            }
+            ItemGridEditor.HandleItemSelectionClick(rowIndex, dgv);
         }
 
         // Cache of the last-fetched available stock per item, keyed by item_id - avoids
@@ -4754,9 +4794,48 @@ namespace smpc_sales_app.Pages.Sales
 
         }
 
-        // Counters for reference codes
-        int counterReference = 0;
-        int counterParent = 1;
+        // The shared item/BOM inserter. Its logic used to live here as private methods,
+        // which left the Engineering app - same ItemSetUC, same grid - with no way to add
+        // an item at all. Moved to SalesItemGridEditor on 2026-09-04 so both apps run the
+        // same code; see that class for why it is not on ItemSetUC itself.
+        private readonly SalesItemGridEditor _itemGridEditor = new SalesItemGridEditor();
+
+        // Re-feeds the catalogs on every access rather than at construction, because
+        // ItemList/BomHead/BomDetails/Company are re-assigned wholesale by the fetch
+        // methods - a snapshot taken once would go stale the first time anything reloaded.
+        private SalesItemGridEditor ItemGridEditor
+        {
+            get
+            {
+                _itemGridEditor.ItemList = ItemList;
+                _itemGridEditor.BomHead = BomHead;
+                _itemGridEditor.BomDetails = BomDetails;
+                _itemGridEditor.Company = Company;
+                _itemGridEditor.IsProject = isProject;
+                _itemGridEditor.RefreshStockIndicator = (rowIndex, grid) =>
+                {
+                    // RefreshStockIndicator is async Task and was previously called
+                    // without awaiting from exactly this spot, so this keeps the existing
+                    // fire-and-forget behaviour rather than changing it as a side effect.
+                    var ignored = RefreshStockIndicator(rowIndex, grid);
+                };
+                return _itemGridEditor;
+            }
+        }
+
+        // Counters for reference codes. Properties, not fields, so the many call sites
+        // that read and write them directly keep working while the editor owns the state.
+        private int counterReference
+        {
+            get { return _itemGridEditor.CounterReference; }
+            set { _itemGridEditor.CounterReference = value; }
+        }
+
+        private int counterParent
+        {
+            get { return _itemGridEditor.CounterParent; }
+            set { _itemGridEditor.CounterParent = value; }
+        }
 
         // Red-flagged Project tabs (toggled via right-click menu). Used to be stored as
         // Color.Red/Color.White directly in TabPage.Tag, but Tag is also where a tab's real
@@ -4790,171 +4869,13 @@ namespace smpc_sales_app.Pages.Sales
         // lines added through the item picker (GetItemData) showed one. Both should
         // read the same value: whatever the item carries in Item Entry. Same lookup
         // GetItemData uses - ItemList keyed on "id".
-        private string ResolveItemUom(int itemId)
+
+        private decimal GetBomDataRecursive(int rowIndex, int bomID, int itemID, DataGridView dgv,
+                                            string additionalReference = null, int level = 0,
+                                            HashSet<int> visited = null)
         {
-            if (itemId <= 0 || ItemList == null || ItemList.Rows.Count == 0)
-                return "";
-
-            DataTable match = Helpers.FilterExactDataTable(ItemList, itemId.ToString(), "id");
-            if (match == null || match.Rows.Count == 0 || !match.Columns.Contains("unit_of_measure"))
-                return "";
-
-            return match.Rows[0]["unit_of_measure"]?.ToString() ?? "";
-        }
-
-        private decimal GetBomDataRecursive(int rowIndex, int bomID, int itemID, DataGridView dgv, string additionalReference = null, int level = 0, HashSet<int> visited = null)
-        {
-            Dictionary<int, DataRow> bomHeadDict = new Dictionary<int, DataRow>();
-            Dictionary<int, List<DataRow>> bomChildDict = new Dictionary<int, List<DataRow>>();
-
-            if (BomHead != null && BomHead.Rows.Count > 0)
-            {
-                bomHeadDict = BomHead.AsEnumerable()
-                    .ToDictionary(r => r.Field<int>("id"));
-            }
-
-            if (BomDetails != null && BomDetails.Rows.Count > 0)
-            {
-                bomChildDict = BomDetails.AsEnumerable()
-                    .GroupBy(r => r.Field<int>("item_bom_id"))
-                    .ToDictionary(g => g.Key, g => g.ToList());
-            }
-
-            // --- Initialize ---
-            if (visited == null)
-                visited = new HashSet<int>();
-
-            if (visited.Contains(bomID))
-                return 0;
-            visited.Add(bomID);
-
-            if (counterParent == 1)
-            {
-                counterParent = counterReference;
-            }
-
-            string ParentLevel = null;
-
-            if (string.IsNullOrEmpty(additionalReference))
-                additionalReference = counterParent.ToString();
-
-            if (level == 0)
-            {
-                string[] arrayReference = additionalReference.Split('.');
-                int referenceCount = arrayReference.Length - 1;
-                level = referenceCount;
-            }
-
-            ParentLevel = new string(' ', level * 4);
-
-            DataTable dataSource = dgv.DataSource as DataTable;
-            if (dataSource == null)
-                return 0;
-
-            if (!bomHeadDict.TryGetValue(bomID, out DataRow parentRow))
-                return 0;
-
-            // --- Compute parent labor cost ---
-            decimal manDays = Convert.ToDecimal(parentRow["man_days"]);
-            decimal laborRate = Convert.ToDecimal(parentRow["labor_rate"]);
-            decimal laborCost = manDays * laborRate;
-
-            // --- Initial total cost for this parent (production + labor) ---
-            decimal totalCost = laborCost;
-
-            // --- Add parent row ---
-            DataRow newParent = dataSource.NewRow();
-            newParent["reference_code"] = additionalReference;
-            newParent["bom_id"] = parentRow["id"];
-            newParent["item_id"] = parentRow["item_id"];
-            newParent["components"] = ParentLevel + parentRow["general_name"];
-            newParent["model"] = parentRow["item_model"];
-            newParent["qty"] = parentRow["production_qty"];
-            newParent["man_days"] = parentRow["man_days"];
-            newParent["labor_rate"] = parentRow["labor_rate"];
-            newParent["unit_price"] = Convert.ToDecimal(parentRow["production_cost"]);
-            if (dataSource.Columns.Contains("unit_of_measure"))
-                newParent["unit_of_measure"] = ResolveItemUom(Convert.ToInt32(parentRow["item_id"]));
-
-            dataSource.Rows.InsertAt(newParent, rowIndex);
-
-            int item_id_parent = Convert.ToInt32(parentRow["item_id"]);
-
-            //Helpers.SalesItemRowStyler.ApplyStyle(dgv, rowIndex, "parent");
-
-            int insertIndex = rowIndex + 1; // Start inserting children after parent
-
-            level++; // Increase level for children
-
-            // --- Process children ---
-            if (!bomChildDict.TryGetValue(bomID, out List<DataRow> childRows))
-            {
-                return 0;
-            }
-
-            int counterSub = 1;
-            foreach (DataRow child in childRows)
-            {
-                int childItemId = Convert.ToInt32(child["item_id"]);
-
-                // Check if child item is also a BOM
-                DataRow subBomRow = bomHeadDict.Values.FirstOrDefault(r => r.Field<int>("item_id") == childItemId);
-
-
-                // Recursive case: child is a BOM if not then it's a leaf item
-                if (subBomRow != null)
-                {
-                    int subBomId = Convert.ToInt32(subBomRow["id"]);
-
-                    decimal subTotal = GetBomDataRecursive(insertIndex, subBomId, childItemId, dgv, $"{additionalReference}.{counterSub}", level, visited);
-
-                    totalCost += subTotal;
-
-                    // After recursion, update insertIndex to point after the last inserted child subtree
-                    // Count how many rows were inserted for this subtree
-                    int subtreeRows = CountRowsByReference(dataSource, $"{additionalReference}.{counterSub}");
-                    insertIndex += subtreeRows;
-                }
-                else
-                {
-                    decimal unitPrice = Convert.ToDecimal(child["unit_price"]);
-                    decimal qty = Convert.ToDecimal(child["bom_qty"]);
-                    decimal lineTotal = unitPrice * qty;
-                    totalCost += lineTotal;
-
-                    // Leaf item
-                    DataRow newChild = dataSource.NewRow();
-                    newChild["bom_id"] = child["item_bom_id"];
-                    newChild["item_id"] = childItemId;
-                    newChild["components"] = new string(' ', level * 4) + child["item_name"];
-                    newChild["model"] = child["size"];
-                    newChild["qty"] = qty;
-                    newChild["unit_price"] = unitPrice.ToString();
-                    newChild["reference_code"] = $"{additionalReference}.{counterSub}";
-                    if (dataSource.Columns.Contains("unit_of_measure"))
-                        newChild["unit_of_measure"] = ResolveItemUom(childItemId);
-
-                    int addedChildIndex = rowIndex + 1;
-
-                    dataSource.Rows.InsertAt(newChild, insertIndex);
-                    dgv.Rows[insertIndex].ReadOnly = true;
-                    //Helpers.SalesItemRowStyler.ApplyStyle(dgv, insertIndex, "child");
-                    insertIndex++; // Move to next position for next child
-                }
-
-                counterSub++;
-            }
-
-            // Update the parent unit_price to total of all its descendants.
-            // Was hardcoded * 1.186m with a comment claiming "1.186 is for 18% VAT" -
-            // this is a markup figure, not VAT (confirmed with user), and 18% isn't
-            // this system's rate anywhere. See GetCompanyMarkupMultiplier's own comment.
-            decimal TotalCostWithMarkup = decimal.Parse(totalCost.ToString()) * GetCompanyMarkupMultiplier();
-            dataSource.Rows[rowIndex]["unit_price"] = TotalCostWithMarkup.ToString();
-
-            counterParent++;
-            return totalCost;
-
+            return ItemGridEditor.GetBomDataRecursive(rowIndex, bomID, itemID, dgv,
+                                                      additionalReference, level, visited);
         }
 
         // Finds the highest top-level reference_code already on the grid (e.g. for codes
@@ -4964,122 +4885,14 @@ namespace smpc_sales_app.Pages.Sales
         // instead of 4,5).
         private int GetMaxTopLevelReferenceCode(DataGridView dgv)
         {
-            int max = 0;
-
-            // Same DataView-vs-DataTable unwrap as DeleteRowsByReferenceCode/
-            // RenumberReferenceCodes - viewing/editing an existing quotation binds this
-            // grid to a DataView, not a DataTable, which "dgv.DataSource is DataTable"
-            // doesn't match. That silently made this always return 0 on an existing
-            // quotation, so newly added items reused/collided with codes already in use
-            // instead of continuing from the real max.
-            DataTable dataSource = dgv?.DataSource as DataTable ?? (dgv?.DataSource as DataView)?.Table;
-            if (dataSource == null || !dataSource.Columns.Contains("reference_code"))
-                return max;
-
-            foreach (DataRow row in dataSource.Rows)
-            {
-                string value = row["reference_code"]?.ToString();
-                if (string.IsNullOrWhiteSpace(value))
-                    continue;
-
-                // Only the part before the first "." is the top-level item number
-                // (sub-item numbering restarts per parent, so it shouldn't count here).
-                string topLevelPart = value.Split('.')[0];
-                if (int.TryParse(topLevelPart, out int num) && num > max)
-                {
-                    max = num;
-                }
-            }
-
-            return max;
+            return ItemGridEditor.GetMaxTopLevelReferenceCode(dgv);
         }
 
         // Helper to count rows by reference code prefix
-        private int CountRowsByReference(DataTable dt, string referencePrefix)
-        {
-            int count = 0;
-            foreach (DataRow row in dt.Rows)
-            {
-                var refCode = row.Table.Columns.Contains("reference_code") ? row["reference_code"]?.ToString() : null;
-                if (!string.IsNullOrEmpty(refCode) && refCode.StartsWith(referencePrefix))
-                    count++;
-            }
-            return count;
-        }
 
         private void GetItemData(int rowIndex, int itemID, DataGridView dgv, string reference, string counter = null)
         {
-            DataTable itemList = Helpers.FilterExactDataTable(ItemList, itemID.ToString(), "id");
-
-            int level = 0;
-
-            if (reference != null)
-            {
-                string[] arrayReference = reference.Split('.');
-                int referenceCount = arrayReference.Length - 1;
-                level = referenceCount;
-            }
-
-
-            if (itemList.Rows.Count == 0)
-            {
-                MessageBox.Show("Invalid selection. Item not found.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-
-            DataTable dataSource = dgv.DataSource as DataTable;
-            if (!isProject && dataSource == null) return;
-
-            foreach (DataRow row in itemList.Rows)
-            {
-                //if (isProject)
-                //{
-                //    if (tabControl2.SelectedTab.Controls[0] is ItemSetUC currentControl)
-                //    {
-                //        string item_id = row["id"].ToString();
-                //        string item_name = row["item_name"].ToString();
-                //        string bomid = "0";
-                //        string itemcode = row["item_code"].ToString();
-                //        string size = null;
-
-                //        currentControl.SetComponentData(rowIndex, item_id, item_name, itemcode, size, bomid);
-                //    }
-                //}
-                //else
-                //{
-                    DataRow newRow = dataSource.NewRow();
-                    if (dataSource.Columns.Contains("unit_of_measure"))
-                        newRow["unit_of_measure"] = row["unit_of_measure"];
-
-                    reference = (reference != null) ? reference : (counter != null) ? counter : counterReference.ToString();
-
-                    newRow["item_id"] = row["id"];
-                    newRow["model"] = row["item_model"];
-                    newRow["components"] = new string(' ', level * 4) + row["item_name"];
-                    newRow["reference_code"] = reference;
-
-                    dataSource.Rows.InsertAt(newRow, rowIndex);
-
-                    // 🎨 Style as Single Item
-                    // Bug #089 (Trello, "added item is different from selected item"):
-                    // this used dataSource.Rows.Count - 1 (the LAST row) as "the row we
-                    // just added" - but InsertAt(newRow, rowIndex) puts the new row AT
-                    // rowIndex, shifting everything after it (including whatever was
-                    // previously the last row) down by one. So the styling/stock-check
-                    // below was applied to an unrelated row, not the one that actually
-                    // shows the just-picked item - reading as "the wrong item" once that
-                    // mis-targeted row's styling/stock flag changed instead.
-                    int addedRowIndex = rowIndex;
-                    Helpers.SalesItemRowStyler.ApplyStyle(dgv, addedRowIndex, "single");
-
-                    // Show available stock for the item just picked before the user has
-                    // even typed a QTY yet. Uses addedRowIndex, not rowIndex - see the
-                    // styling call just above, which is why that's the grid position the
-                    // new row actually lands on.
-                    RefreshStockIndicator(addedRowIndex, dgv);
-                //}
-            }
-
+            ItemGridEditor.GetItemData(rowIndex, itemID, dgv, reference, counter);
         }
 
 
@@ -5359,6 +5172,7 @@ namespace smpc_sales_app.Pages.Sales
                 }
 
                 UpdateDescriptionFieldsVisibility();
+                UpdateRequestForEngrVisibility();
 
                 if (!foundAsQuickQuote && !foundAsProject)
                 {
@@ -5526,13 +5340,30 @@ namespace smpc_sales_app.Pages.Sales
                 btn_duplicate.Visible = !isFinalized;
 
                 // REQUEST FOR ENGR. hands a saved quote to an engineer (spec §5.1, §3.3).
-                // Same lifecycle as New Version: shown only for a saved, not-yet-finalized
-                // record. This button was hard-hidden in the designer and never re-shown,
+                // This button was hard-hidden in the designer and never re-shown at all,
                 // which is why no quote ever reached the engineering Sales Quotation List
                 // (the engineering view filters on is_requested_for_engr, set only by this
-                // button's POST). Finalized quotes are immutable, so there is nothing for an
-                // engineer to edit - hence !isFinalized, matching btn_edit/btn_new_version.
-                btn_request_for_engr.Visible = !isFinalized;
+                // button's POST). Per user decision it now stays visible even before save
+                // and even once finalized - the click handler's own "please save first"
+                // guard covers the unsaved case, and requesting an engineer on an immutable
+                // finalized quote is harmless to leave clickable even though it has no
+                // remaining purpose (there's nothing left for an engineer to edit).
+                //
+                // Project Quotation only (later user decision, see
+                // UpdateRequestForEngrVisibility) - isProject is already set correctly by
+                // this point in every path that reaches bind() (FetchQuotationDetailsByDocumentNo
+                // sets it from whichever lookup actually found the record; the tab-switch
+                // handlers set it before fetching).
+                btn_request_for_engr.Visible = isProject;
+
+                // Status indicator: shows whether this quotation (Quick Quote or Project -
+                // shared pnl_header control, so no per-mode duplication needed) has already
+                // been sent to an engineer. Read-only (Enabled = false in the designer) -
+                // the button is what toggles it, via RequestForEngr/CancelRequestForEngr.
+                chk_requested_for_engr.Visible = isProject;
+                chk_requested_for_engr.Checked = HeaderList.Columns.Contains("is_requested_for_engr")
+                    && Convert.ToBoolean(HeaderList.Rows[SelectedRow]["is_requested_for_engr"]);
+                UpdateRequestForEngrButtonText();
 
                 btn_edit.Visible = !isFinalized;
                 btn_add_customer.Visible = !isFinalized;
@@ -6857,6 +6688,12 @@ namespace smpc_sales_app.Pages.Sales
 
             pnl_quotation["project_name"] = txt_project_name.Text.Trim();
 
+            // Same key-mismatch fix as IsQuickQuote() - GetControlsValues auto-scrapes
+            // chk_requested_for_engr to "requested_for_engr", not the model's real
+            // "is_requested_for_engr". Set explicitly so a Project Quote checked before
+            // its first save carries the flag into this same insert.
+            pnl_quotation["is_requested_for_engr"] = chk_requested_for_engr.Checked;
+
             if (string.IsNullOrWhiteSpace(txt_project_name.Text))
             {
                 MessageBox.Show("Please enter a valid project name. The project name cannot be empty or consist only of spaces.",
@@ -7078,6 +6915,12 @@ namespace smpc_sales_app.Pages.Sales
                 // regular save path above.
                 parentData["additional_discounted"] = float.TryParse(txt_additional_discount.Text, out float quickFinalizeAdditionalDiscount) ? quickFinalizeAdditionalDiscount : 0;
                 parentData["percent_discount"] = float.TryParse(Helpers.GetCleanedPriceValue(txt_percent_discount.Text), out float quickFinalizeComputedPercentDiscount) ? quickFinalizeComputedPercentDiscount : 0;
+
+                // Same key-mismatch fix as the regular save path - carry whatever
+                // chk_requested_for_engr currently shows onto this finalized copy too
+                // (Finalize inserts a fresh FQ# row, id = 0 above, so it needs its own
+                // explicit value same as everything else here).
+                parentData["is_requested_for_engr"] = chk_requested_for_engr.Checked;
 
                 var dataSource = Helpers.ConvertDataGridViewToDataTable(dgv_quick_quote_details);
                 var newDatasource = Helpers.ConvertDataTableToStringTable(dataSource);
@@ -7454,48 +7297,117 @@ namespace smpc_sales_app.Pages.Sales
             this.Dispose();
         }
         // §3.2/§6.3 REQUEST FOR ENGR. (Phase 4 item 4.1) - was a dead stub that opened an
-        // old test form (ProjectTest) and did nothing else. Now makes the explicit,
-        // per-quote, per-engineer grant: opens RequestForEngrModal to pick the engineer,
-        // then POSTs it so this quotation appears on that engineer's Sales Quotation
-        // List / the engineering red box (see RequestQuotationForEngr in quotation_service.go
-        // and the rewritten vw_get_engineering_redbox_quotation_list.sql).
+        // old test form (ProjectTest) and did nothing else.
+        //
+        // Changed 2026-09-03 (user decision, spec updated to match): this used to open
+        // RequestForEngrModal to name one specific engineer. That picker is gone -
+        // checking the request is now the whole action, and every engineer sees every
+        // checked quotation on a shared list (see RequestQuotationForEngr in
+        // quotation_service.go and GetEngineeringQuotationListByEngr, which no longer
+        // scopes by requested_engr_id). RequestForEngrModal itself is now unused dead
+        // code, left in place rather than deleted in case this needs reverting.
+        //
+        // Changed again same day (user decision): a not-yet-saved quotation no longer
+        // blocks this with "Save Required". is_requested_for_engr lives on the same
+        // tbl_trans_sales_quotation row as everything else on this form, so there's no
+        // real reason a brand-new record needs its own id before the flag can be set -
+        // it can just ride along in the same INSERT that creates the row (see the
+        // parentData["is_requested_for_engr"]/pnl_quotation["is_requested_for_engr"]
+        // overrides in IsQuickQuote/IsProject/FinalizeQuickQuotation/
+        // FinalizeProjectQuotation). So on an unsaved record this only ever flips the
+        // checkbox locally - no API call, nothing to fail - and Save carries it in.
+        //
+        // Changed again same day (user decision): this is now a toggle, not a one-way
+        // action - the button relabels itself CANCEL REQUEST once checked (see
+        // UpdateRequestForEngrButtonText) and clicking it again reverses the request via
+        // CancelQuotationForEngr, dropping the quotation off every engineer's Sales
+        // Quotation List immediately (its only visibility gate is is_requested_for_engr).
         private async void btn_request_for_engr_Click(object sender, EventArgs e)
         {
             int sId = ToInt(txt_id.Text);
             if (isNewRecord || sId <= 0)
             {
-                MessageBox.Show("Please save this quotation before requesting it for engineering.",
-                    "Save Required", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                chk_requested_for_engr.Checked = !chk_requested_for_engr.Checked;
+                UpdateRequestForEngrButtonText();
+                MessageBox.Show(
+                    chk_requested_for_engr.Checked
+                        ? "This quotation will be sent to engineering once you save it."
+                        : "This quotation will no longer be sent to engineering. Save to apply.",
+                    "Pending", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
-            using (var modal = new RequestForEngrModal())
+            if (chk_requested_for_engr.Checked)
             {
-                if (modal.ShowDialog() != DialogResult.OK)
+                if (MessageBox.Show("Cancel this quotation's engineering request? It will no longer be visible on any engineer's Sales Quotation List.",
+                    "Confirm", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
+                {
                     return;
+                }
 
                 try
                 {
-                    var response = await QuotationService.RequestForEngr(sId, modal.SelectedEngrId);
-                    if (response.Success)
+                    var cancelResponse = await QuotationService.CancelRequestForEngr(sId);
+                    if (cancelResponse.Success)
                     {
-                        MessageBox.Show("Quotation sent to engineering.", "Success",
+                        chk_requested_for_engr.Checked = false;
+                        UpdateRequestForEngrButtonText();
+                        MessageBox.Show("Engineering request cancelled.", "Success",
                             MessageBoxButtons.OK, MessageBoxIcon.Information);
                     }
                     else
                     {
-                        MessageBox.Show(response.message, "Error",
+                        MessageBox.Show(cancelResponse.message, "Error",
                             MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
                 }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine("RequestForEngr error: " + ex);
+                    System.Diagnostics.Debug.WriteLine("CancelRequestForEngr error: " + ex);
                     MessageBox.Show(
-                        "We couldn't send this quotation to engineering. Please try again. If the problem continues, contact support.",
+                        "We couldn't cancel this quotation's engineering request. Please try again. If the problem continues, contact support.",
                         "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
+                return;
             }
+
+            if (MessageBox.Show("Send this quotation to engineering? Any engineer will be able to see and edit its Size Up, item table, and wiring.",
+                "Confirm", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
+            {
+                return;
+            }
+
+            try
+            {
+                var response = await QuotationService.RequestForEngr(sId);
+                if (response.Success)
+                {
+                    chk_requested_for_engr.Checked = true;
+                    UpdateRequestForEngrButtonText();
+                    MessageBox.Show("Quotation sent to engineering.", "Success",
+                        MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                else
+                {
+                    MessageBox.Show(response.message, "Error",
+                        MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("RequestForEngr error: " + ex);
+                MessageBox.Show(
+                    "We couldn't send this quotation to engineering. Please try again. If the problem continues, contact support.",
+                    "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        // Keeps the button's label in sync with chk_requested_for_engr's current state -
+        // called from bind() (loading a record), SetNewFormMode (new/reset), and every
+        // successful toggle in btn_request_for_engr_Click above.
+        private void UpdateRequestForEngrButtonText()
+        {
+            btn_request_for_engr.Text = chk_requested_for_engr.Checked ? "CANCEL REQUEST" : "REQUEST FOR ENGR.";
         }
         // Only the user who originally created a quotation (quick quote or project) is
         // allowed to edit/update it. txt_created_by is already bound to the loaded record's
@@ -7699,10 +7611,24 @@ namespace smpc_sales_app.Pages.Sales
             btn_new.Visible = !isTrue;
             btn_duplicate.Visible = !isTrue;
             btn_new_version.Visible = !isTrue;
-            // Hidden while creating a brand-new (unsaved) quote - REQUEST FOR ENGR. requires
-            // a saved record (its handler blocks otherwise). bind() re-shows it for a loaded,
-            // non-finalized record.
-            btn_request_for_engr.Visible = !isTrue;
+            // Per user decision: unlike New Version/Duplicate (which genuinely can't run
+            // without an existing saved record), REQUEST FOR ENGR. and its status checkbox
+            // stay visible even on a brand-new, unsaved quotation - checking it there just
+            // marks the checkbox pending (see btn_request_for_engr_Click), since
+            // is_requested_for_engr rides along in the same INSERT that creates the row.
+            // Still Project Quotation only, though (see UpdateRequestForEngrVisibility) -
+            // isProject already reflects whichever tab is active (btn_new_Click reads it
+            // right after this call without changing it, so it's safe here too).
+            btn_request_for_engr.Visible = isProject;
+            chk_requested_for_engr.Visible = isProject;
+            if (isTrue)
+            {
+                // A brand-new record has no request history yet - don't carry over a
+                // Checked state left behind by whichever record was open before New was
+                // clicked (ResetControls only clears TextBoxes, not CheckBoxes).
+                chk_requested_for_engr.Checked = false;
+            }
+            UpdateRequestForEngrButtonText();
             btn_search.Visible = !isTrue;
             btn_prev.Visible = !isTrue;
             btn_next.Visible = !isTrue;
