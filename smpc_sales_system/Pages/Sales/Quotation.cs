@@ -124,6 +124,20 @@ namespace smpc_sales_app.Pages.Sales
             // itself decides whether there's actually anything worth refreshing (Project tab
             // open, a saved record loaded, not mid-edit), so it's safe to just let this run
             // for the lifetime of the control.
+            // Every item on the tab right-click menu - Toggle RedFlag, Rename Tabs, Remove
+            // Tabs - changes the quotation, so none of them belong in view mode. The menu was
+            // attached in the Designer alone (tabControl2.ContextMenuStrip) with nothing
+            // gating it, so a saved quote being looked at could have a tab renamed, excluded
+            // or deleted with no Edit step at all (user-reported 2026-09-05).
+            //
+            // Cancelling on Opening blocks the whole menu rather than each handler, so this
+            // cannot drift as items are added to it later.
+            TabControl2ContextMenuStrip.Opening += (s, e) =>
+            {
+                if (!isNewRecord && !IsEdit)
+                    e.Cancel = true;
+            };
+
             projectAutoRefreshTimer = new System.Windows.Forms.Timer { Interval = 5 * 60 * 1000 };
             projectAutoRefreshTimer.Tick += ProjectAutoRefreshTimer_Tick;
             projectAutoRefreshTimer.Start();
@@ -1450,10 +1464,30 @@ namespace smpc_sales_app.Pages.Sales
                 // which also means reopening an existing quote already affected by this
                 // bug repairs it, rather than needing a manual fix.
                 UC.SetWiring(hasContentRow ? contentTable.Rows[0]["is_wiring"]?.ToString() ?? "false" : "false");
+
+                // Restore the tab's exclusion. Without this the red flag was purely a
+                // session artefact: set it, save, reopen, and the tab came back included -
+                // silently putting its items back into gross sales and the printed proposal,
+                // which is exactly what §5.1.4 and negative test 35 forbid.
+                bool isExcluded = hasContentRow
+                    && contentTable.Columns.Contains("is_excluded")
+                    && bool.TryParse(contentTable.Rows[0]["is_excluded"]?.ToString(), out bool parsedExcluded)
+                    && parsedExcluded;
+
+                if (isExcluded)
+                    _redFlaggedTabs.Add(newTab);
+                else
+                    _redFlaggedTabs.Remove(newTab);
             }
 
             TabPage addNewTab = new TabPage("+");
             tabControl2.TabPages.Add(addNewTab);
+
+            // Restored red flags have to be repainted, the same way toggling one does. The
+            // tab colour is drawn from _redFlaggedTabs in the owner-draw handler, so a flag
+            // put back during load is invisible until something invalidates the control -
+            // which would have made a persisted exclusion look like it had not been saved.
+            tabControl2.Invalidate();
 
             fetchProjectMultipliers();
             //ConnectToWebSocket("Sales", selectedSalesQuotationId);
@@ -1756,7 +1790,13 @@ namespace smpc_sales_app.Pages.Sales
                         };
 
                         tabData["sales_project_history"] = selectedControl.GetHistoryList();
-                        tabData["sales_project_content"] = selectedControl.GetProjectContentsData();
+                        // �5.1.4: the red-flag lives on the TAB, not inside ItemSetUC, so it is stamped onto
+                        // the content row here where selectedTab is in scope. Persisting it is what lets the
+                        // flag survive a reload and lets the print modal - which fetches its own data - honour
+                        // it at all.
+                        var contentData = selectedControl.GetProjectContentsData();
+                        contentData["is_excluded"] = _redFlaggedTabs.Contains(selectedTab);
+                        tabData["sales_project_content"] = contentData;
                         tabData["sales_project_content_advanced_condition"] = selectedControl.GetAdvancedConditionsData();
                         tabData["sales_project_items"] = selectedControl.GetProjectItems()["sales_project_items"];
                         tabData["sales_project_wiring"] = selectedControl.GetProjectWiringData()["sales_project_wiring"];
@@ -2943,6 +2983,17 @@ namespace smpc_sales_app.Pages.Sales
             Compare(c, "no_of_pump_set", db.no_of_pump_set, upd.no_of_pump_set);
             Compare(c, "item_set_notes", db.item_set_notes, upd.item_set_notes);
             Compare(c, "is_wiring", db.is_wiring, upd.is_wiring);
+
+            // Without this, toggling the red flag and saving did nothing at all: DiffModels
+            // decides whether a content row goes into Updated by comparing exactly the fields
+            // listed here, so a change no line covers reads as "no changes" and the row is
+            // never sent. The flag was being written into the payload correctly and then
+            // dropped one step later (user-reported 2026-09-05).
+            //
+            // Compared through IsExcluded rather than the raw bool? so null and false are the
+            // same thing here - a row that predates the column must not look like a change on
+            // every save.
+            Compare(c, "is_excluded", db.IsExcluded, upd.IsExcluded);
 
             // Size Up and Final Selection are child COLLECTIONS of the content row, not
             // scalar fields - so adding or removing a candidate pump changed none of the
@@ -6892,7 +6943,13 @@ namespace smpc_sales_app.Pages.Sales
                         };
 
                         tabData["sales_project_history"] = selectedControl.GetHistoryList();
-                        tabData["sales_project_content"] = selectedControl.GetProjectContentsData();
+                        // �5.1.4: the red-flag lives on the TAB, not inside ItemSetUC, so it is stamped onto
+                        // the content row here where selectedTab is in scope. Persisting it is what lets the
+                        // flag survive a reload and lets the print modal - which fetches its own data - honour
+                        // it at all.
+                        var contentData = selectedControl.GetProjectContentsData();
+                        contentData["is_excluded"] = _redFlaggedTabs.Contains(selectedTab);
+                        tabData["sales_project_content"] = contentData;
                         tabData["sales_project_content_advanced_condition"] = selectedControl.GetAdvancedConditionsData();
                         tabData["sales_project_items"] = selectedControl.GetProjectItems()["sales_project_items"];
                         tabData["sales_project_wiring"] = selectedControl.GetProjectWiringData()["sales_project_wiring"];

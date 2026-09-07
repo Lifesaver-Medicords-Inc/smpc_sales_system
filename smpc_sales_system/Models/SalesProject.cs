@@ -66,6 +66,22 @@ namespace smpc_sales_system.Models
         public string item_set_notes { get; set; }
         public int template_project_id { get; set; }
         public bool is_wiring { get; set; }
+
+        // §5.1.4's right-click tab exclusion. Persisted as of 2026-09-05 - it was a
+        // HashSet<TabPage> in Quotation.cs and nothing else, so it never survived a reload
+        // and the print modal could not see it.
+        //
+        // Nullable deliberately. The column was added to a table that already had rows, so
+        // every existing content row holds NULL, and the Go model sends it through as a
+        // *bool - deserializing that into a plain bool threw "Null object cannot be
+        // converted to a value type" on /sales/projects, which took out the whole Project
+        // tab rather than just this field. A tab with no flag recorded is simply not
+        // excluded; see IsExcluded.
+        public bool? is_excluded { get; set; }
+
+        // Null means "never flagged", which is not excluded.
+        public bool IsExcluded => is_excluded == true;
+
         public SalesProjectContentFinal []sales_project_content_final { get; set; }
         public SalesProjectSizeUp []sales_project_size_up { get; set; }
     }

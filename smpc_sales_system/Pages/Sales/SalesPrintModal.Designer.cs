@@ -126,7 +126,7 @@ namespace smpc_sales_system.Pages.Sales
             this.Controls.Add(this.toolStrip1);
             this.Controls.Add(this.panel6);
             this.Name = "SalesPrintModal";
-            this.Text = "QuotationPrintModal";
+            this.Text = "Project Quotation Print";
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.SalesPrintModal_FormClosed);
             this.Load += new System.EventHandler(this.SalesPrintModal_Load);
             this.toolStrip1.ResumeLayout(false);

@@ -46,12 +46,71 @@ namespace smpc_sales_system.Pages.Sales
             this.inclusion = inclusion;
             this.exclusion = exclusion;
             this.termsAndCondition = termsAndCondition;
+
+            // One modal serves both quote types, so the title is set per mode rather than
+            // fixed in the Designer - naming it "Project Quotation Print" outright would
+            // mislabel every Quick Quote print. (The Designer's value is the project one, so
+            // this only has to correct the other case, but both are set explicitly here so
+            // the two cannot drift apart.)
+            this.Text = isProject ? "Project Quotation Print" : "Quotation Print";
         }
         public DataTable OrderList { get; set; } = new DataTable();
         public DataTable DetailsList { get; set; } = new DataTable();
         public DataTable allTransactionList { get; set; } = new DataTable();
         public DataTable transactionList { get; set; } = new DataTable();
         public DataTable childList { get; set; } = new DataTable();
+
+        // Does this quotation line belong on the printed quote?
+        //
+        // BOM children do not. Selecting a parent that has a BOM inserts its components
+        // beneath it (§5.1.2) with hierarchical reference codes - the parent is "2", its
+        // components are "2.1", "2.2", and so on - and those components are composition, not
+        // things the customer is buying: they carry no line total and are excluded from the
+        // quote's totals entirely (§5.1.2, "only the parent takes a multiplier; children are
+        // excluded from the total computation").
+        //
+        // They were still being printed, because childList was every line for the quotation
+        // with no filter at all. On the customer's copy that came out as blank-description
+        // rows carrying a quantity and P0.00 - Q#0030 printed five of them under DISCHARGE
+        // COMMON HEADER (user-reported 2026-09-05). Only the parent and its description
+        // should appear.
+        //
+        // Same "is this a parent" test the quotation grid itself uses when it decides which
+        // rows get a description pane - a reference code with no dot in it (see
+        // Quotation.cs's referenceCount check). Keeping the two identical matters: what the
+        // print shows has to agree with what the screen treats as a sellable line.
+        //
+        // A blank reference code is printed rather than dropped: it carries no hierarchy
+        // information, so it cannot be shown to be a child, and silently omitting a line
+        // from a customer-facing document is the worse failure.
+        private static bool IsPrintableQuoteLine(SalesQuotationQuicksModel line)
+        {
+            string reference = line?.reference_code?.Trim();
+
+            if (string.IsNullOrEmpty(reference)) return true;
+
+            return !reference.Contains(".");
+        }
+        // Is this Item/Set tab right-click-excluded? §5.1.4: an excluded tab "highlights light
+        // red and its items are excluded from gross-sales computation and from the printed
+        // proposal" (negative test 35).
+        //
+        // Reads the flag off the tab's saved content row. It only became readable here once
+        // is_excluded was persisted (2026-09-05) - before that it lived solely as a
+        // HashSet<TabPage> inside Quotation.cs, which this modal has no way to see and which
+        // did not survive a reload anyway.
+        //
+        // Absent column or unparseable value means NOT excluded: a quote saved before the
+        // column existed has no flag, and defaulting those to excluded would silently drop
+        // real sets off the customer's proposal.
+        private static bool IsExcludedItemSet(DataRow setContent)
+        {
+            if (setContent == null) return false;
+            if (!setContent.Table.Columns.Contains("is_excluded")) return false;
+
+            return bool.TryParse(setContent["is_excluded"]?.ToString(), out bool excluded) && excluded;
+        }
+
         public DataTable selectedImageList { get; set; } = new DataTable();
         public DataTable ImageList { get; set; } = new DataTable();
         public DataTable ItemList { get; set; } = new DataTable();
@@ -111,6 +170,7 @@ namespace smpc_sales_system.Pages.Sales
             {
                 var filteredSalesQuotationQuick = (data.SalesQuotationQuick ?? Enumerable.Empty<SalesQuotationQuicksModel>())
                     .Where(q => q.based_id == quotationId)
+                    .Where(IsPrintableQuoteLine)
                     .ToList();
 
                 var idsQuotationQuick = filteredSalesQuotationQuick.Select(q => q.id).ToList();
@@ -417,89 +477,93 @@ namespace smpc_sales_system.Pages.Sales
 
                         List<SalesProjectQuotationDetailsReportModel> QuotationDetails = new List<SalesProjectQuotationDetailsReportModel>();
 
+                        // §5.3: the proposal's "#" counts TABS, not lines - and it has to skip
+                        // excluded ones, so it counts printed sets rather than using the tab's
+                        // position.
+                        int projectSetNo = 0;
+
                         foreach (DataRow itemSetRow in ItemSets.Select())
                         {
 
                             int itemSetId = (int)itemSetRow["itemset_id"];
                             var filterComponentItemRows = ProjectItemList.Select($"based_id = '{itemSetId}' ");
 
-                            // Resets to 1 for every item set instead of counting continuously
-                            // through the whole flat list (see item_no's own comment).
-                            int itemNo = 0;
+                            // The tab's own content row - carries ITEM / SET DESCRIPTION and
+                            // the exclusion flag.
+                            DataRow[] setContentRows = ItemSetContent.Select($"based_id = {itemSetId}");
+                            DataRow setContent = setContentRows.Length > 0 ? setContentRows[0] : null;
+
+                            // §5.1.4 / negative test 35: a right-click-excluded Item/Set tab is
+                            // out of gross sales AND out of the printed proposal. Skipping the
+                            // whole tab here takes its rows off the page and, because the
+                            // per-tab total below is what the report sums, out of the totals
+                            // too - both halves of the rule from one place.
+                            if (IsExcludedItemSet(setContent))
+                                continue;
+
+                            // §5.3: "# is per line in a Quick Quote, per TAB in a Project
+                            // Proposal" - so a project proposal prints ONE record per Item/Set,
+                            // described by its ITEM / SET DESCRIPTION, not the tab's component
+                            // breakdown (user decision 2026-09-05: "only 1 item per tab on the
+                            // report and will give the totals per tab").
+                            //
+                            // The components are still what the figure is built from; they are
+                            // simply not itemised to the customer. That is also why this sums
+                            // component_total rather than trusting any single row: component_total
+                            // is the per-line charged amount the grid computed, and BOM children
+                            // carry 0 there (§5.1.2 - only the parent is priced), so summing it
+                            // counts each sellable line exactly once.
+                            decimal setTotal = 0m;
+                            foreach (DataRow componentItemRow in filterComponentItemRows)
+                            {
+                                if (componentItemRow["component_total"] != DBNull.Value)
+                                    setTotal += (decimal)componentItemRow["component_total"];
+                            }
+
+                            // NO. OF SETS is how many of this set the customer is buying, so it
+                            // is the quantity the proposal shows against the set.
+                            int setQty = 0;
+                            if (setContent != null && setContent.Table.Columns.Contains("no_of_sets"))
+                                int.TryParse(setContent["no_of_sets"]?.ToString(), out setQty);
+
+                            string setDescription = setContent != null && setContent.Table.Columns.Contains("item_set_description")
+                                ? (setContent["item_set_description"]?.ToString() ?? string.Empty)
+                                : string.Empty;
+
+                            // Fall back to the tab's name when the set has no description yet,
+                            // so a line never prints as a blank row the customer cannot read.
+                            if (string.IsNullOrWhiteSpace(setDescription))
+                                setDescription = itemSetRow["tab_number"].ToString();
 
                             QuotationDetails.Add(new SalesProjectQuotationDetailsReportModel
                             {
                                 items_id = 0,
                                 bom_id = 0,
                                 item_id = 0,
-                                based_id = 0,
+                                based_id = itemSetId,
                                 reference_code = "0",
                                 man_days = 0,
                                 labor_rate = 0,
-                                components = itemSetRow["tab_number"].ToString(),
+                                components = setDescription,
                                 model = " ",
                                 item_inv_type = " ",
-                                qty = 0,
+                                qty = setQty,
                                 list_price_per_unit = 0,
-                                unit_price = 0,
+                                // §5.3: on a project proposal "the set subtotal becomes both unit
+                                // price and amount" - there is no separate per-unit figure to
+                                // show once the set is presented as one line.
+                                unit_price = setTotal,
                                 multiplier = " ",
                                 discount_price = 0,
-                                component_total = 0,
+                                component_total = setTotal,
                                 notes = " ",
                                 template_id = 0,
-                                is_header_row = true,
+                                is_header_row = false,
                                 percent_discount = 0,
-                                item_no = 0,
+                                item_no = ++projectSetNo,
                                 Image = null
                             });
 
-
-                            foreach (DataRow componentItemRow in filterComponentItemRows)
-                            {
-                                int itemsId = (int)componentItemRow["items_id"];
-                                itemNo++;
-
-                                // Same convention Quick Quote's DISCOUNT column uses
-                                // (percent_discount, e.g. "15%") - Project items don't store a
-                                // percent directly, only the raw multiplier string, so derive it
-                                // the same way the live grid computes the actual charged price
-                                // (ItemSetUC.CalculateDiscountMultiplier): ratio < 1 is a
-                                // discount (positive %), ratio > 1 is a markup (negative %).
-                                decimal multiplierRatio = ItemSetUC.CalculateDiscountMultiplier(componentItemRow["multiplier"]?.ToString());
-                                // Round before it ever reaches the report - the raw division
-                                // (e.g. a 1/7-derived multiplier) produces a repeating decimal
-                                // with far more digits than fit in the DISCOUNT column, wrapping
-                                // across multiple lines and blowing out the row's height.
-                                decimal percentDiscount = Math.Round((1 - multiplierRatio) * 100, 2);
-
-                                QuotationDetails.Add(new SalesProjectQuotationDetailsReportModel
-                                {
-                                    items_id = itemsId,
-                                    bom_id = (int)componentItemRow["bom_id"],
-                                    item_id = (int)componentItemRow["bom_id"],
-                                    based_id = (int)componentItemRow["based_id"],
-                                    reference_code = componentItemRow["reference_code"].ToString(),
-                                    man_days = (int)componentItemRow["man_days"],
-                                    labor_rate = (decimal)componentItemRow["labor_rate"],
-                                    components = componentItemRow["components"].ToString(),
-                                    model = componentItemRow["model"].ToString(),
-                                    item_inv_type = componentItemRow["item_inv_type"].ToString(),
-                                    qty = (int)componentItemRow["qty"],
-                                    list_price_per_unit = (decimal)componentItemRow["list_price_per_unit"],
-                                    unit_price = (decimal)componentItemRow["unit_price"],
-                                    multiplier = componentItemRow["multiplier"].ToString(),
-                                    discount_price = (decimal)componentItemRow["discount_price"],
-                                    component_total = (decimal)componentItemRow["component_total"],
-                                    notes = componentItemRow["notes"].ToString(),
-                                    template_id = (int)componentItemRow["template_id"],
-                                    is_header_row = false,
-                                    percent_discount = percentDiscount,
-                                    item_no = itemNo,
-                                    Image = GetFirstUploadedProjectItemImageBytes(itemsId)
-                                });
-
-
-                            }
 
                         }
 

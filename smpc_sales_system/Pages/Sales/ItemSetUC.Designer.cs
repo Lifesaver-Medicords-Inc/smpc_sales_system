@@ -405,6 +405,7 @@ namespace smpc_sales_system.Pages.Sales
             this.txt_item_set_notes.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F);
             this.txt_item_set_notes.Location = new System.Drawing.Point(584, 225);
             this.txt_item_set_notes.Multiline = true;
+            this.txt_item_set_notes.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
             this.txt_item_set_notes.Name = "txt_item_set_notes";
             this.txt_item_set_notes.Size = new System.Drawing.Size(468, 93);
             this.txt_item_set_notes.TabIndex = 169;
@@ -424,6 +425,7 @@ namespace smpc_sales_system.Pages.Sales
             this.txt_item_set_description.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F);
             this.txt_item_set_description.Location = new System.Drawing.Point(34, 225);
             this.txt_item_set_description.Multiline = true;
+            this.txt_item_set_description.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
             this.txt_item_set_description.Name = "txt_item_set_description";
             this.txt_item_set_description.Size = new System.Drawing.Size(468, 93);
             this.txt_item_set_description.TabIndex = 167;
@@ -518,6 +520,7 @@ namespace smpc_sales_system.Pages.Sales
             this.txt_item_designation.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F);
             this.txt_item_designation.Location = new System.Drawing.Point(29, 26);
             this.txt_item_designation.Multiline = true;
+            this.txt_item_designation.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
             this.txt_item_designation.Name = "txt_item_designation";
             this.txt_item_designation.Size = new System.Drawing.Size(290, 99);
             this.txt_item_designation.TabIndex = 104;
@@ -537,6 +540,7 @@ namespace smpc_sales_system.Pages.Sales
             this.txt_application.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F);
             this.txt_application.Location = new System.Drawing.Point(109, 136);
             this.txt_application.Multiline = true;
+            this.txt_application.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
             this.txt_application.Name = "txt_application";
             this.txt_application.Size = new System.Drawing.Size(210, 54);
             this.txt_application.TabIndex = 104;
@@ -626,6 +630,7 @@ namespace smpc_sales_system.Pages.Sales
             this.txt_additional.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F);
             this.txt_additional.Location = new System.Drawing.Point(437, 144);
             this.txt_additional.Multiline = true;
+            this.txt_additional.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
             this.txt_additional.Name = "txt_additional";
             this.txt_additional.Size = new System.Drawing.Size(336, 61);
             this.txt_additional.TabIndex = 127;
