@@ -27,7 +27,7 @@
     <UpdateRequired>false</UpdateRequired>
     <MapFileExtensions>true</MapFileExtensions>
     <UpdateUrl>http://localhost/smpc_sales_system/</UpdateUrl>
-    <ApplicationRevision>1004</ApplicationRevision>
+    <ApplicationRevision>1010</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
@@ -748,9 +748,6 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
-    <Content Include="Reports\QuotationReport.frx">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <None Include="smpc_sales_system.Models.SalesPrintModel+SalesProjectQuotationDetailsReportModel.datasource" />
     <None Include="smpc_sales_system_TemporaryKey.pfx" />
   </ItemGroup>

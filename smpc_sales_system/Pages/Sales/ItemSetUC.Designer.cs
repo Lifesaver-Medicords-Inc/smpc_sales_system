@@ -31,16 +31,17 @@ namespace smpc_sales_system.Pages.Sales
         {
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ItemSetUC));
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle11 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle16 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle17 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle12 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle13 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle14 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle15 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle18 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle19 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle20 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle6 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle7 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle5 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle8 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle9 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle10 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyleAmpReq = new System.Windows.Forms.DataGridViewCellStyle();
             this.pnl_project_content = new System.Windows.Forms.Panel();
             this.dgv_final = new System.Windows.Forms.DataGridView();
             this.Id = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -83,7 +84,6 @@ namespace smpc_sales_system.Pages.Sales
             this.label40 = new System.Windows.Forms.Label();
             this.label43 = new System.Windows.Forms.Label();
             this.txt_no_of_pump_set = new System.Windows.Forms.TextBox();
-            this.label42 = new System.Windows.Forms.Label();
             this.label41 = new System.Windows.Forms.Label();
             this.txt_size_up_3 = new System.Windows.Forms.TextBox();
             this.txt_rpm = new System.Windows.Forms.TextBox();
@@ -179,8 +179,6 @@ namespace smpc_sales_system.Pages.Sales
             this.errorProvider1 = new System.Windows.Forms.ErrorProvider(this.components);
             this.bs_units_qty = new System.Windows.Forms.BindingSource(this.components);
             this.txt_template_id = new System.Windows.Forms.TextBox();
-            this.timer_update_conditions = new System.Windows.Forms.Timer(this.components);
-            this.timer_update_content = new System.Windows.Forms.Timer(this.components);
             this.checkBox1 = new System.Windows.Forms.CheckBox();
             this.label58 = new System.Windows.Forms.Label();
             this.txt_FLA = new System.Windows.Forms.TextBox();
@@ -264,7 +262,6 @@ namespace smpc_sales_system.Pages.Sales
             this.pnl_project_content.Controls.Add(this.label40);
             this.pnl_project_content.Controls.Add(this.label43);
             this.pnl_project_content.Controls.Add(this.txt_no_of_pump_set);
-            this.pnl_project_content.Controls.Add(this.label42);
             this.pnl_project_content.Controls.Add(this.label41);
             this.pnl_project_content.Controls.Add(this.txt_size_up_3);
             this.pnl_project_content.Controls.Add(this.txt_rpm);
@@ -339,26 +336,16 @@ namespace smpc_sales_system.Pages.Sales
             this.Voltage.Name = "Voltage";
             this.Voltage.ReadOnly = true;
             this.Voltage.Visible = false;
-            //
+            // 
             // final_item_id
-            //
-            // Trello #044/#043/#049: not part of the saved shape (SalesProjectContentFinal
-            // has no item id field, so this - like dgv_size_up's own hidden id column -
-            // only ever gets populated by picks made THIS session; a row reloaded from a
-            // saved project via SetFinalData leaves this blank). Used only to dedupe/pre-
-            // check the multi-select FINAL picker against what's already listed.
+            // 
             this.final_item_id.HeaderText = "item_id";
             this.final_item_id.Name = "final_item_id";
             this.final_item_id.ReadOnly = true;
             this.final_item_id.Visible = false;
-            //
+            // 
             // dgv_size_up
-            //
-            // Reverted to a single MODEL column, matching dgv_final's own shape - the
-            // picking work (brand / list price / search / multi-select) now lives in
-            // SizeUpPickerModal instead of on this list. Property set mirrors dgv_final
-            // exactly (ReadOnly, no explicit MultiSelect/SelectionMode/RowHeadersVisible
-            // overrides) so the two lists behave identically.
+            // 
             this.dgv_size_up.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dgv_size_up.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.size_up_id,
@@ -371,34 +358,30 @@ namespace smpc_sales_system.Pages.Sales
             this.dgv_size_up.Size = new System.Drawing.Size(276, 98);
             this.dgv_size_up.TabIndex = 172;
             this.dgv_size_up.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgv_size_up_CellClick);
-            //
+            // 
             // size_up_id
-            //
-            // The persisted row id, carried back on save so an existing Size Up row is
-            // updated rather than duplicated (and so rows dropped from the grid can be
-            // pruned server-side). Hidden - same as size_up_item_id.
+            // 
             this.size_up_id.HeaderText = "size_up_id";
             this.size_up_id.Name = "size_up_id";
+            this.size_up_id.ReadOnly = true;
             this.size_up_id.Visible = false;
-            //
+            // 
             // size_up_item_id
-            //
+            // 
             this.size_up_item_id.HeaderText = "id";
             this.size_up_item_id.Name = "size_up_item_id";
+            this.size_up_item_id.ReadOnly = true;
             this.size_up_item_id.Visible = false;
-            //
+            // 
             // size_up_model
-            //
+            // 
             this.size_up_model.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            // "SIZE UP" rather than "MODEL" (user decision, 2026-09-03) - the grid now
-            // names itself, the same way the FINAL grid's own column does, so the
-            // separate label42 above it is redundant and hidden below.
             this.size_up_model.HeaderText = "SIZE UP";
             this.size_up_model.Name = "size_up_model";
             this.size_up_model.ReadOnly = true;
-            //
+            // 
             // txt_size_up_5
-            //
+            // 
             this.txt_size_up_5.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F);
             this.txt_size_up_5.Location = new System.Drawing.Point(881, 102);
             this.txt_size_up_5.Name = "txt_size_up_5";
@@ -461,6 +444,7 @@ namespace smpc_sales_system.Pages.Sales
             this.textBox6.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.textBox6.Location = new System.Drawing.Point(601, 85);
             this.textBox6.Name = "textBox6";
+            this.textBox6.ReadOnly = true;
             this.textBox6.Size = new System.Drawing.Size(102, 20);
             this.textBox6.TabIndex = 163;
             this.textBox6.Text = "DISCHARGE SIZE";
@@ -470,6 +454,7 @@ namespace smpc_sales_system.Pages.Sales
             this.textBox5.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.textBox5.Location = new System.Drawing.Point(354, 84);
             this.textBox5.Name = "textBox5";
+            this.textBox5.ReadOnly = true;
             this.textBox5.Size = new System.Drawing.Size(85, 20);
             this.textBox5.TabIndex = 162;
             this.textBox5.Text = "SUCTION SIZE";
@@ -601,6 +586,7 @@ namespace smpc_sales_system.Pages.Sales
             this.textBox40.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.textBox40.Location = new System.Drawing.Point(354, 26);
             this.textBox40.Name = "textBox40";
+            this.textBox40.ReadOnly = true;
             this.textBox40.Size = new System.Drawing.Size(85, 20);
             this.textBox40.TabIndex = 109;
             this.textBox40.Text = "FLOW";
@@ -610,6 +596,7 @@ namespace smpc_sales_system.Pages.Sales
             this.textBox39.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.textBox39.Location = new System.Drawing.Point(354, 45);
             this.textBox39.Name = "textBox39";
+            this.textBox39.ReadOnly = true;
             this.textBox39.Size = new System.Drawing.Size(85, 20);
             this.textBox39.TabIndex = 110;
             this.textBox39.Text = "HEAD";
@@ -619,6 +606,7 @@ namespace smpc_sales_system.Pages.Sales
             this.textBox41.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.textBox41.Location = new System.Drawing.Point(354, 64);
             this.textBox41.Name = "textBox41";
+            this.textBox41.ReadOnly = true;
             this.textBox41.Size = new System.Drawing.Size(85, 20);
             this.textBox41.TabIndex = 111;
             this.textBox41.Text = "VOLTAGE";
@@ -670,20 +658,6 @@ namespace smpc_sales_system.Pages.Sales
             this.txt_no_of_pump_set.Size = new System.Drawing.Size(59, 20);
             this.txt_no_of_pump_set.TabIndex = 114;
             this.txt_no_of_pump_set.TextChanged += new System.EventHandler(this.txt_no_of_pump_set_TextChanged);
-            // 
-            // label42
-            // 
-            this.label42.AutoSize = true;
-            this.label42.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label42.Location = new System.Drawing.Point(878, 10);
-            this.label42.Name = "label42";
-            this.label42.Size = new System.Drawing.Size(56, 13);
-            this.label42.TabIndex = 125;
-            this.label42.Text = "SIZE UP";
-            // Superseded by the grid's own "SIZE UP" column header. Hidden rather than
-            // deleted: the layout is absolute-positioned, so hiding looks identical to
-            // removing it while staying trivially reversible.
-            this.label42.Visible = false;
             // 
             // label41
             // 
@@ -754,6 +728,7 @@ namespace smpc_sales_system.Pages.Sales
             this.textBox43.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.textBox43.Location = new System.Drawing.Point(601, 64);
             this.textBox43.Name = "textBox43";
+            this.textBox43.ReadOnly = true;
             this.textBox43.Size = new System.Drawing.Size(102, 20);
             this.textBox43.TabIndex = 121;
             this.textBox43.Text = "PHASE";
@@ -763,6 +738,7 @@ namespace smpc_sales_system.Pages.Sales
             this.textBox45.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.textBox45.Location = new System.Drawing.Point(601, 26);
             this.textBox45.Name = "textBox45";
+            this.textBox45.ReadOnly = true;
             this.textBox45.Size = new System.Drawing.Size(102, 20);
             this.textBox45.TabIndex = 119;
             this.textBox45.Text = "RPM";
@@ -772,6 +748,7 @@ namespace smpc_sales_system.Pages.Sales
             this.textBox44.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.textBox44.Location = new System.Drawing.Point(601, 45);
             this.textBox44.Name = "textBox44";
+            this.textBox44.ReadOnly = true;
             this.textBox44.Size = new System.Drawing.Size(102, 20);
             this.textBox44.TabIndex = 120;
             this.textBox44.Text = "HP";
@@ -981,41 +958,14 @@ namespace smpc_sales_system.Pages.Sales
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.dgv_project_items.BackgroundColor = System.Drawing.SystemColors.ActiveBorder;
-            dataGridViewCellStyle11.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle11.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle11.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle11.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle11.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle11.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle11.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dgv_project_items.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle11;
-            // Root cause of project_items_images/project_inv_stock reappearing after
-            // Visible=false: those two are the only columns here with no
-            // DataPropertyName, so Helpers.GetDataTableFromUnboundGrid falls back to
-            // their raw Column.Name when it rebuilds stockProjectItemDataTable, and every
-            // ClearProjectItemsDgv() rebind (routine - e.g. every tab load) then let
-            // AutoGenerateColumns (default true, never set here before) auto-generate a
-            // brand-new duplicate column for each - default header text, Visible=true,
-            // completely separate from the Designer-configured column of the same name.
-            // dgv_wiring already does this correctly; this grid never did.
-            this.dgv_project_items.AutoGenerateColumns = false;
-            // Trello #072 ("New item row appears when inputting ITEM INV TYPE"):
-            // #070/#071 only closed this off for the QTY column (HandleNumericColumns
-            // rejecting letters there, so garbage text could no longer land in the
-            // grid's trailing blank row and commit it) - but AllowUserToAddRows
-            // defaulting to true meant typing into ANY column's trailing blank row,
-            // ITEM INV TYPE included, still committed a stray new row. Rows are only
-            // ever meant to come from an actual item selection (dgv_project_items.
-            // Rows.Add() below, called programmatically) - never from typing into the
-            // grid directly, so this closes the root gap rather than patching one
-            // more column at a time.
-            // Must stay true, same as dgv_quick_quote_details: items are added by
-            // clicking a row's COMPONENTS cell (dgv_project_items_CellClick raises
-            // CellClicked, which opens the item picker), so the trailing new-row IS
-            // the add-an-item affordance. Setting this false for the "stray row from
-            // ITEM INV TYPE" report removed the only way to add items at all - the
-            // stray-row problem needs to be handled on save/commit instead.
-            this.dgv_project_items.AllowUserToAddRows = true;
+            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dgv_project_items.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
             this.dgv_project_items.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dgv_project_items.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.project_items_id,
@@ -1038,24 +988,24 @@ namespace smpc_sales_system.Pages.Sales
             this.project_items_discount,
             this.project_items_line_total,
             this.project_items_notes});
-            dataGridViewCellStyle16.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle16.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle16.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle16.ForeColor = System.Drawing.SystemColors.ControlText;
-            dataGridViewCellStyle16.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle16.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle16.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.dgv_project_items.DefaultCellStyle = dataGridViewCellStyle16;
+            dataGridViewCellStyle6.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle6.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle6.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle6.ForeColor = System.Drawing.SystemColors.ControlText;
+            dataGridViewCellStyle6.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle6.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle6.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.dgv_project_items.DefaultCellStyle = dataGridViewCellStyle6;
             this.dgv_project_items.Location = new System.Drawing.Point(17, 490);
             this.dgv_project_items.Name = "dgv_project_items";
-            dataGridViewCellStyle17.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle17.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle17.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle17.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle17.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle17.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle17.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dgv_project_items.RowHeadersDefaultCellStyle = dataGridViewCellStyle17;
+            dataGridViewCellStyle7.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle7.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle7.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle7.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle7.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle7.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle7.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dgv_project_items.RowHeadersDefaultCellStyle = dataGridViewCellStyle7;
             this.dgv_project_items.Size = new System.Drawing.Size(1092, 408);
             this.dgv_project_items.TabIndex = 151;
             this.dgv_project_items.CellBeginEdit += new System.Windows.Forms.DataGridViewCellCancelEventHandler(this.dgv_project_items_CellBeginEdit);
@@ -1104,10 +1054,19 @@ namespace smpc_sales_system.Pages.Sales
             // 
             // project_items_images
             // 
+            // Spec 5.1.2 lists IMAGE as a column of the shared item table, immediately after
+            // the exclude checkbox - so it is the first content column, which is where it
+            // already sits here (the five columns ahead of it are hidden ids). It was
+            // Visible = false, so the column existed and its whole click path worked but
+            // nothing could reach it (user-reported 2026-09-05).
+            //
+            // Header is IMAGE, singular, per 5.1.2's column list. Quick Quote's equivalent
+            // column says IMAGES - flagged, not silently harmonised either way.
             this.project_items_images.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
-            this.project_items_images.HeaderText = "IMAGES";
+            this.project_items_images.HeaderText = "IMAGE";
             this.project_items_images.Name = "project_items_images";
-            this.project_items_images.Visible = false;
+            this.project_items_images.ReadOnly = true;
+            this.project_items_images.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
             this.project_items_images.Width = 60;
             // 
             // reference_code
@@ -1145,20 +1104,11 @@ namespace smpc_sales_system.Pages.Sales
             // 
             // project_inv_stock
             // 
-            dataGridViewCellStyle12.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            this.project_inv_stock.DefaultCellStyle = dataGridViewCellStyle12;
+            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            this.project_inv_stock.DefaultCellStyle = dataGridViewCellStyle2;
             this.project_inv_stock.HeaderText = "INV.";
             this.project_inv_stock.Name = "project_inv_stock";
             this.project_inv_stock.ReadOnly = true;
-            // Was Visible = false, which hid a feature that is otherwise fully built for
-            // this grid: the click dispatch (dgv_project_items_CellClick raises
-            // CellClickedStock), the handler (Quotation.HandleProjectStockCheckClick -
-            // availability, reservations, expiry, unsaved lines), the per-row fill
-            // (RefreshStockIndicator / RefreshAllStockIndicators, called from
-            // SetFetchedItemData) and the flag repaint (InvalidateCell on this cell) all
-            // already exist. Only the column itself was switched off, so Project Quote
-            // had no stock check while Quick Quote did. Matches quick_inv_stock.
-            this.project_inv_stock.Visible = true;
             this.project_inv_stock.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
             this.project_inv_stock.Width = 40;
             // 
@@ -1187,16 +1137,16 @@ namespace smpc_sales_system.Pages.Sales
             // project_items_list_price
             // 
             this.project_items_list_price.DataPropertyName = "list_price_per_unit";
-            dataGridViewCellStyle13.NullValue = "0.00";
-            this.project_items_list_price.DefaultCellStyle = dataGridViewCellStyle13;
+            dataGridViewCellStyle3.NullValue = "0.00";
+            this.project_items_list_price.DefaultCellStyle = dataGridViewCellStyle3;
             this.project_items_list_price.HeaderText = "LIST PRICE";
             this.project_items_list_price.Name = "project_items_list_price";
             // 
             // project_items_unit_price
             // 
             this.project_items_unit_price.DataPropertyName = "unit_price";
-            dataGridViewCellStyle14.NullValue = "0.00";
-            this.project_items_unit_price.DefaultCellStyle = dataGridViewCellStyle14;
+            dataGridViewCellStyle4.NullValue = "0.00";
+            this.project_items_unit_price.DefaultCellStyle = dataGridViewCellStyle4;
             this.project_items_unit_price.HeaderText = "UNIT PRICE";
             this.project_items_unit_price.Name = "project_items_unit_price";
             // 
@@ -1212,8 +1162,8 @@ namespace smpc_sales_system.Pages.Sales
             // project_items_discount
             // 
             this.project_items_discount.DataPropertyName = "discount_price";
-            dataGridViewCellStyle15.NullValue = "0.00";
-            this.project_items_discount.DefaultCellStyle = dataGridViewCellStyle15;
+            dataGridViewCellStyle5.NullValue = "0.00";
+            this.project_items_discount.DefaultCellStyle = dataGridViewCellStyle5;
             this.project_items_discount.HeaderText = "DISCOUNT/ MARK UP PRICE";
             this.project_items_discount.Name = "project_items_discount";
             // 
@@ -1453,16 +1403,6 @@ namespace smpc_sales_system.Pages.Sales
             this.txt_template_id.TabIndex = 163;
             this.txt_template_id.Visible = false;
             // 
-            // timer_update_conditions
-            // 
-            this.timer_update_conditions.Interval = 5000;
-            this.timer_update_conditions.Tick += new System.EventHandler(this.timer_update_conditions_Tick);
-            // 
-            // timer_update_content
-            // 
-            this.timer_update_content.Interval = 5000;
-            this.timer_update_content.Tick += new System.EventHandler(this.timer_update_content_Tick);
-            // 
             // checkBox1
             // 
             this.checkBox1.AutoSize = true;
@@ -1543,14 +1483,14 @@ namespace smpc_sales_system.Pages.Sales
             this.dgv_wiring.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.dgv_wiring.AutoGenerateColumns = false;
-            dataGridViewCellStyle18.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle18.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle18.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle18.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle18.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle18.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle18.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dgv_wiring.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle18;
+            dataGridViewCellStyle8.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle8.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle8.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle8.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle8.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle8.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle8.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dgv_wiring.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle8;
             this.dgv_wiring.ColumnHeadersHeight = 100;
             this.dgv_wiring.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.project_wiring_id,
@@ -1573,24 +1513,24 @@ namespace smpc_sales_system.Pages.Sales
             this.project_wiring_total_cost,
             this.project_wiring_unit});
             this.dgv_wiring.DataSource = this.bs_project_wiring;
-            dataGridViewCellStyle19.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle19.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle19.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle19.ForeColor = System.Drawing.SystemColors.ControlText;
-            dataGridViewCellStyle19.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle19.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle19.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.dgv_wiring.DefaultCellStyle = dataGridViewCellStyle19;
+            dataGridViewCellStyle9.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle9.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle9.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle9.ForeColor = System.Drawing.SystemColors.ControlText;
+            dataGridViewCellStyle9.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle9.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle9.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.dgv_wiring.DefaultCellStyle = dataGridViewCellStyle9;
             this.dgv_wiring.Location = new System.Drawing.Point(24, 965);
             this.dgv_wiring.Name = "dgv_wiring";
-            dataGridViewCellStyle20.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle20.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle20.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle20.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle20.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle20.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle20.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dgv_wiring.RowHeadersDefaultCellStyle = dataGridViewCellStyle20;
+            dataGridViewCellStyle10.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle10.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle10.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle10.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle10.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle10.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle10.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dgv_wiring.RowHeadersDefaultCellStyle = dataGridViewCellStyle10;
             this.dgv_wiring.Size = new System.Drawing.Size(1092, 416);
             this.dgv_wiring.TabIndex = 154;
             this.dgv_wiring.CellEndEdit += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgv_wiring_CellEndEdit);
@@ -1628,24 +1568,29 @@ namespace smpc_sales_system.Pages.Sales
             this.project_wiring_materials.HeaderText = "MATERIALS";
             this.project_wiring_materials.MinimumWidth = 200;
             this.project_wiring_materials.Name = "project_wiring_materials";
-            // 
+            //
             // project_wiring_amp_req
-            // 
-            // Spec 8.4's "AMP REQ." (rows 1 and 7 only). The amp formulas already existed
-            // and already wrote their result into wiringTable's "AMPREQ" column
-            // (computeECBToController for row 1, cmb_starting_method_SelectedIndexChanged
-            // for row 7) - but this column was declared as a field and never instantiated
-            // or added to the grid, so the computed value had nowhere to show. Read-only:
-            // it is derived, not typed.
+            //
+            // Spec 8.4's AMP REQ. - the computed requirement on rows 1 (ECB -> controller)
+            // and 7 (controller -> motor), distinct from WIRE AMP. next to it, which is the
+            // rating of the wire actually chosen. This column was declared as a field at the
+            // bottom of this file but never instantiated and never added to the Columns
+            // collection, so SetWiringAmpReq's own
+            //     if (!dgv_wiring.Columns.Contains("project_wiring_amp_req")) return;
+            // guard fired on every call: both formulas computed correctly and threw the
+            // answer away, leaving rows 1 and 7 permanently blank (user-reported 2026-09-05).
+            // A formula cell, so grey and read-only per 8.4 - see SetEditable, which has to
+            // re-assert the ReadOnly after Helpers.SetControlsEditable blanket-clears it.
+            dataGridViewCellStyleAmpReq.BackColor = System.Drawing.SystemColors.Control;
+            this.project_wiring_amp_req.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
             this.project_wiring_amp_req.DataPropertyName = "AMPREQ";
+            this.project_wiring_amp_req.DefaultCellStyle = dataGridViewCellStyleAmpReq;
             this.project_wiring_amp_req.HeaderText = "AMP REQ.";
             this.project_wiring_amp_req.Name = "project_wiring_amp_req";
             this.project_wiring_amp_req.ReadOnly = true;
-            this.project_wiring_amp_req.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-            this.project_wiring_amp_req.Width = 60;
-            // 
+            //
             // project_wiring_wire_amp
-            // 
+            //
             this.project_wiring_wire_amp.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
             this.project_wiring_wire_amp.DataPropertyName = "WIRE AMP.";
             this.project_wiring_wire_amp.HeaderText = "WIRE AMP.";
@@ -1669,12 +1614,6 @@ namespace smpc_sales_system.Pages.Sales
             // 
             // project_wiring_num_of_qty_set
             // 
-            // The "# OF QTY / SET" factor (model field num_of_qty_set). It was declared
-            // as a field but never instantiated or added to the grid, so every
-            // Cells["project_wiring_num_of_qty_set"] access - ComputeWiringDGV on edit,
-            // and SetProjectWiring when loading a saved quote - threw "Column named
-            // project_wiring_num_of_qty_set cannot be found". The load/compute/save
-            // paths and the model all already expected it; only this was missing.
             this.project_wiring_num_of_qty_set.DataPropertyName = "# OF QTY / SET";
             this.project_wiring_num_of_qty_set.FillWeight = 50F;
             this.project_wiring_num_of_qty_set.HeaderText = "";
@@ -1848,7 +1787,6 @@ namespace smpc_sales_system.Pages.Sales
         private System.Windows.Forms.Label label40;
         private System.Windows.Forms.Label label43;
         private System.Windows.Forms.TextBox txt_no_of_pump_set;
-        private System.Windows.Forms.Label label42;
         private System.Windows.Forms.Label label41;
         private System.Windows.Forms.TextBox txt_rpm;
         private System.Windows.Forms.TextBox txt_size_up_2;
@@ -1951,8 +1889,6 @@ namespace smpc_sales_system.Pages.Sales
         private System.Windows.Forms.DataGridViewTextBoxColumn wiring_total_qty;
         private System.Windows.Forms.DataGridViewTextBoxColumn wiring_cost;
         private System.Windows.Forms.DataGridViewTextBoxColumn wiring_total_cost;
-        private System.Windows.Forms.Timer timer_update_conditions;
-        private System.Windows.Forms.Timer timer_update_content;
         private System.Windows.Forms.CheckBox checkBox1;
         private System.Windows.Forms.CheckBox chk_wiring;
         private System.Windows.Forms.Label label7;

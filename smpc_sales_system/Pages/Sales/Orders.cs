@@ -1860,7 +1860,6 @@ namespace smpc_sales_app.Pages.Sales
             // while still creating a brand-new order (nothing saved yet to delete).
             // Hidden (not just disabled) when it doesn't apply, same as Edit/Save.
             bool canDelete = !isCreatingNewOrder && hasStatus && !isStatusActive;
-            btn_delete.Visible = canDelete;
             btn_delete.Enabled = canDelete;
             btn_refresh.Enabled = isStatusActive || !isStatusCancelled;
 
@@ -1869,14 +1868,47 @@ namespace smpc_sales_app.Pages.Sales
             // existing order starts locked and needs Edit clicked - and can't be
             // edited at all once CANCELLED.
             bool canEdit = isCreatingNewOrder || isEditingExisting;
+            bool inViewMode = !canEdit;
 
-            btn_edit.Visible = !isCreatingNewOrder;
+            // The action strip is mode-driven (user decision, 2026-09-05): while adding
+            // or editing you get Save and Back and nothing else, so there is no way to
+            // navigate off a record with unsaved changes half-typed. Back out (or Save)
+            // and the full strip comes back.
+            //
+            // Deliberately Visible, not Enabled - a greyed Next/Search during an edit
+            // still advertises navigation that isn't actually available, and this screen
+            // already hides rather than greys elsewhere for the same reason (see the
+            // approve/cancel access gating above, and Delete).
+            //
+            // Every one of these lives on toolStrip1 and was previously left permanently
+            // visible, which is why an in-progress edit could be abandoned mid-typing by
+            // clicking Next. Driven from here because CheckStatus() is what every mode
+            // transition already funnels through - btn_edit_Click, ViewEnable() after a
+            // save, the Back handler's rebind, and the initial load all call it.
+            toolStripButton1.Visible = inViewMode;   // New
+            btn_new.Visible = inViewMode;            // New Version
+            btn_search.Visible = inViewMode;
+            btn_prev.Visible = inViewMode;           // Previous
+            btn_next.Visible = inViewMode;
+            toolStripButton3.Visible = inViewMode;   // Print
+            btn_refresh.Visible = inViewMode;
+
+            // Edit stays a view-mode action (it is how you LEAVE view mode) and keeps its
+            // own status/access rules on top - it just no longer lingers while an edit is
+            // already in progress.
+            btn_edit.Visible = inViewMode;
             btn_edit.Enabled = !isCreatingNewOrder && !isEditingExisting && hasStatus && !isStatusCancelled;
 
-            // Back-to-view: only meaningful while actively editing an *existing*
-            // order (discards unsaved edits and re-locks the form). Not shown while
-            // creating a brand-new order, since there's no prior view to return to.
-            btn_cancel_edit.Visible = isEditingExisting;
+            // Delete keeps its existing "not yet ACTIVE" gate, now also scoped to view
+            // mode so it doesn't sit alongside Save mid-edit.
+            btn_delete.Visible = canDelete && inViewMode;
+
+            // Back-to-view now shows in BOTH edit and add mode (user decision) - it used
+            // to be edit-only, on the reasoning that a brand-new order has no prior view
+            // to return to. It does: btn_cancel_edit_Click clears both mode flags and
+            // rebinds whatever record is selected, so from add mode it reads as
+            // "abandon this new order".
+            btn_cancel_edit.Visible = canEdit;
 
             Save.Visible = canEdit;
             btn_save.Visible = canEdit;
@@ -1969,6 +2001,7 @@ namespace smpc_sales_app.Pages.Sales
             }
 
             isEditingExisting = true;
+
             CheckStatus();
         }
         // Leaves edit mode without saving - reloads the order's original values
@@ -1977,6 +2010,12 @@ namespace smpc_sales_app.Pages.Sales
         private void btn_cancel_edit_Click(object sender, EventArgs e)
         {
             isEditingExisting = false;
+
+            // Also clear add mode (2026-09-05). Back is now reachable while creating a
+            // brand-new order, not just while editing an existing one - without this the
+            // form would rebind to a real record while still believing it was mid-create,
+            // leaving Save visible over someone else's order and Edit hidden.
+            isCreatingNewOrder = false;
 
             bool matchesExistingOrder = !string.IsNullOrEmpty(documentNo)
                 && OrderList != null
@@ -2287,7 +2326,6 @@ namespace smpc_sales_app.Pages.Sales
 
         public void ViewEnable()
         {
-            btn_back.Visible = false;
             btn_new.Visible = true;
             // The order that was just created now exists, so this screen is no
             // longer "creating a new order" - fall back to normal view mode
@@ -2358,9 +2396,30 @@ namespace smpc_sales_app.Pages.Sales
             Helpers.ResetControls(pnl_header_2);
             Helpers.ResetControls(pnl_footer_2);
             btn_search.Visible = false;
-            btn_back.Visible = true;
             btn_prev.Visible = false;
             btn_next.Visible = false;
+        }
+
+        private void txt_contact_no_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            TextBox tb = (TextBox)sender;
+
+            // Allow control keys (backspace, delete, etc.)
+            if (char.IsControl(e.KeyChar))
+                return;
+
+            // Only allow digits
+            if (!char.IsDigit(e.KeyChar))
+            {
+                e.Handled = true;
+                return;
+            }
+
+            // Limit to 11 characters
+            if (tb.Text.Length >= 11 && tb.SelectionLength == 0)
+            {
+                e.Handled = true;
+            }
         }
 
         // SALES EXECUTIVE - the user who saved the order.

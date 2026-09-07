@@ -289,6 +289,23 @@ namespace smpc_sales_system.Pages.Sales
 
                     dataSource.Rows.InsertAt(newChild, insertIndex);
                     dgv.Rows[insertIndex].ReadOnly = true;
+
+                    // QTY stays editable even on a BOM leaf row (user decision,
+                    // 2026-09-05): "we should be able to edit the qty when BOM is
+                    // exist... it give the user free will to decide how many will be
+                    // need for the quote". The row above is still locked structurally -
+                    // components/model/reference_code come from the BOM template and
+                    // shouldn't be hand-edited - but a cell's own ReadOnly overrides its
+                    // row's in WinForms' resolution order, so reopening just this one
+                    // cell leaves everything else on the row locked. Found by
+                    // DataPropertyName rather than column Name, since the name differs
+                    // between the two grids this runs against ("project_items_qty" vs
+                    // "quick_qty") while the property both map to ("qty") does not.
+                    DataGridViewColumn qtyColumn = dgv.Columns.Cast<DataGridViewColumn>()
+                        .FirstOrDefault(c => c.DataPropertyName == "qty");
+                    if (qtyColumn != null)
+                        dgv.Rows[insertIndex].Cells[qtyColumn.Index].ReadOnly = false;
+
                     insertIndex++;
                 }
 

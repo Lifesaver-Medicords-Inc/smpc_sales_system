@@ -1223,6 +1223,99 @@ namespace smpc_app.Services.Helpers
             }
         }
 
+        // Cascades a BOM head's quantity down to its children (user-reported bug,
+        // 2026-09-04, seen in Sales Quotation and confirmed to affect Project Quote,
+        // Quick Quote and Engineering alike, since all three insert BOM rows through
+        // the same code and edit them in a grid shaped the same way).
+        //
+        // GetBomDataRecursive (the inserter) sets every child's qty straight from its
+        // raw bom_qty in the BOM template - correct for "1 head", but nothing ever
+        // revisits it if the head's own qty is then changed. Typing 10 into a head
+        // that needs 2 of a child left that child at 2 forever, not 20 - understating
+        // real material need on anything downstream (an Item Request, a Purchase
+        // Requisition) built off these quantities.
+        //
+        // No schema change: the ratio isn't stored on the transaction row at all (it's
+        // only ever written once, into the same "qty" column the user can then edit),
+        // so it is re-looked-up here from the BOM template itself (bomDetails - the
+        // same table GetBomDataRecursive read to build the rows in the first place),
+        // keyed by (this row's own bom_id, the child's item_id). That pair is exactly
+        // what GetBomDataRecursive used to find the child, so it is stable across any
+        // number of edits - re-deriving it, rather than trying to remember a ratio
+        // computed diff-style, means each edit is quantity-in produces quantity-out.
+        //
+        // Column names differ between the two grids this is called from (project's
+        // "project_items_qty"/"project_items_bom_id" vs quick quote's "quick_qty"/
+        // "quick_bom_id"), which is why they are parameters rather than hardcoded.
+        public static void CascadeBomQuantity(DataGridView dgv, DataTable bomDetails, int editedRowIndex,
+            string qtyColumn, string referenceCodeColumn, string itemIdColumn, string bomIdColumn)
+        {
+            if (dgv == null || bomDetails == null || bomDetails.Rows.Count == 0)
+                return;
+            if (editedRowIndex < 0 || editedRowIndex >= dgv.Rows.Count)
+                return;
+
+            DataGridViewRow editedRow = dgv.Rows[editedRowIndex];
+            if (editedRow.IsNewRow)
+                return;
+            if (!decimal.TryParse(editedRow.Cells[qtyColumn].Value?.ToString(), out decimal newQty))
+                return;
+
+            CascadeBomQuantityToChildren(dgv, bomDetails, editedRow, newQty,
+                qtyColumn, referenceCodeColumn, itemIdColumn, bomIdColumn);
+        }
+
+        private static void CascadeBomQuantityToChildren(DataGridView dgv, DataTable bomDetails,
+            DataGridViewRow parentRow, decimal parentQty,
+            string qtyColumn, string referenceCodeColumn, string itemIdColumn, string bomIdColumn)
+        {
+            string parentRef = parentRow.Cells[referenceCodeColumn].Value?.ToString();
+            if (string.IsNullOrWhiteSpace(parentRef))
+                return;
+
+            // A leaf row's bom_id is the PARENT's bom, not its own - it has no
+            // children of its own to cascade into, which is exactly what "no bom_id
+            // of its own" (0, or unparseable) means here.
+            if (!int.TryParse(parentRow.Cells[bomIdColumn].Value?.ToString(), out int parentBomId) || parentBomId <= 0)
+                return;
+
+            string prefix = parentRef + ".";
+
+            foreach (DataGridViewRow row in dgv.Rows)
+            {
+                if (row.IsNewRow || row == parentRow)
+                    continue;
+
+                string refCode = row.Cells[referenceCodeColumn].Value?.ToString();
+                if (string.IsNullOrWhiteSpace(refCode) || !refCode.StartsWith(prefix))
+                    continue;
+
+                // Direct child only - one more segment than the parent ("1.1" under
+                // "1" qualifies; "1.1.1" does not, since it isn't reached until this
+                // same walk recurses into "1.1" below).
+                if (refCode.Substring(prefix.Length).Contains("."))
+                    continue;
+
+                if (!int.TryParse(row.Cells[itemIdColumn].Value?.ToString(), out int childItemId) || childItemId <= 0)
+                    continue;
+
+                DataRow ratioRow = bomDetails.AsEnumerable().FirstOrDefault(r =>
+                    Convert.ToInt32(r["item_bom_id"]) == parentBomId && Convert.ToInt32(r["item_id"]) == childItemId);
+                if (ratioRow == null)
+                    continue;
+
+                decimal ratio = Convert.ToDecimal(ratioRow["bom_qty"]);
+                decimal childQty = parentQty * ratio;
+
+                row.Cells[qtyColumn].Value = childQty == Math.Floor(childQty)
+                    ? childQty.ToString("0")
+                    : childQty.ToString();
+
+                CascadeBomQuantityToChildren(dgv, bomDetails, row, childQty,
+                    qtyColumn, referenceCodeColumn, itemIdColumn, bomIdColumn);
+            }
+        }
+
         public static void EnableGroupHeaders(DataGridView dgv, Dictionary<string, string[]> columnGroups)
         {
             if (dgv == null || columnGroups == null || columnGroups.Count == 0)

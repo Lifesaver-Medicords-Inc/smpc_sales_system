@@ -46,6 +46,12 @@ namespace smpc_sales_app.Pages.Sales
         private bool isFinalized;
         private bool isNewRecord;
 
+        // Guards chk_requested_for_engr_CheckedChanged (below) against firing on a
+        // programmatic assignment - loading a record, resetting a new form, or reverting
+        // a user's own toggle after a declined confirm/failed API call - so only an
+        // actual click on the checkbox ever opens a confirm dialog or calls the API.
+        private bool _suppressRequestForEngrToggle;
+
         private ClientWebSocket _websocket;
         private CancellationTokenSource _cancelTokenSource;
 
@@ -252,46 +258,23 @@ namespace smpc_sales_app.Pages.Sales
             _saveNotifyProjectId = null;
         }
 
-        private async void UpdateProjectConditions(object sender, EventArgs e)
-        {
-            if (IsEdit)
-            {
-                if (tabControl2.SelectedTab.Controls[0] is ItemSetUC currentControl)
-                {
-                    Dictionary<string, dynamic> data = new Dictionary<string, dynamic>();
-                    var updatedConditionsData = currentControl.GetAdvancedConditionsData();
-                    data["sales_project_content_advanced_condition"] = updatedConditionsData;
-
-                    var isSuccess = await ProjectService.UpdateConditions(data);
-
-                    if (isSuccess.Success)
-                    {
-                        MessageBox.Show(isSuccess.message);
-                    }
-                }
-            }
-        }
-
-        private async void UpdateProjectContent(object sender, EventArgs e)
-        {
-            if (IsEdit)
-            {
-                if (tabControl2.SelectedTab.Controls[0] is ItemSetUC currentControl)
-                {
-                    Dictionary<string, dynamic> data = new Dictionary<string, dynamic>();
-                    var updatedContentsData = currentControl.GetProjectContentsData();
-                    data["sales_project_content"] = updatedContentsData;
-
-                    var isSuccess = await ProjectService.UpdateContents(data);
-
-                    if (isSuccess.Success)
-                    {
-                        MessageBox.Show(isSuccess.message);
-                    }
-
-                }
-            }
-        }
+        // UpdateProjectConditions/UpdateProjectContent removed 2026-09-05 (user decision).
+        //
+        // Each fired 5 seconds after you stopped typing in the advanced-conditions or
+        // content panel and called ProjectService.UpdateConditions/UpdateContents - a real
+        // database write nobody pressed Save for - then showed a MessageBox on every
+        // success. Two things wrong with that:
+        //
+        //   * it broke discard: Back re-reads the record, but the content edit had already
+        //     been persisted 5 seconds earlier, so there was nothing left to discard;
+        //   * the modal contradicts "No 'saved successfully' modals - inline saving.../
+        //     saved beside the module name".
+        //
+        // Both panels ride along in the normal Save (GetFullDiff sends
+        // sales_project_content and sales_project_content_advanced_condition per tab), so
+        // nothing is lost by saving explicitly. The live-collaboration half is untouched:
+        // ItemSet_DataChanged/Content_DataChanged still push the SAME payloads over the
+        // websocket on their own shorter debounces.
  
         private async void ItemSet_DataChanged(object sender, EventArgs e)
         {
@@ -742,8 +725,19 @@ namespace smpc_sales_app.Pages.Sales
         // UpdateDescriptionFieldsVisibility above - not duplicated per mode.
         private void UpdateRequestForEngrVisibility()
         {
-            btn_request_for_engr.Visible = isProject;
             chk_requested_for_engr.Visible = isProject;
+
+            // Locked in view mode, editable only while adding or editing (user decision,
+            // 2026-09-05) - same rule every other field on this form already follows.
+            //
+            // It needs saying explicitly here because Helpers.ReadOnlyControls, which is
+            // what locks pnl_header in view mode, only handles TextBox, ComboBox and
+            // DateTimePicker - it has no CheckBox branch at all, so this control sailed
+            // through every lock and stayed clickable on a saved, read-only quotation.
+            // Handled here rather than by teaching ReadOnlyControls about checkboxes,
+            // which would silently disable every checkbox on every form that helper
+            // touches.
+            chk_requested_for_engr.Enabled = isNewRecord || IsEdit;
         }
 
         private async void btn_project_Click(object sender, EventArgs e)
@@ -1177,9 +1171,6 @@ namespace smpc_sales_app.Pages.Sales
                 UC.DataChangedConditions += ItemSet_DataChanged;
                 UC.DataChangedContent += Content_DataChanged;
 
-                UC.UpdateProjectConditions += UpdateProjectConditions;
-                UC.UpdateProjectContent += UpdateProjectContent;
-
 
                 UC.CellChangedProject += Cell_DataChanged;
                 UC.CellClicked += Cell_ClickedUC;
@@ -1434,14 +1425,31 @@ namespace smpc_sales_app.Pages.Sales
 
                 bool hasContentRow = contentTable.Rows.Count > 0;
                 UC.SetTemplateName(hasContentRow ? contentTable.Rows[0]["template_project_id"]?.ToString() ?? "0" : "0");
-                UC.SetWiring(hasContentRow ? contentTable.Rows[0]["is_wiring"]?.ToString() ?? "false" : "false");
-
 
                 newTab.Controls.Add(UC);
                 tabControl2.TabPages.Add(newTab);
 
                 UC.SetFetchedItemData(itemView.ToTable());
                 UC.SetProjectWiring(wiringView.ToTable());
+
+                // SetWiring moved to AFTER SetFetchedItemData (fixed 2026-09-05, user-
+                // reported: "wiring is not working, it didn't add [to] the item
+                // gridview"). SetWiring("true") sets chk_wiring.Checked, which fires
+                // checkBox_Wiring_CheckedChanged -> AddWiringRowsComponentProject ->
+                // AddWiringRowsComponent right there on the spot. Called from HERE (its
+                // old position, before Controls.Add/SetFetchedItemData), that runs
+                // against a dgv_project_items that has never had a DataSource bound yet
+                // - AddWiringRowsComponent's own "DataTable dataSource = ... as
+                // DataTable; if (dataSource != null)" guard is false, so it silently
+                // does nothing. No exception, no visible failure - the wiring block
+                // just never gets inserted, for every record whose saved is_wiring is
+                // true. Now that the items grid is genuinely populated with this tab's
+                // real data by the time this fires, the same call correctly finds no
+                // existing wiring block (via IsWiringComponentRow, which does survive a
+                // reload) and adds one against the real, current max reference code -
+                // which also means reopening an existing quote already affected by this
+                // bug repairs it, rather than needing a manual fix.
+                UC.SetWiring(hasContentRow ? contentTable.Rows[0]["is_wiring"]?.ToString() ?? "false" : "false");
             }
 
             TabPage addNewTab = new TabPage("+");
@@ -2790,6 +2798,29 @@ namespace smpc_sales_app.Pages.Sales
             foreach (var item in newList)
             {
                 int key = keySelector(item);
+
+                // Key 0 means "never saved yet", and EVERY such row is a distinct new
+                // record - so they cannot share a dictionary slot (fixed 2026-09-05).
+                //
+                // This used to run them through the same ContainsKey guard as everything
+                // else, which silently threw away all but the FIRST new row in any batch:
+                // add the 4-row wiring block and only WIRING MATERIALS survived the save;
+                // add a BOM and only its head survived. The dropped rows never even
+                // reached the payload, so the API had nothing to insert and no error was
+                // raised anywhere - the rows just quietly vanished on Save. (The stray
+                // "WIRING MATERIALS" row with no children found on item set 14 earlier is
+                // this bug's fingerprint.)
+                //
+                // Added directly rather than via the dictionary; the newDict pass below
+                // never sees key 0 now, so there's no double-add.
+                if (key == 0)
+                {
+                    diff.Added.Add(item);
+                    continue;
+                }
+
+                // A repeated REAL id is a different situation - genuinely duplicated
+                // rows - and keeping the first is the existing, deliberate behaviour.
                 if (!newDict.ContainsKey(key))
                     newDict[key] = item;
             }
@@ -2875,6 +2906,13 @@ namespace smpc_sales_app.Pages.Sales
             Compare(c, "final_ref_no", db.final_ref_no, upd.TryGetValue("final_ref_no", out val) ? val : null);
             Compare(c, "is_finalized", db.is_finalized, upd.TryGetValue("is_finalized", out val) ? val : null);
             Compare(c, "is_project", db.is_project, upd.TryGetValue("is_project", out val) ? val : null);
+            // This was missing, and it is what GetFullDiff sends as the header payload
+            // (result["Header"]["QuotationFields"]) - not merely what Change History
+            // renders. Without it REQUEST FOR ENGR. rode along fine on the INSERT that
+            // creates a quotation, but could never be turned on or off again: updating
+            // an existing project quote produced no diff entry for the flag, so nothing
+            // was sent and the engineer never received the quote (§5.1, §6.3).
+            Compare(c, "is_requested_for_engr", db.is_requested_for_engr, upd.TryGetValue("is_requested_for_engr", out val) ? val : null);
             return c;
         }
 
@@ -3275,8 +3313,8 @@ namespace smpc_sales_app.Pages.Sales
                 // "requested_for_engr" from chk_requested_for_engr's own name, which
                 // doesn't match the model's real json tag ("is_requested_for_engr") - set
                 // explicitly. This is what lets REQUEST FOR ENGR. be checked on a brand-new,
-                // not-yet-saved quotation (btn_request_for_engr_Click just marks the
-                // checkbox pending in that case, no id-scoped API call): is_requested_for_engr
+                // not-yet-saved quotation (chk_requested_for_engr_CheckedChanged just marks
+                // the checkbox pending in that case, no id-scoped API call): is_requested_for_engr
                 // lives on this same tbl_trans_sales_quotation row, so it rides along in this
                 // same INSERT instead of needing a separate call afterward.
                 parentData["is_requested_for_engr"] = chk_requested_for_engr.Checked;
@@ -3444,10 +3482,26 @@ namespace smpc_sales_app.Pages.Sales
             }
         }
 
+        // `id` here is an ITEM id - see the call site, which reads it out of the row's
+        // "item_id" cell.
         private void getItemShortDescription(int id)
         {
+            // Matched on based_id, not id.
+            //
+            // tbl_setup_item_additional_specs.id is the specs row's OWN primary key;
+            // based_id is the item it describes. Matching an item id against `id` therefore
+            // returned whichever specs row happened to be numbered the same - a different
+            // item's description almost every time. 1263 of the 1267 rows in the database
+            // have id <> based_id, so this was wrong for effectively every item: a BUTTERFLY
+            // VALVE line showed "PUMP - MXH-F 3204-60/B 15KW 20HP - Calpeda - 1241", the
+            // description belonging to item 1241 (user-reported 2026-09-05).
+            //
+            // Falls back to `id` only when the table has no based_id column at all, so an
+            // older payload shape degrades to the previous behaviour instead of throwing.
+            string keyColumn = ItemAdditionalSpecs.Columns.Contains("based_id") ? "based_id" : "id";
+
             var matchingItem = ItemAdditionalSpecs.AsEnumerable()
-                .FirstOrDefault(item => item["id"].ToString() == id.ToString());
+                .FirstOrDefault(item => item[keyColumn].ToString() == id.ToString());
 
             if (matchingItem != null)
             {
@@ -4982,6 +5036,17 @@ namespace smpc_sales_app.Pages.Sales
                 dgv_quick_quote_details.InvalidateCell(dgv_quick_quote_details.Columns["quick_inv_stock"].Index, e.RowIndex);
             }
 
+            // Same BOM head -> children quantity cascade as the Project grid's
+            // dgv_project_items_CellEndEdit - see Helpers.CascadeBomQuantity for why.
+            // Quick Quote inserts BOM rows through the same GetBomDataRecursive as
+            // Project (both go through SalesItemGridEditor.HandleItemSelectionClick),
+            // so it had exactly the same gap.
+            if (e.RowIndex >= 0 && dgv_quick_quote_details.Columns[e.ColumnIndex].Name == "quick_qty")
+            {
+                Helpers.CascadeBomQuantity(dgv_quick_quote_details, BomDetails, e.RowIndex,
+                    "quick_qty", "reference_code", "item_id", "quick_bom_id");
+            }
+
             //var value = dgv_quick_quote_details.Rows[e.RowIndex].Cells["quick_qty"].Value;
 
             //if (int.TryParse(value?.ToString(), out int qty) && qty != 0)
@@ -5339,13 +5404,12 @@ namespace smpc_sales_app.Pages.Sales
                 btn_new_version.Visible = !isFinalized;
                 btn_duplicate.Visible = !isFinalized;
 
-                // REQUEST FOR ENGR. hands a saved quote to an engineer (spec §5.1, §3.3).
-                // This button was hard-hidden in the designer and never re-shown at all,
-                // which is why no quote ever reached the engineering Sales Quotation List
-                // (the engineering view filters on is_requested_for_engr, set only by this
-                // button's POST). Per user decision it now stays visible even before save
-                // and even once finalized - the click handler's own "please save first"
-                // guard covers the unsaved case, and requesting an engineer on an immutable
+                // REQUEST FOR ENGR. hands a saved quote to an engineer (spec §5.1, §3.3),
+                // now driven entirely by chk_requested_for_engr (originally a separate
+                // button too - removed 2026-09-05, "we're using only the checkbox"). It
+                // stays visible and clickable even before save and even once finalized -
+                // chk_requested_for_engr_CheckedChanged's own "please save first" guard
+                // covers the unsaved case, and requesting an engineer on an immutable
                 // finalized quote is harmless to leave clickable even though it has no
                 // remaining purpose (there's nothing left for an engineer to edit).
                 //
@@ -5354,16 +5418,15 @@ namespace smpc_sales_app.Pages.Sales
                 // this point in every path that reaches bind() (FetchQuotationDetailsByDocumentNo
                 // sets it from whichever lookup actually found the record; the tab-switch
                 // handlers set it before fetching).
-                btn_request_for_engr.Visible = isProject;
-
-                // Status indicator: shows whether this quotation (Quick Quote or Project -
-                // shared pnl_header control, so no per-mode duplication needed) has already
-                // been sent to an engineer. Read-only (Enabled = false in the designer) -
-                // the button is what toggles it, via RequestForEngr/CancelRequestForEngr.
-                chk_requested_for_engr.Visible = isProject;
-                chk_requested_for_engr.Checked = HeaderList.Columns.Contains("is_requested_for_engr")
-                    && Convert.ToBoolean(HeaderList.Rows[SelectedRow]["is_requested_for_engr"]);
-                UpdateRequestForEngrButtonText();
+                //
+                // Status + toggle for whether this quotation (Quick Quote or Project -
+                // shared pnl_header control, so no per-mode duplication needed) has
+                // already been sent to an engineer. SetRequestForEngrChecked, not a
+                // direct assignment, so loading a record doesn't fire
+                // chk_requested_for_engr_CheckedChanged as if the user had clicked it.
+                UpdateRequestForEngrVisibility();
+                SetRequestForEngrChecked(HeaderList.Columns.Contains("is_requested_for_engr")
+                    && Convert.ToBoolean(HeaderList.Rows[SelectedRow]["is_requested_for_engr"]));
 
                 btn_edit.Visible = !isFinalized;
                 btn_add_customer.Visible = !isFinalized;
@@ -5475,7 +5538,9 @@ namespace smpc_sales_app.Pages.Sales
                 // TO BE CHANGED/FIND INSIDE DGV COLUMN INSTEAD OF CREATING
                 var col = new DataGridViewTextBoxColumn();
                 col.Name = "quick_images";
-                col.HeaderText = "IMAGES";
+                // Same header as the designer's own quick_images column - otherwise this
+                // fallback would rebuild it with the pre-2026-09-05 spelling.
+                col.HeaderText = "IMAGE";
 
                 if (dgv_quick_quote_details.Columns.Count > 1)
                     dgv_quick_quote_details.Columns.Insert(1, col);
@@ -5733,7 +5798,53 @@ namespace smpc_sales_app.Pages.Sales
         // single FINAL selection. Deliberately not de-duplicated against
         // FinalTxtBoxClicked below - they diverge right after the picker closes, and
         // this keeps the working FINAL path untouched.
+        // One pump picker at a time, across BOTH grids (user-reported 2026-09-05: rapid
+        // clicking stacked several, and SIZE UP's picker could open on top of FINAL's).
+        //
+        // Neither handler goes straight to ShowDialog - FinalTxtBoxClicked awaits
+        // GetPumpsViewList() first - and the form stays live during that await, so clicks
+        // queue up behind it. Worse, ShowDialog runs its OWN message loop, so a pending
+        // await continuation resumes while the first modal is already on screen and opens
+        // a second one over it. Being modal is no defence against that.
+        //
+        // Deliberately shared by SIZE UP and FINAL rather than one flag each: while either
+        // picker is open the other must stay shut.
+        private bool _pumpPickerOpen = false;
+
+        // The control the click came from, so the busy state is applied to the grids the
+        // user is actually clicking. Falls back to the selected tab's control, which is what
+        // the Core methods below resolve anyway.
+        private ItemSetUC PumpPickerControl(object sender)
+        {
+            return sender as ItemSetUC
+                ?? (tabControl2?.SelectedTab?.Controls.Count > 0
+                        ? tabControl2.SelectedTab.Controls[0] as ItemSetUC
+                        : null);
+        }
+
         private void SizeUpClicked(object sender, EventArgs e)
+        {
+            if (_pumpPickerOpen) return;
+            _pumpPickerOpen = true;
+
+            // Takes the two grids out of action for the whole operation - the flag alone
+            // stops a second picker opening at the same time, but not a queued click firing
+            // one the moment this picker closes. See ItemSetUC.SetPumpPickerBusy.
+            var busyControl = PumpPickerControl(sender);
+            busyControl?.SetPumpPickerBusy(true);
+
+            try
+            {
+                SizeUpClickedCore();
+            }
+            finally
+            {
+                busyControl?.SetPumpPickerBusy(false);
+                _pumpPickerOpen = false;
+            }
+        }
+
+        private void SizeUpClickedCore()
         {
             // "Is this a pump" = ITEM NAME "PUMP" (spec §17.2, code PMP) - a required
             // field on every item, already present on ItemList (vw_items). Deliberately
@@ -5770,6 +5881,31 @@ namespace smpc_sales_app.Pages.Sales
         }
 
         private async void FinalTxtBoxClicked(object sender, EventArgs e)
+        {
+            // See _pumpPickerOpen above. Claimed BEFORE the first await, which is the whole
+            // point - the window this closes is the one between the click and the modal
+            // actually appearing.
+            if (_pumpPickerOpen) return;
+            _pumpPickerOpen = true;
+
+            // Matters most here: this path awaits GetPumpsViewList before the picker can even
+            // be built, so the gap between the click and the modal appearing is a network
+            // round trip - long enough to collect several more clicks.
+            var busyControl = PumpPickerControl(sender);
+            busyControl?.SetPumpPickerBusy(true);
+
+            try
+            {
+                await FinalTxtBoxClickedCore();
+            }
+            finally
+            {
+                busyControl?.SetPumpPickerBusy(false);
+                _pumpPickerOpen = false;
+            }
+        }
+
+        private async Task FinalTxtBoxClickedCore()
         {
             // "Is this a pump" for the purposes of what FINAL's picker OFFERS = ITEM NAME
             // "PUMP" (spec §17.2), same as SizeUpClicked - NOT GetPumpsViewList() (vw_
@@ -6585,6 +6721,14 @@ namespace smpc_sales_app.Pages.Sales
         // an existing one (IsEdit); locked otherwise (view mode).
         private void UpdateProjectControlsEditableState()
         {
+            // Before the isProject guard on purpose: this is the one hook that fires on
+            // every IsEdit transition, so it's what actually gets REQUEST FOR ENGR.'s
+            // Enabled state right. SetNewFormMode can't do it alone - btn_new_Click calls
+            // SetNewFormMode(true) BEFORE it sets isNewRecord = true, so the helper reads
+            // a stale false there. The "IsEdit = false" on the line after it routes back
+            // through this setter with isNewRecord already true, which corrects it.
+            UpdateRequestForEngrVisibility();
+
             if (!isProject) return;
 
             bool editable = isNewRecord || IsEdit;
@@ -7318,96 +7462,115 @@ namespace smpc_sales_app.Pages.Sales
         // checkbox locally - no API call, nothing to fail - and Save carries it in.
         //
         // Changed again same day (user decision): this is now a toggle, not a one-way
-        // action - the button relabels itself CANCEL REQUEST once checked (see
-        // UpdateRequestForEngrButtonText) and clicking it again reverses the request via
-        // CancelQuotationForEngr, dropping the quotation off every engineer's Sales
-        // Quotation List immediately (its only visibility gate is is_requested_for_engr).
-        private async void btn_request_for_engr_Click(object sender, EventArgs e)
+        // action - unchecking it reverses the request via CancelQuotationForEngr,
+        // dropping the quotation off every engineer's Sales Quotation List immediately
+        // (its only visibility gate is is_requested_for_engr).
+        //
+        // Moved from a separate button onto the checkbox itself (user decision,
+        // 2026-09-05: "remove the button we're using only the checkbox"). WinForms
+        // already flips Checked before this event fires, so by the time we get here the
+        // box shows the state the user just asked for - checked means "send it",
+        // unchecked means "cancel it". A declined confirm or a failed API call reverts
+        // it via SetRequestForEngrChecked, which is guarded so the revert itself doesn't
+        // loop back into this handler.
+        private async void chk_requested_for_engr_CheckedChanged(object sender, EventArgs e)
         {
-            int sId = ToInt(txt_id.Text);
-            if (isNewRecord || sId <= 0)
-            {
-                chk_requested_for_engr.Checked = !chk_requested_for_engr.Checked;
-                UpdateRequestForEngrButtonText();
-                MessageBox.Show(
-                    chk_requested_for_engr.Checked
-                        ? "This quotation will be sent to engineering once you save it."
-                        : "This quotation will no longer be sent to engineering. Save to apply.",
-                    "Pending", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                return;
-            }
+            //if (_suppressRequestForEngrToggle)
+            //    return;
 
-            if (chk_requested_for_engr.Checked)
-            {
-                if (MessageBox.Show("Cancel this quotation's engineering request? It will no longer be visible on any engineer's Sales Quotation List.",
-                    "Confirm", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
-                {
-                    return;
-                }
+            //bool wantsRequested = chk_requested_for_engr.Checked;
+            //int sId = ToInt(txt_id.Text);
 
-                try
-                {
-                    var cancelResponse = await QuotationService.CancelRequestForEngr(sId);
-                    if (cancelResponse.Success)
-                    {
-                        chk_requested_for_engr.Checked = false;
-                        UpdateRequestForEngrButtonText();
-                        MessageBox.Show("Engineering request cancelled.", "Success",
-                            MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    }
-                    else
-                    {
-                        MessageBox.Show(cancelResponse.message, "Error",
-                            MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine("CancelRequestForEngr error: " + ex);
-                    MessageBox.Show(
-                        "We couldn't cancel this quotation's engineering request. Please try again. If the problem continues, contact support.",
-                        "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-                return;
-            }
+            //if (isNewRecord || sId <= 0)
+            //{
+            //    // Nothing to call yet - is_requested_for_engr rides along in the same
+            //    // INSERT that creates the row (see the parentData["is_requested_for_engr"]
+            //    // assignments in the two save paths), so just acknowledge it's pending.
+            //    MessageBox.Show(
+            //        wantsRequested
+            //            ? "This quotation will be sent to engineering once you save it."
+            //            : "This quotation will no longer be sent to engineering. Save to apply.",
+            //        "Pending", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            //    return;
+            //}
 
-            if (MessageBox.Show("Send this quotation to engineering? Any engineer will be able to see and edit its Size Up, item table, and wiring.",
-                "Confirm", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
-            {
-                return;
-            }
+            //if (wantsRequested)
+            //{
+            //    if (MessageBox.Show("Send this quotation to engineering? Any engineer will be able to see and edit its Size Up, item table, and wiring.",
+            //        "Confirm", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
+            //    {
+            //        SetRequestForEngrChecked(false);
+            //        return;
+            //    }
 
-            try
-            {
-                var response = await QuotationService.RequestForEngr(sId);
-                if (response.Success)
-                {
-                    chk_requested_for_engr.Checked = true;
-                    UpdateRequestForEngrButtonText();
-                    MessageBox.Show("Quotation sent to engineering.", "Success",
-                        MessageBoxButtons.OK, MessageBoxIcon.Information);
-                }
-                else
-                {
-                    MessageBox.Show(response.message, "Error",
-                        MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine("RequestForEngr error: " + ex);
-                MessageBox.Show(
-                    "We couldn't send this quotation to engineering. Please try again. If the problem continues, contact support.",
-                    "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
+            //    try
+            //    {
+            //        var response = await QuotationService.RequestForEngr(sId);
+            //        if (response.Success)
+            //        {
+            //            MessageBox.Show("Quotation sent to engineering.", "Success",
+            //                MessageBoxButtons.OK, MessageBoxIcon.Information);
+            //        }
+            //        else
+            //        {
+            //            MessageBox.Show(response.message, "Error",
+            //                MessageBoxButtons.OK, MessageBoxIcon.Error);
+            //            SetRequestForEngrChecked(false);
+            //        }
+            //    }
+            //    catch (Exception ex)
+            //    {
+            //        System.Diagnostics.Debug.WriteLine("RequestForEngr error: " + ex);
+            //        MessageBox.Show(
+            //            "We couldn't send this quotation to engineering. Please try again. If the problem continues, contact support.",
+            //            "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            //        SetRequestForEngrChecked(false);
+            //    }
+            //}
+            //else
+            //{
+            //    if (MessageBox.Show("Cancel this quotation's engineering request? It will no longer be visible on any engineer's Sales Quotation List.",
+            //        "Confirm", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
+            //    {
+            //        SetRequestForEngrChecked(true);
+            //        return;
+            //    }
+
+            //    try
+            //    {
+            //        var cancelResponse = await QuotationService.CancelRequestForEngr(sId);
+            //        if (cancelResponse.Success)
+            //        {
+            //            MessageBox.Show("Engineering request cancelled.", "Success",
+            //                MessageBoxButtons.OK, MessageBoxIcon.Information);
+            //        }
+            //        else
+            //        {
+            //            MessageBox.Show(cancelResponse.message, "Error",
+            //                MessageBoxButtons.OK, MessageBoxIcon.Error);
+            //            SetRequestForEngrChecked(true);
+            //        }
+            //    }
+            //    catch (Exception ex)
+            //    {
+            //        System.Diagnostics.Debug.WriteLine("CancelRequestForEngr error: " + ex);
+            //        MessageBox.Show(
+            //            "We couldn't cancel this quotation's engineering request. Please try again. If the problem continues, contact support.",
+            //            "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            //        SetRequestForEngrChecked(true);
+            //    }
+            //}
         }
 
-        // Keeps the button's label in sync with chk_requested_for_engr's current state -
-        // called from bind() (loading a record), SetNewFormMode (new/reset), and every
-        // successful toggle in btn_request_for_engr_Click above.
-        private void UpdateRequestForEngrButtonText()
+        // Every programmatic assignment to chk_requested_for_engr.Checked goes through
+        // here instead of setting it directly, so loading a record, resetting a new
+        // form, or reverting a declined/failed toggle never re-fires
+        // chk_requested_for_engr_CheckedChanged as if the user had clicked it.
+        private void SetRequestForEngrChecked(bool value)
         {
-            btn_request_for_engr.Text = chk_requested_for_engr.Checked ? "CANCEL REQUEST" : "REQUEST FOR ENGR.";
+            _suppressRequestForEngrToggle = true;
+            try { chk_requested_for_engr.Checked = value; }
+            finally { _suppressRequestForEngrToggle = false; }
         }
         // Only the user who originally created a quotation (quick quote or project) is
         // allowed to edit/update it. txt_created_by is already bound to the loaded record's
@@ -7612,23 +7775,25 @@ namespace smpc_sales_app.Pages.Sales
             btn_duplicate.Visible = !isTrue;
             btn_new_version.Visible = !isTrue;
             // Per user decision: unlike New Version/Duplicate (which genuinely can't run
-            // without an existing saved record), REQUEST FOR ENGR. and its status checkbox
-            // stay visible even on a brand-new, unsaved quotation - checking it there just
-            // marks the checkbox pending (see btn_request_for_engr_Click), since
-            // is_requested_for_engr rides along in the same INSERT that creates the row.
-            // Still Project Quotation only, though (see UpdateRequestForEngrVisibility) -
-            // isProject already reflects whichever tab is active (btn_new_Click reads it
-            // right after this call without changing it, so it's safe here too).
-            btn_request_for_engr.Visible = isProject;
-            chk_requested_for_engr.Visible = isProject;
+            // without an existing saved record), REQUEST FOR ENGR.'s checkbox stays
+            // visible and clickable even on a brand-new, unsaved quotation - checking it
+            // there just marks it pending (see chk_requested_for_engr_CheckedChanged),
+            // since is_requested_for_engr rides along in the same INSERT that creates
+            // the row. Still Project Quotation only, though (see
+            // UpdateRequestForEngrVisibility) - isProject already reflects whichever tab
+            // is active (btn_new_Click reads it right after this call without changing
+            // it, so it's safe here too). Routed through the shared helper so it picks
+            // up the view/edit Enabled rule too, rather than only the Visible half.
+            UpdateRequestForEngrVisibility();
             if (isTrue)
             {
                 // A brand-new record has no request history yet - don't carry over a
                 // Checked state left behind by whichever record was open before New was
                 // clicked (ResetControls only clears TextBoxes, not CheckBoxes).
-                chk_requested_for_engr.Checked = false;
+                // SetRequestForEngrChecked, not a direct assignment, so this reset
+                // doesn't fire chk_requested_for_engr_CheckedChanged as if clicked.
+                SetRequestForEngrChecked(false);
             }
-            UpdateRequestForEngrButtonText();
             btn_search.Visible = !isTrue;
             btn_prev.Visible = !isTrue;
             btn_next.Visible = !isTrue;
@@ -8413,7 +8578,21 @@ namespace smpc_sales_app.Pages.Sales
 
         private void txt_contact_1_KeyPress(object sender, KeyPressEventArgs e)
         {
-            if (!char.IsDigit(e.KeyChar) && !char.IsControl(e.KeyChar))
+            TextBox tb = (TextBox)sender;
+
+            // Allow control keys (backspace, delete, etc.)
+            if (char.IsControl(e.KeyChar))
+                return;
+
+            // Only allow digits
+            if (!char.IsDigit(e.KeyChar))
+            {
+                e.Handled = true;
+                return;
+            }
+
+            // Limit to 11 characters
+            if (tb.Text.Length >= 11 && tb.SelectionLength == 0)
             {
                 e.Handled = true;
             }
@@ -8421,7 +8600,21 @@ namespace smpc_sales_app.Pages.Sales
 
         private void txt_contact_2_KeyPress(object sender, KeyPressEventArgs e)
         {
-            if (!char.IsDigit(e.KeyChar) && !char.IsControl(e.KeyChar))
+            TextBox tb = (TextBox)sender;
+
+            // Allow control keys (backspace, delete, etc.)
+            if (char.IsControl(e.KeyChar))
+                return;
+
+            // Only allow digits
+            if (!char.IsDigit(e.KeyChar))
+            {
+                e.Handled = true;
+                return;
+            }
+
+            // Limit to 11 characters
+            if (tb.Text.Length >= 11 && tb.SelectionLength == 0)
             {
                 e.Handled = true;
             }
