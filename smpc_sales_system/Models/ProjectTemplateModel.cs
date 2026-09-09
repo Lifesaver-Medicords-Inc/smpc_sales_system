@@ -25,6 +25,12 @@ namespace smpc_sales_system.Models
         public string Components { get; set; }
         [JsonProperty("level")]
         public int Level { get; set; }
+        // Nullable on purpose: "no quantity set" and "quantity is zero" are
+        // different states. Component rows that predate this column stay null
+        // and apply to a project quotation as blank, so no existing quotation
+        // total changes. Nothing defaults it - see the Go model's own note.
+        [JsonProperty("qty")]
+        public int? Qty { get; set; }
     }
 
     public class ProjectTemplateList

@@ -47,6 +47,7 @@
             this.ID = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.ItemId = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.component = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.qty = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.addChildToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.Level = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -190,6 +191,7 @@
             this.btn_duplicate.Name = "btn_duplicate";
             this.btn_duplicate.Size = new System.Drawing.Size(77, 22);
             this.btn_duplicate.Text = "Duplicate";
+            this.btn_duplicate.Click += new System.EventHandler(this.btn_duplicate_Click);
             // 
             // dgv_template
             // 
@@ -199,6 +201,7 @@
             this.ID,
             this.ItemId,
             this.component,
+            this.qty,
             this.Level,
             this.ParentId});
             this.dgv_template.Dock = System.Windows.Forms.DockStyle.Bottom;
@@ -229,6 +232,16 @@
             this.component.DataPropertyName = "Components";
             this.component.HeaderText = "COMPONENTS";
             this.component.Name = "component";
+            // 
+            // qty
+            // 
+            this.qty.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
+            this.qty.DataPropertyName = "Qty";
+            this.qty.DefaultCellStyle.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
+            this.qty.HeaderText = "QTY";
+            this.qty.MinimumWidth = 50;
+            this.qty.Name = "qty";
+            this.qty.Width = 70;
             // 
             // contextMenuStrip1
             // 
@@ -319,6 +332,7 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn ID;
         private System.Windows.Forms.DataGridViewTextBoxColumn ItemId;
         private System.Windows.Forms.DataGridViewTextBoxColumn component;
+        private System.Windows.Forms.DataGridViewTextBoxColumn qty;
         private System.Windows.Forms.DataGridViewTextBoxColumn Level;
         private System.Windows.Forms.DataGridViewTextBoxColumn ParentId;
         private System.Windows.Forms.ToolStripButton btn_duplicate;

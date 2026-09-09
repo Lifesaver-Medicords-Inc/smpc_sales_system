@@ -42,6 +42,44 @@ namespace smpc_sales_app.Pages.Sales
             {
                 dgv_list.Columns["id"].Visible = false;
             }
+
+            // Columns used to size to their content, leaving every list in this
+            // modal squeezed into the left third of the window with a wide grey
+            // gap beside it - and long values ("SEWAGE / DRAINAGE") truncated
+            // while empty space sat unused next to them.
+            //
+            // Fill divides the full width across the VISIBLE columns, so the
+            // grid always uses the window it was given. FillWeight biases that
+            // split toward the text column: a count or a status needs a fraction
+            // of the room a name does, and an equal split is what made the
+            // headers wrap onto two lines.
+            dgv_list.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+            dgv_list.ColumnHeadersDefaultCellStyle.WrapMode = DataGridViewTriState.False;
+
+            foreach (DataGridViewColumn column in dgv_list.Columns)
+            {
+                if (!column.Visible)
+                    continue;
+
+                column.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+                column.FillWeight = IsNarrowColumn(column) ? 25 : 100;
+                column.DefaultCellStyle.Alignment = IsNarrowColumn(column)
+                    ? DataGridViewContentAlignment.MiddleRight
+                    : DataGridViewContentAlignment.MiddleLeft;
+            }
+        }
+
+        // Numeric and short-code columns do not need the width a name does.
+        // Decided from the bound column's TYPE rather than a list of hard-coded
+        // header names, so this keeps working for whatever a future caller
+        // passes in - this modal is shared, and its callers choose their own
+        // columns.
+        private static bool IsNarrowColumn(DataGridViewColumn column)
+        {
+            Type type = column.ValueType;
+
+            return type == typeof(int) || type == typeof(long) || type == typeof(short)
+                || type == typeof(decimal) || type == typeof(double) || type == typeof(float);
         }
 
         public int GetResult() => _result;

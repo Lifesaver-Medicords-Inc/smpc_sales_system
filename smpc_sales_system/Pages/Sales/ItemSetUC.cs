@@ -1950,6 +1950,22 @@ namespace smpc_sales_system.Pages.Sales
                     newRow["reference_code"] = refCode;
                     newRow["template_id"] = templateId;
 
+                    // Carry the template's quantity into the quotation's own qty
+                    // column, but ONLY where the template actually specifies one.
+                    // A template row with no quantity leaves this cell blank,
+                    // exactly as it was before templates had a QTY column - which
+                    // is what keeps applying an existing template producing the
+                    // totals it always did (GetTotalUnitPriceForChildren multiplies
+                    // unit_price by qty, so a blank contributes nothing). Nothing
+                    // here substitutes a default.
+                    //
+                    // The Columns check guards against an API that predates the
+                    // column: client and server deploy separately.
+                    if (templatesChild.Columns.Contains("Qty") && row["Qty"] != DBNull.Value)
+                    {
+                        newRow["qty"] = row["Qty"];
+                    }
+
                     // Fill the template's own PUMP slot from an already-added FINAL pump
                     // instead of leaving it blank, if one was captured above - this is
                     // what keeps a final pump added BEFORE the template from turning into
