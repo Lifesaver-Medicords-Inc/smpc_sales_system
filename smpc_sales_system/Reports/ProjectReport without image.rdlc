@@ -2460,7 +2460,7 @@
           </Style>
         </PageHeader>
         <PageFooter>
-          <Height>2.3038cm</Height>
+          <Height>1.74424cm</Height>
           <PrintOnFirstPage>true</PrintOnFirstPage>
           <PrintOnLastPage>true</PrintOnLastPage>
           <ReportItems>
@@ -2470,7 +2470,7 @@
               <Sizing>FitProportional</Sizing>
               <Top>0.03528cm</Top>
               <Left>1.41179cm</Left>
-              <Height>2cm</Height>
+              <Height>1.64722cm</Height>
               <Width>20cm</Width>
               <Style>
                 <Border>
@@ -2521,7 +2521,7 @@
                 </Paragraph>
               </Paragraphs>
               <rd:DefaultName>Textbox7</rd:DefaultName>
-              <Top>1.22114cm</Top>
+              <Top>0.90364cm</Top>
               <Left>1.41179cm</Left>
               <Height>0.77886cm</Height>
               <Width>20cm</Width>

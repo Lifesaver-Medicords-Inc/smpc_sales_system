@@ -2459,7 +2459,7 @@
             </Style>
           </Rectangle>
         </ReportItems>
-        <Height>16.43283in</Height>
+        <Height>16.54741in</Height>
         <Style />
       </Body>
       <Width>9.05176in</Width>
@@ -2499,8 +2499,9 @@
               <Source>Embedded</Source>
               <Value>footer</Value>
               <Sizing>FitProportional</Sizing>
+              <Top>0.03528cm</Top>
               <Left>1.0296cm</Left>
-              <Height>2cm</Height>
+              <Height>1.60312cm</Height>
               <Width>20cm</Width>
               <Style>
                 <Border>
@@ -2551,9 +2552,9 @@
                 </Paragraph>
               </Paragraphs>
               <rd:DefaultName>Textbox7</rd:DefaultName>
-              <Top>1.25399cm</Top>
+              <Top>0.93649cm</Top>
               <Left>1.0296cm</Left>
-              <Height>0.93761cm</Height>
+              <Height>0.70191cm</Height>
               <Width>20cm</Width>
               <ZIndex>1</ZIndex>
               <Style>
