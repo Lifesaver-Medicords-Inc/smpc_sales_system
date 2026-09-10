@@ -364,11 +364,24 @@ namespace smpc_sales_app.Pages.Sales
                         DataRow[] itemspecRows = ItemSpecs.Select($"based_id = '{itemId}'");
 
 
-                        //string allocationQty = string.IsNullOrEmpty(childRow["allocation_qty"].ToString()) ? "0" : childRow["allocation_qty"].ToString();
-                        string qty = string.IsNullOrEmpty(childRow["qty"].ToString()) ? "0" : childRow["qty"].ToString();
-
-
-                        newRow["has_stocks"] = int.Parse(qty) > 0 ? false : true;
+                        // has_stocks drives the red "!" column (see
+                        // dgv_order_sales_CellFormatting). It used to be computed
+                        // here as `qty > 0 ? false : true` - off the ORDER
+                        // QUANTITY, nothing to do with stock - so every line with
+                        // a quantity above zero showed "!" permanently and the
+                        // only way to clear it was to order zero of something.
+                        //
+                        // It now comes from the line's own status, which is the
+                        // one place §7.1's stock test actually lives
+                        // (sp_RecomputeSoItemStatus: on-hand stock plus this SO's
+                        // own approved, unexpired reservations vs required qty).
+                        // That procedure already runs on receiving
+                        // (receiving_report_service.go calls
+                        // RecomputeSoItemStatusForPurchaseOrderDetails per
+                        // received detail), which is what makes an RR against the
+                        // PO clear the "!" - §7.1's "RR made against that PO ->
+                        // IN STOCK" row.
+                        newRow["has_stocks"] = SoLineIsCovered(childRow["status"]?.ToString());
 
                         // Add item details to newRow
 
@@ -2341,11 +2354,65 @@ namespace smpc_sales_app.Pages.Sales
             //Console.WriteLine(dgv_order_sales.Rows[e.RowIndex].Cells["delivery_preference"].Value.ToString());
         }
 
+        // The SO item statuses (§7.1) that mean this line has nothing behind it
+        // yet - no stock, and whatever is meant to supply it has not arrived or
+        // been produced. These are the ones that keep the red "!".
+        //
+        // Listed as the NOT-covered set rather than the covered one on purpose:
+        // it is the shorter, more stable list, and getting it wrong fails safe
+        // (an unrecognised status shows no "!" rather than alarming on a line
+        // that is fine). Strings taken verbatim from sp_RecomputeSoItemStatus,
+        // which is the only thing that writes this column.
+        private static readonly System.Collections.Generic.HashSet<string> UncoveredSoStatuses =
+            new System.Collections.Generic.HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            {
+                "CANVASS",                   // on the Purchasing List - must be bought
+                "WAITING FOR DELIVERY",      // PO raised, supplier has not delivered
+                "WAITING ACKNOWLEDGEMENT",   // production requested, not accepted
+                "WAITING FOR ENGR",          // accepted, not assigned
+                "PREPARING FOR PRODUCTION",  // assigned, no item request yet
+                "IN PRODUCTION",             // being made
+                "CHECKING",                  // made, not yet acknowledged by the WH manager
+            };
+
+        // True when the line is covered and the "!" should be blank: IN STOCK
+        // and every stage downstream of it (PREPARING, PREPARED, SCHEDULED
+        // DISPATCH, FOR DELIVERY, DELIVERED) - all of which can only be reached
+        // once the stock exists.
+        //
+        // An empty status is treated as covered. A line that has never been
+        // saved has no status yet, because sp_RecomputeSoItemStatus runs
+        // server-side; flagging every unsaved line red would be noise, not
+        // information. The "!" appears once the order is saved and the status
+        // is computed.
+        private static bool SoLineIsCovered(string status)
+        {
+            if (string.IsNullOrWhiteSpace(status))
+                return true;
+
+            return !UncoveredSoStatuses.Contains(status.Trim());
+        }
+
         private void dgv_order_sales_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
         {
-            if ((dgv_order_sales.Columns[e.ColumnIndex].Name == "checkHasStock" && e.Value != null))
+            if (dgv_order_sales.Columns[e.ColumnIndex].Name == "checkHasStock" && e.RowIndex >= 0)
             {
-                bool hasStock = Convert.ToBoolean(e.Value);
+                // The "!" is derived from the line's own §7.1 status, never from the bound
+                // has_stocks column. has_stocks is written once by this client when the
+                // order is saved and is never updated again - nothing in ERP_API assigns
+                // it, and sp_RecomputeSoItemStatus only ever writes "status" - so reading
+                // it here froze the "!" at whatever it was at creation time. A line that
+                // had since been received, released, picked or put on a delivery receipt
+                // still showed "!" while its own STATUS column correctly read FOR DELIVERY.
+                //
+                // SoLineIsCovered was already applied at bind time, but only on the
+                // creation-time preview table (withItemList, built from a quotation). The
+                // two paths that show a SAVED order - bind() and bindOrderByDocNo() - bind
+                // DetailsList straight from the API payload and so never went through it.
+                // Deriving here covers all three bind paths at once and makes the stored
+                // column irrelevant to what the user sees.
+                object statusValue = dgv_order_sales.Rows[e.RowIndex].Cells["status"].Value;
+                bool hasStock = SoLineIsCovered(statusValue?.ToString());
 
                 e.Value = hasStock ? "" : "!";
                 e.CellStyle.ForeColor = hasStock ? dgv_order_sales.DefaultCellStyle.ForeColor : Color.Red;
@@ -2357,26 +2424,20 @@ namespace smpc_sales_app.Pages.Sales
 
         private void dgv_order_sales_CellEndEdit(object sender, DataGridViewCellEventArgs e)
         {
-            if (dgv_order_sales.Columns[e.ColumnIndex].Name == "qtydgv")
-            {
-                DataGridViewRow row = dgv_order_sales.Rows[e.RowIndex];
-
-                if(!int.TryParse(row.Cells["allocated_qty"].Value?.ToString(), out int qtyAllocation))
-                {
-                    qtyAllocation = 0;
-                }
-
-                if (int.TryParse(row.Cells["qtydgv"].Value?.ToString(), out int qty))
-                {
-                    bool hasStock = qty <= qtyAllocation;
-                    row.Cells["checkHasStock"].Value = hasStock;
-
-                    dgv_order_sales.InvalidateCell(
-                        dgv_order_sales.Columns["checkHasStock"].Index,
-                        e.RowIndex
-                    );
-                }
-            }
+            // Editing the quantity used to rewrite checkHasStock here from
+            // `qty <= allocated_qty`. Removed: allocated_qty is the quantity
+            // PURCHASING has allocated to this line (it moves when a PO is
+            // created or cancelled - see purchasing_requisition_order_service.go),
+            // not stock on hand, so this was answering a different question from
+            // the one the "!" asks and would immediately overwrite the
+            // status-derived value with a contradictory one.
+            //
+            // Nothing replaces it deliberately. The "!" reflects the line's SO
+            // item status, and that status is computed server-side by
+            // sp_RecomputeSoItemStatus - a quantity typed into the grid has not
+            // changed it yet. The indicator updates when the order is saved and
+            // the status is recomputed, which is the only point at which the
+            // answer is actually known.
         }
 
         private void btn_refresh_Click(object sender, EventArgs e)
