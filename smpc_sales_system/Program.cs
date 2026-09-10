@@ -30,7 +30,9 @@ namespace smpc_sales_system
             string env = System.Configuration.ConfigurationManager.AppSettings["Environment"] ?? "Development";
 
             // Resolve the correct API URL
-            ApiBaseUrl = System.Configuration.ConfigurationManager.AppSettings[$"ApiBaseUrl.{env}"]
+            // smpc.endpoints.xml wins when present; App.config is the fallback.
+            ApiBaseUrl = SmpcEndpoints.Api(
+                System.Configuration.ConfigurationManager.AppSettings[$"ApiBaseUrl.{env}"])
                          ?? throw new ConfigurationErrorsException($"No API URL configured for environment: {env}");
 
             Log.Information("Running in {Environment} environment", env);

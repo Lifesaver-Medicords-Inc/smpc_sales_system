@@ -27,7 +27,10 @@
     <UpdateRequired>false</UpdateRequired>
     <MapFileExtensions>true</MapFileExtensions>
     <UpdateUrl>http://localhost/smpc_sales_system/</UpdateUrl>
-    <ApplicationRevision>1010</ApplicationRevision>
+    <ProductName>Sales System</ProductName>
+    <PublisherName>SMPC %40copyright</PublisherName>
+    <SuiteName>SMPC %40copyright</SuiteName>
+    <ApplicationRevision>13</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
@@ -532,6 +535,7 @@
       <DependentUpon>SetupModal.cs</DependentUpon>
     </Compile>
     <Compile Include="Program.cs" />
+    <Compile Include="SmpcEndpoints.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Services\Auth\AuthServices.cs" />
     <Compile Include="Services\Helpers\ApiResponseModel.cs" />
