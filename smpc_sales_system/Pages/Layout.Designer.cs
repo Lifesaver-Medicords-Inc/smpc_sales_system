@@ -77,38 +77,27 @@ namespace smpc_sales_app.Pages
             this.panel1.SuspendLayout();
             this.statusStrip1.SuspendLayout();
             this.SuspendLayout();
-            //
+            // 
             // tabContainer
-            //
-            // Phase 4.6 (UI uniformity): no longer Dock=Fill - pnl_content_capped now
-            // owns that, and sizes/centers this manually (see Layout.cs's
-            // RecalculateContentWidth) so the work area caps at 1280px on wide/ultrawide
-            // monitors instead of stretching edge to edge, matching all 6 apps' new
-            // standard. RedBox (panel5) is untouched - it's fixed-width utility chrome,
-            // not the "page" being viewed.
+            // 
             this.tabContainer.Location = new System.Drawing.Point(0, 0);
             this.tabContainer.Name = "tabContainer";
             this.tabContainer.SelectedIndex = 0;
             this.tabContainer.Size = new System.Drawing.Size(406, 428);
             this.tabContainer.SizeMode = System.Windows.Forms.TabSizeMode.Fixed;
             this.tabContainer.TabIndex = 0;
-            //
+            // 
             // pnl_content_capped
-            //
+            // 
+            this.pnl_content_capped.AutoScroll = true;
             this.pnl_content_capped.Controls.Add(this.tabContainer);
             this.pnl_content_capped.Dock = System.Windows.Forms.DockStyle.Fill;
-            // Phase 4.6 (UI uniformity): owns the scrollbar when the active page (or the
-            // capped-at-1280 tabContainer itself, on a narrower monitor than that) needs
-            // more width than what's available - see Layout.cs's RecalculateContentWidth.
-            // Moved here from the TabPage level (newTab.AutoScroll), which didn't
-            // reliably trigger.
-            this.pnl_content_capped.AutoScroll = true;
             this.pnl_content_capped.Location = new System.Drawing.Point(0, 0);
             this.pnl_content_capped.Name = "pnl_content_capped";
             this.pnl_content_capped.Size = new System.Drawing.Size(406, 428);
             this.pnl_content_capped.TabIndex = 4;
             this.pnl_content_capped.Resize += new System.EventHandler(this.pnl_content_capped_Resize);
-            //
+            // 
             // panel3
             // 
             this.panel3.Controls.Add(this.Sidebar);

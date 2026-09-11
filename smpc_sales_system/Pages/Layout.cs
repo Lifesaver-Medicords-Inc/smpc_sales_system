@@ -56,6 +56,7 @@ namespace smpc_sales_app.Pages
 
         private void pnl_content_capped_Resize(object sender, EventArgs e)
         {
+            RecalculateTabSizes();
             RecalculateContentWidth();
         }
 
@@ -142,12 +143,15 @@ namespace smpc_sales_app.Pages
                 var tab = tabContainer.TabPages[e.Index];
                 var rect = tabContainer.GetTabRect(e.Index);
 
+                var textRect = new Rectangle(rect.X + 5, rect.Y + 4, rect.Width - 25, rect.Height - 8);
+                
                 TextRenderer.DrawText(
                     e.Graphics,
                     tab.Text,
                     e.Font,
-                    new Point(rect.X + 5, rect.Y + 4),
-                    Color.Black
+                    textRect,
+                    Color.Black,
+                    TextFormatFlags.EndEllipsis | TextFormatFlags.VerticalCenter | TextFormatFlags.Left
                 );
 
                 TextRenderer.DrawText(
@@ -199,7 +203,7 @@ namespace smpc_sales_app.Pages
             }
 
             //control.Width = this.Width - 235;
-            tabContainer.Height = this.Height * 2;
+            //tabContainer.Height = this.Height * 2;
             //control.Height = this.Height;
             // Phase 4.6 (UI uniformity): was "control.Width = this.Width - 550", forcing
             // the page to a computed width no matter what. Tried capping that to
@@ -229,6 +233,7 @@ namespace smpc_sales_app.Pages
             // SelectTab above should already raise SelectedIndexChanged and trigger this,
             // but calling it directly here too is cheap and removes any doubt that a
             // freshly-added tab's own width need is accounted for immediately.
+            RecalculateTabSizes();
             RecalculateContentWidth();
         }
 
@@ -238,6 +243,7 @@ namespace smpc_sales_app.Pages
             // Same reasoning as showForm - SelectedIndexChanged should already cover this
             // as selection shifts to another tab (or clears, if none remain), but calling
             // it directly removes any doubt.
+            RecalculateTabSizes();
             RecalculateContentWidth();
         }
         private void Sidebar_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
@@ -260,7 +266,9 @@ namespace smpc_sales_app.Pages
             if (DialogResult.OK == login.ShowDialog())
             {
                 lbl_name.Text = CacheData.CurrentUser.first_name + " " + CacheData.CurrentUser.last_name;
-                lbl_position.Text = CacheData.CurrentUser.position_id;
+                // The position's NAME, as inventory and dispatching show it - the id
+                // alone read as "Position: 1".
+                lbl_position.Text = CacheData.CurrentUser.position?.name ?? CacheData.CurrentUser.position_id;
                 lbl_department.Text = CacheData.CurrentUser.department;
 
                 // No BPI entry for positions without access (spec 3.2). The page
@@ -281,6 +289,36 @@ namespace smpc_sales_app.Pages
         private void Sidebar_AfterSelect(object sender, TreeViewEventArgs e)
         {
 
+        }
+
+        private void RecalculateTabSizes()
+        {
+            if (tabContainer == null || tabContainer.TabPages.Count == 0) return;
+
+            try
+            {
+                int availableWidth = pnl_content_capped != null
+                    ? pnl_content_capped.ClientSize.Width
+                    : tabContainer.Width;
+
+                int count = tabContainer.TabPages.Count;
+                const int minTabWidth = 90;
+                const int maxTabWidth = 200;
+                const int tabHeight = 28;
+
+                int computedWidth = availableWidth / count;
+                computedWidth = Math.Max(minTabWidth, Math.Min(maxTabWidth, computedWidth));
+
+                tabContainer.ItemSize = new Size(computedWidth, tabHeight);
+
+                // If even minTabWidth-per-tab doesn't fit everyone on one row, let
+                // the strip wrap to a second row instead of clipping/scrolling.
+                tabContainer.Multiline = (long)computedWidth * count > availableWidth;
+            }
+            catch (Exception)
+            {
+                // Cosmetic only - same reasoning as RecalculateContentWidth.
+            }
         }
     }
 }

@@ -93,7 +93,15 @@ namespace smpc_sales_app.Pages
         {
             if (e.RowIndex >= 0)
             {
-                this.result = e.RowIndex;
+                // Quotation.cs indexes the table it passed in (its own quotes or
+                // projects) with this, so it must be a position in Dt - not in the
+                // grid, which a search rebinds to a filtered COPY and a header click
+                // re-sorts. Returning e.RowIndex opened the wrong quote or project
+                // after any search.
+                int index = Helpers.SourceRowIndex(Dt, dgv_application_setup, e.RowIndex);
+                if (index < 0) return;
+
+                this.result = index;
                 this.DialogResult = DialogResult.OK;
                 this.Close();
             }

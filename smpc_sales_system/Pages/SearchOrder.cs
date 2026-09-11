@@ -88,7 +88,14 @@ namespace smpc_sales_system.Pages
         {
             if (e.ColumnIndex >= 0)
             {
-                this.result = e.RowIndex;
+                // Orders.cs indexes its OrderList with this, so it must be a position
+                // in Dt - not in the grid, which a search rebinds to a filtered COPY
+                // and a header click re-sorts. Returning e.RowIndex opened the wrong
+                // SO after any search.
+                int index = Helpers.SourceRowIndex(Dt, dgv_application_setup, e.RowIndex);
+                if (index < 0) return;
+
+                this.result = index;
                 this.DialogResult = DialogResult.OK;
                 this.Close();
             }

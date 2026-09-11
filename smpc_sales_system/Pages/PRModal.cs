@@ -36,7 +36,14 @@ namespace smpc_sales_app.Pages
         {
             if (e.RowIndex >= 0)
             {
-                this.result = e.RowIndex;
+                // PurchaseRequisition.cs indexes its PRList with this, so it must be a
+                // position in dt - not in the grid, which a search rebinds to a
+                // filtered COPY and a header click re-sorts. Returning e.RowIndex
+                // opened the wrong PR after any search.
+                int index = Helpers.SourceRowIndex(dt, dgv_prlist, e.RowIndex);
+                if (index < 0) return;
+
+                this.result = index;
                 this.DialogResult = DialogResult.OK;
                 this.Close();
             }

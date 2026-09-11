@@ -1050,6 +1050,44 @@ namespace smpc_app.Services.Helpers
             return filteredRows.Any() ? filteredRows.CopyToDataTable() : dataTable.Clone();
         }
 
+        // The position, in the table a search picker was GIVEN, of the grid row the
+        // user clicked. The pickers (SearchOrder, PRModal, SetupModal) hand their
+        // caller a row index and the caller indexes its own table with it - but
+        // e.RowIndex is only that index while the grid shows the table unfiltered
+        // and unsorted. FilterDataTable above rebinds the grid to a COPY of the
+        // matching rows, and a column-header click re-sorts the view; either way
+        // grid row 0 stops being table row 0, and the caller opened the wrong record.
+        //
+        // Resolved through the row itself: a row bound from the source (a DataView
+        // over it, sorted or not) is found by reference; a FilterDataTable copy is
+        // matched by its values - the copy keeps the source's columns in order, so
+        // the arrays line up. -1 when it cannot be found - never a guess.
+        public static int SourceRowIndex(DataTable source, DataGridView grid, int gridRowIndex)
+        {
+            if (source == null || grid == null || gridRowIndex < 0 || gridRowIndex >= grid.Rows.Count)
+                return -1;
+
+            DataRow picked = (grid.Rows[gridRowIndex].DataBoundItem as DataRowView)?.Row;
+            if (picked == null)
+                return -1;
+
+            int index = source.Rows.IndexOf(picked);
+            if (index >= 0)
+                return index;
+
+            object[] values = picked.ItemArray;
+            for (int i = 0; i < source.Rows.Count; i++)
+            {
+                DataRow candidate = source.Rows[i];
+                if (candidate.RowState == DataRowState.Deleted)
+                    continue;
+                if (candidate.ItemArray.SequenceEqual(values))
+                    return i;
+            }
+
+            return -1;
+        }
+
 
         public static DataTable FilterExactDataTable(DataTable dataTable, string searchTerm, params string[] columnsToSearch)
         {
