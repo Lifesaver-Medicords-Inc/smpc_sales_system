@@ -32,7 +32,6 @@ namespace smpc_sales_app.Pages.Sales
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(SalesReturn));
             this.panel1 = new System.Windows.Forms.Panel();
             this.pnl_footer = new System.Windows.Forms.Panel();
-            this.btn_approve = new System.Windows.Forms.Button();
             this.btn_generate_credit_memo = new System.Windows.Forms.Button();
             this.lbl_total = new System.Windows.Forms.Label();
             this.txt_total = new System.Windows.Forms.TextBox();
@@ -107,6 +106,7 @@ namespace smpc_sales_app.Pages.Sales
             this.btn_save = new System.Windows.Forms.ToolStripButton();
             this.btn_cancel = new System.Windows.Forms.ToolStripButton();
             this.lbl_title = new System.Windows.Forms.Label();
+            this.btn_approve = new System.Windows.Forms.Button();
             this.panel1.SuspendLayout();
             this.pnl_footer.SuspendLayout();
             this.pnl_main.SuspendLayout();
@@ -139,28 +139,14 @@ namespace smpc_sales_app.Pages.Sales
             this.pnl_footer.Size = new System.Drawing.Size(1229, 60);
             this.pnl_footer.TabIndex = 1;
             // 
-            // btn_approve
-            // 
-            this.btn_approve.BackColor = System.Drawing.Color.SteelBlue;
-            this.btn_approve.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btn_approve.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold);
-            this.btn_approve.ForeColor = System.Drawing.Color.White;
-            this.btn_approve.Location = new System.Drawing.Point(941, 17);
-            this.btn_approve.Name = "btn_approve";
-            this.btn_approve.Size = new System.Drawing.Size(92, 32);
-            this.btn_approve.TabIndex = 4;
-            this.btn_approve.Text = "Approve";
-            this.btn_approve.UseVisualStyleBackColor = false;
-            this.btn_approve.Visible = false;
-            // 
             // btn_generate_credit_memo
             // 
             this.btn_generate_credit_memo.Enabled = false;
             this.btn_generate_credit_memo.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btn_generate_credit_memo.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold);
-            this.btn_generate_credit_memo.Location = new System.Drawing.Point(1048, 17);
+            this.btn_generate_credit_memo.Location = new System.Drawing.Point(1048, 22);
             this.btn_generate_credit_memo.Name = "btn_generate_credit_memo";
-            this.btn_generate_credit_memo.Size = new System.Drawing.Size(160, 32);
+            this.btn_generate_credit_memo.Size = new System.Drawing.Size(160, 21);
             this.btn_generate_credit_memo.TabIndex = 3;
             this.btn_generate_credit_memo.Text = "Generate Credit Memo";
             this.btn_generate_credit_memo.UseVisualStyleBackColor = true;
@@ -780,9 +766,9 @@ namespace smpc_sales_app.Pages.Sales
             // btn_edit
             // 
             this.btn_edit.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.btn_edit.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold);
+            this.btn_edit.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F);
             this.btn_edit.Name = "btn_edit";
-            this.btn_edit.Size = new System.Drawing.Size(33, 22);
+            this.btn_edit.Size = new System.Drawing.Size(29, 22);
             this.btn_edit.Text = "Edit";
             // 
             // btn_prev
@@ -829,6 +815,22 @@ namespace smpc_sales_app.Pages.Sales
             this.lbl_title.TabIndex = 2;
             this.lbl_title.Text = "SALES RETURN";
             // 
+            // btn_approve
+            // 
+            this.btn_approve.BackColor = System.Drawing.Color.White;
+            this.btn_approve.BackgroundImage = global::smpc_sales_system.Properties.Resources.check;
+            this.btn_approve.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
+            this.btn_approve.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btn_approve.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold);
+            this.btn_approve.ForeColor = System.Drawing.Color.Black;
+            this.btn_approve.Location = new System.Drawing.Point(981, 21);
+            this.btn_approve.Name = "btn_approve";
+            this.btn_approve.Size = new System.Drawing.Size(61, 22);
+            this.btn_approve.TabIndex = 4;
+            this.btn_approve.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
+            this.btn_approve.UseVisualStyleBackColor = false;
+            this.btn_approve.Visible = false;
+            // 
             // SalesReturn
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -855,7 +857,6 @@ namespace smpc_sales_app.Pages.Sales
 
         private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.Panel pnl_footer;
-        private System.Windows.Forms.Button btn_approve;
         private System.Windows.Forms.Button btn_generate_credit_memo;
         private System.Windows.Forms.Label lbl_total;
         private System.Windows.Forms.TextBox txt_total;
@@ -930,5 +931,6 @@ namespace smpc_sales_app.Pages.Sales
         private System.Windows.Forms.ToolStripButton btn_cancel;
         private System.Windows.Forms.Label lbl_title;
         private System.Windows.Forms.ToolStripButton btn_save;
+        private System.Windows.Forms.Button btn_approve;
     }
 }

@@ -1154,8 +1154,7 @@
             this.dtp_date.ValueChanged += new System.EventHandler(this.dtp_date_ValueChanged);
             // 
             // cmb_ship_type
-            // 
-            this.cmb_ship_type.BackColor = System.Drawing.Color.DeepSkyBlue;
+            //
             this.cmb_ship_type.DataSource = this.bs_ship_type;
             this.cmb_ship_type.DisplayMember = "ship_name";
             this.cmb_ship_type.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
