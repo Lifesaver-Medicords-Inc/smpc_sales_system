@@ -51,13 +51,16 @@ namespace smpc_sales_system.Pages.Sales
         {
             if (isBind)
             {
-                string id = CacheData.CurrentUser.employee_id;
+                // The CRM lists the partners THIS sales executive owns (spec 4.6). sales_id
+                // holds the owner's NAME, so match on the name - and in code rather than via
+                // DataTable.Select, which spliced the value into a filter string: a name with
+                // an apostrophe (O'Brien) would have broken the expression outright.
                 DataTable filteredTable = crm.Clone();
 
-                // Import rows that match the filter
-                foreach (DataRow row in crm.Select($"sales_id = '{id}'"))
+                foreach (DataRow row in crm.Rows)
                 {
-                    filteredTable.ImportRow(row);
+                    if (smpc_inventory_app.Model.SalesOwner.OwnedBy(row["sales_id"]?.ToString(), CacheData.CurrentUser))
+                        filteredTable.ImportRow(row);
                 }
 
                 // Set as DataSource

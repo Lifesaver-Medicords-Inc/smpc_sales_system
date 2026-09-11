@@ -6228,7 +6228,8 @@ namespace smpc_sales_app.Pages.Sales
             // here, and Blacklisted/Closed must never appear even if the same
             // branch also carries one of those allowed types.
             var filtered = bpi_general.AsEnumerable()
-                           .Where(x => x.Field<string>("branch_sales_id") == CacheData.CurrentUser.employee_id)
+                           // Owned partners only (spec 5.1, 14.32). sales_id holds the owner's NAME.
+                           .Where(x => smpc_inventory_app.Model.SalesOwner.OwnedBy(x.Field<string>("branch_sales_id"), CacheData.CurrentUser))
                            .Where(x => IsQuotableEntity(x.Field<string>("entity_names")));
 
             DataTable bpiGeneralFilter = filtered.Any()

@@ -262,6 +262,11 @@ namespace smpc_sales_app.Pages
                 lbl_name.Text = CacheData.CurrentUser.first_name + " " + CacheData.CurrentUser.last_name;
                 lbl_position.Text = CacheData.CurrentUser.position_id;
                 lbl_department.Text = CacheData.CurrentUser.department;
+
+                // No BPI entry for positions without access (spec 3.2). The page
+                // gates itself too, for the modals that open it.
+                if (!smpc_inventory_app.Model.BpiAccess.CanOpen(CacheData.CurrentUser))
+                    Sidebar.Nodes.RemoveByKey("Business Partners");
                 this.Enabled = true;
 
                 // Only safe to call now that CacheData.SessionToken is actually set - see
