@@ -1899,7 +1899,6 @@ namespace smpc_sales_app.Pages.Sales
             // transition already funnels through - btn_edit_Click, ViewEnable() after a
             // save, the Back handler's rebind, and the initial load all call it.
             toolStripButton1.Visible = inViewMode;   // New
-            btn_new.Visible = inViewMode;            // New Version
             btn_search.Visible = inViewMode;
             btn_prev.Visible = inViewMode;           // Previous
             btn_next.Visible = inViewMode;
@@ -2339,7 +2338,6 @@ namespace smpc_sales_app.Pages.Sales
 
         public void ViewEnable()
         {
-            btn_new.Visible = true;
             // The order that was just created now exists, so this screen is no
             // longer "creating a new order" - fall back to normal view mode
             // (locked fields, Save/Delete hidden or gated the same way as any
