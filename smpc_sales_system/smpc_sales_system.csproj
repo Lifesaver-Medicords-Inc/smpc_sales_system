@@ -477,6 +477,12 @@
     <Compile Include="Pages\Sales\Orders.cs">
       <SubType>UserControl</SubType>
     </Compile>
+    <Compile Include="Pages\Sales\SOApprovals.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Pages\Sales\SOApprovals.Designer.cs">
+      <DependentUpon>SOApprovals.cs</DependentUpon>
+    </Compile>
     <Compile Include="Pages\Sales\Orders.Designer.cs">
       <DependentUpon>Orders.cs</DependentUpon>
     </Compile>

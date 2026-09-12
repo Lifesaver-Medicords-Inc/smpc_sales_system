@@ -35,6 +35,9 @@ namespace smpc_sales_app.Services
             // TRANSACTIONS 
             { "Sales Quotation", new Quotation() },
             { "Sales Order", new Orders() },
+            // Spec 3.2 lists "SO Approvals" and "SO List" as separate Sales modules;
+            // 3.4 is what the queue is for.
+            { "SO Approvals", new smpc_sales_system.Pages.Sales.SOApprovals() },
             { "Sales Return", new SalesReturn() },
             { "Opportunities", new Opportunities() },
             { "Purchase Requisition", new PurchaseRequisition() },

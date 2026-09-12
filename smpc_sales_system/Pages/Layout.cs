@@ -27,6 +27,25 @@ namespace smpc_sales_app.Pages
             // showForm like the sidebar pages), so it needs its own hook here to open a
             // Sales Order/Quotation tab when a document link inside it is clicked.
             redBoxControl.TriggerNewForm += showForm;
+
+            // SO Approvals (spec 3.2, 3.4). Added at runtime rather than in the
+            // generated tree so the queue ships without reshuffling the designer file,
+            // and placed straight after Sales Order - it is the other half of the same
+            // job. Guarded so a later designer entry does not produce two nodes.
+            if (Sidebar.Nodes.Find("SO Approvals", true).Length == 0)
+            {
+                var salesOrder = Sidebar.Nodes.Find("Sales Order", false);
+                var approvals = new TreeNode("SO Approvals") { Name = "SO Approvals" };
+                if (salesOrder.Length > 0)
+                {
+                    Sidebar.Nodes.Insert(Sidebar.Nodes.IndexOf(salesOrder[0]) + 1, approvals);
+                }
+                else
+                {
+                    Sidebar.Nodes.Add(approvals);
+                }
+            }
+
             tabContainer.SelectedIndexChanged += (s, e) => RecalculateContentWidth();
 
             // Phase 4.6 (UI uniformity): set the initial capped/centered width before
@@ -200,6 +219,13 @@ namespace smpc_sales_app.Pages
             {
                 Orders OrdersControl = (Orders)control;
                 OrdersControl.TriggerNewForm += showForm;
+            }
+            // The approval queue opens the order it is pointing at in its own tab,
+            // the same way RedBox and the SO's remarks link do.
+            else if (control is SOApprovals)
+            {
+                SOApprovals approvalsControl = (SOApprovals)control;
+                approvalsControl.TriggerNewForm += showForm;
             }
 
             //control.Width = this.Width - 235;
