@@ -478,6 +478,12 @@
     <Compile Include="Pages\Sales\Orders.cs">
       <SubType>UserControl</SubType>
     </Compile>
+    <Compile Include="Pages\Sales\CancellationChargesModal.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Pages\Sales\CancellationChargesModal.Designer.cs">
+      <DependentUpon>CancellationChargesModal.cs</DependentUpon>
+    </Compile>
     <Compile Include="Pages\Sales\SOApprovals.cs">
       <SubType>UserControl</SubType>
     </Compile>
