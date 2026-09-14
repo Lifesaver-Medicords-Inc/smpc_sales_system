@@ -56,16 +56,58 @@ namespace smpc_sales_system.Pages.Sales
             return $"{smpc_sales_system.Program.ApiBaseUrl}/vfile/{path}";
         }
 
-        private void LoadItemImage(int rowIndex)
+        // Counts clicks, so a slow download for an earlier row cannot land on top of
+        // the image the user has since moved on to.
+        private int _imageRequest;
+
+        // Downloaded with the session token instead of handed to ImageLocation:
+        // PictureBox fetches a URL itself and cannot send a header, and uploaded
+        // files are served only to a logged-in session once the API sets
+        // FILES_REQUIRE_AUTH.
+        private async void LoadItemImage(int rowIndex)
         {
             string imagePath = images.Rows[rowIndex]["image"].ToString();
             string imageUrl = BuildImageUrl(imagePath);
+            int request = ++_imageRequest;
 
             pictureBox1.SizeMode = PictureBoxSizeMode.Zoom;
-            pictureBox1.ImageLocation = imageUrl;
 
             // optional: show info
             label2.Text = $"Image {rowIndex + 1} of {images.Rows.Count}";
+
+            Image image;
+            try
+            {
+                using (var client = new System.Net.Http.HttpClient())
+                {
+                    string token = smpc_sales_app.Data.CacheData.SessionToken;
+                    if (!string.IsNullOrEmpty(token))
+                        client.DefaultRequestHeaders.Add("Authorization", token);
+
+                    byte[] data = await client.GetByteArrayAsync(imageUrl);
+                    using (var stream = new System.IO.MemoryStream(data))
+                    using (var decoded = Image.FromStream(stream))
+                    {
+                        image = new Bitmap(decoded);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[ItemImageModal] Failed to load \"{imageUrl}\": {ex.Message}");
+                image = null;
+            }
+
+            if (request != _imageRequest || IsDisposed)
+            {
+                image?.Dispose();
+                return;
+            }
+
+            Image previous = pictureBox1.Image;
+            pictureBox1.Image = image ?? pictureBox1.ErrorImage;
+            if (previous != null && previous != pictureBox1.ErrorImage)
+                previous.Dispose();
         }
     }
 }

@@ -88,7 +88,20 @@ namespace smpc_sales_system.Pages.Sales
                 try
                 {
                     // Load thumbnail from file or url
-                    thumb =  Image.FromStream(new WebClient().OpenRead(imageUrl));
+                    // With the session token: uploaded files are served only to a
+                    // logged-in session once the API sets FILES_REQUIRE_AUTH.
+                    using (var web = new WebClient())
+                    {
+                        string token = smpc_sales_app.Data.CacheData.SessionToken;
+                        if (!string.IsNullOrEmpty(token))
+                            web.Headers.Add(HttpRequestHeader.Authorization, token);
+
+                        using (var stream = new MemoryStream(web.DownloadData(imageUrl)))
+                        using (var decoded = Image.FromStream(stream))
+                        {
+                            thumb = new Bitmap(decoded);
+                        }
+                    }
                 }
                 catch (Exception ex)
                 {
