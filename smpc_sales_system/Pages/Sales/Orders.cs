@@ -703,8 +703,20 @@ namespace smpc_sales_app.Pages.Sales
 
 
         //ON LOAD OF ORDER
+        // The standard page-wide loading screen (spec 2.1), which this page had none of.
+        // The five fetches below were already awaited in order, so unlike Item Entry the
+        // completion point already existed - all that was missing was saying so on
+        // screen, and a finally to guarantee the form comes back if a fetch throws.
+        //
+        // The five are deliberately left serial and in their existing order: the binding
+        // after them reads what they loaded, and reordering or parallelising without
+        // establishing they are independent would be a behaviour change.
         private async void Orders_Load(object sender, EventArgs e)
         {
+            Helpers.Loading.ShowLoading(this);
+
+            try
+            {
             // A (re)load always starts back in view mode; the branches below set
             // isCreatingNewOrder = true again if this load is actually for
             // converting a quotation into a brand-new order.
@@ -787,6 +799,13 @@ namespace smpc_sales_app.Pages.Sales
 
             LoadDirectory(AFTERSALES_TV, AfterSalesPath);
             LoadDirectory(SALES_TV, SalesPath);
+            }
+            finally
+            {
+                // In the finally so a throw in any of the five fetches cannot strand the
+                // screen over a form the user then cannot touch.
+                Helpers.Loading.HideLoading(this);
+            }
         }
         //ACTIONS METHOD (BUTTONS, CLICKS)
         private void btn_search_Click(object sender, EventArgs e)
@@ -947,6 +966,15 @@ namespace smpc_sales_app.Pages.Sales
         {
             try
             {
+                // An order already under review takes a decision, not another
+                // cancellation - 5.4 allows one live cancellation at a time, and the
+                // API refuses a second anyway.
+                if (txt_status.Text == "FOR REVIEW")
+                {
+                    await ReviewCancellationAsync();
+                    return;
+                }
+
                 string docIdValue = ((TextBox)pnl_header_2.Controls["txt_doc"]).Text;
                 string docnoValue = ((TextBox)pnl_header_2.Controls["txt_document_no"]).Text;
                 docIdValue = DocumentNo.Strip(docIdValue);
@@ -957,14 +985,46 @@ namespace smpc_sales_app.Pages.Sales
                     var selectedOrder = OrderList.Select($"doc = {selectedDoc}").FirstOrDefault();
                     if (selectedOrder != null)
                     {
-                        selectedOrder["status"] = "CANCELLED";
-                        var parentDataHeader = new Dictionary<string, dynamic>
+                        // Spec 5.4: cancelling an approved SO is a TWO-stage act, and
+                        // this used to be one. It set status straight to CANCELLED with
+                        // no confirmation, no charges, and no approval - so a single
+                        // click by any sales user halted an order outright, released
+                        // nothing deliberately, and left A/R with no way to bill the
+                        // cancellation fees the company is owed.
+                        //
+                        // Now: "Are you sure?" -> the charges modal -> PROCEED submits
+                        // for approval and parks the SO at FOR REVIEW. Only the Sales
+                        // Manager or the CBDO turns it into CANCELLED.
+                        if (MessageBox.Show("Are you sure?", "Cancel Order",
+                                MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
+                        {
+                            return;
+                        }
+
+                        int orderId = Convert.ToInt32(selectedOrder["order_id"]);
+                        string docNo = selectedOrder["document_no"]?.ToString();
+                        if (string.IsNullOrWhiteSpace(docNo))
+                        {
+                            docNo = DocumentNo.Apply(selectedOrder["doc"]?.ToString(), "SO#");
+                        }
+
+                        // The confirmation is REPLACED by the charges modal (5.4 step
+                        // 2), not shown alongside it.
+                        using (var modal = new CancellationChargesModal(orderId, docNo))
+                        {
+                            if (modal.ShowDialog() != DialogResult.OK)
                             {
-                                { "doc", selectedOrder["doc"] },
-                                { "status", "CANCELLED" }
-                            };
-                        await OrderService.Update(parentDataHeader);
-                        MessageBox.Show("Order status updated to CANCELLED.");
+                                // BACK: the SO is untouched.
+                                return;
+                            }
+                        }
+
+                        MessageBox.Show(
+                            docNo + " has been submitted for cancellation approval. "
+                            + "Nothing changes until the Sales Manager or CBDO approves it - "
+                            + "stock stays reserved and no department is notified.",
+                            "Cancel Order", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
                         FetchSalesOrder(false);
                         CheckStatus();
                     }
@@ -983,6 +1043,101 @@ namespace smpc_sales_app.Pages.Sales
                 MessageBox.Show($"Error: {ex.Message}\n\nStack Trace: {ex.StackTrace}");
             }
         }
+        // Spec 5.4 steps 4-5, the Sales Manager's or CBDO's decision on a pending
+        // cancellation.
+        //
+        // Approve: the SO becomes CANCELLED, downstream work halts, reserved stock is
+        // released, and the charge record reaches A/R. CANCELLED is NOT CLOSED - the
+        // order still raises a Sales Invoice for the fees, still enters A/R, and its
+        // billing row still closes when the balance reaches zero. Cancellation stops
+        // fulfilment, not billing.
+        //
+        // Reject: the SO returns to OPEN, unchanged, with no charge record in force.
+        private async Task ReviewCancellationAsync()
+        {
+            string docIdValue = DocumentNo.Strip(((TextBox)pnl_header_2.Controls["txt_doc"]).Text);
+            if (!int.TryParse(docIdValue, out int selectedDoc) || selectedDoc <= 0)
+            {
+                MessageBox.Show("Please select a valid order.");
+                return;
+            }
+
+            var selectedOrder = OrderList.Select($"doc = {selectedDoc}").FirstOrDefault();
+            if (selectedOrder == null)
+            {
+                MessageBox.Show("No order found with the selected ID.");
+                return;
+            }
+
+            int orderId = Convert.ToInt32(selectedOrder["order_id"]);
+
+            var charge = await RequestToApi<ApiResponseModel<CancellationChargeRow>>
+                .Get($"/sales-orders/{orderId}/charges", true);
+
+            var row = charge?.Data;
+            if (row == null)
+            {
+                MessageBox.Show("No cancellation record was found for this order.",
+                    "Review Cancellation", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            string summary =
+                $"Cancellation raised by {row.raised_by} on {row.raised_date}.\n\n"
+                + $"Fee base (undelivered, incl. VAT): {row.fee_base:N2}\n"
+                + $"Restocking fee ({row.restocking_fee_percent:0.##}%): {row.restocking_fee:N2}\n"
+                + $"Cancellation fee ({row.cancellation_fee_percent:0.##}%): {row.cancellation_fee:N2}\n"
+                + $"Total charge: {row.total_charge:N2}\n\n"
+                + "Yes = approve and cancel the order.\n"
+                + "No = reject and return the order to OPEN.\n"
+                + "Cancel = decide later.";
+
+            var answer = MessageBox.Show(summary, "Review Cancellation",
+                MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
+
+            if (answer == DialogResult.Cancel) return;
+
+            var user = CacheData.CurrentUser;
+            var payload = new Dictionary<string, dynamic>
+            {
+                { "id", row.id },
+                { "approve", answer == DialogResult.Yes },
+                { "reviewed_by", user == null ? "" : $"{user.first_name} {user.last_name}".Trim() },
+                { "reviewed_by_id", user == null ? 0 : user.id },
+                { "reviewed_date", DateTime.Now.ToString("yyyy-MM-dd") },
+            };
+
+            var response = await RequestToApi<ApiResponseModel>.Post("/sales-orders/charges/decision", payload);
+            if (response == null || !response.Success)
+            {
+                MessageBox.Show(response?.message ?? "The decision could not be recorded.",
+                    "Review Cancellation", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            MessageBox.Show(answer == DialogResult.Yes
+                    ? "The order has been cancelled. It still invoices for the charge and still enters A/R."
+                    : "The cancellation was rejected. The order is back to OPEN.",
+                "Review Cancellation", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+            FetchSalesOrder(false);
+            CheckStatus();
+        }
+
+        // Shape of one charge record as the API returns it.
+        private class CancellationChargeRow
+        {
+            public int id { get; set; }
+            public double restocking_fee_percent { get; set; }
+            public double cancellation_fee_percent { get; set; }
+            public double fee_base { get; set; }
+            public double restocking_fee { get; set; }
+            public double cancellation_fee { get; set; }
+            public double total_charge { get; set; }
+            public string raised_by { get; set; }
+            public string raised_date { get; set; }
+        }
+
         // DELETE - permanently removes the order (unlike Cancel, which just sets
         // status to CANCELLED and keeps the record). Only allowed while the order
         // hasn't gone ACTIVE yet, so this is for cleaning up mistakes/duplicates
@@ -1846,6 +2001,14 @@ namespace smpc_sales_app.Pages.Sales
             bool isStatusActive = txt_status.Text == "ACTIVE";
             bool isStatusCancelled = txt_status.Text == "CANCELLED";
             bool hasStatus = !string.IsNullOrEmpty(txt_status.Text);
+
+            // Spec 5.4 steps 3-5: an SO with a cancellation awaiting a decision sits at
+            // FOR REVIEW. The same button that raises a cancellation becomes the one
+            // that decides it - it is already hidden from everyone without the access
+            // code, so the decision inherits that gate rather than needing a second
+            // one. Relabelled so it cannot be mistaken for raising another.
+            bool isStatusForReview = txt_status.Text == "FOR REVIEW";
+            btn_cancel.Text = isStatusForReview ? "REVIEW CANCELLATION" : "CANCEL";
 
             // Was `!isStatusActive`, which permanently locked Check out once an order went
             // ACTIVE. Kept enabled while ACTIVE so it can be re-run to resync item-level
