@@ -942,6 +942,12 @@ namespace smpc_sales_system.Pages.Sales
                 {
                     using (HttpClient client = new HttpClient())
                     {
+                        // Uploaded files are served only to a logged-in session once the
+                        // API sets FILES_REQUIRE_AUTH.
+                        string token = smpc_sales_app.Data.CacheData.SessionToken;
+                        if (!string.IsNullOrEmpty(token))
+                            client.DefaultRequestHeaders.Add("Authorization", token);
+
                         byte[] imageBytes = client.GetByteArrayAsync(imagePath).Result;
                         return imageBytes;
                     }

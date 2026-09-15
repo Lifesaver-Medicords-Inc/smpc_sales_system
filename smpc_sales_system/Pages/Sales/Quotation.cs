@@ -153,19 +153,22 @@ namespace smpc_sales_app.Pages.Sales
 
         private static string GetWebSocketBaseUrl()
         {
-            string env = ConfigurationManager.AppSettings["Environment"] ?? "Development";
-
-            // No hardcoded fallback URL - App.config's ApiBaseUrl.{env} is the one place this
-            // is supposed to live, since it changes (localhost in dev, the real host in
-            // production). Silently falling back to a hardcoded address just masks a missing/
-            // misspelled App.config entry instead of surfacing it, and if the two ever
-            // drifted, this would happily keep pointing at the wrong server. Failing loudly
-            // here is safe: EnsureSaveNotifyConnected below already catches this and falls
-            // back to the 5-minute polling timer, it just logs why real-time didn't connect
-            // instead of silently guessing an address.
-            string apiBaseUrl = ConfigurationManager.AppSettings[$"ApiBaseUrl.{env}"];
+            // smpc.endpoints.xml first, App.config as the fallback - the same resolution
+            // RequestToApi uses. This read App.config on its own, so once the URL lived in the
+            // override file the real-time save notify could not connect and every open project
+            // quote quietly dropped back to the 5-minute polling timer.
+            string apiBaseUrl = smpc_sales_system.Program.ApiBaseUrl;
             if (string.IsNullOrWhiteSpace(apiBaseUrl))
-                throw new ConfigurationErrorsException($"App.config is missing \"ApiBaseUrl.{env}\" - add it under <appSettings> instead of relying on a hardcoded default.");
+            {
+                string env = ConfigurationManager.AppSettings["Environment"] ?? "Development";
+                apiBaseUrl = smpc_sales_system.SmpcEndpoints.Api(ConfigurationManager.AppSettings[$"ApiBaseUrl.{env}"]);
+            }
+
+            // Failing loudly is still safe here: EnsureSaveNotifyConnected catches this and
+            // falls back to the 5-minute timer, logging why real-time did not connect.
+            if (string.IsNullOrWhiteSpace(apiBaseUrl))
+                throw new ConfigurationErrorsException(
+                    $"No API URL configured. Set <base> in {smpc_sales_system.SmpcEndpoints.FileName} or ApiBaseUrl in App.config.");
 
             if (apiBaseUrl.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
                 return "wss://" + apiBaseUrl.Substring("https://".Length);
@@ -196,7 +199,12 @@ namespace smpc_sales_app.Pages.Sales
 
             try
             {
-                Uri uri = new Uri($"{GetWebSocketBaseUrl()}/ws/setup/test?branch=Sales&projectid={projectId}");
+                // /ws is behind login, and on a WebSocket upgrade the API reads the token from
+                // ?Authorization= - the engineering and inventory sockets already send it that
+                // way. Without it every upgrade was refused and each quotation silently fell
+                // back to the 5-minute timer.
+                string token = Uri.EscapeDataString(CacheData.SessionToken ?? "");
+                Uri uri = new Uri($"{GetWebSocketBaseUrl()}/ws/setup/test?branch=Sales&projectid={projectId}&Authorization={token}");
                 await socket.ConnectAsync(uri, cts.Token);
                 _ = ListenForSaveNotificationsAsync(socket, cts, projectId);
             }
@@ -713,7 +721,7 @@ namespace smpc_sales_app.Pages.Sales
             // awaiting it, so the handler returned (and buttons stayed clickable) before the
             // fetch had even reached its first await, and nothing locked the screen while
             // bind() repopulated pnl_header/pnl_footer.
-            await RunWithLoadingAsync(async () => await fetchQuotationDetails(), "Loading...");
+            await RunWithLoadingAsync(async () => await fetchQuotationDetails());
         }
 
         // Short/Long Description (txt_short_description, txt_long_description, and their
@@ -806,7 +814,7 @@ namespace smpc_sales_app.Pages.Sales
             // ItemSetUC (with its own item/wiring/final grids) - all of that is empty/stale
             // until it finishes, so cover the whole switch-to-Project-Quotation flow with the
             // same loading overlay + button lock used for Quick Quote.
-            await RunWithLoadingAsync(async () => await fetchSalesProjectData(), "Loading...");
+            await RunWithLoadingAsync(async () => await fetchSalesProjectData());
         }
 
         // Every SalesProjectHistory row for the whole current project - every tab's item set
@@ -985,8 +993,9 @@ namespace smpc_sales_app.Pages.Sales
             // footer fields visibly popped in (or briefly showed blank/reset text - see
             // btn_quick_quote_Click, which clears them right after kicking this off) instead
             // of staying hidden behind the overlay until everything is actually ready.
-            Control[] loadingTargets = { pnl_header, pnl_footer, dgv_quick_quote_details };
-            Helpers.Loading.ShowLoading(loadingTargets, "Loading...");
+            // Page-wide now (spec 2.1) - the overlay covers and disables the whole
+            // page, so the old list of individual panels to cover is redundant.
+            Helpers.Loading.ShowLoading(this);
 
             try
             {
@@ -1057,7 +1066,7 @@ namespace smpc_sales_app.Pages.Sales
             }
             finally
             {
-                Helpers.Loading.HideLoading(loadingTargets);
+                Helpers.Loading.HideLoading(this);
                 toolstrip_quotation.Enabled = true;
             }
         }
@@ -1859,7 +1868,7 @@ namespace smpc_sales_app.Pages.Sales
                     // Refetch so SalesProjectListData (and therefore Change History) reflects
                     // what was actually just saved instead of staying stale until the user
                     // happens to navigate away and back.
-                    await RunWithLoadingAsync(async () => await fetchSalesProjectData(), "Loading...");
+                    await RunWithLoadingAsync(async () => await fetchSalesProjectData());
 
                     // Every tab's rows now have real project_items_id values from the reload -
                     // apply any RESERVE/release toggled in a tab's stock checker before this save.
@@ -1890,7 +1899,7 @@ namespace smpc_sales_app.Pages.Sales
                     // Same reason as the isNewRecord branch - without this, the newly
                     // auto-generated Change History entries (project fields, multipliers,
                     // per-tab changes) wouldn't show up until the next unrelated refresh.
-                    await RunWithLoadingAsync(async () => await fetchSalesProjectData(), "Loading...");
+                    await RunWithLoadingAsync(async () => await fetchSalesProjectData());
 
                     // Same as the isNewRecord branch above.
                     await ApplyPendingProjectReservationsAsync();
@@ -3491,7 +3500,7 @@ namespace smpc_sales_app.Pages.Sales
                             // IF SUCCESS
 
                             MessageBox.Show("Quotation Successfully saved");
-                            await RunWithLoadingAsync(async () => await fetchQuotationDetails(), "Loading...");
+                            await RunWithLoadingAsync(async () => await fetchQuotationDetails());
 
                             // Any RESERVE/release toggled in StockCheckModal before this
                             // save is still just pending intent (see
@@ -5117,29 +5126,18 @@ namespace smpc_sales_app.Pages.Sales
         DataTable stockQuickDataTable = new DataTable();
         bool IsView = true;
 
-        // Every data-bearing panel/grid on the form - both Quick Quote's (header/footer/
-        // dgv_quick_quote_details) and Project Quotation's (header/footer/project name panel/
-        // dgv_project_multiplier/Project_Items_Tab, which hosts tabControl2 and each tab's
-        // ItemSetUC with its own dgv_project_items, dgv_wiring and dgv_final grids) - so a
-        // single overlay call covers "every part" regardless of which of the two a given load
-        // turns out to be.
-        // NOTE: overlay tabControl2's *parent* TabPage (Project_Items_Tab), not tabControl2
-        // itself - a TabControl's Controls collection only accepts TabPage children, so adding
-        // the overlay UserControl directly to it throws
-        // "Cannot add 'UserControl' to TabControl. Only TabPages can be directly added to
-        // TabControls." Project_Items_Tab is a plain TabPage (Panel-like) that already contains
-        // tabControl2, so overlaying it covers the same area safely and also survives
-        // fetchSalesProject() clearing/rebuilding tabControl2.TabPages mid-load.
-        private Control[] GetLoadingOverlayTargets()
-        {
-            return new Control[] { pnl_header, pnl_footer, pnl_project_name, dgv_quick_quote_details, dgv_project_multiplier, Project_Items_Tab };
-        }
-
-        // Shows a loading overlay across every panel/grid above and disables every button on
-        // the form while `action` runs, then always restores both - even if `action` throws -
-        // so a slow server response can't be raced by a click before the fields/grids have
+        // Shows the standard loading screen over the whole page and disables it while
+        // `action` runs, then always restores it - even if `action` throws - so a slow
+        // server response cannot be raced by a click before the fields and grids have
         // actually finished loading.
-        private async Task RunWithLoadingAsync(Func<Task> action, string message = "Loading, please wait...")
+        //
+        // This used to build a list of six individual panels and grids to cover, one
+        // set for Quick Quote and one for Project Quotation, and carried a workaround
+        // for the fact that an overlay cannot be added to a TabControl directly. The
+        // page-wide overlay (spec 2.1) removed the need for both: it goes on the page,
+        // never on a TabControl, and "every part of the page" is covered by definition
+        // rather than by keeping a list in step with the layout.
+        private async Task RunWithLoadingAsync(Func<Task> action, string message = Helpers.Loading.StandardMessage)
         {
             // A dropped connection mid-load leaves the form half-populated - some grids
             // filled, others blank - with nothing to say so and no way back except leaving
@@ -5151,13 +5149,11 @@ namespace smpc_sales_app.Pages.Sales
             // in a retry loop.
             const int MaxReloadAttempts = 3;
 
-            Control[] targets = GetLoadingOverlayTargets();
-
             for (int attempt = 1; ; attempt++)
             {
                 int failuresBefore = ApiConnection.FailureCount;
 
-                Helpers.Loading.ShowLoading(targets, message);
+                Helpers.Loading.ShowLoading(this, message);
                 Helpers.SetButtonsEnabled(this, false);
                 try
                 {
@@ -5165,7 +5161,7 @@ namespace smpc_sales_app.Pages.Sales
                 }
                 finally
                 {
-                    Helpers.Loading.HideLoading(targets);
+                    Helpers.Loading.HideLoading(this);
                     Helpers.SetButtonsEnabled(this, true);
                     ReapplyFinalizeButtonState();
                 }
@@ -5224,7 +5220,7 @@ namespace smpc_sales_app.Pages.Sales
             // empty at this point and only get filled once LoadExistingRecord() finishes
             // fetching from the server (whichever of the two it turns out to be) - cover that
             // gap with a loading overlay and lock every button on the form.
-            await RunWithLoadingAsync(async () => await LoadExistingRecord(), "Loading...");
+            await RunWithLoadingAsync(async () => await LoadExistingRecord());
 
         }
         CurrentUserModel CurrentUser { get; set; }
@@ -6298,7 +6294,7 @@ namespace smpc_sales_app.Pages.Sales
                     // bind() call finishes - RunWithLoadingAsync covers those too (and disables
                     // every button on the form) so a slow server response can't be raced by a
                     // click.
-                    await RunWithLoadingAsync(async () => await fetchQuotationDetails(), "Loading...");
+                    await RunWithLoadingAsync(async () => await fetchQuotationDetails());
                 }
             }
         }
@@ -7025,7 +7021,7 @@ namespace smpc_sales_app.Pages.Sales
                 isNewRecord = false;
                 IsEdit = false;
 
-                await RunWithLoadingAsync(async () => await fetchSalesProjectData(), "Loading...");
+                await RunWithLoadingAsync(async () => await fetchSalesProjectData());
 
                 // Same as IsProject()'s save handling - every tab's rows now have real
                 // project_items_id values, so any pending RESERVE/release can actually apply.
@@ -7254,7 +7250,7 @@ namespace smpc_sales_app.Pages.Sales
                             toolstrip_quotation.Enabled = true;
 
                             MessageBox.Show("Quotation Successfully saved");
-                            await RunWithLoadingAsync(async () => await fetchQuotationDetails(), "Loading...");
+                            await RunWithLoadingAsync(async () => await fetchQuotationDetails());
 
                             // Same as IsQuickQuote() - this finalize path also inserts fresh
                             // SalesQuotationQuick rows (parentData["id"] = 0 above), so any
@@ -7938,7 +7934,7 @@ namespace smpc_sales_app.Pages.Sales
             SetNewFormMode(false);
             SetFormEditMode("Close");
 
-            await RunWithLoadingAsync(async () => await LoadExistingRecord(), "Loading...");
+            await RunWithLoadingAsync(async () => await LoadExistingRecord());
 
             Panel[] panels = { pnl_header, pnl_footer };
             Helpers.ReadOnlyControls(panels);

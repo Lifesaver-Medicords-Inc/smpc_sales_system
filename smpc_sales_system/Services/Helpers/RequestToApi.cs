@@ -22,17 +22,30 @@ namespace smpc_sales_app.Services.Helpers
         {
             get
             {
-                string env =
-                    ConfigurationManager.AppSettings["Environment"]
-                    ?? "Development";
+                string env = ConfigurationManager.AppSettings["Environment"] ?? "Development";
 
-                // No hardcoded fallback URL - App.config's ApiBaseUrl.{env} is the one place
-                // this is supposed to live, since it changes (localhost in dev, the real host
-                // in production). Silently falling back to a hardcoded address just masks a
-                // missing/misspelled App.config entry instead of surfacing it.
-                string url = ConfigurationManager.AppSettings[$"ApiBaseUrl.{env}"];
+                // smpc.endpoints.xml first, App.config as the fallback - the same resolution
+                // Program.Main already performs into Program.ApiBaseUrl.
+                //
+                // This used to read App.config's ApiBaseUrl.{env} directly. Main() resolved
+                // the override file, but only image URLs ever used that value - every actual
+                // request, /login included, bypassed the XML entirely. So repointing the apps
+                // by editing smpc.endpoints.xml did nothing for Sales, and blanking the
+                // App.config value to rely on the XML made every request fail with
+                // "App.config is missing".
+                string url = smpc_sales_system.Program.ApiBaseUrl;
+
+                // Main() normally sets it; resolve the same way if it has not run.
                 if (string.IsNullOrWhiteSpace(url))
-                    throw new ConfigurationErrorsException($"App.config is missing \"ApiBaseUrl.{env}\" - add it under <appSettings> instead of relying on a hardcoded default.");
+                    url = smpc_sales_system.SmpcEndpoints.Api(ConfigurationManager.AppSettings[$"ApiBaseUrl.{env}"]);
+
+                // Still no hardcoded fallback address - guessing one masks a misconfiguration
+                // instead of surfacing it. The message names both places a URL can come from,
+                // and which override file (if any) was actually read.
+                if (string.IsNullOrWhiteSpace(url))
+                    throw new ConfigurationErrorsException(
+                        $"No API URL configured. Set <base> in {smpc_sales_system.SmpcEndpoints.FileName} "
+                        + $"or 'ApiBaseUrl.{env}' in App.config. Endpoint source: {smpc_sales_system.SmpcEndpoints.Source}");
 
                 return url;
             }

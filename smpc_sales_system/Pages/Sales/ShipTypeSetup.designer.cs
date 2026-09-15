@@ -39,7 +39,7 @@ namespace smpc_sales_app.Pages.Sales
             this.btn_edit = new System.Windows.Forms.ToolStripButton();
             this.ID = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.ship_name = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.toolStripButton1 = new System.Windows.Forms.ToolStripButton();
+            this.btn_save = new System.Windows.Forms.ToolStripButton();
             this.btn_close = new System.Windows.Forms.ToolStripButton();
             this.pnl_name.SuspendLayout();
             this.pnl_input.SuspendLayout();
@@ -149,7 +149,7 @@ namespace smpc_sales_app.Pages.Sales
             this.btn_new,
             this.btn_delete,
             this.btn_edit,
-            this.toolStripButton1,
+            this.btn_save,
             this.btn_close});
             this.toolStrip1.Location = new System.Drawing.Point(0, 67);
             this.toolStrip1.Name = "toolStrip1";
@@ -199,13 +199,14 @@ namespace smpc_sales_app.Pages.Sales
             this.ship_name.Name = "ship_name";
             this.ship_name.ReadOnly = true;
             // 
-            // toolStripButton1
+            // btn_save
             // 
-            this.toolStripButton1.Image = ((System.Drawing.Image)(resources.GetObject("toolStripButton1.Image")));
-            this.toolStripButton1.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.toolStripButton1.Name = "toolStripButton1";
-            this.toolStripButton1.Size = new System.Drawing.Size(51, 22);
-            this.toolStripButton1.Text = "Save";
+            this.btn_save.Image = ((System.Drawing.Image)(resources.GetObject("btn_save.Image")));
+            this.btn_save.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btn_save.Name = "btn_save";
+            this.btn_save.Size = new System.Drawing.Size(51, 22);
+            this.btn_save.Text = "Save";
+            this.btn_save.Click += new System.EventHandler(this.btn_save_Click);
             // 
             // btn_close
             // 
@@ -258,7 +259,7 @@ namespace smpc_sales_app.Pages.Sales
         private System.Windows.Forms.DataGridViewTextBoxColumn NAME;
         private System.Windows.Forms.DataGridViewTextBoxColumn ID;
         private System.Windows.Forms.DataGridViewTextBoxColumn ship_name;
-        private System.Windows.Forms.ToolStripButton toolStripButton1;
+        private System.Windows.Forms.ToolStripButton btn_save;
         private System.Windows.Forms.ToolStripButton btn_close;
     }
 }

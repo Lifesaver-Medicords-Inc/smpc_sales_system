@@ -28,23 +28,47 @@ namespace smpc_sales_app.Pages.Sales
             dgv_shiptype_setup.DataSource = CacheData.ShipTypeSetup;
         }
 
-        private async void DisableBtn()
-        {
-            btn_delete.Enabled = false;
-            btn_edit.Enabled = false;
-            txt_id.Enabled = false;
-            txt_ship_name.Enabled = false;
-            //btn_back.Visible = false;
-        }
+        // The three states this form can be in (spec 2.1: a form opens read-only and an
+        // Edit button enters edit mode; saving returns it to read-only).
+        private enum Mode { View, Add, Edit }
 
-        private async void EnableTxtBtn()
+        private Mode _mode = Mode.View;
+
+        // One place decides what every control does, because the old version spread it
+        // across four handlers and each of them leaked:
+        //
+        //   - btn_save was never disabled by anything, so Save sat enabled in view mode
+        //     with nothing being edited - press it on a freshly opened form and it POSTed
+        //     whatever happened to be in the fields.
+        //   - btn_new disabled itself on click and nothing ever re-enabled it, so New
+        //     worked exactly once per visit to the page.
+        //   - btn_edit set Visible = false on click and nothing restored it, so Edit
+        //     disappeared off the strip for good.
+        //   - Saving cleared the fields but left all of the above stuck wherever they
+        //     were, so the form never actually returned to view mode.
+        private void SetMode(Mode mode)
         {
+            _mode = mode;
+
+            bool editing = mode != Mode.View;
+            bool hasSelection = !string.IsNullOrWhiteSpace(txt_id.Text);
+
+            // Save belongs to add and edit only - this is the reported bug.
+            btn_save.Enabled = editing;
+
+            btn_new.Enabled = !editing;
+            btn_edit.Visible = true;
+            btn_edit.Enabled = !editing && hasSelection;
+            btn_delete.Enabled = !editing && hasSelection;
+
             txt_ship_name.Enabled = true;
+            txt_ship_name.ReadOnly = !editing;
+            txt_id.Enabled = false;
         }
 
         private async void ShipTypes_Load(object sender, EventArgs e)
         {
-            DisableBtn();
+            SetMode(Mode.View);
             FetchData();
             dgv_shiptype_setup.CellClick += dgv_shiptype_setup_CellClick;
         }
@@ -56,9 +80,6 @@ namespace smpc_sales_app.Pages.Sales
         {
             if (e.RowIndex >= 0)
             {
-                btn_edit.Enabled = true;
-                btn_delete.Enabled = true;
-
                 var nameValue = dgv_shiptype_setup.Rows[e.RowIndex].Cells["ship_name"].Value;
                 var idValue = dgv_shiptype_setup.Rows[e.RowIndex].Cells["id"].Value;
 
@@ -67,21 +88,20 @@ namespace smpc_sales_app.Pages.Sales
                     txt_id.Text = idValue.ToString();
                     txt_ship_name.Text = nameValue.ToString();
 
-                    txt_ship_name.Enabled = true;
-
-                    txt_ship_name.ReadOnly = true;
-
+                    // Picking a row shows it; it does not start editing it. Edit and
+                    // Delete become available because there is now a selection, and
+                    // SetMode works that out from txt_id rather than being told twice.
+                    SetMode(Mode.View);
                 }
             }
         }
 
-        private async void btn_edit_Click(object sender, EventArgs e)
+        private void btn_edit_Click(object sender, EventArgs e)
         {
-            txt_id.ReadOnly = false;
-            txt_ship_name.ReadOnly = false;
+            if (string.IsNullOrWhiteSpace(txt_id.Text)) return;
 
-            //btn_back.Visible = true;
-            btn_edit.Visible = false;
+            SetMode(Mode.Edit);
+            txt_ship_name.Focus();
         }
 
         private async void btn_save_Click(object sender, EventArgs e)
@@ -122,7 +142,14 @@ namespace smpc_sales_app.Pages.Sales
             if (response.Success)
             {
                 Helpers.ResetControls(pnl_input);
+                txt_id.Text = string.Empty;
                 FetchData();
+
+                // "Saving MUST persist and settle the form" (spec 2.1): back to
+                // read-only, Save disabled again, New and Edit usable again. Without
+                // this the form stayed in edit mode with cleared fields, so the next
+                // Save posted a blank record.
+                SetMode(Mode.View);
             }
 
             string message = response.Success
@@ -133,13 +160,16 @@ namespace smpc_sales_app.Pages.Sales
         }
 
 
-        private async void btn_new_Click(object sender, EventArgs e)
+        private void btn_new_Click(object sender, EventArgs e)
         {
-            //btn_back.Visible = true;
-            btn_new.Enabled = false;
+            // New starts genuinely blank (spec 2.1) - the id has to go too, or Save
+            // would treat it as an update of whichever row was last selected.
+            Helpers.ResetControls(pnl_input);
+            txt_id.Text = string.Empty;
+            dgv_shiptype_setup.ClearSelection();
 
-            txt_ship_name.Enabled = true;
-            txt_ship_name.ReadOnly = false;
+            SetMode(Mode.Add);
+            txt_ship_name.Focus();
         }
         private async void btn_delete_Click(object sender, EventArgs e)
         {
@@ -161,12 +191,19 @@ namespace smpc_sales_app.Pages.Sales
                     if (isSuccess)
                     {
                         Helpers.ResetControls(pnl_input);
-                        Helpers.ShowDialogMessage("success", "Application deleted successfully!");
+                        txt_id.Text = string.Empty;
+                        // "Ship type", not "Application" - copied from the Applications
+                        // setup screen and never renamed.
+                        Helpers.ShowDialogMessage("success", "Ship type deleted successfully!");
                         FetchData();
+
+                        // The row it was pointing at no longer exists, so Edit and
+                        // Delete must go back to unavailable.
+                        SetMode(Mode.View);
                     }
                     else
                     {
-                        Helpers.ShowDialogMessage("error", "Failed to delete the application");
+                        Helpers.ShowDialogMessage("error", "Failed to delete the ship type");
                     }
                 }
             }

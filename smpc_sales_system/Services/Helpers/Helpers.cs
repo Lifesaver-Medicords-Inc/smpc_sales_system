@@ -23,70 +23,194 @@ namespace smpc_app.Services.Helpers
         // Simple semi-transparent overlay with a message, dropped on top of whatever control
         // is passed in (e.g. a DataGridView while it's fetching data). Ported from the same
         // pattern already used in smpc_inventory_app's Helpers.Loading for consistency.
+        // The one standard loading screen (spec 2.1): "Loading... Please wait", it
+        // covers the WHOLE PAGE rather than one section, and it clears only once
+        // every part of the page has finished loading.
+        //
+        // Rewritten 2026-09-12. The previous version broke all three of those rules
+        // and the bugs were not cosmetic:
+        //
+        //   - It overlaid whatever control the caller passed - in practice a single
+        //     DataGridView - so the grid was covered while the toolbar, the header
+        //     fields and the action buttons stayed live. A user could press Save on
+        //     a form whose data had not arrived yet.
+        //
+        //   - One static overlay for the entire app, first-wins: a second load
+        //     starting while one was up returned silently, and then the FIRST
+        //     HideLoading tore the overlay down while the other load was still
+        //     running. A page with two or three fetches cleared early, every time.
+        //
+        //   - HideLoading disposed and nulled the static field while removing the
+        //     panel from whichever control it was handed. Hand it a different
+        //     control than Show got - easy, since callers pass grids - and the
+        //     overlay is orphaned on screen with nothing left pointing at it.
+        //
+        // Now: the host is resolved UP to the page that contains it, the page's own
+        // controls are disabled for the duration, and shows are REF-COUNTED per
+        // page, so the screen lifts on the last completion rather than the first.
+        //
+        // Callers need no change - every existing call site passes some control on
+        // the page, which is exactly what this resolves from.
         public static class Loading
         {
-            // Keyed per parent control instead of a single static field so more than one
-            // overlay can be shown at the same time (e.g. pnl_header and pnl_footer both
-            // loading together on the Sales Quotation screen). Each parent tracks its own
-            // overlay independently - showing one doesn't block or clobber another.
-            private static readonly Dictionary<Control, UserControl> overlays = new Dictionary<Control, UserControl>();
+            // Spec 2.1's exact wording. Callers may pass their own message, but the
+            // default is the standard one and should stay that way.
+            public const string StandardMessage = "Loading... Please wait";
 
-            public static void ShowLoading(Control parentControl, string message = "Loading, please wait...")
+            private class PageOverlay
             {
-                if (parentControl == null || overlays.ContainsKey(parentControl)) return; // already showing on this control
+                public Panel Panel;
+                public int Depth;
+                public List<Control> Disabled = new List<Control>();
+            }
 
-                UserControl overlayPanel = new UserControl
+            // Keyed per page, so two pages loading at once do not cancel each other.
+            private static readonly Dictionary<Control, PageOverlay> Overlays =
+                new Dictionary<Control, PageOverlay>();
+
+            // Resolves the PAGE a control belongs to - the UserControl sitting in the
+            // tab - and deliberately stops short of the Form.
+            //
+            // The first version of this accepted `c is UserControl || c is Form` while
+            // walking all the way up, overwriting as it went, so it always finished on
+            // the Form: the loading screen covered the entire window, sidebar, red box
+            // and tab strip included, instead of the tab's content.
+            //
+            // Outermost UserControl rather than innermost, because pages are built from
+            // nested UserControls (ItemSetUC inside a quotation, BpiBranchUC inside a
+            // partner) and covering only the inner one would leave most of the page
+            // live. The Form is used only when there is no UserControl above the
+            // control at all, which is the modal-dialog case - there the dialog IS the
+            // page.
+            private static Control ResolvePage(Control control)
+            {
+                if (control == null) return null;
+
+                Control page = null;
+                for (Control c = control; c != null; c = c.Parent)
                 {
-                    BackColor = Color.FromArgb(180, Color.Gray), // semi-transparent overlay
-                    Dock = DockStyle.Fill
+                    if (c is UserControl) page = c;
+                }
+
+                // A dialog, or a control not parented yet - a load kicked off from a
+                // constructor, where walking up finds nothing.
+                return page ?? control.FindForm() ?? control;
+            }
+
+            public static void ShowLoading(Control host, string message = StandardMessage)
+            {
+                Control page = ResolvePage(host);
+                if (page == null || page.IsDisposed) return;
+
+                PageOverlay existing;
+                if (Overlays.TryGetValue(page, out existing))
+                {
+                    // Another fetch on the same page. Count it and leave the screen up.
+                    existing.Depth++;
+                    return;
+                }
+
+                // Deliberately NOT Dock = Fill. A Fill-docked child is added at the end
+                // of the Controls collection, which makes it dock FIRST and lays every
+                // other docked sibling out in what is left - nothing. The siblings then
+                // reflow again when it is removed, and any page whose layout is not
+                // perfectly reversible comes back subtly rearranged.
+                //
+                // Explicit bounds plus anchors keep the overlay out of dock layout
+                // entirely: it covers the page, follows a resize, and disturbs nothing.
+                // ClientRectangle rather than DisplayRectangle on purpose - on a
+                // scrollable page DisplayRectangle can be larger than the visible area,
+                // and a child that big extends the scroll region, which is its own
+                // phantom-space bug.
+                var overlay = new Panel
+                {
+                    BackColor = Color.FromArgb(180, Color.Gray),
+                    Name = "pnl_page_loading",
+                    Bounds = page.ClientRectangle,
+                    Anchor = AnchorStyles.Top | AnchorStyles.Bottom
+                           | AnchorStyles.Left | AnchorStyles.Right,
                 };
 
-                Label lblMessage = new Label
+                overlay.Controls.Add(new Label
                 {
                     AutoSize = false,
                     Dock = DockStyle.Fill,
                     Text = message,
                     ForeColor = Color.White,
                     Font = new Font("Segoe UI", 12, FontStyle.Bold),
-                    TextAlign = ContentAlignment.MiddleCenter
-                };
+                    TextAlign = ContentAlignment.MiddleCenter,
+                });
 
-                overlayPanel.Controls.Add(lblMessage);
+                var record = new PageOverlay { Panel = overlay, Depth = 1 };
 
-                parentControl.Controls.Add(overlayPanel);
-                overlayPanel.BringToFront();
+                // Disable the page's own controls rather than the page itself: a
+                // disabled parent greys out its children, and the overlay is one of
+                // them, so the message would come out unreadable. Prior state is
+                // remembered so a control that was already disabled - a Save button
+                // on a read-only form, say - stays disabled afterwards.
+                foreach (Control child in page.Controls)
+                {
+                    if (child == overlay) continue;
+                    if (!child.Enabled) continue;
 
-                overlays[parentControl] = overlayPanel;
+                    child.Enabled = false;
+                    record.Disabled.Add(child);
+                }
+
+                // Suspended around the add so the overlay never triggers a layout pass
+                // of its own over the page's real controls.
+                page.SuspendLayout();
+                page.Controls.Add(overlay);
+                overlay.BringToFront();
+                page.ResumeLayout(false);
+
+                Overlays[page] = record;
             }
 
-            public static void HideLoading(Control parentControl)
+            public static void HideLoading(Control host)
             {
-                if (parentControl != null && overlays.TryGetValue(parentControl, out UserControl overlayPanel))
+                Control page = ResolvePage(host);
+                if (page == null) return;
+
+                PageOverlay record;
+                if (!Overlays.TryGetValue(page, out record)) return;
+
+                // Only the last outstanding load clears the screen (spec 2.1).
+                record.Depth--;
+                if (record.Depth > 0) return;
+
+                Overlays.Remove(page);
+
+                foreach (Control child in record.Disabled)
                 {
-                    parentControl.Controls.Remove(overlayPanel);
-                    overlayPanel.Dispose();
-                    overlays.Remove(parentControl);
+                    if (child != null && !child.IsDisposed) child.Enabled = true;
                 }
+
+                if (!page.IsDisposed)
+                {
+                    page.SuspendLayout();
+                    page.Controls.Remove(record.Panel);
+                    page.ResumeLayout(true);
+                }
+
+                record.Panel.Dispose();
             }
 
-            // Convenience overload for showing/hiding the same message across several
-            // parents at once (e.g. pnl_header + pnl_footer together).
-            public static void ShowLoading(Control[] parentControls, string message = "Loading, please wait...")
+            // Clears a page's loading screen no matter how many shows are outstanding.
+            // For a failure path that has to bail out of several fetches at once - a
+            // dropped connection - where matching every Show with a Hide is not
+            // practical. Never call it to "make sure" the screen is gone: that is the
+            // early-clear bug this class was rewritten to remove.
+            public static void ForceHide(Control host)
             {
-                if (parentControls == null) return;
-                foreach (Control parentControl in parentControls)
-                {
-                    ShowLoading(parentControl, message);
-                }
-            }
+                Control page = ResolvePage(host);
+                if (page == null) return;
 
-            public static void HideLoading(Control[] parentControls)
-            {
-                if (parentControls == null) return;
-                foreach (Control parentControl in parentControls)
-                {
-                    HideLoading(parentControl);
-                }
+                PageOverlay record;
+                if (!Overlays.TryGetValue(page, out record)) return;
+
+                record.Depth = 1;
+                HideLoading(page);
             }
         }
 

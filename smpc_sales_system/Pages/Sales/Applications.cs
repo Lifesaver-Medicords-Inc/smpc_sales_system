@@ -31,25 +31,54 @@ namespace smpc_sales_app.Pages.Sales
             dgv_application_setup.DataSource = data;
         }
 
-        private void DisableBtn()
-        {
-            btn_delete.Enabled = false;
-            btn_edit.Enabled = false;
-            txt_code.Enabled = false;
-            txt_id.Enabled = false;
-            txt_name.Enabled = false;
-            btn_save.Visible = false;
-        }
+        // The three states this form can be in (spec 2.1: a form opens read-only and an
+        // Edit button enters edit mode; saving returns it to read-only). Deliberately
+        // identical to ShipTypeSetup's - the two are sibling setup screens and had
+        // drifted into behaving differently.
+        private enum Mode { View, Add, Edit }
 
-        private void EnableTxtBtn()
+        private Mode _mode = Mode.View;
+
+        // One place decides what every control does, because the old version spread it
+        // across four handlers and each leaked:
+        //
+        //   - btn_new disabled itself on click and nothing re-enabled it, so New worked
+        //     exactly once per visit to the page.
+        //   - Saving cleared the fields but left Save showing and New dead, so the form
+        //     never returned to view mode.
+        //   - btn_edit made txt_id editable, which it must never be - it is the key the
+        //     save path uses to decide insert vs update.
+        //
+        // Save is DISABLED rather than hidden in view mode. It used to vanish off the
+        // strip entirely; greying it keeps the action strip a fixed shape across modes
+        // and matches its sibling screen.
+        private void SetMode(Mode mode)
         {
+            _mode = mode;
+
+            bool editing = mode != Mode.View;
+            bool hasSelection = !string.IsNullOrWhiteSpace(txt_id.Text);
+
+            btn_save.Visible = true;
+            btn_save.Enabled = editing;
+
+            btn_new.Enabled = !editing;
+            btn_edit.Enabled = !editing && hasSelection;
+            btn_delete.Enabled = !editing && hasSelection;
+
             txt_code.Enabled = true;
             txt_name.Enabled = true;
+            txt_code.ReadOnly = !editing;
+            txt_name.ReadOnly = !editing;
+
+            // Never editable: it decides insert vs update on save.
+            txt_id.Enabled = false;
+            txt_id.ReadOnly = true;
         }
 
         private async void Applications_Load(object sender, EventArgs e)
         {
-            DisableBtn();
+            SetMode(Mode.View);
             FetchData();
             dgv_application_setup.CellClick += dgv_application_setup_CellClick;
         }
@@ -63,25 +92,21 @@ namespace smpc_sales_app.Pages.Sales
         {
             if (e.RowIndex >= 0)
             {
-                btn_edit.Enabled = true;
-                btn_delete.Enabled = true;
-                Panel[] pnl_list = {pnl_input};
+                Panel[] pnl_list = { pnl_input };
                 Helpers.BindControls(pnl_list, applicationData, e.RowIndex);
 
-                txt_code.Enabled = true;
-                txt_name.Enabled = true;
-                txt_code.ReadOnly = true;
-                txt_name.ReadOnly = true;
+                // Edit and Delete become available because there is now a selection,
+                // which SetMode works out from txt_id rather than being told twice.
+                SetMode(Mode.View);
             }
         }
 
         private void btn_edit_Click(object sender, EventArgs e)
         {
-            txt_code.ReadOnly = false;
-            txt_id.ReadOnly = false;
-            txt_name.ReadOnly = false;
+            if (string.IsNullOrWhiteSpace(txt_id.Text)) return;
 
-            btn_save.Visible = true;
+            SetMode(Mode.Edit);
+            txt_name.Focus();
         }
 
         // SAVE (either new data or updating the data)
@@ -123,26 +148,34 @@ namespace smpc_sales_app.Pages.Sales
             if (response.Success)
             {
                 Helpers.ResetControls(pnl_input);
+                txt_id.Text = string.Empty;
                 FetchData();
+
+                // "Saving MUST persist and settle the form" (spec 2.1): back to
+                // read-only, Save disabled, New and Edit usable again. Without this
+                // the form stayed in edit mode with cleared fields, so the next Save
+                // posted a blank record.
+                SetMode(Mode.View);
             }
 
             string message = response.Success
-                ? (isNewRecord ? "Ship type saved successfully." : "Ship type updated successfully.")
-                : (isNewRecord ? "Failed to save ship type.\n" + response.message : "Failed to update ship type.\n" + response.message);
+                ? (isNewRecord ? "Application saved successfully." : "Application updated successfully.")
+                : (isNewRecord ? "Failed to save application.\n" + response.message : "Failed to update application.\n" + response.message);
 
             Helpers.ShowDialogMessage(response.Success ? "success" : "error", message);
         }
 
         // ADD NEW 
-        private async void btn_new_Click(object sender, EventArgs e)
+        private void btn_new_Click(object sender, EventArgs e)
         {
-            btn_save.Visible = true;
-            btn_new.Enabled = false;
+            // New starts genuinely blank (spec 2.1) - the id has to go too, or Save
+            // would treat it as an update of whichever row was last selected.
+            Helpers.ResetControls(pnl_input);
+            txt_id.Text = string.Empty;
+            dgv_application_setup.ClearSelection();
 
-            txt_code.Enabled = true;
-            txt_name.Enabled = true;
-            txt_name.ReadOnly = false;
-            txt_code.ReadOnly = false;
+            SetMode(Mode.Add);
+            txt_name.Focus();
         }
 
         // DELETE
@@ -165,8 +198,13 @@ namespace smpc_sales_app.Pages.Sales
                     if (isSuccess)
                     {
                         Helpers.ResetControls(pnl_input);
+                        txt_id.Text = string.Empty;
                         Helpers.ShowDialogMessage("success", "Application deleted successfully!");
                         FetchData();
+
+                        // The row it was pointing at no longer exists, so Edit and
+                        // Delete go back to unavailable.
+                        SetMode(Mode.View);
                     }
                     else
                     {

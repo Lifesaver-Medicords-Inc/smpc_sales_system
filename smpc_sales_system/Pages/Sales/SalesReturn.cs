@@ -68,7 +68,7 @@ namespace smpc_sales_app.Pages.Sales
 
         private async Task LoadRecordsAsync(uint? selectId = null)
         {
-            Helpers.Loading.ShowLoading(this, "Loading Sales Returns...");
+            Helpers.Loading.ShowLoading(this);
             try
             {
                 _data = await SalesReturnService.GetSalesReturns() ?? new SalesReturnGet();
@@ -382,7 +382,7 @@ namespace smpc_sales_app.Pages.Sales
 
         private async Task PickSalesInvoiceAsync()
         {
-            Helpers.Loading.ShowLoading(this, "Loading Sales Invoices...");
+            Helpers.Loading.ShowLoading(this);
             SalesInvoiceRefGet data;
             try
             {
@@ -440,7 +440,7 @@ namespace smpc_sales_app.Pages.Sales
 
         private async Task PickDeliveryReceiptAsync()
         {
-            Helpers.Loading.ShowLoading(this, "Loading Delivery Receipts...");
+            Helpers.Loading.ShowLoading(this);
             List<DeliveryReceiptRefModel> receipts;
             try
             {
@@ -472,7 +472,7 @@ namespace smpc_sales_app.Pages.Sales
                 txt_currency.Text = "";
                 txt_sales_period.Text = "";
 
-                Helpers.Loading.ShowLoading(this, "Resolving prices...");
+                Helpers.Loading.ShowLoading(this);
                 CustomerSoRefGet soData;
                 try
                 {
