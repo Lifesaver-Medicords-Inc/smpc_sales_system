@@ -41,60 +41,68 @@ namespace smpc_sales_system.Pages.Sales
         DataTable itemlist = new DataTable();
         private async void FetchBomItems()
         {
-            var data = await ProjectService.GetBom();
-            DataTable parent = JsonHelper.ToDataTable(data.bom_head);
-            DataTable child = JsonHelper.ToDataTable(data.bom_details);
-            table = child;
-            childTable = parent;
-
-            DataTable parentCopy = parent.Clone();
-            DataTable childCopy = child.Clone();
-
-            parentCopy.Columns.Add("item_name", typeof(string));
-            //childCopy.Columns.Add("item_name", typeof(string));
-
-
-            foreach (DataRow parentRow in parent.Rows)
+            smpc_app.Services.Helpers.Helpers.Loading.ShowLoading(this);
+            try
             {
-                DataRow newRow = parentCopy.NewRow();
-                foreach (DataColumn col in parent.Columns)
+                var data = await ProjectService.GetBom();
+                DataTable parent = JsonHelper.ToDataTable(data.bom_head);
+                DataTable child = JsonHelper.ToDataTable(data.bom_details);
+                table = child;
+                childTable = parent;
+
+                DataTable parentCopy = parent.Clone();
+                DataTable childCopy = child.Clone();
+
+                parentCopy.Columns.Add("item_name", typeof(string));
+                //childCopy.Columns.Add("item_name", typeof(string));
+
+
+                foreach (DataRow parentRow in parent.Rows)
                 {
-                    newRow[col.ColumnName] = parentRow[col.ColumnName];
+                    DataRow newRow = parentCopy.NewRow();
+                    foreach (DataColumn col in parent.Columns)
+                    {
+                        newRow[col.ColumnName] = parentRow[col.ColumnName];
+                    }
+
+                    string itemId = parentRow["item_id"].ToString();
+                    DataRow[] itemRows = itemlist.Select($"id = '{itemId}'");
+
+                    newRow["item_name"] = itemRows.Length > 0 ? itemRows[0]["item_name"].ToString() : "Unknown Item";
+
+                    parentCopy.Rows.Add(newRow);
                 }
 
-                string itemId = parentRow["item_id"].ToString();
-                DataRow[] itemRows = itemlist.Select($"id = '{itemId}'");
+                // Populate childCopy
+                foreach (DataRow childRow in child.Rows)
+                {
+                    DataRow newRow = childCopy.NewRow();
+                    foreach (DataColumn col in child.Columns)
+                    {
+                        newRow[col.ColumnName] = childRow[col.ColumnName];
+                    }
 
-                newRow["item_name"] = itemRows.Length > 0 ? itemRows[0]["item_name"].ToString() : "Unknown Item";
+                    string itemId = childRow["item_id"].ToString();
+                    DataRow[] itemRows = itemlist.Select($"id = '{itemId}'");
 
-                parentCopy.Rows.Add(newRow);
+                    newRow["item_name"] = itemRows.Length > 0 ? itemRows[0]["item_name"].ToString() : "Unknown Item";
+
+                    childCopy.Rows.Add(newRow);
+                }
+
+                dataGridView1.DataSource = parentCopy;
+
+                foreach (DataGridViewColumn column in dataGridView1.Columns)
+                {
+                    if (column.Name != "item_name" && column.Name != "id")
+                    {
+                        column.Visible = false;
+                    }
+                }
             }
-
-            // Populate childCopy
-            foreach (DataRow childRow in child.Rows)
+            finally
             {
-                DataRow newRow = childCopy.NewRow();
-                foreach (DataColumn col in child.Columns)
-                {
-                    newRow[col.ColumnName] = childRow[col.ColumnName];
-                }
-
-                string itemId = childRow["item_id"].ToString();
-                DataRow[] itemRows = itemlist.Select($"id = '{itemId}'");
-
-                newRow["item_name"] = itemRows.Length > 0 ? itemRows[0]["item_name"].ToString() : "Unknown Item";
-
-                childCopy.Rows.Add(newRow);
-            }
-
-            dataGridView1.DataSource = parentCopy;
-
-            foreach (DataGridViewColumn column in dataGridView1.Columns)
-            {
-                if (column.Name != "item_name" && column.Name != "id")
-                {
-                    column.Visible = false;
-                }
+                smpc_app.Services.Helpers.Helpers.Loading.HideLoading(this);
             }
         }
 

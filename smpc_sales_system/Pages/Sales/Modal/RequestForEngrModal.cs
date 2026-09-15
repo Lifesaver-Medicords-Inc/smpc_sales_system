@@ -23,17 +23,25 @@ namespace smpc_sales_app.Pages.Sales.Modal
 
         private async void RequestForEngrModal_Load(object sender, EventArgs e)
         {
+            smpc_app.Services.Helpers.Helpers.Loading.ShowLoading(this);
             try
             {
-                var engineers = await EngineerService.GetEngineerList() ?? new List<EngineerModel>();
-                cmb_engineer.DataSource = engineers;
-                cmb_engineer.DisplayMember = nameof(EngineerModel.FullName);
-                cmb_engineer.ValueMember = nameof(EngineerModel.Id);
-                cmb_engineer.SelectedIndex = -1;
+                try
+                {
+                    var engineers = await EngineerService.GetEngineerList() ?? new List<EngineerModel>();
+                    cmb_engineer.DataSource = engineers;
+                    cmb_engineer.DisplayMember = nameof(EngineerModel.FullName);
+                    cmb_engineer.ValueMember = nameof(EngineerModel.Id);
+                    cmb_engineer.SelectedIndex = -1;
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Failed to load engineers: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
             }
-            catch (Exception ex)
+            finally
             {
-                MessageBox.Show($"Failed to load engineers: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                smpc_app.Services.Helpers.Helpers.Loading.HideLoading(this);
             }
         }
 

@@ -1850,63 +1850,71 @@ namespace smpc_sales_app.Pages.Sales
 
             var quotation = JsonConvert.SerializeObject(pnl_quotation, Formatting.Indented);
 
-            if (isNewRecord)
+            Helpers.Loading.ShowLoading(this);
+            try
             {
-                var response = await ProjectService.Insert(pnl_quotation);
-                if (response.Success)
+                if (isNewRecord)
                 {
-                    MessageBox.Show("Saved");
-                    SetNewFormMode(false);
+                    var response = await ProjectService.Insert(pnl_quotation);
+                    if (response.Success)
+                    {
+                        MessageBox.Show("Saved");
+                        SetNewFormMode(false);
 
-                    // A successful save should always drop back to read-only View mode -
-                    // isNewRecord/IsEdit weren't being reset here, so the grids/textboxes
-                    // stayed unlocked (still "editable") even though Save had already
-                    // succeeded and the New/Edit buttons had reappeared.
-                    isNewRecord = false;
-                    IsEdit = false;
+                        // A successful save should always drop back to read-only View mode -
+                        // isNewRecord/IsEdit weren't being reset here, so the grids/textboxes
+                        // stayed unlocked (still "editable") even though Save had already
+                        // succeeded and the New/Edit buttons had reappeared.
+                        isNewRecord = false;
+                        IsEdit = false;
 
-                    // Refetch so SalesProjectListData (and therefore Change History) reflects
-                    // what was actually just saved instead of staying stale until the user
-                    // happens to navigate away and back.
-                    await RunWithLoadingAsync(async () => await fetchSalesProjectData());
+                        // Refetch so SalesProjectListData (and therefore Change History) reflects
+                        // what was actually just saved instead of staying stale until the user
+                        // happens to navigate away and back.
+                        await RunWithLoadingAsync(async () => await fetchSalesProjectData());
 
-                    // Every tab's rows now have real project_items_id values from the reload -
-                    // apply any RESERVE/release toggled in a tab's stock checker before this save.
-                    await ApplyPendingProjectReservationsAsync();
+                        // Every tab's rows now have real project_items_id values from the reload -
+                        // apply any RESERVE/release toggled in a tab's stock checker before this save.
+                        await ApplyPendingProjectReservationsAsync();
+                    }
+                    else
+                        MessageBox.Show($"Insert error: {response.message}");
                 }
-                else
-                    MessageBox.Show($"Insert error: {response.message}");
+                if (IsEdit)
+                {
+                    SalesProjectList dbData = SalesProjectListData;
+
+                    Dictionary<string, dynamic> changes = GetFullDiff(dbData, pnl_quotation);
+
+                    changes["id"] = (int)pnl_quotation["id"];
+
+                    var response = await ProjectService.UpdateChange(changes);
+
+                    if(response.Success)
+                    {
+                        MessageBox.Show("Updated successfully.");
+                        SetNewFormMode(false);
+
+                        // Same as the isNewRecord branch above - drop back to read-only View mode.
+                        isNewRecord = false;
+                        IsEdit = false;
+
+                        // Same reason as the isNewRecord branch - without this, the newly
+                        // auto-generated Change History entries (project fields, multipliers,
+                        // per-tab changes) wouldn't show up until the next unrelated refresh.
+                        await RunWithLoadingAsync(async () => await fetchSalesProjectData());
+
+                        // Same as the isNewRecord branch above.
+                        await ApplyPendingProjectReservationsAsync();
+                    }
+                    else
+                        MessageBox.Show($"Update error: {response.message}");
+
+                }
             }
-            if (IsEdit)
+            finally
             {
-                SalesProjectList dbData = SalesProjectListData;
-
-                Dictionary<string, dynamic> changes = GetFullDiff(dbData, pnl_quotation);
-
-                changes["id"] = (int)pnl_quotation["id"];
-
-                var response = await ProjectService.UpdateChange(changes);
-
-                if(response.Success)
-                {
-                    MessageBox.Show("Updated successfully.");
-                    SetNewFormMode(false);
-
-                    // Same as the isNewRecord branch above - drop back to read-only View mode.
-                    isNewRecord = false;
-                    IsEdit = false;
-
-                    // Same reason as the isNewRecord branch - without this, the newly
-                    // auto-generated Change History entries (project fields, multipliers,
-                    // per-tab changes) wouldn't show up until the next unrelated refresh.
-                    await RunWithLoadingAsync(async () => await fetchSalesProjectData());
-
-                    // Same as the isNewRecord branch above.
-                    await ApplyPendingProjectReservationsAsync();
-                }
-                else
-                    MessageBox.Show($"Update error: {response.message}");
-
+                Helpers.Loading.HideLoading(this);
             }
         }
         // ─── Extended diff models ───────────────────────────────────────────────────
@@ -3458,75 +3466,83 @@ namespace smpc_sales_app.Pages.Sales
                     //parentData["cash_discount"] = decimal.Parse(txt_cash_discount.Text);
 
 
-                    if (parentData.ContainsKey("sales_quotation_quick"))
+                    Helpers.Loading.ShowLoading(this);
+                    try
                     {
-
-                        // Grab both now, before anything below resets/reloads them -
-                        // Insert() always creates a fresh row on an edit (isSubVersion),
-                        // orphaning the old quick_id/header id (snapshot is a no-op when
-                        // this isn't an edit - see SnapshotReservedReferenceCodesAsync).
-                        // documentNo is what MigrateSnapshottedReservationsAsync uses to
-                        // find this same save's new ids afterward - captured here because
-                        // Helpers.ResetControls(pnl_header) below blanks txt_document_no.
-                        var reservationSnapshot = await SnapshotReservedReferenceCodesAsync(dgv_quick_quote_details);
-                        string savedDocumentNo = txt_document_no.Text;
-
-                        var isSuccess = await QuotationService.Insert(parentData);
-
-                        if (isSuccess.Success)
+                        if (parentData.ContainsKey("sales_quotation_quick"))
                         {
-                            // The server assigns the real document number now (it owns the
-                            // shared quick+project sequence), so txt_document_no held only the
-                            // "(assigned on save)" placeholder. Read the number the server
-                            // actually saved from the response and use THAT for the reservation
-                            // migration below, which matches on document_no - the placeholder
-                            // would never match the real record.
-                            string serverDocNo = ExtractSavedDocumentNo(isSuccess.Data);
-                            if (!string.IsNullOrEmpty(serverDocNo))
-                                savedDocumentNo = serverDocNo;
 
-                            //// this should await a response in the future if the response is success proceed to create if not notify the user
-                            Helpers.ResetControls(pnl_header);
-                            //Helpers.ResetControls(pnl_footer);
-                            //dgv_quick_quote_details.DataSource = this.childList.Clone();
-                            //dgv_quick_quotes_show.Visible = true;
-                            //dgv_quick_quotes_show.Enabled = false;
-                            //toolstrip_quotation.Enabled = true;
+                            // Grab both now, before anything below resets/reloads them -
+                            // Insert() always creates a fresh row on an edit (isSubVersion),
+                            // orphaning the old quick_id/header id (snapshot is a no-op when
+                            // this isn't an edit - see SnapshotReservedReferenceCodesAsync).
+                            // documentNo is what MigrateSnapshottedReservationsAsync uses to
+                            // find this same save's new ids afterward - captured here because
+                            // Helpers.ResetControls(pnl_header) below blanks txt_document_no.
+                            var reservationSnapshot = await SnapshotReservedReferenceCodesAsync(dgv_quick_quote_details);
+                            string savedDocumentNo = txt_document_no.Text;
 
-                            Panel[] panel = { pnl_header, pnl_footer };
+                            var isSuccess = await QuotationService.Insert(parentData);
 
-                            ResetControls(pnl_footer);
+                            if (isSuccess.Success)
+                            {
+                                // The server assigns the real document number now (it owns the
+                                // shared quick+project sequence), so txt_document_no held only the
+                                // "(assigned on save)" placeholder. Read the number the server
+                                // actually saved from the response and use THAT for the reservation
+                                // migration below, which matches on document_no - the placeholder
+                                // would never match the real record.
+                                string serverDocNo = ExtractSavedDocumentNo(isSuccess.Data);
+                                if (!string.IsNullOrEmpty(serverDocNo))
+                                    savedDocumentNo = serverDocNo;
 
-                            // IF SUCCESS
+                                //// this should await a response in the future if the response is success proceed to create if not notify the user
+                                Helpers.ResetControls(pnl_header);
+                                //Helpers.ResetControls(pnl_footer);
+                                //dgv_quick_quote_details.DataSource = this.childList.Clone();
+                                //dgv_quick_quotes_show.Visible = true;
+                                //dgv_quick_quotes_show.Enabled = false;
+                                //toolstrip_quotation.Enabled = true;
 
-                            MessageBox.Show("Quotation Successfully saved");
-                            await RunWithLoadingAsync(async () => await fetchQuotationDetails());
+                                Panel[] panel = { pnl_header, pnl_footer };
 
-                            // Any RESERVE/release toggled in StockCheckModal before this
-                            // save is still just pending intent (see
-                            // _pendingReservationByReferenceCode) - every line now has a
-                            // real id after that reload, so apply it for real.
-                            var appliedReferenceCodes = await ApplyPendingReservationsAsync(savedDocumentNo);
+                                ResetControls(pnl_footer);
 
-                            // Carry over whatever was already reserved before this edit onto
-                            // the new version's ids (see SnapshotReservedReferenceCodesAsync).
-                            await MigrateSnapshottedReservationsAsync(savedDocumentNo, reservationSnapshot, appliedReferenceCodes);
+                                // IF SUCCESS
 
-                            // isSubVersion was set true by btn_edit_Click and never cleared -
-                            // every save after the first Edit click in a session kept hitting
-                            // the "isNewRecord || isSubVersion" branch above and stripping
-                            // "id", so QuotationService.Insert() created a fresh duplicate
-                            // record instead of updating the one just edited. This save has
-                            // now genuinely completed (fetchQuotationDetails() above already
-                            // reloaded it), so the sub-version intent this flag was guarding
-                            // for is done - clear it so the next Edit-then-Save in the same
-                            // session updates in place instead of duplicating again.
-                            isSubVersion = false;
+                                MessageBox.Show("Quotation Successfully saved");
+                                await RunWithLoadingAsync(async () => await fetchQuotationDetails());
 
-                            SetNewFormMode(false);
+                                // Any RESERVE/release toggled in StockCheckModal before this
+                                // save is still just pending intent (see
+                                // _pendingReservationByReferenceCode) - every line now has a
+                                // real id after that reload, so apply it for real.
+                                var appliedReferenceCodes = await ApplyPendingReservationsAsync(savedDocumentNo);
+
+                                // Carry over whatever was already reserved before this edit onto
+                                // the new version's ids (see SnapshotReservedReferenceCodesAsync).
+                                await MigrateSnapshottedReservationsAsync(savedDocumentNo, reservationSnapshot, appliedReferenceCodes);
+
+                                // isSubVersion was set true by btn_edit_Click and never cleared -
+                                // every save after the first Edit click in a session kept hitting
+                                // the "isNewRecord || isSubVersion" branch above and stripping
+                                // "id", so QuotationService.Insert() created a fresh duplicate
+                                // record instead of updating the one just edited. This save has
+                                // now genuinely completed (fetchQuotationDetails() above already
+                                // reloaded it), so the sub-version intent this flag was guarding
+                                // for is done - clear it so the next Edit-then-Save in the same
+                                // session updates in place instead of duplicating again.
+                                isSubVersion = false;
+
+                                SetNewFormMode(false);
+                            }
+                            else
+                                MessageBox.Show(isSuccess.message);
                         }
-                        else
-                            MessageBox.Show(isSuccess.message);
+                    }
+                    finally
+                    {
+                        Helpers.Loading.HideLoading(this);
                     }
                 }
             }
@@ -6845,6 +6861,7 @@ namespace smpc_sales_app.Pages.Sales
                 // since the second click read back the first click's not-yet-committed
                 // "FQ#..." value as its own starting point).
                 Helpers.SetButtonsEnabled(this, false);
+                Helpers.Loading.ShowLoading(this);
                 try
                 {
                     if (isProject)
@@ -6854,6 +6871,7 @@ namespace smpc_sales_app.Pages.Sales
                 }
                 finally
                 {
+                    Helpers.Loading.HideLoading(this);
                     Helpers.SetButtonsEnabled(this, true);
                     // The blanket re-enable above doesn't know about the isFinalized rule
                     // (see bind()'s btn_finalize.Enabled = !isFinalized || sId <= 0) - reapply
@@ -7287,11 +7305,9 @@ namespace smpc_sales_app.Pages.Sales
 
             // Create an instance of Orders user control
             Orders ordersPage = new Orders(documentNo);
-            // Match the width-fitting the generic tab-hosting path (Layout.showForm)
-            // does — without this, Orders keeps its designed width (1229) and gets
-            // clipped by the tab, since it's never actually resized to fit here.
-            ordersPage.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            ordersPage.Width = this.Parent.ClientSize.Width;
+            // Sized by the tab it lands in: Layout re-fits the tab's page when one is added
+            // (Helpers.PageFit). Anchoring it to the tab's right edge here would stretch it on
+            // its own and stop it ever shrinking back.
             this.Parent.Controls.Add(ordersPage);
             this.Hide();
         }

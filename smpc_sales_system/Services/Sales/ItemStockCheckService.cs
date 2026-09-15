@@ -108,5 +108,25 @@ namespace smpc_sales_app.Services.Sales
                 $"{reservation_url}?source_type={sourceType}&source_id={sourceId}",
                 new Dictionary<string, object>());
         }
+
+        // Reservations whose quote reached its VALID UNTIL and that await an answer (§10.4.5).
+        // The red box shows the current user's own on their quote cards. silent: the red box
+        // refreshes on a timer, so a failed load shouldn't pop a dialog every time.
+        public static async Task<List<StockReservationModel>> GetReservationsAtLimit()
+        {
+            var response = await RequestToApi<ApiResponseModel<List<StockReservationModel>>>.Get(
+                $"{reservation_url}/queue?at_limit=1", silent: true);
+            return response?.Data ?? new List<StockReservationModel>();
+        }
+
+        // Answers one at-limit reservation: keep it on hold (a fresh window from today, the
+        // quote's VALID UNTIL moving with it) or let it go (its units return to stock). The
+        // owning sales executive and the Warehouse Manager may both answer; the first one wins.
+        public static async Task<ApiResponseModel> AnswerReservationAtLimit(int reservationId, bool keepOnHold)
+        {
+            string action = keepOnHold ? "keep" : "let-go";
+            return await RequestToApi<ApiResponseModel>.Post(
+                $"{reservation_url}/{reservationId}/{action}", new Dictionary<string, dynamic>());
+        }
     }
 }

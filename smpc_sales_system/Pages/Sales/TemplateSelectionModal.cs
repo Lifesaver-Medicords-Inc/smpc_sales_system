@@ -25,20 +25,28 @@ namespace smpc_sales_system.Pages.Sales
 
         private async void fetchTemplates()
         {
-            var data = await ProjectTemplatesService.GetProjectTemplates();
-            if( data == null)
-                return;
-            var dt1 = JsonHelper.ToDataTable(data.SalesProjectTemplate);
-            var dt2 = JsonHelper.ToDataTable(data.sales_project_template_child);
-
-            dataGridView1.DataSource = dt1;
-
-            foreach (DataGridViewColumn column in dataGridView1.Columns)
+            Helpers.Loading.ShowLoading(this);
+            try
             {
-                if (column.Name != "template_name")
+                var data = await ProjectTemplatesService.GetProjectTemplates();
+                if( data == null)
+                    return;
+                var dt1 = JsonHelper.ToDataTable(data.SalesProjectTemplate);
+                var dt2 = JsonHelper.ToDataTable(data.sales_project_template_child);
+
+                dataGridView1.DataSource = dt1;
+
+                foreach (DataGridViewColumn column in dataGridView1.Columns)
                 {
-                    column.Visible = false;
+                    if (column.Name != "template_name")
+                    {
+                        column.Visible = false;
+                    }
                 }
+            }
+            finally
+            {
+                Helpers.Loading.HideLoading(this);
             }
 
         }

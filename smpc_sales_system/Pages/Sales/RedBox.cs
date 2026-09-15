@@ -52,6 +52,10 @@ namespace smpc_sales_system.Pages.Sales
             public string Status;
             public DateTime BasisDate;       // date the final quote/SO was created
             public string CommitmentDate;
+            public int QuotationId;          // quotes only; 0 on an SO card
+
+            // This quote's reservations waiting for a keep-on-hold / let-go answer (§10.4.5).
+            public List<StockReservationModel> ReservationsAtLimit = new List<StockReservationModel>();
         }
 
         private class RetentionEntry
@@ -115,6 +119,7 @@ namespace smpc_sales_system.Pages.Sales
                         .Select(d => d.sales_order_details_id));
 
                 var quoteOrderEntries = BuildQuoteOrderEntries(quotationData, orderData, bpiGeneral, invoicedOrderDetailIds);
+                await AttachReservationsAtLimit(quoteOrderEntries);
                 RenderQuoteOrderSection(quoteOrderEntries);
 
                 var retentionEntries = BuildRetentionEntries(crm);
@@ -250,7 +255,8 @@ namespace smpc_sales_system.Pages.Sales
                     IsOrder = false,
                     Status = q.is_finalized ? "QUOTED" : "BIDDING",
                     BasisDate = basisDate,
-                    CommitmentDate = "-"
+                    CommitmentDate = "-",
+                    QuotationId = q.id
                 });
             }
 
@@ -376,7 +382,80 @@ namespace smpc_sales_system.Pages.Sales
 
             AddFieldRow(card, "TIME ELAPSED", MakeValueLabel(FormatElapsed(entry.BasisDate)), "COMMITMENT DATE", MakeValueLabel(entry.CommitmentDate));
 
+            if (entry.ReservationsAtLimit.Count > 0)
+                AddReservationsAtLimit(card, entry);
+
             return card;
+        }
+
+        // Hangs each at-limit reservation on its own quote's card (§10.4.5). The cards are
+        // already only the current user's own quotes, so the owner is who gets asked.
+        private async Task AttachReservationsAtLimit(List<QuoteOrderEntry> entries)
+        {
+            var atLimit = await ItemStockCheckService.GetReservationsAtLimit();
+            if (atLimit.Count == 0) return;
+
+            foreach (var entry in entries.Where(en => !en.IsOrder && en.QuotationId > 0))
+                entry.ReservationsAtLimit = atLimit.Where(r => r.quotation_id == entry.QuotationId).ToList();
+        }
+
+        // §10.4.5: a reservation that reached its quote's VALID UNTIL waits for the owning sales
+        // executive or the Warehouse Manager to keep it on hold or let it go. Provisional
+        // standard, since the spec says both are notified but not where: the sales executive is
+        // asked here, on the quote's own card; the Warehouse Manager in dispatching's
+        // Reservations screen. Not drawn in red - red keeps its seven meanings (§1.4).
+        private void AddReservationsAtLimit(FlowLayoutPanel card, QuoteOrderEntry entry)
+        {
+            string items = string.Join(", ", entry.ReservationsAtLimit.Select(r =>
+                $"{r.qty} x {(string.IsNullOrWhiteSpace(r.item_name) ? "item" : r.item_name)}"));
+
+            AddFieldRow(card, "RESERVATION AT LIMIT", new Label
+            {
+                Text = items,
+                AutoSize = true,
+                MaximumSize = new Size(CardWidth - 24, 0),
+                Font = new Font("Segoe UI", 9F, FontStyle.Bold)
+            });
+
+            var buttons = new FlowLayoutPanel
+            {
+                FlowDirection = FlowDirection.LeftToRight,
+                WrapContents = false,
+                AutoSize = true,
+                AutoSizeMode = AutoSizeMode.GrowAndShrink,
+                Margin = new Padding(0, 4, 0, 0)
+            };
+
+            var keep = new Button { Text = "KEEP ON HOLD", AutoSize = true, Font = new Font("Segoe UI", 8.5F) };
+            var letGo = new Button { Text = "LET GO", AutoSize = true, Font = new Font("Segoe UI", 8.5F) };
+            keep.Click += async (s, e) => await AnswerReservationsAtLimit(entry, true);
+            letGo.Click += async (s, e) => await AnswerReservationsAtLimit(entry, false);
+
+            buttons.Controls.Add(keep);
+            buttons.Controls.Add(letGo);
+            card.Controls.Add(buttons);
+        }
+
+        private async Task AnswerReservationsAtLimit(QuoteOrderEntry entry, bool keepOnHold)
+        {
+            string question = keepOnHold
+                ? $"Keep the reservation on {entry.DocumentNoDisplay} on hold? A fresh window starts today, and the quote's VALID UNTIL moves with it."
+                : $"Let the reservation on {entry.DocumentNoDisplay} go? Its units return to stock.";
+
+            if (MessageBox.Show(question, keepOnHold ? "Keep On Hold" : "Let Go", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
+                return;
+
+            foreach (var reservation in entry.ReservationsAtLimit)
+            {
+                var response = await ItemStockCheckService.AnswerReservationAtLimit(reservation.id, keepOnHold);
+
+                // Keeping one on hold moves the whole quote's window, which takes every other
+                // reservation on it off its limit too - there is nothing left to answer.
+                if (keepOnHold && response != null && response.Success)
+                    break;
+            }
+
+            await LoadData();
         }
 
         private FlowLayoutPanel BuildRetentionCard(RetentionEntry entry)

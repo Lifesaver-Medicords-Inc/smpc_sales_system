@@ -1,4 +1,4 @@
-﻿using smpc_app.Services.Helpers;
+using smpc_app.Services.Helpers;
 using smpc_inventory_app.Services.Setup.Item;
 using smpc_sales_app.Data;
 using smpc_sales_app.Services.Sales;
@@ -27,11 +27,11 @@ namespace smpc_sales_app.Pages
 
         private void frm_login_FormClosing(object sender, FormClosingEventArgs e)
         {
-            
+
         }
 
         private void btn_cancel_Click(object sender, EventArgs e)
-        { 
+        {
             Application.Exit();
         }
 
@@ -57,6 +57,10 @@ namespace smpc_sales_app.Pages
                 return;
             }
 
+            // The standard loading screen (spec 2.1) stays over the login until signing in and
+            // the setup lists below have all finished. It also blocks a second click from
+            // signing in twice.
+            Helpers.Loading.ShowLoading(this);
             try
             {
                 var data = Helpers.GetControlsValues(pnl_auth);
@@ -69,9 +73,10 @@ namespace smpc_sales_app.Pages
                     smpc_sales_app.Data.CacheData.CurrentUser = currentUser.Data;
                     smpc_inventory_app.Data.CacheData.CurrentUser = currentUser.Data;
 
+                    // Awaited, so the inventory pages this app hosts have their session before
+                    // the main window opens instead of racing it.
                     var inventoryLogin = new smpc_inventory_app.Pages.Login();
-
-                    inventoryLogin.LoginFromSales(data);
+                    await inventoryLogin.LoginFromSalesAsync(data);
 
                     CacheData.PaymentTerms = await PaymentTermsServices.GetAsDatatable();
                     CacheData.ApplicationSetup = await ApplicationService.GetAsDatatable();
@@ -90,6 +95,10 @@ namespace smpc_sales_app.Pages
             {
                 Debug.WriteLine("Login failed: " + ex);
                 Helpers.ShowDialogMessage("error", "Something went wrong. Please try again.");
+            }
+            finally
+            {
+                Helpers.Loading.HideLoading(this);
             }
         }
 

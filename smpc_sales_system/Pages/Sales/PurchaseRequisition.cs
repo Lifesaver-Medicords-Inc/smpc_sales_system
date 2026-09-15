@@ -361,27 +361,35 @@ namespace smpc_sales_system.Pages.Sales
 
                     parentData["purchasing_purchase_requisition_orders"] = childCollection;
 
-                    if (parentData.ContainsKey("purchasing_purchase_requisition_orders"))
+                    Helpers.Loading.ShowLoading(this);
+                    try
                     {
-                        if (isExistingDoc)
+                        if (parentData.ContainsKey("purchasing_purchase_requisition_orders"))
                         {
-                            foreach (var childData in PROrderList)
+                            if (isExistingDoc)
                             {
-                                if (!childData.ContainsKey("pr_order_id") || !childData.ContainsKey("based_id"))
+                                foreach (var childData in PROrderList)
                                 {
-                                    await PurchaseRequisitionService.InsertChild(childData);
+                                    if (!childData.ContainsKey("pr_order_id") || !childData.ContainsKey("based_id"))
+                                    {
+                                        await PurchaseRequisitionService.InsertChild(childData);
+                                    }
                                 }
+                                await PurchaseRequisitionService.Update(parentData);
+                                MessageBox.Show("Data updated successfully");
                             }
-                            await PurchaseRequisitionService.Update(parentData);
-                            MessageBox.Show("Data updated successfully");
+                            else
+                            {
+                                await PurchaseRequisitionService.Insert(parentData);
+                                MessageBox.Show("Data added successfully");
+                            }
                         }
-                        else
-                        {
-                            await PurchaseRequisitionService.Insert(parentData);
-                            MessageBox.Show("Data added successfully");
-                        }
+                        CheckStatus();
                     }
-                    CheckStatus();
+                    finally
+                    {
+                        Helpers.Loading.HideLoading(this);
+                    }
                 }
             }
             catch (Exception ex)

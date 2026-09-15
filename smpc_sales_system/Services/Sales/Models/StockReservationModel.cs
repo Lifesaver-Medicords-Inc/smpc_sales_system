@@ -16,11 +16,17 @@ namespace smpc_sales_system.Services.Sales.Models
         public DateTime reserved_at { get; set; }
         public DateTime? expires_at { get; set; }
 
-        // "Pending" until a dispatcher/inventory manager approves or rejects it (see
-        // ERP_API's ReservationApprovalAccessCode) - still holds the stock either way,
-        // Rejected is the only status that doesn't (and a rejected row won't come back
-        // here at all, since GetReservation only returns each line's newest one and a
-        // rejected reservation is functionally "not reserved" going forward).
+        // "Pending" until the Warehouse Manager approves or declines it. Only "Approved"
+        // takes stock out of availability (§10.4.3); a declined ("Rejected") row stays.
         public string status { get; set; }
+
+        // Set once the reservation reaches its quotation's VALID UNTIL. It then waits for
+        // the owning sales executive or the Warehouse Manager to keep it on hold or let it
+        // go (§10.4.5). The at-limit list the sales red box reads also fills the fields below.
+        public DateTime? limit_reached_at { get; set; }
+        public string item_name { get; set; }
+        public string item_model { get; set; }
+        public string document_no { get; set; }
+        public string requested_by { get; set; }
     }
 }

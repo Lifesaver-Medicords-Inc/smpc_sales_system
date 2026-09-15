@@ -64,60 +64,68 @@ namespace smpc_sales_system.Pages.Sales
 
         private async void fetchBpiSuppliers()
         {
-            var data = await ProjectService.GetSuppliers();
-            // data comes back null (not an empty list) when the request itself failed -
-            // RequestToApi's shared catch already popped a MessageBox for that, so just
-            // bail rather than NullReferenceException-ing on data.BpiSuppliers next.
-            if (data == null) return;
-
-            List<BpiSuppliers> suppliersList = data.BpiSuppliers;
-
-            //var view_data = await ProjectService.GetCanvasView();
-            //List<SalesCanvasView> viewList = view_data.sales_canvas_sheet_view;
-
-            // Was "if (suppliersList == null || !suppliersList.Any())" - inverted, so the
-            // one case this could ever run was when suppliersList was already empty/null,
-            // and it would NullReferenceException calling .Where on a null list. Filtering
-            // only makes sense once there's something to filter.
-            if (suppliersList != null && suppliersList.Any())
+            Helpers.Loading.ShowLoading(this);
+            try
             {
-                // Rows already on the sheet - this runs again after ADD SUPPLIER closes
-                // (see btn_add_bpi_Click), so without this every already-added row would
-                // get duplicated alongside its fresh copy from this re-fetch.
-                var alreadyOnSheet = new HashSet<int>();
-                foreach (DataGridViewRow row in dataGridView1.Rows)
+                var data = await ProjectService.GetSuppliers();
+                // data comes back null (not an empty list) when the request itself failed -
+                // RequestToApi's shared catch already popped a MessageBox for that, so just
+                // bail rather than NullReferenceException-ing on data.BpiSuppliers next.
+                if (data == null) return;
+
+                List<BpiSuppliers> suppliersList = data.BpiSuppliers;
+
+                //var view_data = await ProjectService.GetCanvasView();
+                //List<SalesCanvasView> viewList = view_data.sales_canvas_sheet_view;
+
+                // Was "if (suppliersList == null || !suppliersList.Any())" - inverted, so the
+                // one case this could ever run was when suppliersList was already empty/null,
+                // and it would NullReferenceException calling .Where on a null list. Filtering
+                // only makes sense once there's something to filter.
+                if (suppliersList != null && suppliersList.Any())
                 {
-                    if (row.IsNewRow) continue;
-                    if (int.TryParse(row.Cells["supplier_id"].Value?.ToString(), out int existingId))
+                    // Rows already on the sheet - this runs again after ADD SUPPLIER closes
+                    // (see btn_add_bpi_Click), so without this every already-added row would
+                    // get duplicated alongside its fresh copy from this re-fetch.
+                    var alreadyOnSheet = new HashSet<int>();
+                    foreach (DataGridViewRow row in dataGridView1.Rows)
                     {
-                        alreadyOnSheet.Add(existingId);
+                        if (row.IsNewRow) continue;
+                        if (int.TryParse(row.Cells["supplier_id"].Value?.ToString(), out int existingId))
+                        {
+                            alreadyOnSheet.Add(existingId);
+                        }
+                    }
+
+                    var eligible = suppliersList
+                        .Where(s => s.item_id.ToString() == this.items_id && !alreadyOnSheet.Contains(s.based_id))
+                        .Select(s => new EligibleSupplier
+                        {
+                            SupplierId = s.based_id,
+                            SupplierName = ResolveSupplierName(s.based_id, s.supplier_code)
+                        })
+                        .ToList();
+
+                    _eligibleSuppliers = eligible;
+
+                    // Grid is populated manually (not via DataSource) so ADD SUPPLIER's
+                    // counterpart (SupplierPickerModal) could add rows the same way if it's
+                    // ever wired back in - a data-bound DataGridView can't take Rows.Add()
+                    // calls.
+                    //
+                    // Iterating a snapshot (.ToList()), not "eligible" itself - AddSupplierRow
+                    // calls _eligibleSuppliers.RemoveAll(...), and _eligibleSuppliers IS
+                    // eligible (same list, assigned just above), so mutating it while this
+                    // foreach is still enumerating it threw "Collection was modified".
+                    foreach (var supplier in eligible.ToList())
+                    {
+                        AddSupplierRow(supplier);
                     }
                 }
-
-                var eligible = suppliersList
-                    .Where(s => s.item_id.ToString() == this.items_id && !alreadyOnSheet.Contains(s.based_id))
-                    .Select(s => new EligibleSupplier
-                    {
-                        SupplierId = s.based_id,
-                        SupplierName = ResolveSupplierName(s.based_id, s.supplier_code)
-                    })
-                    .ToList();
-
-                _eligibleSuppliers = eligible;
-
-                // Grid is populated manually (not via DataSource) so ADD SUPPLIER's
-                // counterpart (SupplierPickerModal) could add rows the same way if it's
-                // ever wired back in - a data-bound DataGridView can't take Rows.Add()
-                // calls.
-                //
-                // Iterating a snapshot (.ToList()), not "eligible" itself - AddSupplierRow
-                // calls _eligibleSuppliers.RemoveAll(...), and _eligibleSuppliers IS
-                // eligible (same list, assigned just above), so mutating it while this
-                // foreach is still enumerating it threw "Collection was modified".
-                foreach (var supplier in eligible.ToList())
-                {
-                    AddSupplierRow(supplier);
-                }
+            }
+            finally
+            {
+                Helpers.Loading.HideLoading(this);
             }
         }
 
@@ -230,11 +238,19 @@ namespace smpc_sales_system.Pages.Sales
 
         private async void btn_save_Click(object sender, EventArgs e)
         {
-            var response = await ProjectService.InsertCanvas(GetDGVData());
-
-            if (response.Success)
+            Helpers.Loading.ShowLoading(this);
+            try
             {
-                MessageBox.Show("Success");
+                var response = await ProjectService.InsertCanvas(GetDGVData());
+
+                if (response.Success)
+                {
+                    MessageBox.Show("Success");
+                }
+            }
+            finally
+            {
+                Helpers.Loading.HideLoading(this);
             }
         }
     }

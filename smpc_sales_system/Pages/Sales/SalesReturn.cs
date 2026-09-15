@@ -683,28 +683,36 @@ namespace smpc_sales_app.Pages.Sales
             // Inline saving/saved feedback via the existing title label -
             // no "saved successfully" modal (CLAUDE.md §2.1), and no new
             // Designer control introduced for this.
-            lbl_title.Text = "SALES RETURN — saving...";
-            Helpers.SetButtonsEnabled(panel1, false);
-
-            ApiResponseModel<SalesReturnBody> response = null;
+            Helpers.Loading.ShowLoading(this);
             try
             {
-                response = await SalesReturnService.CreateSalesReturn(body);
+                lbl_title.Text = "SALES RETURN — saving...";
+                Helpers.SetButtonsEnabled(panel1, false);
+
+                ApiResponseModel<SalesReturnBody> response = null;
+                try
+                {
+                    response = await SalesReturnService.CreateSalesReturn(body);
+                }
+                finally
+                {
+                    Helpers.SetButtonsEnabled(panel1, true);
+                }
+
+                if (response != null && response.Success)
+                {
+                    lbl_title.Text = "SALES RETURN — saved";
+                    await LoadRecordsAsync();
+                }
+                else
+                {
+                    lbl_title.Text = "SALES RETURN";
+                    Helpers.ShowDialogMessage("error", response?.message ?? "Failed to save the Sales Return - no response from the server.");
+                }
             }
             finally
             {
-                Helpers.SetButtonsEnabled(panel1, true);
-            }
-
-            if (response != null && response.Success)
-            {
-                lbl_title.Text = "SALES RETURN — saved";
-                await LoadRecordsAsync();
-            }
-            else
-            {
-                lbl_title.Text = "SALES RETURN";
-                Helpers.ShowDialogMessage("error", response?.message ?? "Failed to save the Sales Return - no response from the server.");
+                Helpers.Loading.HideLoading(this);
             }
         }
 
@@ -718,28 +726,36 @@ namespace smpc_sales_app.Pages.Sales
                 "SMPC SOFTWARE", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
             if (confirm != DialogResult.Yes) return;
 
-            lbl_title.Text = "SALES RETURN — saving...";
-            Helpers.SetButtonsEnabled(panel1, false);
-
-            ApiResponseModel<object> response = null;
+            Helpers.Loading.ShowLoading(this);
             try
             {
-                response = await SalesReturnService.ApproveSalesReturn(header.id);
+                lbl_title.Text = "SALES RETURN — saving...";
+                Helpers.SetButtonsEnabled(panel1, false);
+
+                ApiResponseModel<object> response = null;
+                try
+                {
+                    response = await SalesReturnService.ApproveSalesReturn(header.id);
+                }
+                finally
+                {
+                    Helpers.SetButtonsEnabled(panel1, true);
+                }
+
+                if (response != null && response.Success)
+                {
+                    lbl_title.Text = "SALES RETURN — saved";
+                    await LoadRecordsAsync(header.id);
+                }
+                else
+                {
+                    lbl_title.Text = "SALES RETURN";
+                    Helpers.ShowDialogMessage("error", response?.message ?? "Failed to approve - no response from the server.");
+                }
             }
             finally
             {
-                Helpers.SetButtonsEnabled(panel1, true);
-            }
-
-            if (response != null && response.Success)
-            {
-                lbl_title.Text = "SALES RETURN — saved";
-                await LoadRecordsAsync(header.id);
-            }
-            else
-            {
-                lbl_title.Text = "SALES RETURN";
-                Helpers.ShowDialogMessage("error", response?.message ?? "Failed to approve - no response from the server.");
+                Helpers.Loading.HideLoading(this);
             }
         }
 

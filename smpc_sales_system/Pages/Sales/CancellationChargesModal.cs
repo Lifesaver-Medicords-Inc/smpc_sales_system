@@ -63,30 +63,38 @@ namespace smpc_sales_system.Pages.Sales
 
         private async System.Threading.Tasks.Task LoadDefaultsAsync()
         {
-            _loading = true;
+            Helpers.Loading.ShowLoading(this);
             try
             {
-                var response = await RequestToApi<ApiResponseModel<ChargeDefaults>>
-                    .Get("/sales-orders/charges/defaults");
+                _loading = true;
+                try
+                {
+                    var response = await RequestToApi<ApiResponseModel<ChargeDefaults>>
+                        .Get("/sales-orders/charges/defaults");
 
-                var defaults = response?.Data;
-                // A missing or unreachable default is shown as 0 rather than guessed
-                // at. 0 is a real, meaningful value here, and inventing a percentage
-                // is the one thing that must not happen on a form that charges money.
-                txt_restocking.Text = (defaults?.restocking_fee_percent ?? 0).ToString("0.##");
-                txt_cancellation.Text = (defaults?.cancellation_fee_percent ?? 0).ToString("0.##");
-            }
-            catch (Exception)
-            {
-                txt_restocking.Text = "0";
-                txt_cancellation.Text = "0";
+                    var defaults = response?.Data;
+                    // A missing or unreachable default is shown as 0 rather than guessed
+                    // at. 0 is a real, meaningful value here, and inventing a percentage
+                    // is the one thing that must not happen on a form that charges money.
+                    txt_restocking.Text = (defaults?.restocking_fee_percent ?? 0).ToString("0.##");
+                    txt_cancellation.Text = (defaults?.cancellation_fee_percent ?? 0).ToString("0.##");
+                }
+                catch (Exception)
+                {
+                    txt_restocking.Text = "0";
+                    txt_cancellation.Text = "0";
+                }
+                finally
+                {
+                    _loading = false;
+                }
+
+                await PreviewAsync();
             }
             finally
             {
-                _loading = false;
+                Helpers.Loading.HideLoading(this);
             }
-
-            await PreviewAsync();
         }
 
         // The figures are computed by the API, not here: the fee base depends on
@@ -153,21 +161,29 @@ namespace smpc_sales_system.Pages.Sales
                 { "raised_date", DateTime.Now.ToString("yyyy-MM-dd") },
             };
 
+            Helpers.Loading.ShowLoading(this);
             try
             {
-                var response = await RequestToApi<ApiResponseModel>.Post("/sales-orders/charges", payload);
-                if (response == null || !response.Success)
+                try
                 {
-                    MessageBox.Show(response?.message ?? "Could not submit the cancellation.",
+                    var response = await RequestToApi<ApiResponseModel>.Post("/sales-orders/charges", payload);
+                    if (response == null || !response.Success)
+                    {
+                        MessageBox.Show(response?.message ?? "Could not submit the cancellation.",
+                            "Cancellation Charges", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        return;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Could not submit the cancellation: " + ex.Message,
                         "Cancellation Charges", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;
                 }
             }
-            catch (Exception ex)
+            finally
             {
-                MessageBox.Show("Could not submit the cancellation: " + ex.Message,
-                    "Cancellation Charges", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
+                Helpers.Loading.HideLoading(this);
             }
 
             RestockingPercent = restocking;

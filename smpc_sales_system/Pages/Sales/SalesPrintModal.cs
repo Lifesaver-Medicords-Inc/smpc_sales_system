@@ -320,562 +320,570 @@ namespace smpc_sales_system.Pages.Sales
             // these used to be fired-and-forgotten from the constructor, which raced with
             // this handler and could leave those tables empty (no columns at all), causing
             // "Cannot find column [id]" when .Select() ran against them.
-            await fetchBpiData();
-            await fetchItemData();
-
-            if (!IsSafeToUpdateReport) return;
-
-            if (isProject)
+            smpc_app.Services.Helpers.Helpers.Loading.ShowLoading(this);
+            try
             {
-                await fetchQuotationProjectByDocumentNo(documentNo);
+                await fetchBpiData();
+                await fetchItemData();
 
                 if (!IsSafeToUpdateReport) return;
 
-                if (transactionList != null && transactionList.Rows.Count > 0)
+                if (isProject)
                 {
-                    // transactionList was already filtered down to this exact document by
-                    // fetchQuotationProjectByDocumentNo/fetchQuotationDetailsByDocumentNo
-                    // using a prefix-normalized comparison. Re-filtering here with an exact
-                    // "document_no = '{documentNo}'" string match failed for older records
-                    // whose stored document_no still has "Q#"/"FQ#" baked in, producing
-                    // "Document not found in this quotation for the report." even though the
-                    // data had already loaded correctly - so just use the rows already here.
-                    DataRow[] filteredRows = transactionList.Rows.Cast<DataRow>().ToArray();
+                    await fetchQuotationProjectByDocumentNo(documentNo);
 
-                    if (filteredRows.Length > 0)
+                    if (!IsSafeToUpdateReport) return;
+
+                    if (transactionList != null && transactionList.Rows.Count > 0)
                     {
-                        int Id = (int)filteredRows[0]["id"];
-                        int customerId = (int)filteredRows[0]["customer_id"];
-                        int shiptoId = (int)filteredRows[0]["ship_to_id"];
+                        // transactionList was already filtered down to this exact document by
+                        // fetchQuotationProjectByDocumentNo/fetchQuotationDetailsByDocumentNo
+                        // using a prefix-normalized comparison. Re-filtering here with an exact
+                        // "document_no = '{documentNo}'" string match failed for older records
+                        // whose stored document_no still has "Q#"/"FQ#" baked in, producing
+                        // "Document not found in this quotation for the report." even though the
+                        // data had already loaded correctly - so just use the rows already here.
+                        DataRow[] filteredRows = transactionList.Rows.Cast<DataRow>().ToArray();
 
-                        if (bpi_general == null && bpi_address == null)
+                        if (filteredRows.Length > 0)
                         {
-                            return;
-                        }
+                            int Id = (int)filteredRows[0]["id"];
+                            int customerId = (int)filteredRows[0]["customer_id"];
+                            int shiptoId = (int)filteredRows[0]["ship_to_id"];
 
-                        DataRow[] bpiRows = bpi_general.Select($"general_based_id = '{customerId}'");
-                        DataRow[] bpiaddrows = bpi_address.Select($"address_ids = '{shiptoId}'");
+                            if (bpi_general == null && bpi_address == null)
+                            {
+                                return;
+                            }
+
+                            DataRow[] bpiRows = bpi_general.Select($"general_based_id = '{customerId}'");
+                            DataRow[] bpiaddrows = bpi_address.Select($"address_ids = '{shiptoId}'");
                         
-                        addressName = bpiaddrows[0]["location"].ToString();
+                            addressName = bpiaddrows[0]["location"].ToString();
 
-                        if (bpiRows.Length > 0)
-                        {
-                            branchName = bpiRows[0]["branch_name"].ToString();
-                        }
-
-                        var itemsetIds = ItemSets.AsEnumerable()
-                       .Select(row => row.Field<int>("itemset_id"))  // Assuming 'items_id' is an integer column
-                       .ToList();
-
-                        foreach (var itemsetId in itemsetIds)
-                        {
-                            DataRow[] componentRows = OriginalProjectItemList.Select($"based_id = '{itemsetId}'");
-
-                            float componentTotalSum = 0f;
-                            foreach (DataRow row in componentRows)
+                            if (bpiRows.Length > 0)
                             {
-                                if ((int)row["template_id"] == 0)
-                                {
-                                    var componentTotal = row["component_total"];
+                                branchName = bpiRows[0]["branch_name"].ToString();
+                            }
 
-                                    if (componentTotal != DBNull.Value && !string.IsNullOrWhiteSpace(componentTotal.ToString()))
+                            var itemsetIds = ItemSets.AsEnumerable()
+                           .Select(row => row.Field<int>("itemset_id"))  // Assuming 'items_id' is an integer column
+                           .ToList();
+
+                            foreach (var itemsetId in itemsetIds)
+                            {
+                                DataRow[] componentRows = OriginalProjectItemList.Select($"based_id = '{itemsetId}'");
+
+                                float componentTotalSum = 0f;
+                                foreach (DataRow row in componentRows)
+                                {
+                                    if ((int)row["template_id"] == 0)
                                     {
-                                        if (float.TryParse(componentTotal.ToString(), out float parsedValue))
+                                        var componentTotal = row["component_total"];
+
+                                        if (componentTotal != DBNull.Value && !string.IsNullOrWhiteSpace(componentTotal.ToString()))
                                         {
-                                            unitprices.Add(parsedValue.ToString("F2"));
+                                            if (float.TryParse(componentTotal.ToString(), out float parsedValue))
+                                            {
+                                                unitprices.Add(parsedValue.ToString("F2"));
+                                            }
                                         }
-                                    }
-                                }
-                                else
-                                {
-                                    var componentTotal = row["component_total"];
-                                    if (componentTotal != DBNull.Value && !string.IsNullOrWhiteSpace(componentTotal.ToString()))
-                                    {
-                                        if (float.TryParse(componentTotal.ToString(), out float parsedValue))
-                                        {
-                                            componentTotalSum += parsedValue;
-                                        }
-                                    }
-                                }
-                            }
-
-                            if (componentTotalSum > 0)
-                            {
-                                unitprices.Add(componentTotalSum.ToString("F2"));
-                            }
-                        }
-                        DataRow[] componentitemRows = ProjectItemList.Select();
-
-                        List<string> itemDescriptions = new List<string>();
-                        List<string> details = new List<string>();
-                        List<int> qty = new List<int>();
-                        if (componentitemRows.Length > 0)
-                        {
-                            foreach (DataRow componentRow in componentitemRows)
-                            {
-                                int itemid = (int)componentRow["item_id"];
-
-                                // Check if item_id is 0 and add "N/A" directly
-                                if (itemid == 0)
-                                {
-                                    itemDescriptions.Add("N/A");
-                                }
-                                else
-                                {
-                                    // Otherwise, proceed with the selection from ItemList
-                                    DataRow[] itemrows = ItemList.Select($"id = '{itemid}'");
-
-                                    foreach (DataRow itemRow in itemrows)
-                                    {
-                                        string shortDesc = string.IsNullOrEmpty(itemRow["short_desc"].ToString()) ? " " : itemRow["short_desc"].ToString();
-                                        string itemModel = itemRow["item_model"].ToString();
-
-                                        // Concatenate the item_model and short_desc in the desired format
-                                        string itemDescription = $"{shortDesc}";
-
-                                        itemDescriptions.Add(itemDescription);
-                                    }
-                                }
-                            }
-
-                            foreach (DataRow componentdetailRow in componentitemRows)
-                            {
-                                int itemid = (int)componentdetailRow["based_id"];
-                                DataRow[] itemrows = ItemSetContent.Select();
-
-                                    foreach (DataRow itemRow in itemrows)
-                                    {
-                                        string shortDesc = itemRow["item_set_description"].ToString() == "" ? "none" : itemRow["item_set_description"].ToString();
-                                        string detail = $"{shortDesc}";
-                                        details.Add(detail);
-                                    }
-                            }
-
-                            foreach (DataRow componentdetailRow in componentitemRows)
-                            {
-                                int itemid = (int)componentdetailRow["based_id"];   
-                                int templateId = (int)componentdetailRow["template_id"];
-                                DataRow[] itemrows = ItemSetContent.Select($"based_id = {itemid}");
-
-                                if (itemrows.Length > 0 || componentitemRows.Length > 0)
-                                {
-                                    int qtys;
-
-                                    if (templateId == 0)
-                                    {
-                                        qtys = int.Parse(componentdetailRow["qty"].ToString());
-                                        qty.Add(qtys);
                                     }
                                     else
                                     {
-                                        qtys = int.Parse(itemrows[0]["no_of_sets"].ToString() == "" ? "0" : itemrows[0]["no_of_sets"].ToString());
-                                        qty.Add(qtys);
+                                        var componentTotal = row["component_total"];
+                                        if (componentTotal != DBNull.Value && !string.IsNullOrWhiteSpace(componentTotal.ToString()))
+                                        {
+                                            if (float.TryParse(componentTotal.ToString(), out float parsedValue))
+                                            {
+                                                componentTotalSum += parsedValue;
+                                            }
+                                        }
                                     }
                                 }
-                            }
-                        }
 
-                        List<SalesProjectQuotationDetailsReportModel> QuotationDetails = new List<SalesProjectQuotationDetailsReportModel>();
-
-                        // §5.3: the proposal's "#" counts TABS, not lines - and it has to skip
-                        // excluded ones, so it counts printed sets rather than using the tab's
-                        // position.
-                        int projectSetNo = 0;
-
-                        foreach (DataRow itemSetRow in ItemSets.Select())
-                        {
-
-                            int itemSetId = (int)itemSetRow["itemset_id"];
-                            var filterComponentItemRows = ProjectItemList.Select($"based_id = '{itemSetId}' ");
-
-                            // The tab's own content row - carries ITEM / SET DESCRIPTION and
-                            // the exclusion flag.
-                            DataRow[] setContentRows = ItemSetContent.Select($"based_id = {itemSetId}");
-                            DataRow setContent = setContentRows.Length > 0 ? setContentRows[0] : null;
-
-                            // §5.1.4 / negative test 35: a right-click-excluded Item/Set tab is
-                            // out of gross sales AND out of the printed proposal. Skipping the
-                            // whole tab here takes its rows off the page and, because the
-                            // per-tab total below is what the report sums, out of the totals
-                            // too - both halves of the rule from one place.
-                            if (IsExcludedItemSet(setContent))
-                                continue;
-
-                            // §5.3: "# is per line in a Quick Quote, per TAB in a Project
-                            // Proposal" - so a project proposal prints ONE record per Item/Set,
-                            // described by its ITEM / SET DESCRIPTION, not the tab's component
-                            // breakdown (user decision 2026-09-05: "only 1 item per tab on the
-                            // report and will give the totals per tab").
-                            //
-                            // The components are still what the figure is built from; they are
-                            // simply not itemised to the customer. That is also why this sums
-                            // component_total rather than trusting any single row: component_total
-                            // is the per-line charged amount the grid computed, and BOM children
-                            // carry 0 there (§5.1.2 - only the parent is priced), so summing it
-                            // counts each sellable line exactly once.
-                            decimal setTotal = 0m;
-                            foreach (DataRow componentItemRow in filterComponentItemRows)
-                            {
-                                if (componentItemRow["component_total"] != DBNull.Value)
-                                    setTotal += (decimal)componentItemRow["component_total"];
-                            }
-
-                            // NO. OF SETS is how many of this set the customer is buying, so it
-                            // is the quantity the proposal shows against the set.
-                            int setQty = 0;
-                            if (setContent != null && setContent.Table.Columns.Contains("no_of_sets"))
-                                int.TryParse(setContent["no_of_sets"]?.ToString(), out setQty);
-
-                            string setDescription = setContent != null && setContent.Table.Columns.Contains("item_set_description")
-                                ? (setContent["item_set_description"]?.ToString() ?? string.Empty)
-                                : string.Empty;
-
-                            // Fall back to the tab's name when the set has no description yet,
-                            // so a line never prints as a blank row the customer cannot read.
-                            if (string.IsNullOrWhiteSpace(setDescription))
-                                setDescription = itemSetRow["tab_number"].ToString();
-
-                            QuotationDetails.Add(new SalesProjectQuotationDetailsReportModel
-                            {
-                                items_id = 0,
-                                bom_id = 0,
-                                item_id = 0,
-                                based_id = itemSetId,
-                                reference_code = "0",
-                                man_days = 0,
-                                labor_rate = 0,
-                                components = setDescription,
-                                model = " ",
-                                item_inv_type = " ",
-                                qty = setQty,
-                                list_price_per_unit = 0,
-                                // §5.3: on a project proposal "the set subtotal becomes both unit
-                                // price and amount" - there is no separate per-unit figure to
-                                // show once the set is presented as one line.
-                                unit_price = setTotal,
-                                multiplier = " ",
-                                discount_price = 0,
-                                component_total = setTotal,
-                                notes = " ",
-                                template_id = 0,
-                                is_header_row = false,
-                                percent_discount = 0,
-                                item_no = ++projectSetNo,
-                                Image = null
-                            });
-
-
-                        }
-
-                        string[] detailsArray = details.ToArray();
-                        string[] itemDescriptionArray = itemDescriptions.ToArray();
-                        int[] qtyArray = qty.ToArray();
-                        string[] unitpricesArray = unitprices.ToArray();
-                        float[] unitpricesFloatArray = unitpricesArray.Select(x => float.Parse(x)).ToArray();
-                        float unitpricesSum = unitpricesFloatArray.Sum();
-                        int[] qtytotalArray = qtyArray.Select(x => x).ToArray();
-                        int qtySum = qtytotalArray.Sum();
-
-                        ReportParameter detailParameter = new ReportParameter("details", detailsArray);
-                        ReportParameter qtyParameter = new ReportParameter("qty", qtyArray.ToString());
-                        ReportParameter itemDescriptionParameter = new ReportParameter("ItemDescriptions", itemDescriptionArray);
-                        ReportParameter unitpricesParameter = new ReportParameter("unitprices", unitpricesArray);
-                        ReportParameter unitpricesSumParameter = new ReportParameter("unitpricesSum", unitpricesSum.ToString()); 
-                        ReportParameter qtySumParameter = new ReportParameter("qtySum", qtySum.ToString());
-
-                        ReportParameter branchNameParameter = new ReportParameter("BranchName", branchName);
-                        ReportParameter addressNameParameter = new ReportParameter("AddressName", addressName);
-                        // ProjectReport.rdlc had no Inclusion/Exclusion/TermsAndConditions
-                        // parameters or report items at all - the section simply didn't exist,
-                        // so Project Quotation prints never showed any of this even though the
-                        // Project-specific Inclusions/Exclusions/Terms panels on the Quotation
-                        // form (ProjectInclusionsRichTextBox etc.) were being filled in from the
-                        // same quote-terms data Quick Quote uses. Passed in from the constructor
-                        // the same way Quick Quote's branch below does.
-                        ReportParameter inclusionParameter = new ReportParameter("Inclusion", inclusion);
-                        ReportParameter exclusionParameter = new ReportParameter("Exclusion", exclusion);
-                        ReportParameter termAndConditionsParameter = new ReportParameter("TermsAndConditions", termsAndCondition);
-                        ReportDataSource headerReportDataSource = new ReportDataSource("DataSet1", transactionList);
-                        ReportDataSource childReportDataSource = new ReportDataSource("DataSet2", ItemSetContent);
-                        ReportDataSource ComponentsReportDataSource = new ReportDataSource("DataSet3", QuotationDetails);
-
-                        // Same reasoning as Quick Quote's reportFileName switch below: every
-                        // item row's DESCRIPTION cell reserves image-sized space whether that
-                        // item actually has one or not, so a quotation with no images at all
-                        // ended up with every row rendering at full (chunky) height for nothing.
-                        // "ProjectReport without image.rdlc" is the same layout with a plain,
-                        // compact-height description cell and no Image control; only switch to
-                        // the taller image-capable layout when at least one item actually has one.
-                        bool anyProjectItemHasImage = QuotationDetails.Any(d => d.Image != null && d.Image.Length > 0);
-                        string projectReportFileName = anyProjectItemHasImage
-                            ? "ProjectReport.rdlc"
-                            : "ProjectReport without image.rdlc";
-
-                        reportViewer1.LocalReport.ReportPath = Path.Combine(Settings.Default.REPORTPATH, projectReportFileName);
-                        reportViewer1.LocalReport.DataSources.Clear();
-                        reportViewer1.LocalReport.DataSources.Add(headerReportDataSource);
-                        reportViewer1.LocalReport.DataSources.Add(childReportDataSource);
-                        // ProjectReport.rdlc declares three datasets (DataSet1/2/3) - this one
-                        // (DataSet3, the actual priced line items - QuotationDetails) was built
-                        // above but never added here, so RefreshReport() always threw "A data
-                        // source instance has not been supplied for the data source 'DataSet3'."
-                        // and the report's line-item table would have been empty even if it hadn't.
-                        reportViewer1.LocalReport.DataSources.Add(ComponentsReportDataSource);
-                        reportViewer1.LocalReport.SubreportProcessing += new SubreportProcessingEventHandler(MapSubreportData);
-                        reportViewer1.LocalReport.SetParameters(new ReportParameter[] { branchNameParameter, qtySumParameter, qtyParameter, addressNameParameter, unitpricesParameter, unitpricesSumParameter, itemDescriptionParameter, detailParameter, inclusionParameter, exclusionParameter, termAndConditionsParameter });
-                        reportViewer1.RefreshReport();
-                    }
-
-                }
-                else
-                {
-                    MessageBox.Show("No quotation data available for the report.");
-                }
-            }
-            else if (isQuotation)
-            {
-                bool foundQuotation = await fetchQuotationDetailsByDocumentNo(documentNo);
-
-                if (!IsSafeToUpdateReport) return;
-
-                // fetchQuotationDetailsByDocumentNo already showed the relevant message box
-                // when it couldn't find/populate the data - don't show a second, redundant
-                // "no data" message on top of that for the same underlying failure.
-                if (!foundQuotation) return;
-
-                if (transactionList != null && transactionList.Rows.Count > 0)
-                {
-                    // transactionList was already filtered down to this exact document by
-                    // fetchQuotationProjectByDocumentNo/fetchQuotationDetailsByDocumentNo
-                    // using a prefix-normalized comparison. Re-filtering here with an exact
-                    // "document_no = '{documentNo}'" string match failed for older records
-                    // whose stored document_no still has "Q#"/"FQ#" baked in, producing
-                    // "Document not found in this quotation for the report." even though the
-                    // data had already loaded correctly - so just use the rows already here.
-                    DataRow[] filteredRows = transactionList.Rows.Cast<DataRow>().ToArray();
-
-                    if (filteredRows.Length > 0)
-                    {
-                        int Id = (int)filteredRows[0]["id"];
-                        int customerId = (int)filteredRows[0]["customer_id"];
-                        int shiptoId = (int)filteredRows[0]["ship_to_id"];
-
-                        if(bpi_general == null || bpi_general.Rows.Count == 0 
-                           || bpi_address == null || bpi_address.Rows.Count == 0)
-                        {
-                            return;
-                        }
-
-                        DataRow[] bpiRows = bpi_general.Select($"general_based_id = '{customerId}'");
-                        DataRow[] bpiaddrows = bpi_address.Select($"address_ids = '{shiptoId}'");
-                        string addressName = "Address not found";
-                        if (bpiaddrows.Length > 0)
-                        {
-                            addressName = bpiaddrows[0]["location"].ToString();
-                        }
-                        
-
-                        string branchName = "Branch not found";
-                        if (bpiRows.Length > 0)
-                        {
-                            branchName = bpiRows[0]["branch_name"].ToString();
-                        }
-
-                        DataRow[] quotequoteRows = childList.Select($"based_id = '{Id}'");
-                        List<string> itemDescriptions = new List<string>();
-                        if (quotequoteRows.Length > 0)
-                        {
-                            foreach (DataRow quoteRow in quotequoteRows)
-                            {
-                                int itemid = (int)quoteRow["item_id"];
-                                DataRow[] itemrows = ItemList.Select($"id = '{itemid}'");
-
-                                string shortDesc = quoteRow["short_description"].ToString();
-
-                                if (shortDesc != "")
+                                if (componentTotalSum > 0)
                                 {
-                                    itemDescriptions.Add(shortDesc);
+                                    unitprices.Add(componentTotalSum.ToString("F2"));
                                 }
-                                else
+                            }
+                            DataRow[] componentitemRows = ProjectItemList.Select();
+
+                            List<string> itemDescriptions = new List<string>();
+                            List<string> details = new List<string>();
+                            List<int> qty = new List<int>();
+                            if (componentitemRows.Length > 0)
+                            {
+                                foreach (DataRow componentRow in componentitemRows)
                                 {
-                                    foreach (DataRow itemRow in itemrows)
+                                    int itemid = (int)componentRow["item_id"];
+
+                                    // Check if item_id is 0 and add "N/A" directly
+                                    if (itemid == 0)
                                     {
-                                        shortDesc = string.IsNullOrEmpty(itemRow["short_desc"].ToString()) ? " " : itemRow["short_desc"].ToString();
-                                        string itemModel = itemRow["item_model"].ToString();
-                                        string itemDescription = $"{shortDesc}";
+                                        itemDescriptions.Add("N/A");
+                                    }
+                                    else
+                                    {
+                                        // Otherwise, proceed with the selection from ItemList
+                                        DataRow[] itemrows = ItemList.Select($"id = '{itemid}'");
 
-                                        itemDescriptions.Add(itemDescription);
+                                        foreach (DataRow itemRow in itemrows)
+                                        {
+                                            string shortDesc = string.IsNullOrEmpty(itemRow["short_desc"].ToString()) ? " " : itemRow["short_desc"].ToString();
+                                            string itemModel = itemRow["item_model"].ToString();
+
+                                            // Concatenate the item_model and short_desc in the desired format
+                                            string itemDescription = $"{shortDesc}";
+
+                                            itemDescriptions.Add(itemDescription);
+                                        }
                                     }
                                 }
 
-                            }
-                        }
-
-                        // Add Image column with appropriate type
-                        if (!childList.Columns.Contains("Image"))
-                        {
-                            childList.Columns.Add("Image", typeof(byte[]));
-                        }
-
-                        foreach (DataRow childRow in childList.Rows)
-                        {
-                            int quotationQuickId = (int)childRow["id"];
-
-                            var matchingImageRows = selectedImageList != null
-                                ? selectedImageList.AsEnumerable()
-                                    .Where(row => row.Field<int>("quotation_quick_id") == quotationQuickId)
-                                    .ToList()
-                                : new List<DataRow>();
-
-                            // Prefer the row explicitly marked as selected for this line item
-                            DataRow matchedImageRow = matchingImageRows
-                                .FirstOrDefault(row => row.Field<bool>("is_selected"))
-                                ?? matchingImageRows.FirstOrDefault();
-
-                            if (matchedImageRow != null)
-                            {
-                                int ImageId = matchedImageRow.Field<int>("image_id");
-
-                                string imageName = ImageList.AsEnumerable()
-                                    .Where(row => row.Field<int>("id") == ImageId)
-                                    .Select(row => row.Field<string>("image"))
-                                    .FirstOrDefault();
-
-                                if(imageName != null)
+                                foreach (DataRow componentdetailRow in componentitemRows)
                                 {
-                                    byte[] imageBytes = LoadImageAsBytes(imageName);
-                                    childRow["Image"] = imageBytes;
+                                    int itemid = (int)componentdetailRow["based_id"];
+                                    DataRow[] itemrows = ItemSetContent.Select();
+
+                                        foreach (DataRow itemRow in itemrows)
+                                        {
+                                            string shortDesc = itemRow["item_set_description"].ToString() == "" ? "none" : itemRow["item_set_description"].ToString();
+                                            string detail = $"{shortDesc}";
+                                            details.Add(detail);
+                                        }
                                 }
-                                else
+
+                                foreach (DataRow componentdetailRow in componentitemRows)
                                 {
-                                    childRow["Image"] = DBNull.Value;
+                                    int itemid = (int)componentdetailRow["based_id"];   
+                                    int templateId = (int)componentdetailRow["template_id"];
+                                    DataRow[] itemrows = ItemSetContent.Select($"based_id = {itemid}");
+
+                                    if (itemrows.Length > 0 || componentitemRows.Length > 0)
+                                    {
+                                        int qtys;
+
+                                        if (templateId == 0)
+                                        {
+                                            qtys = int.Parse(componentdetailRow["qty"].ToString());
+                                            qty.Add(qtys);
+                                        }
+                                        else
+                                        {
+                                            qtys = int.Parse(itemrows[0]["no_of_sets"].ToString() == "" ? "0" : itemrows[0]["no_of_sets"].ToString());
+                                            qty.Add(qtys);
+                                        }
+                                    }
                                 }
                             }
-                            else
+
+                            List<SalesProjectQuotationDetailsReportModel> QuotationDetails = new List<SalesProjectQuotationDetailsReportModel>();
+
+                            // §5.3: the proposal's "#" counts TABS, not lines - and it has to skip
+                            // excluded ones, so it counts printed sets rather than using the tab's
+                            // position.
+                            int projectSetNo = 0;
+
+                            foreach (DataRow itemSetRow in ItemSets.Select())
                             {
-                                childRow["Image"] = DBNull.Value;
+
+                                int itemSetId = (int)itemSetRow["itemset_id"];
+                                var filterComponentItemRows = ProjectItemList.Select($"based_id = '{itemSetId}' ");
+
+                                // The tab's own content row - carries ITEM / SET DESCRIPTION and
+                                // the exclusion flag.
+                                DataRow[] setContentRows = ItemSetContent.Select($"based_id = {itemSetId}");
+                                DataRow setContent = setContentRows.Length > 0 ? setContentRows[0] : null;
+
+                                // §5.1.4 / negative test 35: a right-click-excluded Item/Set tab is
+                                // out of gross sales AND out of the printed proposal. Skipping the
+                                // whole tab here takes its rows off the page and, because the
+                                // per-tab total below is what the report sums, out of the totals
+                                // too - both halves of the rule from one place.
+                                if (IsExcludedItemSet(setContent))
+                                    continue;
+
+                                // §5.3: "# is per line in a Quick Quote, per TAB in a Project
+                                // Proposal" - so a project proposal prints ONE record per Item/Set,
+                                // described by its ITEM / SET DESCRIPTION, not the tab's component
+                                // breakdown (user decision 2026-09-05: "only 1 item per tab on the
+                                // report and will give the totals per tab").
+                                //
+                                // The components are still what the figure is built from; they are
+                                // simply not itemised to the customer. That is also why this sums
+                                // component_total rather than trusting any single row: component_total
+                                // is the per-line charged amount the grid computed, and BOM children
+                                // carry 0 there (§5.1.2 - only the parent is priced), so summing it
+                                // counts each sellable line exactly once.
+                                decimal setTotal = 0m;
+                                foreach (DataRow componentItemRow in filterComponentItemRows)
+                                {
+                                    if (componentItemRow["component_total"] != DBNull.Value)
+                                        setTotal += (decimal)componentItemRow["component_total"];
+                                }
+
+                                // NO. OF SETS is how many of this set the customer is buying, so it
+                                // is the quantity the proposal shows against the set.
+                                int setQty = 0;
+                                if (setContent != null && setContent.Table.Columns.Contains("no_of_sets"))
+                                    int.TryParse(setContent["no_of_sets"]?.ToString(), out setQty);
+
+                                string setDescription = setContent != null && setContent.Table.Columns.Contains("item_set_description")
+                                    ? (setContent["item_set_description"]?.ToString() ?? string.Empty)
+                                    : string.Empty;
+
+                                // Fall back to the tab's name when the set has no description yet,
+                                // so a line never prints as a blank row the customer cannot read.
+                                if (string.IsNullOrWhiteSpace(setDescription))
+                                    setDescription = itemSetRow["tab_number"].ToString();
+
+                                QuotationDetails.Add(new SalesProjectQuotationDetailsReportModel
+                                {
+                                    items_id = 0,
+                                    bom_id = 0,
+                                    item_id = 0,
+                                    based_id = itemSetId,
+                                    reference_code = "0",
+                                    man_days = 0,
+                                    labor_rate = 0,
+                                    components = setDescription,
+                                    model = " ",
+                                    item_inv_type = " ",
+                                    qty = setQty,
+                                    list_price_per_unit = 0,
+                                    // §5.3: on a project proposal "the set subtotal becomes both unit
+                                    // price and amount" - there is no separate per-unit figure to
+                                    // show once the set is presented as one line.
+                                    unit_price = setTotal,
+                                    multiplier = " ",
+                                    discount_price = 0,
+                                    component_total = setTotal,
+                                    notes = " ",
+                                    template_id = 0,
+                                    is_header_row = false,
+                                    percent_discount = 0,
+                                    item_no = ++projectSetNo,
+                                    Image = null
+                                });
+
+
                             }
 
+                            string[] detailsArray = details.ToArray();
+                            string[] itemDescriptionArray = itemDescriptions.ToArray();
+                            int[] qtyArray = qty.ToArray();
+                            string[] unitpricesArray = unitprices.ToArray();
+                            float[] unitpricesFloatArray = unitpricesArray.Select(x => float.Parse(x)).ToArray();
+                            float unitpricesSum = unitpricesFloatArray.Sum();
+                            int[] qtytotalArray = qtyArray.Select(x => x).ToArray();
+                            int qtySum = qtytotalArray.Sum();
+
+                            ReportParameter detailParameter = new ReportParameter("details", detailsArray);
+                            ReportParameter qtyParameter = new ReportParameter("qty", qtyArray.ToString());
+                            ReportParameter itemDescriptionParameter = new ReportParameter("ItemDescriptions", itemDescriptionArray);
+                            ReportParameter unitpricesParameter = new ReportParameter("unitprices", unitpricesArray);
+                            ReportParameter unitpricesSumParameter = new ReportParameter("unitpricesSum", unitpricesSum.ToString()); 
+                            ReportParameter qtySumParameter = new ReportParameter("qtySum", qtySum.ToString());
+
+                            ReportParameter branchNameParameter = new ReportParameter("BranchName", branchName);
+                            ReportParameter addressNameParameter = new ReportParameter("AddressName", addressName);
+                            // ProjectReport.rdlc had no Inclusion/Exclusion/TermsAndConditions
+                            // parameters or report items at all - the section simply didn't exist,
+                            // so Project Quotation prints never showed any of this even though the
+                            // Project-specific Inclusions/Exclusions/Terms panels on the Quotation
+                            // form (ProjectInclusionsRichTextBox etc.) were being filled in from the
+                            // same quote-terms data Quick Quote uses. Passed in from the constructor
+                            // the same way Quick Quote's branch below does.
+                            ReportParameter inclusionParameter = new ReportParameter("Inclusion", inclusion);
+                            ReportParameter exclusionParameter = new ReportParameter("Exclusion", exclusion);
+                            ReportParameter termAndConditionsParameter = new ReportParameter("TermsAndConditions", termsAndCondition);
+                            ReportDataSource headerReportDataSource = new ReportDataSource("DataSet1", transactionList);
+                            ReportDataSource childReportDataSource = new ReportDataSource("DataSet2", ItemSetContent);
+                            ReportDataSource ComponentsReportDataSource = new ReportDataSource("DataSet3", QuotationDetails);
+
+                            // Same reasoning as Quick Quote's reportFileName switch below: every
+                            // item row's DESCRIPTION cell reserves image-sized space whether that
+                            // item actually has one or not, so a quotation with no images at all
+                            // ended up with every row rendering at full (chunky) height for nothing.
+                            // "ProjectReport without image.rdlc" is the same layout with a plain,
+                            // compact-height description cell and no Image control; only switch to
+                            // the taller image-capable layout when at least one item actually has one.
+                            bool anyProjectItemHasImage = QuotationDetails.Any(d => d.Image != null && d.Image.Length > 0);
+                            string projectReportFileName = anyProjectItemHasImage
+                                ? "ProjectReport.rdlc"
+                                : "ProjectReport without image.rdlc";
+
+                            reportViewer1.LocalReport.ReportPath = Path.Combine(Settings.Default.REPORTPATH, projectReportFileName);
+                            reportViewer1.LocalReport.DataSources.Clear();
+                            reportViewer1.LocalReport.DataSources.Add(headerReportDataSource);
+                            reportViewer1.LocalReport.DataSources.Add(childReportDataSource);
+                            // ProjectReport.rdlc declares three datasets (DataSet1/2/3) - this one
+                            // (DataSet3, the actual priced line items - QuotationDetails) was built
+                            // above but never added here, so RefreshReport() always threw "A data
+                            // source instance has not been supplied for the data source 'DataSet3'."
+                            // and the report's line-item table would have been empty even if it hadn't.
+                            reportViewer1.LocalReport.DataSources.Add(ComponentsReportDataSource);
+                            reportViewer1.LocalReport.SubreportProcessing += new SubreportProcessingEventHandler(MapSubreportData);
+                            reportViewer1.LocalReport.SetParameters(new ReportParameter[] { branchNameParameter, qtySumParameter, qtyParameter, addressNameParameter, unitpricesParameter, unitpricesSumParameter, itemDescriptionParameter, detailParameter, inclusionParameter, exclusionParameter, termAndConditionsParameter });
+                            reportViewer1.RefreshReport();
                         }
 
-
-                        string[] itemDescriptionArray = itemDescriptions.ToArray();
-                        ReportParameter itemDescriptionParameter = new ReportParameter("ItemDescriptions", itemDescriptionArray);
-                        ReportParameter branchNameParameter = new ReportParameter("BranchName", branchName);
-                        ReportParameter addressNameParameter = new ReportParameter("AddressName", addressName);
-                        ReportParameter inclusionParameter = new ReportParameter("Inclusion", inclusion);
-                        ReportParameter exclusionParameter = new ReportParameter("Exclusion", exclusion);
-                        ReportParameter termAndConditionsParameter = new ReportParameter("TermsAndConditions", termsAndCondition);
-                        ReportDataSource headerReportDataSource = new ReportDataSource("DataSet1", transactionList);
-                        ReportDataSource childReportDataSource = new ReportDataSource("DataSet2", childList);
-
-                        // Pick the report layout based on whether any line item actually has
-                        // an image: "QuotationReport.rdlc" has the image column/layout,
-                        // "QuotationReport without image.rdlc" is the plain layout used when
-                        // there's nothing to show there (avoids empty image placeholders).
-                        bool anyItemHasImage = childList.Columns.Contains("Image") &&
-                            childList.AsEnumerable().Any(r =>
-                                r["Image"] != DBNull.Value && r["Image"] is byte[] imgBytes && imgBytes.Length > 0);
-
-                        string reportFileName = anyItemHasImage
-                            ? "QuotationReport.rdlc"
-                            : "QuotationReport without image.rdlc";
-
-                        reportViewer1.LocalReport.ReportPath = Path.Combine(Settings.Default.REPORTPATH, reportFileName);
-                        reportViewer1.LocalReport.DataSources.Clear();
-                        reportViewer1.LocalReport.DataSources.Add(headerReportDataSource);
-                        reportViewer1.LocalReport.DataSources.Add(childReportDataSource);
-                        reportViewer1.LocalReport.SetParameters(new ReportParameter[] { branchNameParameter, addressNameParameter, itemDescriptionParameter, inclusionParameter, exclusionParameter, termAndConditionsParameter });
-                        //reportViewer1.LocalReport.SetParameters(parameters.ToArray());
-                        reportViewer1.RefreshReport();
-
-                        if (AutoExport && !string.IsNullOrWhiteSpace(ExportPath))
-                        {
-                            Warning[] warnings;
-                            string[] streamIds;
-                            string mimeType, encoding, extension;
-
-                            byte[] pdfBytes = reportViewer1.LocalReport.Render("PDF", null, out mimeType, out encoding, out extension, out streamIds, out warnings);
-                            File.WriteAllBytes(ExportPath, pdfBytes);
-
-                            // Optionally close the form after exporting if shown manually
-                            this.Close();
-                        }
-                    }
-                    else
-                    {
-                        MessageBox.Show("Document not found in this quotation for the report.");
-                    }
-                }
-                else
-                {
-                    MessageBox.Show("No quotation data available for the report.");
-                }
-            }
-            else
-            {
-                await fetchOrderDetailsByDocumentNo(documentNo);
-
-                if (!IsSafeToUpdateReport) return;
-
-                if (OrderList != null && OrderList.Rows.Count > 0)
-                {
-                    // Filter the transactionList based on document_no (use the passed documentNo)  
-                    DataRow[] filteredRows = OrderList.Select($"doc = '{documentNo}'");
-
-                    if (filteredRows.Length > 0)
-                    {
-
-                        int customerId = Convert.ToInt32(filteredRows[0]["customer_id"]);
-                        int shiptoId = Convert.ToInt32(filteredRows[0]["ship_to_id"]);
-                        int billtoId = Convert.ToInt32(filteredRows[0]["bill_to_id"]);
-
-                        DataRow[] bpiRows = bpi_general.Select($"general_based_id = '{customerId}'");
-                        DataRow[] bpishipaddrows = bpi_address.Select($"address_ids = '{shiptoId}'");
-                        DataRow[] bpibilladdrows = bpi_address.Select($"address_ids = '{billtoId}'");
-                        string shipaddressName = "Address not found";
-                        string billaddressName = "Address not found";
-                        if (bpishipaddrows.Length > 0)
-                        {
-                            shipaddressName = bpishipaddrows[0]["location"].ToString();
-                        }
-                        if (bpibilladdrows.Length > 0)
-                        {
-                            billaddressName = bpibilladdrows[0]["location"].ToString();
-                        }
-                        string branchName = "Branch not found";
-                        string codeName = "Code not found";
-                        if (bpiRows.Length > 0)
-                        {
-                            branchName = bpiRows[0]["branch_name"].ToString();
-                            codeName = bpiRows[0]["customer_code"].ToString();
-                        }
-
-                        ReportParameter branchNameParameter = new ReportParameter("BranchName", branchName);
-                        ReportParameter shipaddressNameParameter = new ReportParameter("ShipName", shipaddressName);
-                        ReportParameter billaddressNameParameter = new ReportParameter("BillName", billaddressName);
-                        ReportParameter codeNameParameter = new ReportParameter("CodeName", codeName);
-                        ReportDataSource headerReportDataSource = new ReportDataSource("DataSet1", OrderList);
-                        // Orders converted from a project quotation never saved their itemset
-                        // "header" rows (item_id = 0 rows are skipped on save to avoid an
-                        // item_id FK violation) - each surviving item row instead carries the
-                        // header's tab name in item_set_header. Re-insert a header row before
-                        // every group of items so the print shows them the same way the
-                        // project quotation did, even though their qty is 0.
-                        ReportDataSource childReportDataSource = new ReportDataSource("DataSet2", BuildDetailsWithHeaders(DetailsList));
-                        
-                        reportViewer1.LocalReport.ReportPath = Path.Combine(Settings.Default.REPORTPATH, "OrderReport.rdlc");
-                        reportViewer1.LocalReport.DataSources.Clear();
-                        reportViewer1.LocalReport.DataSources.Add(headerReportDataSource);
-                        reportViewer1.LocalReport.DataSources.Add(childReportDataSource);
-                        reportViewer1.LocalReport.SetParameters(new ReportParameter[] { branchNameParameter, shipaddressNameParameter, billaddressNameParameter, codeNameParameter });
-                        reportViewer1.RefreshReport();
                     }
                     else
                     {
                         MessageBox.Show("No quotation data available for the report.");
                     }
                 }
+                else if (isQuotation)
+                {
+                    bool foundQuotation = await fetchQuotationDetailsByDocumentNo(documentNo);
+
+                    if (!IsSafeToUpdateReport) return;
+
+                    // fetchQuotationDetailsByDocumentNo already showed the relevant message box
+                    // when it couldn't find/populate the data - don't show a second, redundant
+                    // "no data" message on top of that for the same underlying failure.
+                    if (!foundQuotation) return;
+
+                    if (transactionList != null && transactionList.Rows.Count > 0)
+                    {
+                        // transactionList was already filtered down to this exact document by
+                        // fetchQuotationProjectByDocumentNo/fetchQuotationDetailsByDocumentNo
+                        // using a prefix-normalized comparison. Re-filtering here with an exact
+                        // "document_no = '{documentNo}'" string match failed for older records
+                        // whose stored document_no still has "Q#"/"FQ#" baked in, producing
+                        // "Document not found in this quotation for the report." even though the
+                        // data had already loaded correctly - so just use the rows already here.
+                        DataRow[] filteredRows = transactionList.Rows.Cast<DataRow>().ToArray();
+
+                        if (filteredRows.Length > 0)
+                        {
+                            int Id = (int)filteredRows[0]["id"];
+                            int customerId = (int)filteredRows[0]["customer_id"];
+                            int shiptoId = (int)filteredRows[0]["ship_to_id"];
+
+                            if(bpi_general == null || bpi_general.Rows.Count == 0 
+                               || bpi_address == null || bpi_address.Rows.Count == 0)
+                            {
+                                return;
+                            }
+
+                            DataRow[] bpiRows = bpi_general.Select($"general_based_id = '{customerId}'");
+                            DataRow[] bpiaddrows = bpi_address.Select($"address_ids = '{shiptoId}'");
+                            string addressName = "Address not found";
+                            if (bpiaddrows.Length > 0)
+                            {
+                                addressName = bpiaddrows[0]["location"].ToString();
+                            }
+                        
+
+                            string branchName = "Branch not found";
+                            if (bpiRows.Length > 0)
+                            {
+                                branchName = bpiRows[0]["branch_name"].ToString();
+                            }
+
+                            DataRow[] quotequoteRows = childList.Select($"based_id = '{Id}'");
+                            List<string> itemDescriptions = new List<string>();
+                            if (quotequoteRows.Length > 0)
+                            {
+                                foreach (DataRow quoteRow in quotequoteRows)
+                                {
+                                    int itemid = (int)quoteRow["item_id"];
+                                    DataRow[] itemrows = ItemList.Select($"id = '{itemid}'");
+
+                                    string shortDesc = quoteRow["short_description"].ToString();
+
+                                    if (shortDesc != "")
+                                    {
+                                        itemDescriptions.Add(shortDesc);
+                                    }
+                                    else
+                                    {
+                                        foreach (DataRow itemRow in itemrows)
+                                        {
+                                            shortDesc = string.IsNullOrEmpty(itemRow["short_desc"].ToString()) ? " " : itemRow["short_desc"].ToString();
+                                            string itemModel = itemRow["item_model"].ToString();
+                                            string itemDescription = $"{shortDesc}";
+
+                                            itemDescriptions.Add(itemDescription);
+                                        }
+                                    }
+
+                                }
+                            }
+
+                            // Add Image column with appropriate type
+                            if (!childList.Columns.Contains("Image"))
+                            {
+                                childList.Columns.Add("Image", typeof(byte[]));
+                            }
+
+                            foreach (DataRow childRow in childList.Rows)
+                            {
+                                int quotationQuickId = (int)childRow["id"];
+
+                                var matchingImageRows = selectedImageList != null
+                                    ? selectedImageList.AsEnumerable()
+                                        .Where(row => row.Field<int>("quotation_quick_id") == quotationQuickId)
+                                        .ToList()
+                                    : new List<DataRow>();
+
+                                // Prefer the row explicitly marked as selected for this line item
+                                DataRow matchedImageRow = matchingImageRows
+                                    .FirstOrDefault(row => row.Field<bool>("is_selected"))
+                                    ?? matchingImageRows.FirstOrDefault();
+
+                                if (matchedImageRow != null)
+                                {
+                                    int ImageId = matchedImageRow.Field<int>("image_id");
+
+                                    string imageName = ImageList.AsEnumerable()
+                                        .Where(row => row.Field<int>("id") == ImageId)
+                                        .Select(row => row.Field<string>("image"))
+                                        .FirstOrDefault();
+
+                                    if(imageName != null)
+                                    {
+                                        byte[] imageBytes = LoadImageAsBytes(imageName);
+                                        childRow["Image"] = imageBytes;
+                                    }
+                                    else
+                                    {
+                                        childRow["Image"] = DBNull.Value;
+                                    }
+                                }
+                                else
+                                {
+                                    childRow["Image"] = DBNull.Value;
+                                }
+
+                            }
+
+
+                            string[] itemDescriptionArray = itemDescriptions.ToArray();
+                            ReportParameter itemDescriptionParameter = new ReportParameter("ItemDescriptions", itemDescriptionArray);
+                            ReportParameter branchNameParameter = new ReportParameter("BranchName", branchName);
+                            ReportParameter addressNameParameter = new ReportParameter("AddressName", addressName);
+                            ReportParameter inclusionParameter = new ReportParameter("Inclusion", inclusion);
+                            ReportParameter exclusionParameter = new ReportParameter("Exclusion", exclusion);
+                            ReportParameter termAndConditionsParameter = new ReportParameter("TermsAndConditions", termsAndCondition);
+                            ReportDataSource headerReportDataSource = new ReportDataSource("DataSet1", transactionList);
+                            ReportDataSource childReportDataSource = new ReportDataSource("DataSet2", childList);
+
+                            // Pick the report layout based on whether any line item actually has
+                            // an image: "QuotationReport.rdlc" has the image column/layout,
+                            // "QuotationReport without image.rdlc" is the plain layout used when
+                            // there's nothing to show there (avoids empty image placeholders).
+                            bool anyItemHasImage = childList.Columns.Contains("Image") &&
+                                childList.AsEnumerable().Any(r =>
+                                    r["Image"] != DBNull.Value && r["Image"] is byte[] imgBytes && imgBytes.Length > 0);
+
+                            string reportFileName = anyItemHasImage
+                                ? "QuotationReport.rdlc"
+                                : "QuotationReport without image.rdlc";
+
+                            reportViewer1.LocalReport.ReportPath = Path.Combine(Settings.Default.REPORTPATH, reportFileName);
+                            reportViewer1.LocalReport.DataSources.Clear();
+                            reportViewer1.LocalReport.DataSources.Add(headerReportDataSource);
+                            reportViewer1.LocalReport.DataSources.Add(childReportDataSource);
+                            reportViewer1.LocalReport.SetParameters(new ReportParameter[] { branchNameParameter, addressNameParameter, itemDescriptionParameter, inclusionParameter, exclusionParameter, termAndConditionsParameter });
+                            //reportViewer1.LocalReport.SetParameters(parameters.ToArray());
+                            reportViewer1.RefreshReport();
+
+                            if (AutoExport && !string.IsNullOrWhiteSpace(ExportPath))
+                            {
+                                Warning[] warnings;
+                                string[] streamIds;
+                                string mimeType, encoding, extension;
+
+                                byte[] pdfBytes = reportViewer1.LocalReport.Render("PDF", null, out mimeType, out encoding, out extension, out streamIds, out warnings);
+                                File.WriteAllBytes(ExportPath, pdfBytes);
+
+                                // Optionally close the form after exporting if shown manually
+                                this.Close();
+                            }
+                        }
+                        else
+                        {
+                            MessageBox.Show("Document not found in this quotation for the report.");
+                        }
+                    }
+                    else
+                    {
+                        MessageBox.Show("No quotation data available for the report.");
+                    }
+                }
+                else
+                {
+                    await fetchOrderDetailsByDocumentNo(documentNo);
+
+                    if (!IsSafeToUpdateReport) return;
+
+                    if (OrderList != null && OrderList.Rows.Count > 0)
+                    {
+                        // Filter the transactionList based on document_no (use the passed documentNo)  
+                        DataRow[] filteredRows = OrderList.Select($"doc = '{documentNo}'");
+
+                        if (filteredRows.Length > 0)
+                        {
+
+                            int customerId = Convert.ToInt32(filteredRows[0]["customer_id"]);
+                            int shiptoId = Convert.ToInt32(filteredRows[0]["ship_to_id"]);
+                            int billtoId = Convert.ToInt32(filteredRows[0]["bill_to_id"]);
+
+                            DataRow[] bpiRows = bpi_general.Select($"general_based_id = '{customerId}'");
+                            DataRow[] bpishipaddrows = bpi_address.Select($"address_ids = '{shiptoId}'");
+                            DataRow[] bpibilladdrows = bpi_address.Select($"address_ids = '{billtoId}'");
+                            string shipaddressName = "Address not found";
+                            string billaddressName = "Address not found";
+                            if (bpishipaddrows.Length > 0)
+                            {
+                                shipaddressName = bpishipaddrows[0]["location"].ToString();
+                            }
+                            if (bpibilladdrows.Length > 0)
+                            {
+                                billaddressName = bpibilladdrows[0]["location"].ToString();
+                            }
+                            string branchName = "Branch not found";
+                            string codeName = "Code not found";
+                            if (bpiRows.Length > 0)
+                            {
+                                branchName = bpiRows[0]["branch_name"].ToString();
+                                codeName = bpiRows[0]["customer_code"].ToString();
+                            }
+
+                            ReportParameter branchNameParameter = new ReportParameter("BranchName", branchName);
+                            ReportParameter shipaddressNameParameter = new ReportParameter("ShipName", shipaddressName);
+                            ReportParameter billaddressNameParameter = new ReportParameter("BillName", billaddressName);
+                            ReportParameter codeNameParameter = new ReportParameter("CodeName", codeName);
+                            ReportDataSource headerReportDataSource = new ReportDataSource("DataSet1", OrderList);
+                            // Orders converted from a project quotation never saved their itemset
+                            // "header" rows (item_id = 0 rows are skipped on save to avoid an
+                            // item_id FK violation) - each surviving item row instead carries the
+                            // header's tab name in item_set_header. Re-insert a header row before
+                            // every group of items so the print shows them the same way the
+                            // project quotation did, even though their qty is 0.
+                            ReportDataSource childReportDataSource = new ReportDataSource("DataSet2", BuildDetailsWithHeaders(DetailsList));
+                        
+                            reportViewer1.LocalReport.ReportPath = Path.Combine(Settings.Default.REPORTPATH, "OrderReport.rdlc");
+                            reportViewer1.LocalReport.DataSources.Clear();
+                            reportViewer1.LocalReport.DataSources.Add(headerReportDataSource);
+                            reportViewer1.LocalReport.DataSources.Add(childReportDataSource);
+                            reportViewer1.LocalReport.SetParameters(new ReportParameter[] { branchNameParameter, shipaddressNameParameter, billaddressNameParameter, codeNameParameter });
+                            reportViewer1.RefreshReport();
+                        }
+                        else
+                        {
+                            MessageBox.Show("No quotation data available for the report.");
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                smpc_app.Services.Helpers.Helpers.Loading.HideLoading(this);
             }
         }
 

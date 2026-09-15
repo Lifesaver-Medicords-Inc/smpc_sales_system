@@ -76,26 +76,34 @@ namespace smpc_sales_system.Pages.Sales
             label2.Text = $"Image {rowIndex + 1} of {images.Rows.Count}";
 
             Image image;
+            smpc_app.Services.Helpers.Helpers.Loading.ShowLoading(this);
             try
             {
-                using (var client = new System.Net.Http.HttpClient())
+                try
                 {
-                    string token = smpc_sales_app.Data.CacheData.SessionToken;
-                    if (!string.IsNullOrEmpty(token))
-                        client.DefaultRequestHeaders.Add("Authorization", token);
-
-                    byte[] data = await client.GetByteArrayAsync(imageUrl);
-                    using (var stream = new System.IO.MemoryStream(data))
-                    using (var decoded = Image.FromStream(stream))
+                    using (var client = new System.Net.Http.HttpClient())
                     {
-                        image = new Bitmap(decoded);
+                        string token = smpc_sales_app.Data.CacheData.SessionToken;
+                        if (!string.IsNullOrEmpty(token))
+                            client.DefaultRequestHeaders.Add("Authorization", token);
+
+                        byte[] data = await client.GetByteArrayAsync(imageUrl);
+                        using (var stream = new System.IO.MemoryStream(data))
+                        using (var decoded = Image.FromStream(stream))
+                        {
+                            image = new Bitmap(decoded);
+                        }
                     }
                 }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[ItemImageModal] Failed to load \"{imageUrl}\": {ex.Message}");
+                    image = null;
+                }
             }
-            catch (Exception ex)
+            finally
             {
-                System.Diagnostics.Debug.WriteLine($"[ItemImageModal] Failed to load \"{imageUrl}\": {ex.Message}");
-                image = null;
+                smpc_app.Services.Helpers.Helpers.Loading.HideLoading(this);
             }
 
             if (request != _imageRequest || IsDisposed)

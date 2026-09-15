@@ -141,21 +141,29 @@ namespace smpc_sales_app.Pages.Sales
                 }
             }
 
-            response = isNewRecord
-                ? await ApplicationService.Insert(data)
-                : await ApplicationService.Update(data);
-
-            if (response.Success)
+            Helpers.Loading.ShowLoading(this);
+            try
             {
-                Helpers.ResetControls(pnl_input);
-                txt_id.Text = string.Empty;
-                FetchData();
+                response = isNewRecord
+                    ? await ApplicationService.Insert(data)
+                    : await ApplicationService.Update(data);
 
-                // "Saving MUST persist and settle the form" (spec 2.1): back to
-                // read-only, Save disabled, New and Edit usable again. Without this
-                // the form stayed in edit mode with cleared fields, so the next Save
-                // posted a blank record.
-                SetMode(Mode.View);
+                if (response.Success)
+                {
+                    Helpers.ResetControls(pnl_input);
+                    txt_id.Text = string.Empty;
+                    FetchData();
+
+                    // "Saving MUST persist and settle the form" (spec 2.1): back to
+                    // read-only, Save disabled, New and Edit usable again. Without this
+                    // the form stayed in edit mode with cleared fields, so the next Save
+                    // posted a blank record.
+                    SetMode(Mode.View);
+                }
+            }
+            finally
+            {
+                Helpers.Loading.HideLoading(this);
             }
 
             string message = response.Success
@@ -194,21 +202,29 @@ namespace smpc_sales_app.Pages.Sales
                     {
                          { "id", appId }
                     };
-                    bool isSuccess = await ApplicationService.Delete(data);
-                    if (isSuccess)
+                    Helpers.Loading.ShowLoading(this);
+                    try
                     {
-                        Helpers.ResetControls(pnl_input);
-                        txt_id.Text = string.Empty;
-                        Helpers.ShowDialogMessage("success", "Application deleted successfully!");
-                        FetchData();
+                        bool isSuccess = await ApplicationService.Delete(data);
+                        if (isSuccess)
+                        {
+                            Helpers.ResetControls(pnl_input);
+                            txt_id.Text = string.Empty;
+                            Helpers.ShowDialogMessage("success", "Application deleted successfully!");
+                            FetchData();
 
-                        // The row it was pointing at no longer exists, so Edit and
-                        // Delete go back to unavailable.
-                        SetMode(Mode.View);
+                            // The row it was pointing at no longer exists, so Edit and
+                            // Delete go back to unavailable.
+                            SetMode(Mode.View);
+                        }
+                        else
+                        {
+                            Helpers.ShowDialogMessage("error", "Failed to delete the application");
+                        }
                     }
-                    else
+                    finally
                     {
-                        Helpers.ShowDialogMessage("error", "Failed to delete the application");
+                        Helpers.Loading.HideLoading(this);
                     }
                 }
             }

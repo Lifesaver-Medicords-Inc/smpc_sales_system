@@ -1025,8 +1025,16 @@ namespace smpc_sales_app.Pages.Sales
                             + "stock stays reserved and no department is notified.",
                             "Cancel Order", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
-                        FetchSalesOrder(false);
-                        CheckStatus();
+                        Helpers.Loading.ShowLoading(this);
+                        try
+                        {
+                            await FetchSalesOrder(false);
+                            CheckStatus();
+                        }
+                        finally
+                        {
+                            Helpers.Loading.HideLoading(this);
+                        }
                     }
                     else
                     {
@@ -1071,57 +1079,65 @@ namespace smpc_sales_app.Pages.Sales
 
             int orderId = Convert.ToInt32(selectedOrder["order_id"]);
 
-            var charge = await RequestToApi<ApiResponseModel<CancellationChargeRow>>
-                .Get($"/sales-orders/{orderId}/charges", true);
-
-            var row = charge?.Data;
-            if (row == null)
+            Helpers.Loading.ShowLoading(this);
+            try
             {
-                MessageBox.Show("No cancellation record was found for this order.",
-                    "Review Cancellation", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
+                var charge = await RequestToApi<ApiResponseModel<CancellationChargeRow>>
+                    .Get($"/sales-orders/{orderId}/charges", true);
+
+                var row = charge?.Data;
+                if (row == null)
+                {
+                    MessageBox.Show("No cancellation record was found for this order.",
+                        "Review Cancellation", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                string summary =
+                    $"Cancellation raised by {row.raised_by} on {row.raised_date}.\n\n"
+                    + $"Fee base (undelivered, incl. VAT): {row.fee_base:N2}\n"
+                    + $"Restocking fee ({row.restocking_fee_percent:0.##}%): {row.restocking_fee:N2}\n"
+                    + $"Cancellation fee ({row.cancellation_fee_percent:0.##}%): {row.cancellation_fee:N2}\n"
+                    + $"Total charge: {row.total_charge:N2}\n\n"
+                    + "Yes = approve and cancel the order.\n"
+                    + "No = reject and return the order to OPEN.\n"
+                    + "Cancel = decide later.";
+
+                var answer = MessageBox.Show(summary, "Review Cancellation",
+                    MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
+
+                if (answer == DialogResult.Cancel) return;
+
+                var user = CacheData.CurrentUser;
+                var payload = new Dictionary<string, dynamic>
+                {
+                    { "id", row.id },
+                    { "approve", answer == DialogResult.Yes },
+                    { "reviewed_by", user == null ? "" : $"{user.first_name} {user.last_name}".Trim() },
+                    { "reviewed_by_id", user == null ? 0 : user.id },
+                    { "reviewed_date", DateTime.Now.ToString("yyyy-MM-dd") },
+                };
+
+                var response = await RequestToApi<ApiResponseModel>.Post("/sales-orders/charges/decision", payload);
+                if (response == null || !response.Success)
+                {
+                    MessageBox.Show(response?.message ?? "The decision could not be recorded.",
+                        "Review Cancellation", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+
+                MessageBox.Show(answer == DialogResult.Yes
+                        ? "The order has been cancelled. It still invoices for the charge and still enters A/R."
+                        : "The cancellation was rejected. The order is back to OPEN.",
+                    "Review Cancellation", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                await FetchSalesOrder(false);
+                CheckStatus();
             }
-
-            string summary =
-                $"Cancellation raised by {row.raised_by} on {row.raised_date}.\n\n"
-                + $"Fee base (undelivered, incl. VAT): {row.fee_base:N2}\n"
-                + $"Restocking fee ({row.restocking_fee_percent:0.##}%): {row.restocking_fee:N2}\n"
-                + $"Cancellation fee ({row.cancellation_fee_percent:0.##}%): {row.cancellation_fee:N2}\n"
-                + $"Total charge: {row.total_charge:N2}\n\n"
-                + "Yes = approve and cancel the order.\n"
-                + "No = reject and return the order to OPEN.\n"
-                + "Cancel = decide later.";
-
-            var answer = MessageBox.Show(summary, "Review Cancellation",
-                MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
-
-            if (answer == DialogResult.Cancel) return;
-
-            var user = CacheData.CurrentUser;
-            var payload = new Dictionary<string, dynamic>
+            finally
             {
-                { "id", row.id },
-                { "approve", answer == DialogResult.Yes },
-                { "reviewed_by", user == null ? "" : $"{user.first_name} {user.last_name}".Trim() },
-                { "reviewed_by_id", user == null ? 0 : user.id },
-                { "reviewed_date", DateTime.Now.ToString("yyyy-MM-dd") },
-            };
-
-            var response = await RequestToApi<ApiResponseModel>.Post("/sales-orders/charges/decision", payload);
-            if (response == null || !response.Success)
-            {
-                MessageBox.Show(response?.message ?? "The decision could not be recorded.",
-                    "Review Cancellation", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
+                Helpers.Loading.HideLoading(this);
             }
-
-            MessageBox.Show(answer == DialogResult.Yes
-                    ? "The order has been cancelled. It still invoices for the charge and still enters A/R."
-                    : "The cancellation was rejected. The order is back to OPEN.",
-                "Review Cancellation", MessageBoxButtons.OK, MessageBoxIcon.Information);
-
-            FetchSalesOrder(false);
-            CheckStatus();
         }
 
         // Shape of one charge record as the API returns it.
@@ -1186,18 +1202,26 @@ namespace smpc_sales_app.Pages.Sales
                     { "order_id", selectedOrder["order_id"] }
                 };
 
-                bool isSuccess = await OrderService.Delete(data);
-                if (isSuccess)
+                Helpers.Loading.ShowLoading(this);
+                try
                 {
-                    MessageBox.Show("Order deleted successfully.");
-                    Helpers.ResetControls(pnl_header);
-                    Helpers.ResetControls(pnl_footer);
-                    await FetchSalesOrder(false);
-                    ViewEnable();
+                    bool isSuccess = await OrderService.Delete(data);
+                    if (isSuccess)
+                    {
+                        MessageBox.Show("Order deleted successfully.");
+                        Helpers.ResetControls(pnl_header);
+                        Helpers.ResetControls(pnl_footer);
+                        await FetchSalesOrder(false);
+                        ViewEnable();
+                    }
+                    else
+                    {
+                        MessageBox.Show("Failed to delete the order.");
+                    }
                 }
-                else
+                finally
                 {
-                    MessageBox.Show("Failed to delete the order.");
+                    Helpers.Loading.HideLoading(this);
                 }
             }
             catch (Exception ex)
@@ -2410,83 +2434,91 @@ namespace smpc_sales_app.Pages.Sales
 
                     if (parentData.ContainsKey("sales_order_details"))
                     {
-                        if (isExistingDoc)
+                        Helpers.Loading.ShowLoading(this);
+                        try
                         {
-                            var success = await OrderService.Update(parentData);
-
-                            // Bug #095 (Trello, "Unable to save SALES ORDER"): RequestToApi
-                            // deserializes and returns the response body the exact same way
-                            // whether the HTTP call succeeded OR the server rejected it (400/
-                            // 500 with {"success": false, "message": "..."}) - only a network
-                            // exception or malformed body ever actually returns null. So
-                            // "success != null" was true on a rejected save too, and the code
-                            // showed "Data updated successfully" and reset the form while
-                            // nothing was actually persisted - the real reason the API gave
-                            // was there in success.message/Message and never shown.
-                            if (success != null && success.Success)
+                            if (isExistingDoc)
                             {
-                                MessageBox.Show("Data updated successfully");
-                                await FetchSalesOrder(true);
-                                bindOrderByDocNo(docno, true);
-                                // Close back out of edit mode now that the update is saved.
-                                isEditingExisting = false;
-                                CheckStatus();
-                            }
-                            else
-                            {
-                                MessageBox.Show("Failed to update Sales Order.\n" + (success?.Message ?? success?.message ?? "No response from server."));
-                            }
-                        }
-                        else
-                        {
-                            // Block creating a second Sales Order from a Sales Quotation
-                            // that's already been converted - a quotation should only
-                            // ever become one Sales Order.
-                            var quotationIdStr = parentDataHeader2.ContainsKey("quotation_id")
-                                ? parentDataHeader2["quotation_id"]?.ToString()
-                                : null;
+                                var success = await OrderService.Update(parentData);
 
-                            if (!string.IsNullOrWhiteSpace(quotationIdStr))
-                            {
-                                bool duplicateQuotation = OrderList.Rows.Cast<DataRow>().Any(row =>
-                                    row["quotation_id"] != DBNull.Value &&
-                                    row["quotation_id"].ToString() == quotationIdStr);
-
-                                if (duplicateQuotation)
+                                // Bug #095 (Trello, "Unable to save SALES ORDER"): RequestToApi
+                                // deserializes and returns the response body the exact same way
+                                // whether the HTTP call succeeded OR the server rejected it (400/
+                                // 500 with {"success": false, "message": "..."}) - only a network
+                                // exception or malformed body ever actually returns null. So
+                                // "success != null" was true on a rejected save too, and the code
+                                // showed "Data updated successfully" and reset the form while
+                                // nothing was actually persisted - the real reason the API gave
+                                // was there in success.message/Message and never shown.
+                                if (success != null && success.Success)
                                 {
-                                    MessageBox.Show(
-                                        "A Sales Order already exists for this Sales Quotation. " +
-                                        "A quotation can only be converted to one Sales Order.",
-                                        "Duplicate Sales Order", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                                    return;
+                                    MessageBox.Show("Data updated successfully");
+                                    await FetchSalesOrder(true);
+                                    bindOrderByDocNo(docno, true);
+                                    // Close back out of edit mode now that the update is saved.
+                                    isEditingExisting = false;
+                                    CheckStatus();
+                                }
+                                else
+                                {
+                                    MessageBox.Show("Failed to update Sales Order.\n" + (success?.Message ?? success?.message ?? "No response from server."));
                                 }
                             }
-
-                            //added the sales when saving the first time the SO
-                            parentData["sales_executive"] = CacheData.CurrentUser.first_name + " " + CacheData.CurrentUser.last_name;
-
-                            var success = await OrderService.Insert(parentData);
-
-                            // Bug #095 (Trello) - see the matching comment on the Update
-                            // branch above: success != null was never actually gated on the
-                            // API's own success flag, so a rejected Sales Order still showed
-                            // "Data added successfully".
-                            if (success != null && success.Success)
-                            {
-                                MessageBox.Show("Data added successfully");
-                                await FetchSalesOrder(true);
-                                CheckStatus();
-                                // Finalized quotation -> new Sales Order: once the first
-                                // save succeeds, close out of edit mode (hide Save/Back,
-                                // show New) instead of leaving the form sitting open in
-                                // the same editable state.
-                                ViewEnable();
-                            }
                             else
                             {
-                                MessageBox.Show("Failed to save Sales Order.\n" + (success?.Message ?? success?.message ?? "No response from server."));
-                            }
+                                // Block creating a second Sales Order from a Sales Quotation
+                                // that's already been converted - a quotation should only
+                                // ever become one Sales Order.
+                                var quotationIdStr = parentDataHeader2.ContainsKey("quotation_id")
+                                    ? parentDataHeader2["quotation_id"]?.ToString()
+                                    : null;
 
+                                if (!string.IsNullOrWhiteSpace(quotationIdStr))
+                                {
+                                    bool duplicateQuotation = OrderList.Rows.Cast<DataRow>().Any(row =>
+                                        row["quotation_id"] != DBNull.Value &&
+                                        row["quotation_id"].ToString() == quotationIdStr);
+
+                                    if (duplicateQuotation)
+                                    {
+                                        MessageBox.Show(
+                                            "A Sales Order already exists for this Sales Quotation. " +
+                                            "A quotation can only be converted to one Sales Order.",
+                                            "Duplicate Sales Order", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                                        return;
+                                    }
+                                }
+
+                                //added the sales when saving the first time the SO
+                                parentData["sales_executive"] = CacheData.CurrentUser.first_name + " " + CacheData.CurrentUser.last_name;
+
+                                var success = await OrderService.Insert(parentData);
+
+                                // Bug #095 (Trello) - see the matching comment on the Update
+                                // branch above: success != null was never actually gated on the
+                                // API's own success flag, so a rejected Sales Order still showed
+                                // "Data added successfully".
+                                if (success != null && success.Success)
+                                {
+                                    MessageBox.Show("Data added successfully");
+                                    await FetchSalesOrder(true);
+                                    CheckStatus();
+                                    // Finalized quotation -> new Sales Order: once the first
+                                    // save succeeds, close out of edit mode (hide Save/Back,
+                                    // show New) instead of leaving the form sitting open in
+                                    // the same editable state.
+                                    ViewEnable();
+                                }
+                                else
+                                {
+                                    MessageBox.Show("Failed to save Sales Order.\n" + (success?.Message ?? success?.message ?? "No response from server."));
+                                }
+
+                            }
+                        }
+                        finally
+                        {
+                            Helpers.Loading.HideLoading(this);
                         }
                         TV1_preview.Visible = false;
                         TV2_preview.Visible = false;

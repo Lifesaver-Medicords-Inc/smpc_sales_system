@@ -59,40 +59,20 @@ namespace smpc_sales_app.Pages
         // left/right margin. RedBox's own panel (panel5) is untouched either way - it's
         // persistent utility chrome, not the "page" being viewed.
         //
-        // Individual pages (Quotation.cs etc.) hardcode their own size in their own
-        // code (e.g. Quotation.cs: "this.Size = new Size(1386 - 80, 950);") and are
-        // never resized to fit whatever tabContainer happens to be - see showForm.
-        // First cut of this had newTab.AutoScroll=true try to handle a page wider than
-        // its TabPage, but that left the scrollbar unreliable (it wouldn't reliably
-        // appear until the whole window was maximized). Moved scrolling to the outer
-        // pnl_content_capped instead (see its own AutoScroll=true in the Designer) and
-        // made tabContainer grow past the available space (both width and height)
-        // whenever the ACTIVE tab's own page needs more than that - so instead of a
-        // page silently clipping inside a too-small TabPage, the whole work area (tab
-        // strip included) becomes exactly as big as the open page needs and
-        // pnl_content_capped scrolls it into view. A 1280px capped/centered version of
-        // this was tried first and reverted - see RecalculateContentWidth's own comment.
+        // The page in the active tab fills its tab as well. On a screen too small for it,
+        // it keeps its natural size (its Designer size, or the size its own code gives it,
+        // e.g. Quotation.cs: "this.Size = new Size(1386 - 80, 950);"), tabContainer grows
+        // past the available space, and pnl_content_capped (AutoScroll, Designer) scrolls
+        // the whole work area, tab strip included. Helpers.PageFit does both. Pages used to
+        // keep their Designer size and sit top-left with dead space around them on a large
+        // monitor (user-reported 2026-09-15). Earlier tries, all reverted: a TabPage-level
+        // AutoScroll (its scrollbar would not reliably appear), a 1280px capped/centered
+        // column, and proportional Control.Scale() (garbled labels).
 
         private void pnl_content_capped_Resize(object sender, EventArgs e)
         {
             RecalculateTabSizes();
             RecalculateContentWidth();
-        }
-
-        private Control GetActiveTabPageControl()
-        {
-            // Live crash: NullReferenceException on tabContainer.SelectedTab, with
-            // tabContainer itself confirmed non-null (found in smpc_inventory_app,
-            // same class of code). TabControl.SelectedTab's getter indexes
-            // TabPages[SelectedIndex] - the Designer sets SelectedIndex=0 at design
-            // time with zero TabPages actually behind it (true at every fresh app
-            // launch, before anything's been opened), and querying SelectedTab in that
-            // state can throw internally rather than returning null the way an
-            // out-of-range SelectedIndex would suggest. Checking TabPages.Count first
-            // avoids the property entirely when there's nothing to select anyway.
-            if (tabContainer == null || tabContainer.TabPages.Count == 0) return null;
-            TabPage selected = tabContainer.SelectedTab;
-            return selected != null && selected.Controls.Count > 0 ? selected.Controls[0] : null;
         }
 
         // Guards both pnl_content_capped/tabContainer being null (a Resize event can
@@ -101,46 +81,13 @@ namespace smpc_sales_app.Pages
         // internal-timing surprise this hasn't anticipated - this is a purely cosmetic
         // sizing pass, so silently skipping one recalculation is far preferable to
         // crashing the app over it.
-        //
-        // Phase 4.6 (UI uniformity) history: this went through a 1280px-capped,
-        // centered "Viber-style" column first (per an earlier, explicit direction),
-        // which caused two real problems live-tested across several screens - a page
-        // narrower than the cap left a wide dead gray margin next to it (Inventory
-        // Item Stocks), and forcing tabContainer's height to always exactly match the
-        // viewport meant a page taller than the window (Project Quote, a long Sales
-        // Order with file trees below it) had no way to become scrollable at all - the
-        // bottom was simply unreachable. Per final user direction: no cap, no left/
-        // right margin, always fill the full available space - and only grow past that
-        // (triggering pnl_content_capped's own AutoScroll) when the active page
-        // genuinely needs more room than what's available, in either dimension.
         private void RecalculateContentWidth()
         {
             if (pnl_content_capped == null || tabContainer == null) return;
 
             try
             {
-                int availableWidth = pnl_content_capped.ClientSize.Width;
-                int availableHeight = pnl_content_capped.ClientSize.Height;
-
-                Control activePage = GetActiveTabPageControl();
-                int neededWidth = availableWidth;
-                int neededHeight = availableHeight;
-
-                if (activePage != null)
-                {
-                    // chromeHeight accounts for the tab strip itself
-                    // (DisplayRectangle.Top) plus tabContainer's own border (Height -
-                    // DisplayRectangle.Bottom), measured against tabContainer's
-                    // current bounds before this call changes them.
-                    int chromeHeight = tabContainer.DisplayRectangle.Top + (tabContainer.Height - tabContainer.DisplayRectangle.Bottom);
-                    neededWidth = Math.Max(availableWidth, activePage.Width);
-                    neededHeight = Math.Max(availableHeight, activePage.Height + chromeHeight);
-                }
-
-                tabContainer.Width = neededWidth;
-                tabContainer.Height = neededHeight;
-                tabContainer.Left = 0;
-                tabContainer.Top = 0;
+                Helpers.PageFit.Fit(pnl_content_capped, tabContainer, RecalculateContentWidth);
             }
             catch (Exception)
             {
@@ -228,29 +175,15 @@ namespace smpc_sales_app.Pages
                 approvalsControl.TriggerNewForm += showForm;
             }
 
-            //control.Width = this.Width - 235;
-            //tabContainer.Height = this.Height * 2;
-            //control.Height = this.Height;
-            // Phase 4.6 (UI uniformity): was "control.Width = this.Width - 550", forcing
-            // the page to a computed width no matter what. Tried capping that to
-            // tabContainer's own (now 1280-capped) width instead, then tried proportional
-            // Control.Scale() on top of that - both made the page itself shrink, which
-            // broke because these pages are built with fixed absolute control positions
-            // (Quotation.designer.cs has 3 Anchor/Dock declarations in 5000+ lines): a
-            // narrower page just clips or overlaps its own controls, it doesn't reflow.
-            // Per user direction: don't touch the page's width at all - it keeps its own
-            // Designer-authored/hardcoded size. Scrolling to see all of it when it's
-            // wider than the available space is now pnl_content_capped's job (see
-            // RecalculateContentWidth) rather than this TabPage's own AutoScroll, which
-            // didn't reliably trigger.
-            // Pages can resize themselves after being added - Quotation, for one, sets
-            // its own Height to 950 for Quick Quote and 2354 for Project Quotation when
-            // you switch between them. Without watching for that, tabContainer keeps the
-            // height it was given for the shorter layout, the taller content is clipped,
-            // and pnl_content_capped never grows enough to show a scrollbar - so the
-            // bottom of Project Quotation simply can't be reached. Recalculating on the
-            // page's own SizeChanged covers any page that does this, not just Quotation.
-            control.SizeChanged += (s, e) => RecalculateContentWidth();
+            // The page's size is Helpers.PageFit's job: it fills the tab, is never made
+            // smaller than the size it was built at (a narrower page clips or overlaps its
+            // own fixed-position controls - it doesn't reflow), and follows the page when its
+            // own code resizes it (Quotation: 950 high for Quick Quote, 2354 for Project). A
+            // page that swaps itself for another inside this tab (Quotation -> Sales Order
+            // and back) is re-fitted as the new one arrives.
+            Helpers.PageFit.Track(control, RecalculateContentWidth);
+            newTab.ControlAdded += (s, e) => RecalculateContentWidth();
+            newTab.ControlRemoved += (s, e) => RecalculateContentWidth();
 
             newTab.Controls.Add(control);
             tabContainer.TabPages.Add(newTab);

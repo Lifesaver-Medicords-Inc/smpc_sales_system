@@ -290,24 +290,32 @@ namespace smpc_sales_system.Pages
 
             parent["sales_project_template_child"] = quickQuoteList;
 
-            var send = new ApiResponseModel();
+            Helpers.Loading.ShowLoading(this);
+            try
+            {
+                var send = new ApiResponseModel();
 
-            if (editMode)
-            {
-                send = await ProjectTemplatesService.Update(parent);
-            }
-            else
-            {  
-                send = await ProjectTemplatesService.Insert(parent);
-            }
+                if (editMode)
+                {
+                    send = await ProjectTemplatesService.Update(parent);
+                }
+                else
+                {  
+                    send = await ProjectTemplatesService.Insert(parent);
+                }
 
-            if (send.Success)
-            {
-                MessageBox.Show("Data successfully saved");
+                if (send.Success)
+                {
+                    MessageBox.Show("Data successfully saved");
+                }
+                else
+                {
+                    MessageBox.Show("Data failed to save");
+                }
             }
-            else
+            finally
             {
-                MessageBox.Show("Data failed to save");
+                Helpers.Loading.HideLoading(this);
             }
 
             NewButtonActive(true);
