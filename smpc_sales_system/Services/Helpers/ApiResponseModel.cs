@@ -23,9 +23,17 @@ namespace smpc_app.Services.Helpers
         public string Message { get; set; }
         public dynamic Data { get; set; }
     }
+    // This is the PaginationModel the sales app actually binds: it is declared in this
+    // namespace, which wins over the smpc_inventory_app.Services.Setup one imported above.
+    // The last four are sent by the endpoints that page in both directions or show a page
+    // counter (the quotation's item and model pickers); older callers leave them at zero.
     public class PaginationModel
     {
         public bool has_next { get; set; }
         public int page_size { get; set; }
+        public bool has_prev { get; set; }
+        public int page { get; set; }
+        public int total_pages { get; set; }
+        public long total { get; set; }
     }
 }

@@ -1,7 +1,9 @@
-﻿using smpc_inventory_app.Pages;
+﻿using smpc_app.Services.Helpers;
+using smpc_inventory_app.Pages;
 using smpc_inventory_app.Pages.Engineering.Boq;
 using smpc_sales_app.Data;
 using smpc_sales_app.Pages;
+using smpc_sales_app.Services.Sales;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -16,11 +18,27 @@ namespace smpc_sales_system.Pages.Sales
 {
     public partial class ModelModal : Form
     {
+        // _ItemData is the caller's table, kept as a CACHE rather than the source: the
+        // models shown come from the server (GetPickerModels - every item sharing this
+        // item's item_name_id, 20 a page), and the picked row is merged back in so
+        // Quotation's GetItemData still finds it by id. That filter used to run in memory
+        // over the page's whole ItemList, which is why it had to move server-side.
         private DataTable _ItemData, _BomHead, _BomDetail;
-        private DataView _modelView;
         public event Action<String> CreateSuccess;
         int itemId = 0, bomId = 0, id = 0;
         bool isBom = false;
+
+        private List<ItemPickerRow> _rows = new List<ItemPickerRow>();
+        private string _search = "";
+        private int _page = 1;
+        private int _totalPages;
+        private bool _isLoading;
+        private readonly Timer _typingTimer = new Timer { Interval = 350 };
+
+        private readonly Panel pnl_pager = new Panel { Dock = DockStyle.Bottom, Height = 40, Padding = new Padding(8, 6, 8, 6) };
+        private readonly Button btn_page_prev = new Button { Text = "<< PREV", Dock = DockStyle.Left, Width = 90 };
+        private readonly Button btn_page_next = new Button { Text = "NEXT >>", Dock = DockStyle.Left, Width = 90 };
+        private readonly Label lbl_page = new Label { Dock = DockStyle.Left, Width = 230, TextAlign = ContentAlignment.MiddleCenter };
 
         public ModelModal(DataTable Item, string Id)
         {
@@ -29,7 +47,7 @@ namespace smpc_sales_system.Pages.Sales
             id = int.Parse(Id);
             _ItemData = Item;
 
-            fetchData();
+            Initialize();
         }
 
         public ModelModal(DataTable Item, DataTable BomHead, DataTable BomDetails, string Id)
@@ -41,111 +59,130 @@ namespace smpc_sales_system.Pages.Sales
             _BomHead = BomHead;
             _BomDetail = BomDetails;
 
-            fetchData();
+            Initialize();
         }
 
-
-        private void fetchData()
+        private void Initialize()
         {
-            int item_name_id = _ItemData.AsEnumerable()
-                .Where(row => row.Field<int>("id") == id)
-                .Select(row => row.Field<int>("item_name_id"))
-                .FirstOrDefault();
+            SetupColumns();
+            BuildPager();
 
-            DataTable ItemData = _ItemData.AsEnumerable().CopyToDataTable();
+            // The fetch is a round trip now, so it runs on Load rather than in the
+            // constructor - a constructor cannot await, and the handle does not exist yet.
+            _typingTimer.Tick += async (s, e) => { _typingTimer.Stop(); await LoadPage(1); };
+            Load += async (s, e) => await LoadPage(1);
+            // Not a Dispose(bool) override - ModelModal.Designer.cs already declares one,
+            // and a second would be a duplicate member.
+            FormClosed += (s, e) => { _typingTimer.Stop(); _typingTimer.Dispose(); };
+        }
 
-            if (item_name_id != 0)
+        private void SetupColumns()
+        {
+            DataGridViewModel.AutoGenerateColumns = false;
+            DataGridViewModel.Columns.Clear();
+            DataGridViewModel.Columns.Add(new DataGridViewTextBoxColumn { Name = "item_code", DataPropertyName = "item_code", HeaderText = "ITEM CODE", FillWeight = 34 });
+            DataGridViewModel.Columns.Add(new DataGridViewTextBoxColumn { Name = "item_model", DataPropertyName = "item_model", HeaderText = "ITEM MODEL", FillWeight = 46 });
+            DataGridViewModel.Columns.Add(new DataGridViewTextBoxColumn { Name = "Type", HeaderText = "TYPE", FillWeight = 20 });
+            DataGridViewModel.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+            DataGridViewModel.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            DataGridViewModel.ReadOnly = true;
+            DataGridViewModel.AllowUserToAddRows = false;
+            DataGridViewModel.RowHeadersVisible = false;
+            DataGridViewModel.CellFormatting += DataGridViewModel_CellFormatting;
+        }
+
+        // Added in code so ModelModal.Designer.cs and its .resx stay untouched.
+        private void BuildPager()
+        {
+            pnl_pager.Controls.Add(lbl_page);
+            pnl_pager.Controls.Add(btn_page_next);
+            pnl_pager.Controls.Add(btn_page_prev);
+            Controls.Add(pnl_pager);
+            pnl_pager.BringToFront();
+
+            btn_page_prev.Click += async (s, e) => { if (_page > 1) await LoadPage(_page - 1); };
+            btn_page_next.Click += async (s, e) => { if (_page < _totalPages) await LoadPage(_page + 1); };
+        }
+
+        private async Task LoadPage(int page)
+        {
+            if (_isLoading) return;
+            _isLoading = true;
+
+            Helpers.Loading.ShowLoading(this);
+            try
             {
-                ItemData = _ItemData.AsEnumerable()
-             .Where(row => row.Field<int>("item_name_id") == item_name_id)
-             .CopyToDataTable();
+                var result = await ItemService.GetPickerModels(id, _search, page);
 
+                _rows = result.Rows;
+                DataGridViewModel.DataSource = null;
+                DataGridViewModel.DataSource = _rows;
+
+                _page = result.Pagination?.page ?? page;
+                _totalPages = result.Pagination?.total_pages ?? 0;
+
+                lbl_page.Text = _totalPages == 0
+                    ? "No models found"
+                    : $"Page {_page} of {_totalPages}  ({result.Pagination?.total ?? 0} models)";
+
+                btn_page_prev.Enabled = result.Pagination?.has_prev ?? false;
+                btn_page_next.Enabled = result.Pagination?.has_next ?? false;
             }
-
-            if (!ItemData.Columns.Contains("Type"))
-                ItemData.Columns.Add("Type", typeof(string));
-
-            foreach (DataRow row in ItemData.Rows)
+            catch (Exception ex)
             {
-                int itemId = Convert.ToInt32(row["id"]);
-                bool isBOM = _BomHead != null &&
-                             _BomHead.AsEnumerable().Any(r => r.Field<int>("item_id") == itemId);
-                row["Type"] = isBOM ? "BOM" : "SINGLE";
+                MessageBox.Show("Failed to load the model list.\n" + ex.Message, "Model List",
+                                MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-
-            DataView dv = new DataView(ItemData);
-            DataGridViewModel.DataSource = dv;
-            _modelView = dv;
-
-            IdentifyItemType(DataGridViewModel);
+            finally
+            {
+                Helpers.Loading.HideLoading(this);
+                _isLoading = false;
+            }
         }
 
         private void txt_search_TextChanged(object sender, EventArgs e)
         {
-            if (_modelView == null) return;
-
-            string search = txt_search.Text.Trim().Replace("'", "''");
-
-            if (string.IsNullOrWhiteSpace(search))
-            {
-                _modelView.RowFilter = string.Empty;
-                return;
-            }
-
-            _modelView.RowFilter = $@"
-                item_code LIKE '%{search}%' OR
-                item_model LIKE '%{search}%'
-             ";
+            _search = txt_search.Text.Trim();
+            _typingTimer.Stop();
+            _typingTimer.Start();
         }
 
-        private void IdentifyItemType(DataGridView dgv)
+        private void DataGridViewModel_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
         {
-            foreach (DataGridViewColumn col in dgv.Columns)
-            {
-                if (col.Name == "item_code" || col.Name == "item_model" || col.Name == "Type")
-                {
-                    col.Visible = true;
-                }
-                else
-                {
-                    col.Visible = false;
-                }
-            }
+            if (e.RowIndex < 0 || e.RowIndex >= _rows.Count)
+                return;
 
-            // Set column headers (safe check in case they exist)
-            if (dgv.Columns.Contains("item_code"))
-                dgv.Columns["item_code"].HeaderText = "ITEM CODE";
-            if (dgv.Columns.Contains("item_model"))
-                dgv.Columns["item_model"].HeaderText = "ITEM MODEL";
-            if (dgv.Columns.Contains("Type"))
-                dgv.Columns["Type"].HeaderText = "TYPE";
+            if (DataGridViewModel.Columns[e.ColumnIndex].Name == "Type")
+            {
+                e.Value = _rows[e.RowIndex].bom_id != 0 ? "BOM" : "SINGLE";
+                e.FormattingApplied = true;
+            }
         }
 
         private void DataGridViewModel_CellClick(object sender, DataGridViewCellEventArgs e)
         {
-            if (e.RowIndex < 0)
+            if (e.RowIndex < 0 || e.RowIndex >= DataGridViewModel.Rows.Count)
                 return;
 
-            var row = DataGridViewModel.Rows[e.RowIndex];
-            int id = row.Cells["id"].Value != null ? Convert.ToInt32(row.Cells["id"].Value) : 0;
-
-            if (id == 0)
+            ItemPickerRow picked = DataGridViewModel.Rows[e.RowIndex].DataBoundItem as ItemPickerRow;
+            if (picked == null || picked.id == 0)
             {
                 MessageBox.Show("Invalid selection. Please select a valid item.");
                 return;
             }
-            else
-            {
-                itemId = id;
 
-                bomId = _BomHead.AsEnumerable()
-                .Where(hrow => hrow.Field<int>("item_id") == id)
-                .Select(hrow => hrow.Field<int>("id"))
-                .FirstOrDefault();
+            // Same reason as SalesItemModal: the caller resolves this id against its own
+            // table immediately afterwards and may never have downloaded this model.
+            picked.MergeInto(_ItemData);
 
-                this.DialogResult = DialogResult.OK;
-                this.Close();
-            }
+            itemId = picked.id;
+            // Was a scan of the locally-held BOM head table, which also threw when
+            // _BomHead was null (the two-argument constructor never sets it).
+            bomId = picked.bom_id;
+            isBom = picked.bom_id != 0;
+
+            this.DialogResult = DialogResult.OK;
+            this.Close();
         }
 
         public int GetItemId()
