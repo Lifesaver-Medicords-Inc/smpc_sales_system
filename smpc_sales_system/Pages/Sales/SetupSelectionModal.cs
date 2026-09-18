@@ -71,7 +71,9 @@ namespace smpc_inventory_app.Pages
         {
             // Front End Customer Filtering: to be refactored
             filteredCustomer = new DataView(this.Dt);
-            filteredCustomer.RowFilter = BaseRowFilter;
+            // A table without the column (a customer list that never loaded) used to throw
+            // "Cannot find column [customer_code]" here. Show it empty instead.
+            filteredCustomer.RowFilter = HasCustomerCode ? BaseRowFilter : "1 = 0";
 
             dg_general.DataSource = filteredCustomer;
             foreach (DataGridViewColumn column in dg_general.Columns)
@@ -83,8 +85,13 @@ namespace smpc_inventory_app.Pages
             }
         }
 
+        private bool HasCustomerCode => this.Dt != null && this.Dt.Columns.Contains("customer_code");
+
         private void txt_search_TextChanged(object sender, EventArgs e)
         {
+            // Fires on the placeholder text before Load has built the view.
+            if (filteredCustomer == null || !HasCustomerCode) return;
+
             string search = txt_search.Text.Trim().Replace("'", "''");
 
             filteredCustomer.RowFilter = string.IsNullOrEmpty(search) || search == "Search..."

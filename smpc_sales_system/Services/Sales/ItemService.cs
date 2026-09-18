@@ -38,7 +38,24 @@ namespace smpc_sales_app.Services.Sales
         // else keyed on "id".
         public void MergeInto(DataTable table)
         {
-            if (table == null || !table.Columns.Contains("id"))
+            if (table == null)
+                return;
+
+            // A table with no columns at all is an item list that never loaded (the page's
+            // item fetch failed). Skipping it left the caller unable to find the item it was
+            // just handed - "Invalid selection. Item not found." Give it the columns this
+            // row carries so the pick still goes through.
+            if (table.Columns.Count == 0)
+            {
+                table.Columns.Add("id", typeof(int));
+                table.Columns.Add("item_code", typeof(string));
+                table.Columns.Add("item_name", typeof(string));
+                table.Columns.Add("item_model", typeof(string));
+                table.Columns.Add("item_name_id", typeof(int));
+                table.Columns.Add("unit_of_measure", typeof(string));
+            }
+
+            if (!table.Columns.Contains("id"))
                 return;
 
             foreach (DataRow existing in table.Rows)

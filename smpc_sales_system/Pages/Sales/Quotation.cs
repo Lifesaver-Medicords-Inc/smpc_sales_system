@@ -929,8 +929,15 @@ namespace smpc_sales_app.Pages.Sales
             var bomData = await ProjectService.GetBom();
             var companyData = await CompanyService.GetAsDatatable();
 
+            // Null here means the API answered with an error (a server problem, not a dropped
+            // connection, so the request layer does not count it). Count it, so the page's
+            // loader offers to reload instead of carrying on with no items - picking a
+            // component then failed with "Invalid selection. Item not found."
             if (itemData == null || bomData == null)
+            {
+                ApiConnection.NoteFailure();
                 return;
+            }
 
             ItemList = JsonHelper.ToDataTable(itemData.items);
             ItemAdditionalSpecs = JsonHelper.ToDataTable(itemData.additionalspecs);
@@ -965,8 +972,13 @@ namespace smpc_sales_app.Pages.Sales
         {
             Bpi_Class bpi_data = await QuotationService.GetBpiCustomers();
 
+            // Same as fetchItemData: an error answer leaves the customer list unloaded, so
+            // count it and let the loader offer a reload.
             if (bpi_data == null)
+            {
+                ApiConnection.NoteFailure();
                 return;
+            }
 
             bpi_dt = JsonHelper.ToDataTable(bpi_data.bpi);
             bpi_general = JsonHelper.ToDataTable(bpi_data.general);
@@ -4065,8 +4077,14 @@ namespace smpc_sales_app.Pages.Sales
 
         // Selected item from item list
         // Delegates to SalesItemGridEditor - see the _itemGridEditor field.
-        private void HandleItemSelectionClick(int rowIndex, DataGridView dgv)
+        private async void HandleItemSelectionClick(int rowIndex, DataGridView dgv)
         {
+            // The item and BOM catalogs load with the page. If that load failed, ItemList is
+            // still the bare table it starts as and every pick came back "Invalid selection.
+            // Item not found." Fetch them again before opening the picker.
+            if (ItemList == null || ItemList.Columns.Count == 0)
+                await RunWithLoadingAsync(async () => await fetchItemData());
+
             ItemGridEditor.HandleItemSelectionClick(rowIndex, dgv);
         }
 
@@ -6217,7 +6235,25 @@ namespace smpc_sales_app.Pages.Sales
 
 
         DataTable PerCustomerAddressList = new DataTable();
-        private void btn_add_customer_Click(object sender, EventArgs e)
+
+        // The customer list is loaded once, with the page. When that load failed - the API
+        // answered with an error, e.g. while its Redis cache was down - bpi_general stayed the
+        // empty table it starts as, with no columns at all, and the customer picker crashed
+        // on "Cannot find column [customer_code]". Try the load again first, and say so
+        // plainly if it still fails instead of opening a picker with nothing to pick.
+        private async Task<bool> EnsureCustomersLoaded()
+        {
+            if (bpi_general.Columns.Contains("customer_code")) return true;
+
+            await RunWithLoadingAsync(async () => await fetchBpiData());
+            if (bpi_general.Columns.Contains("customer_code")) return true;
+
+            Helpers.ShowDialogMessage("error",
+                "The customer list could not be loaded from the server. Check the connection and try again.");
+            return false;
+        }
+
+        private async void btn_add_customer_Click(object sender, EventArgs e)
         {
             // Same read-only gate every other line-editing action on this screen already
             // uses (dgv_quick_quote_details_CellMouseDown's "if (IsView) return;", and the
@@ -6226,6 +6262,8 @@ namespace smpc_sales_app.Pages.Sales
             // which contradicts the forms-open-read-only convention. IsView is false only
             // in btn_new_Click and btn_edit_Click, so New/Edit still work normally.
             if (IsView) return;
+
+            if (!await EnsureCustomersLoaded()) return;
 
             List<int> t1 = new List<int>();
             List<string> s1 = new List<string>();
