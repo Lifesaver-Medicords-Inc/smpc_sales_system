@@ -101,11 +101,11 @@ namespace smpc_app.Data
             IEnumerable<string> data = new List<String>()
             {
                 "MODEL",
-                "# OF PUMP/S",
+                //"# OF PUMP/S",
                 "VOLTAGE",
                 "CURRENT",
                 "START METHOD",
-                "USE TYPE",
+                //"USE TYPE",
                 "PHASE (1 OR 3)",
                 "WIRING DIAGRAM #",
             };
