@@ -990,7 +990,9 @@ namespace smpc_sales_app.Pages.Sales
         SalesQuotationList data;
 
         SalesProject projectData;
-        private async Task fetchQuotationDetails()
+        // selectDocumentNo: the quotation to open once reloaded - the one just saved, searched
+        // or being closed. Without it the reload lands on this user's first quotation.
+        private async Task fetchQuotationDetails(string selectDocumentNo = null)
         {
             Panel[] panels = { pnl_header, pnl_footer };
             Helpers.ReadOnlyControls(panels);
@@ -1056,7 +1058,7 @@ namespace smpc_sales_app.Pages.Sales
                     }
                     else
                     {
-                        SelectedRow = ownedIndexes[0];
+                        SelectedRow = PreferredQuickRow(ownedIndexes, selectDocumentNo);
 
                         bind(transactionList, SelectedRow, true);
 
@@ -1082,6 +1084,69 @@ namespace smpc_sales_app.Pages.Sales
                 toolstrip_quotation.Enabled = true;
             }
         }
+        // The row a reload opens: the given document when it is one of this user's, otherwise
+        // their first. Every reload used to open the first, so saving, searching or closing
+        // always jumped away from the quotation the user was on. Matched exactly: Q#0005 and
+        // FQ#0005 are different documents.
+        private int PreferredQuickRow(List<int> ownedIndexes, string documentNo)
+        {
+            if (!string.IsNullOrWhiteSpace(documentNo) && transactionList.Columns.Contains("document_no"))
+            {
+                foreach (int index in ownedIndexes)
+                {
+                    if (string.Equals(transactionList.Rows[index]["document_no"]?.ToString().Trim(),
+                                      documentNo.Trim(), StringComparison.OrdinalIgnoreCase))
+                        return index;
+                }
+            }
+
+            return ownedIndexes[0];
+        }
+
+        // Same for Project Quotation, whose list holds every version (newest first): the row
+        // with this id, else the newest version of this document, else the user's first.
+        private int PreferredProjectRow(List<int> ownedIndexes, int id, string documentNo)
+        {
+            if (id > 0 && transactionProjectDataTable.Columns.Contains("id"))
+            {
+                foreach (int index in ownedIndexes)
+                {
+                    if (ToInt(transactionProjectDataTable.Rows[index]["id"]) == id)
+                        return index;
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(documentNo) && transactionProjectDataTable.Columns.Contains("document_no"))
+            {
+                foreach (int index in ownedIndexes)
+                {
+                    if (string.Equals(transactionProjectDataTable.Rows[index]["document_no"]?.ToString().Trim(),
+                                      documentNo.Trim(), StringComparison.OrdinalIgnoreCase))
+                        return index;
+                }
+            }
+
+            return ownedIndexes[0];
+        }
+
+        // The id a create returned (the API echoes the saved header), or 0.
+        private static int ExtractSavedId(object data)
+        {
+            if (data is Newtonsoft.Json.Linq.JObject obj && int.TryParse(obj["id"]?.ToString(), out int id))
+                return id;
+
+            return 0;
+        }
+
+        // Puts the page back in the view it is in - Quick Quote or Project - after a reload.
+        // A save or a close must never change which of the two is on screen.
+        private void KeepCurrentView()
+        {
+            this.btn_quick_quote.BackColor = isProject ? Color.White : Color.FromArgb(255, 128, 128);
+            this.btn_project.BackColor = isProject ? Color.FromArgb(255, 128, 128) : Color.White;
+            this.tabControl.SelectedIndex = isProject ? 1 : 0;
+        }
+
         public DataTable dt_multiplier { get; set; }
         public DataTable dt_content { get; set; }
         public DataTable dt_content_final { get; set; }
@@ -1149,7 +1214,9 @@ namespace smpc_sales_app.Pages.Sales
         SalesProjectList SalesProjectListData = new SalesProjectList();
         DataTable transactionProjectDataTable = new DataTable();
 
-        private async Task fetchSalesProjectData()
+        // selectId / selectDocumentNo: the project quotation to open once reloaded - the one
+        // just saved or being closed. Without them the reload lands on this user's first.
+        private async Task fetchSalesProjectData(int selectId = 0, string selectDocumentNo = null)
         {
             Helpers.ResetControls(pnl_header);
             ResetControls(pnl_footer);
@@ -1233,7 +1300,7 @@ namespace smpc_sales_app.Pages.Sales
                 return;
             }
 
-            selectedProjectRow = ownedProjectIndexes[0];
+            selectedProjectRow = PreferredProjectRow(ownedProjectIndexes, selectId, selectDocumentNo);
             fetchSalesProject();
         }
 
@@ -1882,8 +1949,11 @@ namespace smpc_sales_app.Pages.Sales
 
                         // Refetch so SalesProjectListData (and therefore Change History) reflects
                         // what was actually just saved instead of staying stale until the user
-                        // happens to navigate away and back.
-                        await RunWithLoadingAsync(async () => await fetchSalesProjectData());
+                        // happens to navigate away and back - and open the project just added.
+                        int addedId = ExtractSavedId(response.Data);
+                        string addedDocumentNo = ExtractSavedDocumentNo(response.Data);
+                        await RunWithLoadingAsync(async () => await fetchSalesProjectData(addedId, addedDocumentNo));
+                        KeepCurrentView();
 
                         // Every tab's rows now have real project_items_id values from the reload -
                         // apply any RESERVE/release toggled in a tab's stock checker before this save.
@@ -1914,7 +1984,10 @@ namespace smpc_sales_app.Pages.Sales
                         // Same reason as the isNewRecord branch - without this, the newly
                         // auto-generated Change History entries (project fields, multipliers,
                         // per-tab changes) wouldn't show up until the next unrelated refresh.
-                        await RunWithLoadingAsync(async () => await fetchSalesProjectData());
+                        // An update keeps its id, so reopen that same project.
+                        int updatedId = (int)pnl_quotation["id"];
+                        await RunWithLoadingAsync(async () => await fetchSalesProjectData(updatedId));
+                        KeepCurrentView();
 
                         // Same as the isNewRecord branch above.
                         await ApplyPendingProjectReservationsAsync();
@@ -3523,7 +3596,10 @@ namespace smpc_sales_app.Pages.Sales
                                 // IF SUCCESS
 
                                 MessageBox.Show("Quotation Successfully saved");
-                                await RunWithLoadingAsync(async () => await fetchQuotationDetails());
+                                // Open the quotation just saved - new or edited - not the user's
+                                // first one.
+                                await RunWithLoadingAsync(async () => await fetchQuotationDetails(savedDocumentNo));
+                                KeepCurrentView();
 
                                 // Any RESERVE/release toggled in StockCheckModal before this
                                 // save is still just pending intent (see
@@ -5236,6 +5312,16 @@ namespace smpc_sales_app.Pages.Sales
             bool hasRecord = ToInt(txt_id.Text) > 0;
             btn_finalize.Enabled = hasRecord && !isFinalized;
             btn_sales_order.Enabled = hasRecord && isFinalized;
+
+            // Nothing saved means nothing to edit (user-reported 2026-09-19, Project and Quick
+            // Quote alike): the view-mode button reset shows Edit and Update unconditionally,
+            // and only bind() - which never runs with no record - decides them otherwise.
+            // Only ever hidden here; bind() shows them again once a quotation is loaded.
+            if (!hasRecord && !IsEdit && !isNewRecord)
+            {
+                btn_edit.Visible = false;
+                btn_update.Visible = false;
+            }
         }
 
         private async void Quotation_Load(object sender, EventArgs e)
@@ -5258,7 +5344,8 @@ namespace smpc_sales_app.Pages.Sales
 
         }
         CurrentUserModel CurrentUser { get; set; }
-        private async Task LoadExistingRecord()
+        // selectDocumentNo: the quick quote to open once loaded (see fetchQuotationDetails).
+        private async Task LoadExistingRecord(string selectDocumentNo = null)
         {
             stockQuickDataTable = Helpers.GetDataTableFromUnboundGrid(dgv_quick_quote_details);
             await fetchItemData();
@@ -5384,7 +5471,7 @@ namespace smpc_sales_app.Pages.Sales
                 //combobox.DisplayMember = "name";
                 //combobox.ValueMember = "id";
 
-                await fetchQuotationDetails();
+                await fetchQuotationDetails(selectDocumentNo);
             }
 
         }
@@ -7077,7 +7164,11 @@ namespace smpc_sales_app.Pages.Sales
                 isNewRecord = false;
                 IsEdit = false;
 
-                await RunWithLoadingAsync(async () => await fetchSalesProjectData());
+                // Open the finalized quote just added (FQ#), not the user's first project.
+                int finalizedId = ExtractSavedId(response.Data);
+                string finalizedDocumentNo = ExtractSavedDocumentNo(response.Data);
+                await RunWithLoadingAsync(async () => await fetchSalesProjectData(finalizedId, finalizedDocumentNo));
+                KeepCurrentView();
 
                 // Same as IsProject()'s save handling - every tab's rows now have real
                 // project_items_id values, so any pending RESERVE/release can actually apply.
@@ -7306,7 +7397,10 @@ namespace smpc_sales_app.Pages.Sales
                             toolstrip_quotation.Enabled = true;
 
                             MessageBox.Show("Quotation Successfully saved");
-                            await RunWithLoadingAsync(async () => await fetchQuotationDetails());
+                            // Open the finalized quote just added (FQ#), not the user's first.
+                            string finalizedDocumentNo = ExtractSavedDocumentNo(isSuccess.Data) ?? savedDocumentNo;
+                            await RunWithLoadingAsync(async () => await fetchQuotationDetails(finalizedDocumentNo));
+                            KeepCurrentView();
 
                             // Same as IsQuickQuote() - this finalize path also inserts fresh
                             // SalesQuotationQuick rows (parentData["id"] = 0 above), so any
@@ -7984,15 +8078,38 @@ namespace smpc_sales_app.Pages.Sales
         }
         private async void btn_close_Click(object sender, EventArgs e)
         {
+            // Back to view mode on the quotation that was open, in the view it belongs to.
+            // This used to run LoadExistingRecord() whatever the view, which always puts the
+            // page on Quick Quote and its first quotation - closing an edit on a project
+            // quotation landed on a quick quote - and then blanked the header and footer of
+            // what it had just loaded.
+            int openId = ToInt(txt_id.Text);
+            string openDocumentNo = txt_document_no.Text;
+
             IsView = true;
             SetNewFormMode(false);
             SetFormEditMode("Close");
 
-            await RunWithLoadingAsync(async () => await LoadExistingRecord());
+            // Cancelling an edit or a new record: leave both modes (IsEdit also re-locks the
+            // project tabs), and drop the sub-version intent Edit set.
+            isNewRecord = false;
+            IsEdit = false;
+            isSubVersion = false;
+
+            if (isProject)
+                await RunWithLoadingAsync(async () => await fetchSalesProjectData(openId));
+            else
+                await RunWithLoadingAsync(async () => await LoadExistingRecord(openDocumentNo));
+
+            KeepCurrentView();
 
             Panel[] panels = { pnl_header, pnl_footer };
             Helpers.ReadOnlyControls(panels);
-            Helpers.ResetControls(panels);
+
+            // Only a form left with nothing loaded (a cancelled New, no saved quotations) is
+            // cleared; a reopened quotation keeps its fields.
+            if (ToInt(txt_id.Text) <= 0)
+                Helpers.ResetControls(panels);
             //pnl_header.Enabled = false;
             //pnl_footer.Enabled = false;
 
