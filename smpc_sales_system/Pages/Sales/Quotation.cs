@@ -925,9 +925,14 @@ namespace smpc_sales_app.Pages.Sales
 
         private async Task fetchItemData()
         {
-            var itemData = await ItemService.GetItem();
-            var bomData = await ProjectService.GetBom();
-            var companyData = await CompanyService.GetAsDatatable();
+            // Started together: the three are independent, and awaited one after another the
+            // page waited for the sum of their times instead of the longest one.
+            var itemTask = ItemService.GetItem();
+            var bomTask = ProjectService.GetBom();
+            var companyTask = CompanyService.GetAsDatatable();
+            var itemData = await itemTask;
+            var bomData = await bomTask;
+            var companyData = await companyTask;
 
             // Null here means the API answered with an error (a server problem, not a dropped
             // connection, so the request layer does not count it). Count it, so the page's
@@ -5348,8 +5353,8 @@ namespace smpc_sales_app.Pages.Sales
         private async Task LoadExistingRecord(string selectDocumentNo = null)
         {
             stockQuickDataTable = Helpers.GetDataTableFromUnboundGrid(dgv_quick_quote_details);
-            await fetchItemData();
-            await fetchBpiData();
+            // Items and customers fill separate tables, so they load side by side.
+            await Task.WhenAll(fetchItemData(), fetchBpiData());
             CurrentUser = CacheData.CurrentUser;
 
             //tabControl2.DrawMode = TabDrawMode.OwnerDrawFixed;
