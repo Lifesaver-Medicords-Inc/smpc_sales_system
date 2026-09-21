@@ -8136,15 +8136,7 @@ namespace smpc_sales_app.Pages.Sales
             Helpers.ResetControls(panels);
             txt_project_name.Clear();
 
-            // Rebound to an empty copy rather than cleared in place: the grid is bound to a
-            // DataView over the table holding every quotation's lines (see
-            // createFilterViewDgvQuickQouteDetails), and clearing that would empty them all.
-            if (dgv_quick_quote_details.DataSource is DataView view)
-                dgv_quick_quote_details.DataSource = view.Table.Clone();
-            else if (dgv_quick_quote_details.DataSource is DataTable table)
-                dgv_quick_quote_details.DataSource = table.Clone();
-            else
-                dgv_quick_quote_details.Rows.Clear();
+            ClearGrid(dgv_quick_quote_details);
 
             // The project view keeps its items in one tab per item set.
             tabControl2.TabPages.Clear();
@@ -8156,6 +8148,40 @@ namespace smpc_sales_app.Pages.Sales
 
             // No record open now, so Edit and Update go away with it.
             ReapplyFinalizeButtonState();
+
+            // Logged because the user-visible symptom - lines still on screen after Close -
+            // cannot be told apart from "the clear never ran" without it.
+            Serilog.Log.Debug("Quotation Close: form cleared, grid now shows {RowCount} row(s)",
+                dgv_quick_quote_details.Rows.Count);
+        }
+
+        // Empties the lines grid whichever way it happens to be bound: a DataView over
+        // childList (a saved quotation being viewed), a plain DataTable (a new one), a
+        // BindingSource wrapping either, or nothing at all. Always rebinds to an empty copy
+        // rather than clearing in place - the DataView's table holds every quotation's lines,
+        // so emptying it would take the lot.
+        private static void ClearGrid(DataGridView grid)
+        {
+            object source = grid.DataSource;
+            BindingSource binding = source as BindingSource;
+
+            if (binding != null)
+                source = binding.DataSource;
+
+            DataTable schema = (source as DataView)?.Table ?? source as DataTable;
+
+            if (schema == null)
+            {
+                // Rows.Clear() throws on a bound grid, so drop the binding first.
+                grid.DataSource = null;
+                grid.Rows.Clear();
+                return;
+            }
+
+            if (binding != null)
+                binding.DataSource = schema.Clone();
+            else
+                grid.DataSource = schema.Clone();
         }
         private void btn_duplicate_Click(object sender, EventArgs e)
         {
