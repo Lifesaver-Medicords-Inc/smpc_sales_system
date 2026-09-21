@@ -675,7 +675,11 @@ namespace smpc_sales_app.Pages.Sales
             // state - previously IsEdit was cleared on the Quick Quote side only and
             // isNewRecord on neither, so the form could be left still flagged "new" while
             // showing reloaded data. Mirrors btn_close_Click's return-to-view sequence.
-            if (isNewRecord || IsEdit)
+            // Captured before the flags are reset below: it decides whether this switch is
+            // cancelling a transaction, and a cancelled one lands on an empty form.
+            bool cancelledTransaction = isNewRecord || IsEdit;
+
+            if (cancelledTransaction)
             {
                 DialogResult discard = MessageBox.Show(
                     "You have unsaved changes on this quotation."
@@ -722,6 +726,13 @@ namespace smpc_sales_app.Pages.Sales
             // fetch had even reached its first await, and nothing locked the screen while
             // bind() repopulated pnl_header/pnl_footer.
             await RunWithLoadingAsync(async () => await fetchQuotationDetails());
+
+            // Switching views cancels whatever was being added or edited, so Quick Quote
+            // opens empty - header, footer and lines - rather than on someone's first saved
+            // quotation, which is the same place Close leaves the form. The fetch above still
+            // runs: it is what drops the edits from the in-memory tables.
+            if (cancelledTransaction)
+                ClearOpenRecord();
         }
 
         // Short/Long Description (txt_short_description, txt_long_description, and their
@@ -770,7 +781,11 @@ namespace smpc_sales_app.Pages.Sales
             // state - previously IsEdit was cleared on the Quick Quote side only and
             // isNewRecord on neither, so the form could be left still flagged "new" while
             // showing reloaded data. Mirrors btn_close_Click's return-to-view sequence.
-            if (isNewRecord || IsEdit)
+            // Same as the Quick Quote side: read before the flags are reset, and a switch
+            // that cancels a transaction lands on an empty form.
+            bool cancelledTransaction = isNewRecord || IsEdit;
+
+            if (cancelledTransaction)
             {
                 DialogResult discard = MessageBox.Show(
                     "You have unsaved changes on this quotation."
@@ -815,6 +830,11 @@ namespace smpc_sales_app.Pages.Sales
             // until it finishes, so cover the whole switch-to-Project-Quotation flow with the
             // same loading overlay + button lock used for Quick Quote.
             await RunWithLoadingAsync(async () => await fetchSalesProjectData());
+
+            // Cancelling by switching leaves Project Quotation empty too - header, footer and
+            // the item-set tabs - instead of on the first saved project.
+            if (cancelledTransaction)
+                ClearOpenRecord();
         }
 
         // Every SalesProjectHistory row for the whole current project - every tab's item set
