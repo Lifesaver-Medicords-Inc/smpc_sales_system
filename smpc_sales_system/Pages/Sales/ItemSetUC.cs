@@ -10,6 +10,7 @@ using smpc_sales_system.Services.Sales.Models;
 using smpc_sales_system.Services.Setup;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.ComponentModel;
 using System.Data;
 using System.Diagnostics.Metrics;
@@ -3723,12 +3724,19 @@ namespace smpc_sales_system.Pages.Sales
                 if (string.IsNullOrWhiteSpace(referenceCode) || referenceCode.Contains("."))
                     continue;
 
-                if (row.Cells["project_items_qty"].Value == null || string.IsNullOrEmpty(row.Cells["project_items_qty"].Value.ToString()) ||
-                    row.Cells["project_items_unit_price"].Value == null || string.IsNullOrEmpty(row.Cells["project_items_unit_price"].Value.ToString()))
+                if (row.Cells[ProjectQuoteDGV.QTY].Value == null || string.IsNullOrEmpty(row.Cells[ProjectQuoteDGV.QTY].Value.ToString()))
                     continue;
 
-                decimal unitPrice = Convert.ToDecimal(Helpers.GetCleanedPriceValue(row.Cells["project_items_unit_price"].Value.ToString()));
-                decimal discount = CalculateDiscountMultiplier(row.Cells["project_items_multiplier"].Value?.ToString());
+                // Spec 5.1/8.3, the same rule the Quick Quote grid follows: the multiplier
+                // and the line total compute against the LIST PRICE where the line has one
+                // and the UNIT PRICE otherwise. A row carrying only a list price used to be
+                // skipped for having no unit price, so it never got a line total.
+                decimal unitPrice = Quotation.LinePriceBasis(
+                    row.Cells[ProjectQuoteDGV.LIST_PRICE].Value, row.Cells[ProjectQuoteDGV.UNIT_PRICE].Value);
+                if (unitPrice == 0m)
+                    continue;
+
+                decimal discount = CalculateDiscountMultiplier(row.Cells[ProjectQuoteDGV.MULTIPLIER].Value?.ToString());
                 decimal qty = Convert.ToDecimal(row.Cells["project_items_qty"].Value);
                 decimal TotalUnitPrice = unitPrice * qty;
                 decimal discounted = TotalUnitPrice * discount;
@@ -3745,46 +3753,82 @@ namespace smpc_sales_system.Pages.Sales
             }
         }
 
+        // The MULTIPLIER cell, as a ratio to multiply the line's price by. Both quotation
+        // grids call this one - Quotation.CalculateDiscountMultiplier forwards to it - so a
+        // multiplier means the same thing on a quick quote and on a project quote.
+        //
+        // Accepted forms:
+        //
+        //   0.9          a plain multiplier
+        //   0.9*0.8      several multiplied together            = 0.72
+        //   /.7          divided by, for a mark-up              = 1 / 0.7
+        //   10/10/5      chained percentage discounts (added 2026-09-21, user's format):
+        //                10% then 10% then 5% off               = 0.9 * 0.9 * 0.95 = 0.7695
+        //
+        // A slash BETWEEN numbers is the chain of percentages; a slash at the START of a
+        // part is still division, which is what "/.7" has always meant. Blank means 1, and
+        // anything unparseable returns 1 with a message rather than a partial figure - a
+        // multiplier that silently came out of half the input is worse than none.
         public static decimal CalculateDiscountMultiplier(string discountString)
         {
             if (string.IsNullOrWhiteSpace(discountString))
                 return 1m;
 
+            string text = discountString.Replace(" ", "");
+
             try
             {
-                // Replace all spaces for safety
-                discountString = discountString.Replace(" ", "");
-
-                // Split by '*' while keeping '/' info
-                var parts = discountString.Split(new[] { '*' }, StringSplitOptions.RemoveEmptyEntries);
-
                 decimal result = 1m;
 
-                foreach (var part in parts)
+                foreach (var part in text.Split(new[] { '*' }, StringSplitOptions.RemoveEmptyEntries))
                 {
                     if (part.StartsWith("/"))
                     {
-                        // Handle division case like "/.7"
-                        var value = decimal.Parse(part.Substring(1));
-                        result *= (1m / value);
+                        // Division, e.g. "/.7" - a mark-up expressed as a divisor.
+                        decimal value = decimal.Parse(part.Substring(1), CultureInfo.InvariantCulture);
+                        if (value == 0m)
+                        {
+                            MessageBox.Show("A multiplier cannot divide by zero. No discount was applied.");
+                            return 1m;
+                        }
+
+                        result *= 1m / value;
                     }
                     else if (part.Contains('/'))
                     {
-                        MessageBox.Show("Invalid discount format. Division should be at the start of the part.");
+                        // 10/10/5 - each number is a percentage OFF, applied one after the
+                        // other, so the ratio is (1 - 10%) x (1 - 10%) x (1 - 5%).
+                        foreach (var percent in part.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries))
+                        {
+                            decimal value = decimal.Parse(percent, CultureInfo.InvariantCulture);
+                            result *= 1m - (value / 100m);
+                        }
                     }
                     else
                     {
-                        // Normal multiplier
-                        var value = decimal.Parse(part);
-                        result *= value;
+                        result *= decimal.Parse(part, CultureInfo.InvariantCulture);
                     }
                 }
 
                 return result;
             }
-            catch
+            catch (FormatException)
             {
-                throw new ArgumentException("Invalid discount string format.");
+                MessageBox.Show(
+                    "That multiplier could not be read: \"" + discountString + "\"."
+                        + Environment.NewLine + Environment.NewLine
+                        + "Use a multiplier (0.9), several multiplied (0.9*0.8), a division (/.7),"
+                        + " or percentages off one after another (10/10/5). No discount was applied.",
+                    "Multiplier", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+
+                return 1m;
+            }
+            catch (OverflowException)
+            {
+                MessageBox.Show("That multiplier is out of range: \"" + discountString + "\". No discount was applied.",
+                                "Multiplier", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+
+                return 1m;
             }
         }
 

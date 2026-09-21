@@ -3988,53 +3988,14 @@ namespace smpc_sales_app.Pages.Sales
             return TotalAmount;
         }
 
+        // One parser for both grids: ItemSetUC's, which also understands the 10/10/5 form
+        // (chained percentages off). This was a second copy that had already drifted - it
+        // returned 1 on a malformed entry where the other carried on with a partial figure -
+        // so a multiplier could mean two different things depending on which quotation you
+        // typed it into.
         public static decimal CalculateDiscountMultiplier(string discountString)
         {
-            if (string.IsNullOrWhiteSpace(discountString))
-                return 1m;
-
-            try
-            {
-                // Replace all spaces for safety
-                discountString = discountString.Replace(" ", "");
-
-                // Split by '*' while keeping '/' info
-                var parts = discountString.Split(new[] { '*' }, StringSplitOptions.RemoveEmptyEntries);
-
-                decimal result = 1m;
-
-                foreach (var part in parts)
-                {
-                    if (part.StartsWith("/"))
-                    {
-                        // Handle division case like "/.7"
-                        var value = decimal.Parse(part.Substring(1));
-                        result *= (1m / value);
-                    }
-                    else if (part.Contains('/'))
-                    {
-                        // Was a bare MessageBox that let the loop keep going with this
-                        // segment silently skipped - the returned multiplier looked
-                        // valid but was computed from only part of the input. Now
-                        // returns the neutral multiplier (1 = no discount) so a
-                        // malformed entry can't silently produce a partial discount.
-                        MessageBox.Show("Invalid discount format. Division should be at the start of the part. No discount was applied.");
-                        return 1m;
-                    }
-                    else
-                    {
-                        // Normal multiplier
-                        var value = decimal.Parse(part);
-                        result *= value;
-                    }
-                }
-
-                return result;
-            }
-            catch
-            {
-                throw new ArgumentException("Invalid discount string format.");
-            }
+            return ItemSetUC.CalculateDiscountMultiplier(discountString);
         }
 
         private static bool IsValidMoneyFormat(string input)
@@ -8329,11 +8290,17 @@ namespace smpc_sales_app.Pages.Sales
                 if (string.IsNullOrWhiteSpace(referenceCode) || referenceCode.Contains("."))
                     continue;
 
-                if (row.Cells["quick_qty"].Value == null || string.IsNullOrEmpty(row.Cells["quick_qty"].Value.ToString()) ||
-                    row.Cells["quick_unit_price"].Value == null || string.IsNullOrEmpty(row.Cells["quick_unit_price"].Value.ToString()))
+                if (row.Cells["quick_qty"].Value == null || string.IsNullOrEmpty(row.Cells["quick_qty"].Value.ToString()))
                     continue;
 
-                decimal unitPrice = Convert.ToDecimal(Helpers.GetCleanedPriceValue(row.Cells["quick_unit_price"].Value.ToString()));
+                // Spec 5.1/8.3: LIST PRICE and UNIT PRICE are mutually exclusive, and the
+                // multiplier computes against whichever is present. Only the unit price was
+                // read here, and a row without one was skipped outright - so a line carrying
+                // a list price (a pump priced off an uploaded list) got no line total at all.
+                decimal unitPrice = LinePriceBasis(row.Cells["quick_list_price"].Value, row.Cells["quick_unit_price"].Value);
+                if (unitPrice == 0m)
+                    continue;
+
                 decimal discount = CalculateDiscountMultiplier(row.Cells["quick_discount"].Value?.ToString());
                 decimal qty = Convert.ToDecimal(row.Cells["quick_qty"].Value);
                 decimal TotalUnitPrice = unitPrice * qty;
@@ -8349,6 +8316,27 @@ namespace smpc_sales_app.Pages.Sales
                 // value actually matching the qty/price/discount just recalculated.
                 row.Cells["quick_net_discount"].Value = netDiscount;
             }
+        }
+
+        // What the multiplier and the line total are computed from: the LIST PRICE where the
+        // line has one, otherwise the UNIT PRICE. 0 means neither is filled in yet, which is
+        // a row still being typed rather than a free line. Shared with the project quotation
+        // through ItemSetUC, which applies the same rule to its own grid.
+        internal static decimal LinePriceBasis(object listPrice, object unitPrice)
+        {
+            decimal list = ParsePriceCell(listPrice);
+
+            return list > 0m ? list : ParsePriceCell(unitPrice);
+        }
+
+        private static decimal ParsePriceCell(object value)
+        {
+            string text = value?.ToString();
+            if (string.IsNullOrWhiteSpace(text))
+                return 0m;
+
+            decimal parsed;
+            return decimal.TryParse(Helpers.GetCleanedPriceValue(text), out parsed) ? parsed : 0m;
         }
 
         private void ComputeFooterTotals()
