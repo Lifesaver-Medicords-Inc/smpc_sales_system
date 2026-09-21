@@ -30,21 +30,29 @@ namespace smpc_sales_app.Pages
         private void InitializeComponent()
         {
             System.Windows.Forms.TreeNode treeNode1 = new System.Windows.Forms.TreeNode("Dashboard");
-            System.Windows.Forms.TreeNode treeNode2 = new System.Windows.Forms.TreeNode("Sales Quotation");
-            System.Windows.Forms.TreeNode treeNode3 = new System.Windows.Forms.TreeNode("Sales Order");
-            System.Windows.Forms.TreeNode treeNode4 = new System.Windows.Forms.TreeNode("Sales Return");
-            System.Windows.Forms.TreeNode treeNode5 = new System.Windows.Forms.TreeNode("Business Partners");
-            System.Windows.Forms.TreeNode treeNode6 = new System.Windows.Forms.TreeNode("Opportunities");
-            System.Windows.Forms.TreeNode treeNode7 = new System.Windows.Forms.TreeNode("Purchase Requisition");
-            System.Windows.Forms.TreeNode treeNode8 = new System.Windows.Forms.TreeNode("CRM");
-            System.Windows.Forms.TreeNode treeNode9 = new System.Windows.Forms.TreeNode("Ship Type Setup");
-            System.Windows.Forms.TreeNode treeNode10 = new System.Windows.Forms.TreeNode("Application Setup");
-            System.Windows.Forms.TreeNode treeNode11 = new System.Windows.Forms.TreeNode("Template Setup");
-            System.Windows.Forms.TreeNode treeNode12 = new System.Windows.Forms.TreeNode("Setup", new System.Windows.Forms.TreeNode[] {
-            treeNode9,
-            treeNode10,
-            treeNode11});
-            System.Windows.Forms.TreeNode treeNode13 = new System.Windows.Forms.TreeNode("Item Entry");
+            System.Windows.Forms.TreeNode treeNode2 = new System.Windows.Forms.TreeNode("Business Partners");
+            System.Windows.Forms.TreeNode treeNode3 = new System.Windows.Forms.TreeNode("CRM");
+            System.Windows.Forms.TreeNode treeNode4 = new System.Windows.Forms.TreeNode("Opportunities");
+            System.Windows.Forms.TreeNode treeNode5 = new System.Windows.Forms.TreeNode("Sales Quotation");
+            System.Windows.Forms.TreeNode treeNode6 = new System.Windows.Forms.TreeNode("Sales Order");
+            System.Windows.Forms.TreeNode treeNode7 = new System.Windows.Forms.TreeNode("Sales Order Approvals");
+            System.Windows.Forms.TreeNode treeNode8 = new System.Windows.Forms.TreeNode("Sales Calendar");
+            System.Windows.Forms.TreeNode treeNode9 = new System.Windows.Forms.TreeNode("Sales Return");
+            System.Windows.Forms.TreeNode treeNode10 = new System.Windows.Forms.TreeNode("Item Entry");
+            System.Windows.Forms.TreeNode treeNode11 = new System.Windows.Forms.TreeNode("Purchase Requisition");
+            System.Windows.Forms.TreeNode treeNode12 = new System.Windows.Forms.TreeNode("Logbook");
+            System.Windows.Forms.TreeNode treeNode13 = new System.Windows.Forms.TreeNode("Tracker");
+            System.Windows.Forms.TreeNode treeNode14 = new System.Windows.Forms.TreeNode("Inventory", new System.Windows.Forms.TreeNode[] {
+            treeNode12,
+            treeNode13});
+            System.Windows.Forms.TreeNode treeNode15 = new System.Windows.Forms.TreeNode("Ship Type Setup");
+            System.Windows.Forms.TreeNode treeNode16 = new System.Windows.Forms.TreeNode("Application Setup");
+            System.Windows.Forms.TreeNode treeNode17 = new System.Windows.Forms.TreeNode("Template Setup");
+            System.Windows.Forms.TreeNode treeNode18 = new System.Windows.Forms.TreeNode("Setup", new System.Windows.Forms.TreeNode[] {
+            treeNode15,
+            treeNode16,
+            treeNode17});
+            System.Windows.Forms.TreeNode treeNode19 = new System.Windows.Forms.TreeNode("Item Request");
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Layout));
             this.tabContainer = new System.Windows.Forms.TabControl();
             this.pnl_content_capped = new System.Windows.Forms.Panel();
@@ -115,30 +123,42 @@ namespace smpc_sales_app.Pages
             this.Sidebar.Name = "Sidebar";
             treeNode1.Name = "Dashboard";
             treeNode1.Text = "Dashboard";
-            treeNode2.Name = "Sales Quotation";
-            treeNode2.Text = "Sales Quotation";
-            treeNode3.Name = "Sales Order";
-            treeNode3.Text = "Sales Order";
-            treeNode4.Name = "Sales Return";
-            treeNode4.Text = "Sales Return";
-            treeNode5.Name = "Business Partners";
-            treeNode5.Text = "Business Partners";
-            treeNode6.Name = "Opportunities";
-            treeNode6.Text = "Opportunities";
-            treeNode7.Name = "Purchase Requisition";
-            treeNode7.Text = "Purchase Requisition";
-            treeNode8.Name = "CRM";
-            treeNode8.Text = "CRM";
-            treeNode9.Name = "Ship Type Setup";
-            treeNode9.Text = "Ship Type Setup";
-            treeNode10.Name = "Application Setup";
-            treeNode10.Text = "Application Setup";
-            treeNode11.Name = "Template Setup";
-            treeNode11.Text = "Template Setup";
-            treeNode12.Name = "parent";
-            treeNode12.Text = "Setup";
-            treeNode13.Name = "Item Entry";
-            treeNode13.Text = "Item Entry";
+            treeNode2.Name = "Business Partners";
+            treeNode2.Text = "Business Partners";
+            treeNode3.Name = "CRM";
+            treeNode3.Text = "CRM";
+            treeNode4.Name = "Opportunities";
+            treeNode4.Text = "Opportunities";
+            treeNode5.Name = "Sales Quotation";
+            treeNode5.Text = "Sales Quotation";
+            treeNode6.Name = "Sales Order";
+            treeNode6.Text = "Sales Order";
+            treeNode7.Name = "Sales Order Approvals";
+            treeNode7.Text = "Sales Order Approvals";
+            treeNode8.Name = "Sales Calendar";
+            treeNode8.Text = "Sales Calendar";
+            treeNode9.Name = "Sales Return";
+            treeNode9.Text = "Sales Return";
+            treeNode10.Name = "Item Entry";
+            treeNode10.Text = "Item Entry";
+            treeNode11.Name = "Purchase Requisition";
+            treeNode11.Text = "Purchase Requisition";
+            treeNode12.Name = "Logbook";
+            treeNode12.Text = "Logbook";
+            treeNode13.Name = "Tracker";
+            treeNode13.Text = "Tracker";
+            treeNode14.Name = "Inventory";
+            treeNode14.Text = "Inventory";
+            treeNode15.Name = "Ship Type Setup";
+            treeNode15.Text = "Ship Type Setup";
+            treeNode16.Name = "Application Setup";
+            treeNode16.Text = "Application Setup";
+            treeNode17.Name = "Template Setup";
+            treeNode17.Text = "Template Setup";
+            treeNode18.Name = "parent";
+            treeNode18.Text = "Setup";
+            treeNode19.Name = "Item Request";
+            treeNode19.Text = "Item Request";
             this.Sidebar.Nodes.AddRange(new System.Windows.Forms.TreeNode[] {
             treeNode1,
             treeNode2,
@@ -148,8 +168,12 @@ namespace smpc_sales_app.Pages
             treeNode6,
             treeNode7,
             treeNode8,
-            treeNode12,
-            treeNode13});
+            treeNode9,
+            treeNode10,
+            treeNode11,
+            treeNode14,
+            treeNode18,
+            treeNode19});
             this.Sidebar.Size = new System.Drawing.Size(200, 428);
             this.Sidebar.TabIndex = 0;
             this.Sidebar.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.Sidebar_AfterSelect);

@@ -78,6 +78,9 @@ namespace smpc_sales_app.Pages
                     var inventoryLogin = new smpc_inventory_app.Pages.Login();
                     await inventoryLogin.LoginFromSalesAsync(data);
 
+                    var engineeringLogin = new smpc_engineering_app.Pages.Login();
+                    await engineeringLogin.LoginFromEngineerAsync(data);
+
                     CacheData.PaymentTerms = await PaymentTermsServices.GetAsDatatable();
                     CacheData.ApplicationSetup = await ApplicationService.GetAsDatatable();
                     CacheData.UoM = await UnitOfMeasurementServices.GetAsDatatable();

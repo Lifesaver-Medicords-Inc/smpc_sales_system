@@ -37,7 +37,7 @@ namespace smpc_sales_app.Services
             { "Sales Order", new Orders() },
             // Spec 3.2 lists "SO Approvals" and "SO List" as separate Sales modules;
             // 3.4 is what the queue is for.
-            { "SO Approvals", new smpc_sales_system.Pages.Sales.SOApprovals() },
+            { "Sales Order Approvals", new smpc_sales_system.Pages.Sales.SOApprovals() },
             { "Sales Return", new SalesReturn() },
             { "Opportunities", new Opportunities() },
             { "Purchase Requisition", new PurchaseRequisition() },
@@ -52,6 +52,11 @@ namespace smpc_sales_app.Services
             //inventory
             { "Business Partners", new smpc_inventory_app.Pages.Business_Partner_Info.BusinessPartnerInfo(string.Empty) },
             { "Item Entry", new smpc_inventory_app.Pages.Item.frm_Item_Entry() },
+            { "Logbook", new smpc_inventory_app.Pages.Inventory.InventoryLogbookPage() },
+            { "Tracker", new smpc_inventory_app.Pages.InventoryTrackerPage() },
+
+            //engineering
+            { "Item Request", new smpc_engineering_app.Pages.ItemRequest2.ItemRequestPage2() },
 
         };
 

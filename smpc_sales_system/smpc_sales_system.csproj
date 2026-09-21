@@ -194,6 +194,10 @@
     <Reference Include="Serilog.Sinks.File, Version=7.0.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
       <HintPath>..\packages\Serilog.Sinks.File.7.0.0\lib\net471\Serilog.Sinks.File.dll</HintPath>
     </Reference>
+    <Reference Include="smpc_engineering_app, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\smpc_enginerring\smpc_engineering_app\bin\Debug\smpc_engineering_app.exe</HintPath>
+    </Reference>
     <Reference Include="smpc_inventory_app, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\smpc_inventory\smpc_inventory_app\bin\Debug\smpc_inventory_app.exe</HintPath>

@@ -32,19 +32,19 @@ namespace smpc_sales_app.Pages
             // generated tree so the queue ships without reshuffling the designer file,
             // and placed straight after Sales Order - it is the other half of the same
             // job. Guarded so a later designer entry does not produce two nodes.
-            if (Sidebar.Nodes.Find("SO Approvals", true).Length == 0)
-            {
-                var salesOrder = Sidebar.Nodes.Find("Sales Order", false);
-                var approvals = new TreeNode("SO Approvals") { Name = "SO Approvals" };
-                if (salesOrder.Length > 0)
-                {
-                    Sidebar.Nodes.Insert(Sidebar.Nodes.IndexOf(salesOrder[0]) + 1, approvals);
-                }
-                else
-                {
-                    Sidebar.Nodes.Add(approvals);
-                }
-            }
+            //if (Sidebar.Nodes.Find("Sales Order Approvals", true).Length == 0)
+            //{
+            //    var salesOrder = Sidebar.Nodes.Find("Sales Order", false);
+            //    var approvals = new TreeNode("SO Approvals") { Name = "SO Approvals" };
+            //    if (salesOrder.Length > 0)
+            //    {
+            //        Sidebar.Nodes.Insert(Sidebar.Nodes.IndexOf(salesOrder[0]) + 1, approvals);
+            //    }
+            //    else
+            //    {
+            //        Sidebar.Nodes.Add(approvals);
+            //    }
+            //}
 
             tabContainer.SelectedIndexChanged += (s, e) => RecalculateContentWidth();
 

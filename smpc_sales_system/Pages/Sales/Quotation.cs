@@ -8101,25 +8101,61 @@ namespace smpc_sales_app.Pages.Sales
             IsEdit = false;
             isSubVersion = false;
 
+            // The reload is what throws away the edit: the grids and lists are bound straight
+            // to the in-memory tables, so anything typed before Close is still sitting in them
+            // and would show up the next time that quotation was opened. Only the quotation
+            // data is refetched - the item catalogue and customer list are page-level and were
+            // never touched by the edit, so Close no longer re-downloads them.
             if (isProject)
                 await RunWithLoadingAsync(async () => await fetchSalesProjectData(openId));
             else
-                await RunWithLoadingAsync(async () => await LoadExistingRecord(openDocumentNo));
+                await RunWithLoadingAsync(async () => await fetchQuotationDetails(openDocumentNo));
 
             KeepCurrentView();
 
-            Panel[] panels = { pnl_header, pnl_footer };
-            Helpers.ReadOnlyControls(panels);
-
-            // Only a form left with nothing loaded (a cancelled New, no saved quotations) is
-            // cleared; a reopened quotation keeps its fields.
-            if (ToInt(txt_id.Text) <= 0)
-                Helpers.ResetControls(panels);
-            //pnl_header.Enabled = false;
-            //pnl_footer.Enabled = false;
+            // Closing an edit or an add cancels it, so the page is left empty rather than back
+            // on the record that was open - header, footer and the item rows all cleared
+            // (user-reported 2026-09-21). The quotation is still there; SEARCH / << PREV /
+            // NEXT >> reopen it.
+            ClearOpenRecord();
 
             toolstrip_quotation.Enabled = true;
 
+        }
+
+        // Everything that belongs to the record currently on screen: the header and footer
+        // fields, the Quick Quote lines, and the project's item-set tabs and multipliers.
+        // Leaves the page in the same empty state it has before a quotation is opened.
+        private void ClearOpenRecord()
+        {
+            Panel[] panels = { pnl_header, pnl_footer };
+            Helpers.ReadOnlyControls(panels);
+
+            // Clears txt_id and txt_document_no along with the rest - both live in
+            // pnl_header - which is what leaves the page with no record open.
+            Helpers.ResetControls(panels);
+            txt_project_name.Clear();
+
+            // Rebound to an empty copy rather than cleared in place: the grid is bound to a
+            // DataView over the table holding every quotation's lines (see
+            // createFilterViewDgvQuickQouteDetails), and clearing that would empty them all.
+            if (dgv_quick_quote_details.DataSource is DataView view)
+                dgv_quick_quote_details.DataSource = view.Table.Clone();
+            else if (dgv_quick_quote_details.DataSource is DataTable table)
+                dgv_quick_quote_details.DataSource = table.Clone();
+            else
+                dgv_quick_quote_details.Rows.Clear();
+
+            // The project view keeps its items in one tab per item set.
+            tabControl2.TabPages.Clear();
+
+            if (bs_project_multipliers != null)
+                bs_project_multipliers.DataSource = bs_project_multipliers.DataSource is DataTable multipliers
+                    ? multipliers.Clone()
+                    : null;
+
+            // No record open now, so Edit and Update go away with it.
+            ReapplyFinalizeButtonState();
         }
         private void btn_duplicate_Click(object sender, EventArgs e)
         {
