@@ -2211,6 +2211,12 @@ namespace smpc_sales_system.Pages.Sales
             if (dgv_wiring != null && dgv_wiring.Columns.Contains("project_wiring_amp_req"))
                 dgv_wiring.Columns["project_wiring_amp_req"].ReadOnly = true;
 
+            // Setting the column ReadOnly resets every cell in it, so row 7's exception -
+            // typed by hand when the starting method has no formula - has to be re-applied
+            // after it, not before. See SetControllerToMotorAmpOpen.
+            SetControllerToMotorAmpOpen(
+                !StartingMethodHasAmpFormula(StartingMethodCode(cmb_starting_method?.Text)));
+
             LockClientNeedsCaptions();
         }
 
@@ -3247,6 +3253,14 @@ namespace smpc_sales_system.Pages.Sales
             if (dgv_wiring == null || dgv_wiring.Rows.Count == 0)
                 return;
 
+            string startingMethod = StartingMethodCode(cmb_starting_method.Text);
+            bool hasFormula = StartingMethodHasAmpFormula(startingMethod);
+
+            // Done before FLA is read, because it does not depend on it: a method with no
+            // formula never fills row 7 whatever FLA says, so the cell has to be typeable
+            // even on a quotation where FLA has not been entered yet.
+            SetControllerToMotorAmpOpen(!hasFormula);
+
             // Was: txt_FLA.Text == "" && txt_VOLT.Text == "" - an AND, so a blank FLA with
             // a filled VOLTAGE fell straight through to double.Parse(txt_FLA.Text) and threw
             // a FormatException. Only FLA actually feeds the formulas below (VOLTAGE was
@@ -3254,24 +3268,10 @@ namespace smpc_sales_system.Pages.Sales
             if (!double.TryParse(txt_FLA.Text, out double FLA))
                 return;
 
-            if (cmb_starting_method.Text == "WYE-DELTA CLOSED" || cmb_starting_method.Text == "WYE-DELTA OPEN")
-            {
-                double ampRequirement = FLA * 0.6 * 1.25;
-
-                SetWiringAmpReq("Controller to motor", (decimal)ampRequirement);
-            }
-
-            if (cmb_starting_method.Text == "DIRECT ONLINE")
-            {
-                double ampRequirement = FLA * 1.25;
-
-                SetWiringAmpReq("Controller to motor", (decimal)ampRequirement);
-            }
-
-            if (cmb_starting_method.Text == "SOFT STARTER")
-            {
-                SetWiringAmpReq("Controller to motor", (decimal)FLA);
-            }
+            // Nothing is written when there is no formula - whatever the user typed into
+            // row 7 stays as they left it.
+            if (hasFormula)
+                SetWiringAmpReq(ControllerToMotorRow, (decimal)StartingMethodAmp(startingMethod, FLA));
 
             // Row 1 (ECB -> controller) shares FLA with the row 7 formulas above, so refresh
             // it here too rather than leaving it stale until someone retypes NO. OF PUMP/SET.
@@ -3403,6 +3403,97 @@ namespace smpc_sales_system.Pages.Sales
         // so on any saved quote the grid is unbound and every write to wiringTable was
         // invisible. Writing to the grid works under both paths: when the grid IS bound,
         // setting a cell propagates back to the underlying row anyway.
+        // defaultWiring's seventh row - the one the starting method drives (spec 8.4).
+        private const string ControllerToMotorRow = "Controller to motor";
+
+        // The dropdown reads "DOL - Direct Online", so the code in front of the dash is what
+        // identifies the method. Quotations saved before the codes were introduced hold the
+        // old wording ("DIRECT ONLINE", "WYE-DELTA OPEN"), and those must keep computing, so
+        // both spellings map to the same code. Matching on the whole label is what broke when
+        // the list was rewritten: no branch matched any more, so row 7 stopped being computed
+        // for every method at once.
+        private static string StartingMethodCode(string method)
+        {
+            string text = (method ?? "").Trim().ToUpperInvariant();
+
+            if (text.Length == 0)
+                return "";
+
+            int dash = text.IndexOf('-');
+            string code = (dash > 0 ? text.Substring(0, dash) : text).Trim();
+
+            switch (code)
+            {
+                case "DOL":
+                case "WDO":
+                case "WDC":
+                case "VFD":
+                case "SS":
+                case "ATO":
+                case "ATC":
+                    return code;
+            }
+
+            if (text.StartsWith("DIRECT ONLINE")) return "DOL";
+            if (text.StartsWith("WYE-DELTA OPEN")) return "WDO";
+            if (text.StartsWith("WYE-DELTA CLOSED")) return "WDC";
+            if (text.StartsWith("SOFT STARTER")) return "SS";
+
+            return code;
+        }
+
+        // Spec 8.4 gives a controller-to-motor amp formula for Direct Online and Wye-Delta
+        // only; Soft Starter has carried FLA as-is since before the codes existed. VFD and
+        // the two Auto-Transformer methods have no formula decided yet, so nothing is
+        // computed for them and row 7 is opened for manual entry instead (user decision,
+        // 2026-09-21). Adding a formula later means adding its case here.
+        private static bool StartingMethodHasAmpFormula(string code)
+        {
+            return code == "DOL" || code == "WDO" || code == "WDC" || code == "SS";
+        }
+
+        private static double StartingMethodAmp(string code, double fla)
+        {
+            switch (code)
+            {
+                case "DOL": return fla * 1.25;              // 3 wires + 1 ground
+                case "WDO":
+                case "WDC": return fla * 0.6 * 1.25;        // 6 wires + 1 ground
+                default: return fla;                        // SS
+            }
+        }
+
+        // AMP REQ. is a formula column and is locked as one (see SetEditable). When the
+        // chosen starting method has no formula there is nothing to fill row 7, so that one
+        // cell is unlocked rather than leaving an empty cell nobody can type into. Every
+        // other cell in the column stays locked.
+        private void SetControllerToMotorAmpOpen(bool open)
+        {
+            if (dgv_wiring == null) return;
+            if (!dgv_wiring.Columns.Contains("project_wiring_amp_req")) return;
+            if (!dgv_wiring.Columns.Contains("project_wiring_materials")) return;
+
+            foreach (DataGridViewRow row in dgv_wiring.Rows)
+            {
+                if (row.IsNewRow) continue;
+
+                string material = row.Cells["project_wiring_materials"].Value?.ToString();
+                if (!string.Equals(material, ControllerToMotorRow, StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                DataGridViewCell cell = row.Cells["project_wiring_amp_req"];
+
+                // Never editable while the tab itself is locked - viewing a saved quotation
+                // must stay read-only whichever method it was saved with.
+                cell.ReadOnly = !open || dgv_wiring.ReadOnly;
+
+                // Color.Empty puts the cell back to whatever the column says, so a locked
+                // row 7 looks like every other formula cell again.
+                cell.Style.BackColor = cell.ReadOnly ? Color.Empty : SystemColors.Window;
+                return;
+            }
+        }
+
         private void SetWiringAmpReq(string materialName, decimal value)
         {
             if (dgv_wiring == null || dgv_wiring.Rows.Count == 0) return;
