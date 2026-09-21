@@ -23,6 +23,7 @@ using System.Windows.Forms;
 using System.Xml.Linq;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.TextBox;
 
+
 namespace smpc_sales_system.Pages.Sales
 {
     public partial class ItemSetUC : UserControl
@@ -2672,7 +2673,9 @@ namespace smpc_sales_system.Pages.Sales
             ModelModal createModal = new ModelModal(ItemList, BomHead, BomDetails, Id);
             DialogResult result = createModal.ShowDialog();
 
-            string referenceCode = dgv.Rows[index].Cells["reference_code"].Value.ToString();
+            // Same reason as GetTemplateChildren: a row that has no reference code yet holds
+            // null here, and .ToString() on it threw before the picked model was ever used.
+            string referenceCode = dgv.Rows[index].Cells["reference_code"].Value?.ToString() ?? "";
 
             if (result == DialogResult.OK)
             {
@@ -2992,7 +2995,7 @@ namespace smpc_sales_system.Pages.Sales
 
             // Add missing template children (if any)
             var templateChildren = templateSelected.AsEnumerable()
-                .Where(r => r.Field<string>("reference_code").StartsWith(parentReferenceCode) &&
+                .Where(r => (r.Field<string>("reference_code") ?? "").StartsWith(parentReferenceCode) &&
                             r.Field<int>("level") == nextLevel);
 
             if (templateChildren.Any())
@@ -3061,21 +3064,35 @@ namespace smpc_sales_system.Pages.Sales
             TemplateChildren.Columns.Add("reference_code", typeof(string));
             //TemplateChildren.Columns.Add("parent_item_id", typeof(int));
 
-            DataTable dgv_project_temp = new DataTable();
+            // Not every row in the grid carries a reference code - one the user added by hand
+            // has none until the codes are regenerated - and Field<string> hands back null for
+            // an empty cell, so .StartsWith on it threw NullReferenceException as soon as a
+            // model was picked on a template row (user-reported 2026-09-21). A row with no
+            // code is simply not a child of anything, so it is skipped. The same call also
+            // used CopyToDataTable, which throws when nothing matches at all - and a row with
+            // no children is normal here, not an error. GetTotalUnitPriceForChildren below
+            // already guards the null the same way.
+            DataTable dgv_project_temp = dgv_project_items.DataSource as DataTable;
 
-            dgv_project_temp = (DataTable)dgv_project_items.DataSource;
+            if (dgv_project_temp == null || string.IsNullOrWhiteSpace(referenceCode))
+                return TemplateChildren;
 
-            dgv_project_temp = dgv_project_temp.AsEnumerable()
-                .Where(r => r.Field<string>("reference_code").StartsWith(referenceCode + ".") ||
-                r.Field<string>("reference_code") == referenceCode)
-                .CopyToDataTable();
+            var children = dgv_project_temp.AsEnumerable()
+                .Where(r =>
+                {
+                    string code = r.Field<string>("reference_code");
 
+                    if (code == null) return false;
 
-            foreach (DataRow row in dgv_project_temp.Rows)
+                    return code.StartsWith(referenceCode + ".") || code == referenceCode;
+                })
+                .ToList();
+
+            foreach (DataRow row in children)
             {
                 // Add parent to tempTemplateChildren
                 TemplateChildren.Rows.Add(
-                    Convert.ToInt32(row["item_id"]),
+                    Convert.IsDBNull(row["item_id"]) ? 0 : Convert.ToInt32(row["item_id"]),
                     row["components"]?.ToString().Trim() ?? "",
                     GetLevel(row["reference_code"]?.ToString() ?? ""),
                     row["reference_code"]?.ToString()
