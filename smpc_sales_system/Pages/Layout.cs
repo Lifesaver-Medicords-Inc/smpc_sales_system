@@ -234,6 +234,11 @@ namespace smpc_sales_app.Pages
                 // gates itself too, for the modals that open it.
                 if (!smpc_inventory_app.Model.BpiAccess.CanOpen(CacheData.CurrentUser))
                     Sidebar.Nodes.RemoveByKey("Business Partners");
+
+                // Everything else the position has no access to goes the same way, from the
+                // grants Admin's Access Control screen maintains. See NavigationAccess.
+                smpc_sales_system.Models.NavigationAccess.Apply(Sidebar);
+
                 this.Enabled = true;
 
                 // Only safe to call now that CacheData.SessionToken is actually set - see

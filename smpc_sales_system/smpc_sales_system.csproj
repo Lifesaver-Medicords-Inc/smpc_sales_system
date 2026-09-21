@@ -32,7 +32,7 @@
     <SuiteName>SMPC %40copyright</SuiteName>
     <MinimumRequiredVersion>1.0.0.0</MinimumRequiredVersion>
     <ApplicationRevision>0</ApplicationRevision>
-    <ApplicationVersion>1.3.0.0</ApplicationVersion>
+    <ApplicationVersion>1.4.0.0</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
     <BootstrapperEnabled>true</BootstrapperEnabled>
@@ -271,6 +271,7 @@
     <Compile Include="Data\STATIC_QUOTE_WITH_TEMP.cs" />
     <Compile Include="Data\STATIC_SHIPPED_TYPE.cs" />
     <Compile Include="Data\STATIC_WARRANTY.cs" />
+    <Compile Include="Models\NavigationAccess.cs" />
     <Compile Include="Models\ApplicationModel.cs" />
     <Compile Include="Models\CompanyModel.cs" />
     <Compile Include="Models\EngineerModel.cs" />
