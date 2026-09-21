@@ -38,7 +38,10 @@ namespace smpc_sales_system.Pages.Sales
         private readonly Panel pnl_pager = new Panel { Dock = DockStyle.Bottom, Height = 40, Padding = new Padding(8, 6, 8, 6) };
         private readonly Button btn_page_prev = new Button { Text = "<< PREV", Dock = DockStyle.Left, Width = 90 };
         private readonly Button btn_page_next = new Button { Text = "NEXT >>", Dock = DockStyle.Left, Width = 90 };
-        private readonly Label lbl_page = new Label { Dock = DockStyle.Left, Width = 230, TextAlign = ContentAlignment.MiddleCenter };
+        // Fills whatever the two buttons leave, so a message longer than the old fixed 230px
+        // (the "item is not in the catalogue" one) is readable instead of cut off. It is added
+        // to the panel before the buttons, so docking gives them their width first.
+        private readonly Label lbl_page = new Label { Dock = DockStyle.Fill, TextAlign = ContentAlignment.MiddleCenter, AutoEllipsis = true };
 
         public ModelModal(DataTable Item, string Id)
         {
@@ -121,9 +124,16 @@ namespace smpc_sales_system.Pages.Sales
                 _page = result.Pagination?.page ?? page;
                 _totalPages = result.Pagination?.total_pages ?? 0;
 
-                lbl_page.Text = _totalPages == 0
-                    ? "No models found"
-                    : $"Page {_page} of {_totalPages}  ({result.Pagination?.total ?? 0} models)";
+                // A refused request is not an empty list. The one that actually happens is a
+                // row whose item is no longer in the catalogue - a project template keeps the
+                // item id it was built from, and those do not survive a rebuilt database - and
+                // it used to read as "this component has no models at all".
+                if (!result.Success && !string.IsNullOrWhiteSpace(result.Message))
+                    lbl_page.Text = result.Message;
+                else
+                    lbl_page.Text = _totalPages == 0
+                        ? "No models found"
+                        : $"Page {_page} of {_totalPages}  ({result.Pagination?.total ?? 0} models)";
 
                 btn_page_prev.Enabled = result.Pagination?.has_prev ?? false;
                 btn_page_next.Enabled = result.Pagination?.has_next ?? false;

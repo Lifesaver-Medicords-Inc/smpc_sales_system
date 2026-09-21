@@ -85,6 +85,13 @@ namespace smpc_sales_app.Services.Sales
     {
         public List<ItemPickerRow> Rows { get; set; } = new List<ItemPickerRow>();
         public PaginationModel Pagination { get; set; }
+
+        // Carried so a picker can tell "this list really is empty" apart from "the server
+        // refused the request" - a row pointing at an item that is no longer in the
+        // catalogue answers 404 with a message saying so, and the modal shows it rather
+        // than the same "No models found" an unmatched search gives.
+        public bool Success { get; set; }
+        public string Message { get; set; }
     }
 
      class ItemService
@@ -129,7 +136,9 @@ namespace smpc_sales_app.Services.Sales
             return new ItemPickerPage
             {
                 Rows = response?.Data ?? new List<ItemPickerRow>(),
-                Pagination = response?.pagination
+                Pagination = response?.pagination,
+                Success = response?.Success ?? false,
+                Message = response?.message
             };
         }
 
