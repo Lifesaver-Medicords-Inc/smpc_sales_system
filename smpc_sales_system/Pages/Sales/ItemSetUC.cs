@@ -527,11 +527,25 @@ namespace smpc_sales_system.Pages.Sales
         {
             foreach (DataGridView grid in new[] { dgv_project_items, dgv_wiring, dgv_final, dgv_size_up })
             {
-                if (grid == null || !grid.IsCurrentCellInEditMode)
+                if (grid == null)
                     continue;
 
-                grid.CommitEdit(DataGridViewDataErrorContexts.Commit);
-                grid.EndEdit();
+                if (grid.IsCurrentCellInEditMode)
+                {
+                    grid.CommitEdit(DataGridViewDataErrorContexts.Commit);
+                    grid.EndEdit();
+                }
+
+                // EndEdit closes the cell editor; this is what pushes a row typed on the
+                // new-row line into the table behind the grid. Looked up from the grid's own
+                // DataSource, since these grids are bound to a DataTable directly in some
+                // paths and through a BindingSource in others.
+                if (grid.DataSource == null || BindingContext == null)
+                    continue;
+
+                BindingManagerBase manager = BindingContext[grid.DataSource, grid.DataMember];
+                if (manager != null)
+                    manager.EndCurrentEdit();
             }
         }
 

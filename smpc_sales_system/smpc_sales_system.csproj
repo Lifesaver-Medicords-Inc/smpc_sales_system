@@ -198,6 +198,15 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\smpc_enginerring\smpc_engineering_app\bin\Debug\smpc_engineering_app.exe</HintPath>
     </Reference>
+    <Reference Include="System.Data.SQLite, Version=1.0.119.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=MSIL">
+      <!-- Needed by the Sales Calendar hosted from the dispatching app: its schedule detail
+           panel embeds a GMap control, whose type initializer loads System.Data.SQLite.
+           Without it the tab died with a TypeInitializationException. Referenced from
+           dispatching's package folder, the same relative-path convention as the cross-app
+           references above, so there is one copy of the package in the repo. -->
+      <HintPath>..\..\dispatching\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.119.0\lib\net46\System.Data.SQLite.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
     <Reference Include="smpc_dispatching, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <!-- The Sales Calendar screen is dispatching's; this app hosts it in a tab rather than
            rebuilding it (see Pages/Sales/SalesCalendarPage.cs). One-way: dispatching does not
@@ -278,6 +287,25 @@
     <Compile Include="Data\STATIC_QUOTE_WITH_TEMP.cs" />
     <Compile Include="Data\STATIC_SHIPPED_TYPE.cs" />
     <Compile Include="Data\STATIC_WARRANTY.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- System.Data.SQLite loads its native half from x86\ or x64\ beside the exe, picked
+         by process bitness. Needed because the Sales Calendar hosted from the dispatching
+         app embeds a GMap control, and GMap's type initializer loads System.Data.SQLite:
+         without these the tab died with a TypeInitializationException. Both bitnesses ship -
+         this app runs 32-bit today, but the calendar should not depend on that staying so. -->
+    <Content Include="..\..\dispatching\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.119.0\build\net46\x86\SQLite.Interop.dll">
+      <Link>x86\SQLite.Interop.dll</Link>
+      <TargetPath>x86\SQLite.Interop.dll</TargetPath>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\..\dispatching\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.119.0\build\net46\x64\SQLite.Interop.dll">
+      <Link>x64\SQLite.Interop.dll</Link>
+      <TargetPath>x64\SQLite.Interop.dll</TargetPath>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
     <Compile Include="Pages\Sales\SalesCalendarPage.cs" />
     <Compile Include="Models\NavigationAccess.cs" />
     <Compile Include="Models\ApplicationModel.cs" />

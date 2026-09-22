@@ -1832,29 +1832,39 @@ namespace smpc_sales_app.Pages.Sales
         // on this page, including a row still sitting on the new-row line.
         private void CommitPendingEdits()
         {
-            foreach (DataGridView grid in new[] { dgv_project_multiplier, dgv_quick_quote_details })
-            {
-                if (grid == null || !grid.IsCurrentCellInEditMode)
-                    continue;
-
-                grid.CommitEdit(DataGridViewDataErrorContexts.Commit);
-                grid.EndEdit();
-            }
-
-            // Pushes the row itself into the table behind the binding source - a row typed on
-            // the new-row line is not in the table until the edit ends.
-            if (bs_project_multipliers != null && BindingContext != null)
-            {
-                BindingManagerBase manager = BindingContext[bs_project_multipliers];
-                if (manager != null)
-                    manager.EndCurrentEdit();
-            }
+            CommitGrid(dgv_project_multiplier);
+            CommitGrid(dgv_quick_quote_details);
 
             foreach (TabPage tab in tabControl2.TabPages)
             {
                 if (tab.Controls.Count > 0 && tab.Controls[0] is ItemSetUC itemSet)
                     itemSet.CommitPendingEdits();
             }
+        }
+
+        // EndEdit closes the cell editor; EndCurrentEdit is what pushes a row typed on the
+        // new-row line into the table behind the grid, and it has to be looked up from the
+        // grid's OWN DataSource. The multipliers grid is bound to a BindingSource on a new
+        // quotation but straight to a DataTable on a saved one (see fetchSalesProject), so
+        // flushing the BindingSource by name flushed nothing at all on the saved case - the
+        // row was typed, the save ran, and the multiplier was never in the payload.
+        internal void CommitGrid(DataGridView grid)
+        {
+            if (grid == null)
+                return;
+
+            if (grid.IsCurrentCellInEditMode)
+            {
+                grid.CommitEdit(DataGridViewDataErrorContexts.Commit);
+                grid.EndEdit();
+            }
+
+            if (grid.DataSource == null || BindingContext == null)
+                return;
+
+            BindingManagerBase manager = BindingContext[grid.DataSource, grid.DataMember];
+            if (manager != null)
+                manager.EndCurrentEdit();
         }
 
         private async void  IsProject()
