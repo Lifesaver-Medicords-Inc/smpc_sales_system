@@ -58,6 +58,12 @@ namespace smpc_sales_app.Services
             //engineering
             { "Item Request", new smpc_engineering_app.Pages.ItemRequest2.ItemRequestPage2() },
 
+            // dispatching - the calendar screen is theirs, hosted here rather than rebuilt
+            // (see Pages/Sales/SalesCalendarPage.cs). Cheap to construct: it builds nothing
+            // until the tab is actually opened, unlike the pages above, which this table
+            // instantiates the moment it is first touched.
+            { "Sales Calendar", new smpc_sales_system.Pages.Sales.SalesCalendarPage() },
+
         };
 
         private string _selectedRoute;

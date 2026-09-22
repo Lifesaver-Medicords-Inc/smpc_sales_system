@@ -198,6 +198,13 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\smpc_enginerring\smpc_engineering_app\bin\Debug\smpc_engineering_app.exe</HintPath>
     </Reference>
+    <Reference Include="smpc_dispatching, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <!-- The Sales Calendar screen is dispatching's; this app hosts it in a tab rather than
+           rebuilding it (see Pages/Sales/SalesCalendarPage.cs). One-way: dispatching does not
+           reference this app, so there is no reference cycle to publish around. -->
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\dispatching\bin\Debug\smpc_dispatching.exe</HintPath>
+    </Reference>
     <Reference Include="smpc_inventory_app, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\smpc_inventory\smpc_inventory_app\bin\Debug\smpc_inventory_app.exe</HintPath>
@@ -271,6 +278,7 @@
     <Compile Include="Data\STATIC_QUOTE_WITH_TEMP.cs" />
     <Compile Include="Data\STATIC_SHIPPED_TYPE.cs" />
     <Compile Include="Data\STATIC_WARRANTY.cs" />
+    <Compile Include="Pages\Sales\SalesCalendarPage.cs" />
     <Compile Include="Models\NavigationAccess.cs" />
     <Compile Include="Models\ApplicationModel.cs" />
     <Compile Include="Models\CompanyModel.cs" />
