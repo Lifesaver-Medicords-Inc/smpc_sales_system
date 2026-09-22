@@ -1053,30 +1053,34 @@ namespace smpc_sales_app.Pages.Sales
 
             try
             {
-                // Latest-versions endpoint: one row per document with only
-                // those headers' lines/images. The GroupBy below is then a
-                // no-op safety net; version history (allTransactionList for
-                // the VersionModal, GetNextVersionNo) is served per-document
-                // by GetQuotationVersions instead of this full download.
-                data = await QuotationService.GetLatestQuotations();
+                int targetId = atId;
+                if (targetId <= 0 && !string.IsNullOrWhiteSpace(selectDocumentNo))
+                    targetId = await FindHeaderIdByDocumentAsync(selectDocumentNo);
+
+                smpc_app.Services.Helpers.ApiResponseModel<SalesQuotationList> page;
+                if (targetId > 0)
+                    page = await QuotationService.GetQuotationHeadersPage(at: targetId);
+                else
+                    page = await LoadMyHeadersPageAsync();
+
+                data = page != null ? page.Data : null;
+                quickHeadersPage = page != null ? page.pagination : null;
 
                 //projectData = await
 
                 if (data != null && data.SalesQuotation != null && data.SalesQuotation.Any())
                 {
-                    // Get latest quotation by version and subversion
-                    var latestQuotations = data.SalesQuotation
-                        .GroupBy(q => q.document_no)
-                        .Select(group => group
-                        .OrderByDescending(q => VersionNoAsInt(q.version_no))
-                        .ThenByDescending(q => VersionNoAsInt(q.sub_version_no))
-                        .First())
-                        .ToList();
-
-                    transactionList = JsonHelper.ToDataTable(latestQuotations);
-                    allTransactionList = JsonHelper.ToDataTable(data.SalesQuotation);
-                    childList = JsonHelper.ToDataTable(data.SalesQuotationQuick);
-                    selectedImageList = JsonHelper.ToDataTable(data.SalesQuotationSelectedImages);
+                    transactionList = JsonHelper.ToDataTable(data.SalesQuotation);
+                    // Page-scoped now (was every version ever). Anything needing a
+                    // document's full history - version viewer, next-version
+                    // numbering, finalize duplicate check - fetches that one
+                    // document via GetQuotationVersions instead.
+                    allTransactionList = transactionList;
+                    // Lines arrive lazily per opened record - empty tables with
+                    // the real schema so the RowFilter binds below keep working.
+                    childList = JsonHelper.ToDataTable(new List<SalesQuotationQuicksModel>());
+                    selectedImageList = JsonHelper.ToDataTable(new List<SalesQuotationSelectedImageModel>());
+                    loadedQuickDetailIds.Clear();
 
                     dgv_quick_quote_details.ReadOnly = true;
                     dgv_quick_quote_details.Enabled = true;
@@ -1103,11 +1107,13 @@ namespace smpc_sales_app.Pages.Sales
                     }
                     else
                     {
-                        SelectedRow = PreferredQuickRow(ownedIndexes, selectDocumentNo);
+                        SelectedRow = targetId > 0
+                            ? FindRowIndexById(transactionList, targetId)
+                            : -1;
+                        if (SelectedRow < 0)
+                            SelectedRow = PreferredQuickRow(ownedIndexes, selectDocumentNo);
 
-                        bind(transactionList, SelectedRow, true);
-
-                        createFilterViewDgvQuickQouteDetails();
+                        await OpenQuickRowAsync(SelectedRow);
                     }
 
                 }
@@ -1129,6 +1135,143 @@ namespace smpc_sales_app.Pages.Sales
                 toolstrip_quotation.Enabled = true;
             }
         }
+        // Opens one list row: header bind first (instant - headers are local),
+        // then that record's lines (one small detail fetch, merged and cached),
+        // then the items grid over the merged tables.
+        private async Task OpenQuickRowAsync(int row)
+        {
+            if (transactionList == null || row < 0 || row >= transactionList.Rows.Count) return;
+            SelectedRow = row;
+            bind(transactionList, SelectedRow, true);
+            await EnsureQuotationLinesAsync(ToInt(transactionList.Rows[SelectedRow]["id"]));
+            createFilterViewDgvQuickQouteDetails();
+        }
+
+        // Merges one record's lines/images into the working tables on first
+        // open. Later opens (Prev/Next/search re-select) hit the id set and do
+        // no request at all.
+        private async Task EnsureQuotationLinesAsync(int headerId)
+        {
+            if (headerId <= 0 || loadedQuickDetailIds.Contains(headerId)) return;
+            try
+            {
+                SalesQuotationList detail = await QuotationService.GetQuotationDetail(headerId);
+                if (detail == null) return;
+                MergeRowsById(childList, JsonHelper.ToDataTable(detail.SalesQuotationQuick ?? new List<SalesQuotationQuicksModel>()), "id");
+                MergeRowsById(selectedImageList, JsonHelper.ToDataTable(detail.SalesQuotationSelectedImages ?? new List<SalesQuotationSelectedImageModel>()), "id");
+                loadedQuickDetailIds.Add(headerId);
+            }
+            catch
+            {
+                // Grid simply shows no lines; transport failures already
+                // surface through ApiConnection's own dialog + reload offer.
+            }
+        }
+
+        // Resolves a document number to its header id for at= opens (reopen
+        // after save/close/search-pick). 0 when the server has no such row.
+        private async Task<int> FindHeaderIdByDocumentAsync(string documentNo)
+        {
+            if (string.IsNullOrWhiteSpace(documentNo)) return 0;
+            try
+            {
+                var result = await QuotationService.SearchQuotations(documentNo, 1);
+                var match = result != null && result.Data != null && result.Data.SalesQuotation != null
+                    ? result.Data.SalesQuotation.FirstOrDefault(q => NormalizeDocumentNo(q.document_no) == NormalizeDocumentNo(documentNo))
+                    : null;
+                return match != null ? match.id : 0;
+            }
+            catch { return 0; }
+        }
+
+        // First page containing one of this user's own records (their docs are
+        // usually recent, so this is page 1; older accounts walk a few pages).
+        // Bounded - a user with no records at all stops at the first empty page.
+        private async Task<smpc_app.Services.Helpers.ApiResponseModel<SalesQuotationList>> LoadMyHeadersPageAsync()
+        {
+            var page = await QuotationService.GetQuotationHeadersPage();
+            for (int guard = 0; guard < 10; guard++)
+            {
+                DataTable table = page != null && page.Data != null && page.Data.SalesQuotation != null
+                    ? JsonHelper.ToDataTable(page.Data.SalesQuotation) : new DataTable();
+                if (GetOwnedRowIndexes(table).Count > 0) return page;
+                if (page == null || page.pagination == null || !page.pagination.has_next || table.Rows.Count == 0) return page;
+                int lastId = ToInt(table.Rows[table.Rows.Count - 1]["id"]);
+                if (lastId <= 0) return page;
+                page = await QuotationService.GetQuotationHeadersPage(after: lastId);
+            }
+            return page;
+        }
+
+        // Row Prev/Next at a page edge: swap in the adjacent page and land on
+        // its first owned row. Walks past pages with nothing of this user's
+        // (bounded). False when there is no further page.
+        private async Task<bool> LoadNextHeadersPageAsync()
+        {
+            if (quickHeadersPage == null || !quickHeadersPage.has_next || transactionList == null || transactionList.Rows.Count == 0)
+                return false;
+            int edgeId = ToInt(transactionList.Rows[transactionList.Rows.Count - 1]["id"]);
+            for (int guard = 0; guard < 10 && edgeId > 0; guard++)
+            {
+                var page = await QuotationService.GetQuotationHeadersPage(after: edgeId);
+                if (page == null || page.Data == null || page.Data.SalesQuotation == null || !page.Data.SalesQuotation.Any())
+                    return false;
+                transactionList = JsonHelper.ToDataTable(page.Data.SalesQuotation);
+                allTransactionList = transactionList;
+                quickHeadersPage = page.pagination;
+                if (GetOwnedRowIndexes(transactionList).Count > 0) return true;
+                edgeId = ToInt(transactionList.Rows[transactionList.Rows.Count - 1]["id"]);
+                if (page.pagination == null || !page.pagination.has_next) return false;
+            }
+            return GetOwnedRowIndexes(transactionList).Count > 0;
+        }
+
+        private async Task<bool> LoadPrevHeadersPageAsync()
+        {
+            if (quickHeadersPage == null || !quickHeadersPage.has_prev || transactionList == null || transactionList.Rows.Count == 0)
+                return false;
+            int edgeId = ToInt(transactionList.Rows[0]["id"]);
+            for (int guard = 0; guard < 10 && edgeId > 0; guard++)
+            {
+                var page = await QuotationService.GetQuotationHeadersPage(before: edgeId);
+                if (page == null || page.Data == null || page.Data.SalesQuotation == null || !page.Data.SalesQuotation.Any())
+                    return false;
+                transactionList = JsonHelper.ToDataTable(page.Data.SalesQuotation);
+                allTransactionList = transactionList;
+                quickHeadersPage = page.pagination;
+                if (GetOwnedRowIndexes(transactionList).Count > 0) return true;
+                edgeId = ToInt(transactionList.Rows[0]["id"]);
+                if (page.pagination == null || !page.pagination.has_prev) return false;
+            }
+            return GetOwnedRowIndexes(transactionList).Count > 0;
+        }
+
+        // One document's version headers for numbering/duplicate checks (the
+        // list only carries the current page now). Null when unreachable -
+        // callers fall back to the page table, with the server as backstop.
+        private async Task<DataTable> GetQuickVersionsTableAsync(string docNo)
+        {
+            if (string.IsNullOrWhiteSpace(docNo)) return null;
+            try
+            {
+                SalesQuotationList versions = await QuotationService.GetQuotationVersions(docNo);
+                if (versions == null || versions.SalesQuotation == null || !versions.SalesQuotation.Any()) return null;
+                return JsonHelper.ToDataTable(versions.SalesQuotation);
+            }
+            catch { return null; }
+        }
+
+        // Reopens the record a save just wrote: by echoed id when the response
+        // carries one, else by document number (resolved server-side).
+        private async Task ReopenSavedQuickAsync(object data, string fallbackDocumentNo)
+        {
+            int id = ExtractSavedId(data);
+            if (id > 0)
+                await RunWithLoadingAsync(async () => await fetchQuotationDetails(atId: id));
+            else
+                await RunWithLoadingAsync(async () => await fetchQuotationDetails(fallbackDocumentNo));
+        }
+
         // The row a reload opens: the given document when it is one of this user's, otherwise
         // their first. Every reload used to open the first, so saving, searching or closing
         // always jumped away from the quotation the user was on. Matched exactly: Q#0005 and
@@ -1261,28 +1404,36 @@ namespace smpc_sales_app.Pages.Sales
 
         // selectId / selectDocumentNo: the project quotation to open once reloaded - the one
         // just saved or being closed. Without them the reload lands on this user's first.
+        //
+        // Phase 2: the list is one headers page (50 newest headers, no children).
+        // The opened project's full tree arrives lazily via detail/:id, and its
+        // other versions merge into the page table so Prev/Next keeps stepping
+        // through version history like the full list used to.
         private async Task fetchSalesProjectData(int selectId = 0, string selectDocumentNo = null)
         {
             Helpers.ResetControls(pnl_header);
             ResetControls(pnl_footer);
 
+            int targetId = selectId;
+            if (targetId <= 0 && !string.IsNullOrWhiteSpace(selectDocumentNo))
+                targetId = await FindProjectHeaderIdByDocumentAsync(selectDocumentNo);
 
-            SalesProjectListData = await ProjectService.GetProjects();
+            smpc_app.Services.Helpers.ApiResponseModel<SalesProjectList> page;
+            if (targetId > 0)
+                page = await ProjectService.GetProjectHeadersPage(at: targetId);
+            else
+                page = await LoadMyProjectHeadersPageAsync();
 
-            if (SalesProjectListData?.SalesQuotation == null) return;
+            var headers = page != null && page.Data != null ? page.Data.SalesQuotation : null;
+            projectHeadersPage = page != null ? page.pagination : null;
 
-            // Deliberately not grouped down to one row per document_no here (unlike
-            // fetchQuotationDetails above) - Project Quotation's list intentionally keeps
-            // every version so Prev/Next can page through a project's version history. The
-            // ordering still needs to be numeric, though, so index 0 (the default-opened row,
-            // see selectedProjectRow below) is actually the latest version and not just
-            // whichever version happens to sort first as a string.
-            var latestQuotations = SalesProjectListData.SalesQuotation
-            .OrderByDescending(q => VersionNoAsInt(q.version_no))
-            .ThenByDescending(q => VersionNoAsInt(q.sub_version_no))
-            .ToList();
+            if (headers == null)
+            {
+                SalesProjectListData = new SalesProjectList();
+                return;
+            }
 
-            transactionProjectDataTable = JsonHelper.ToDataTable(latestQuotations);
+            transactionProjectDataTable = JsonHelper.ToDataTable(headers);
 
             // Don't default to row 0 of the full table - that could be someone else's project
             // quotation. Only the current user's own records count here; if there are project
@@ -1291,7 +1442,7 @@ namespace smpc_sales_app.Pages.Sales
             // showing another user's data.
             List<int> ownedProjectIndexes = GetOwnedRowIndexes(transactionProjectDataTable);
 
-            if (SalesProjectListData == null || (SalesProjectListData.sales_project_item_set == null || !SalesProjectListData.sales_project_item_set.Any()) || ownedProjectIndexes.Count == 0)
+            if (ownedProjectIndexes.Count == 0)
             {
                 MessageBox.Show("No project data found. Creating a new entry.", "Empty Data", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
@@ -1345,8 +1496,129 @@ namespace smpc_sales_app.Pages.Sales
                 return;
             }
 
-            selectedProjectRow = PreferredProjectRow(ownedProjectIndexes, selectId, selectDocumentNo);
+            selectedProjectRow = targetId > 0
+                ? FindRowIndexById(transactionProjectDataTable, targetId)
+                : -1;
+            if (selectedProjectRow < 0)
+                selectedProjectRow = PreferredProjectRow(ownedProjectIndexes, selectId, selectDocumentNo);
+            await OpenProjectRowAsync(selectedProjectRow);
+        }
+
+        // Opens one project row: full tree first (lazy detail), then the
+        // header bind and tab rebuild over the merged tables.
+        private async Task OpenProjectRowAsync(int row)
+        {
+            if (transactionProjectDataTable == null || row < 0 || row >= transactionProjectDataTable.Rows.Count) return;
+            selectedProjectRow = row;
+            await EnsureProjectDetailAsync(ToInt(transactionProjectDataTable.Rows[row]["id"]));
+            bind(transactionProjectDataTable, selectedProjectRow, true);
             fetchSalesProject();
+        }
+
+        // Loads one project's full tree into SalesProjectListData and folds
+        // that document's other versions into the page table, so Prev/Next
+        // keeps stepping through version history like the full list used to.
+        // Rows append at the end, so indexes computed before the merge stay valid.
+        private async Task EnsureProjectDetailAsync(int projectId)
+        {
+            if (projectId <= 0) return;
+            try
+            {
+                SalesProjectList detail = await ProjectService.GetProjectDetail(projectId);
+                if (detail == null || detail.SalesQuotation == null || !detail.SalesQuotation.Any()) return;
+                SalesProjectListData = detail;
+                var versions = await ProjectService.GetProjectVersions(detail.SalesQuotation[0].document_no);
+                if (versions != null && versions.SalesQuotation != null)
+                    MergeRowsById(transactionProjectDataTable, JsonHelper.ToDataTable(versions.SalesQuotation), "id");
+            }
+            catch
+            {
+                // Tabs stay as they were; transport failures already surface
+                // through ApiConnection's own dialog + reload offer.
+            }
+        }
+
+        private async Task<int> FindProjectHeaderIdByDocumentAsync(string documentNo)
+        {
+            if (string.IsNullOrWhiteSpace(documentNo)) return 0;
+            try
+            {
+                var result = await ProjectService.SearchProjects(documentNo, 1);
+                var match = result != null && result.Data != null && result.Data.SalesQuotation != null
+                    ? result.Data.SalesQuotation.FirstOrDefault(q => NormalizeDocumentNo(q.document_no) == NormalizeDocumentNo(documentNo))
+                    : null;
+                return match != null ? match.id : 0;
+            }
+            catch { return 0; }
+        }
+
+        private async Task<smpc_app.Services.Helpers.ApiResponseModel<SalesProjectList>> LoadMyProjectHeadersPageAsync()
+        {
+            var page = await ProjectService.GetProjectHeadersPage();
+            for (int guard = 0; guard < 10; guard++)
+            {
+                DataTable table = page != null && page.Data != null && page.Data.SalesQuotation != null
+                    ? JsonHelper.ToDataTable(page.Data.SalesQuotation) : new DataTable();
+                if (GetOwnedRowIndexes(table).Count > 0) return page;
+                if (page == null || page.pagination == null || !page.pagination.has_next || table.Rows.Count == 0) return page;
+                int lastId = ToInt(table.Rows[table.Rows.Count - 1]["id"]);
+                if (lastId <= 0) return page;
+                page = await ProjectService.GetProjectHeadersPage(after: lastId);
+            }
+            return page;
+        }
+
+        private async Task<bool> LoadNextProjectHeadersPageAsync()
+        {
+            if (projectHeadersPage == null || !projectHeadersPage.has_next || transactionProjectDataTable == null || transactionProjectDataTable.Rows.Count == 0)
+                return false;
+            int edgeId = ToInt(transactionProjectDataTable.Rows[transactionProjectDataTable.Rows.Count - 1]["id"]);
+            for (int guard = 0; guard < 10 && edgeId > 0; guard++)
+            {
+                var page = await ProjectService.GetProjectHeadersPage(after: edgeId);
+                if (page == null || page.Data == null || page.Data.SalesQuotation == null || !page.Data.SalesQuotation.Any())
+                    return false;
+                transactionProjectDataTable = JsonHelper.ToDataTable(page.Data.SalesQuotation);
+                projectHeadersPage = page.pagination;
+                if (GetOwnedRowIndexes(transactionProjectDataTable).Count > 0) return true;
+                edgeId = ToInt(transactionProjectDataTable.Rows[transactionProjectDataTable.Rows.Count - 1]["id"]);
+                if (page.pagination == null || !page.pagination.has_next) return false;
+            }
+            return GetOwnedRowIndexes(transactionProjectDataTable).Count > 0;
+        }
+
+        private async Task<bool> LoadPrevProjectHeadersPageAsync()
+        {
+            if (projectHeadersPage == null || !projectHeadersPage.has_prev || transactionProjectDataTable == null || transactionProjectDataTable.Rows.Count == 0)
+                return false;
+            int edgeId = ToInt(transactionProjectDataTable.Rows[0]["id"]);
+            for (int guard = 0; guard < 10 && edgeId > 0; guard++)
+            {
+                var page = await ProjectService.GetProjectHeadersPage(before: edgeId);
+                if (page == null || page.Data == null || page.Data.SalesQuotation == null || !page.Data.SalesQuotation.Any())
+                    return false;
+                transactionProjectDataTable = JsonHelper.ToDataTable(page.Data.SalesQuotation);
+                projectHeadersPage = page.pagination;
+                if (GetOwnedRowIndexes(transactionProjectDataTable).Count > 0) return true;
+                edgeId = ToInt(transactionProjectDataTable.Rows[0]["id"]);
+                if (page.pagination == null || !page.pagination.has_prev) return false;
+            }
+            return GetOwnedRowIndexes(transactionProjectDataTable).Count > 0;
+        }
+
+        // One document's project version headers for the finalize duplicate
+        // check (the list only carries the current page now). Null when
+        // unreachable - the server unique index is the backstop.
+        private async Task<DataTable> GetProjectVersionsTableAsync(string docNo)
+        {
+            if (string.IsNullOrWhiteSpace(docNo)) return null;
+            try
+            {
+                SalesQuotationList versions = await ProjectService.GetProjectVersions(docNo);
+                if (versions == null || versions.SalesQuotation == null || !versions.SalesQuotation.Any()) return null;
+                return JsonHelper.ToDataTable(versions.SalesQuotation);
+            }
+            catch { return null; }
         }
 
         private async void ProjectAutoRefreshTimer_Tick(object sender, EventArgs e)
@@ -1363,11 +1635,12 @@ namespace smpc_sales_app.Pages.Sales
 
         // Silent background refresh for the auto-refresh timer above - unlike
         // fetchSalesProjectData(), this never shows a MessageBox, never fabricates a new blank
-        // project tab, and never snaps the view back to row 0. It re-fetches from the server
-        // and rebinds the SAME record (matched by id) that's already open, so another user's
-        // edits appear without yanking focus to a different version. If that record can't be
-        // found anymore (e.g. deleted), it leaves the current view untouched rather than
-        // guessing.
+        // project tab, and never snaps the view back to row 0. It re-reads this same
+        // record's full tree (one small detail fetch, not the whole project
+        // list) and rebinds it in place, so another user's edits appear without
+        // yanking focus to a different version. If that record can't be found
+        // anymore (e.g. deleted), it leaves the current view untouched rather
+        // than guessing.
         private async Task RefreshCurrentProjectQuotationAsync()
         {
             if (!isProject) return;
@@ -1375,33 +1648,23 @@ namespace smpc_sales_app.Pages.Sales
             int currentId = ToInt(txt_id.Text);
             if (currentId <= 0) return;
 
-            SalesProjectList refreshedData = await ProjectService.GetProjects();
-            if (refreshedData?.SalesQuotation == null) return;
-
-            var latestQuotations = refreshedData.SalesQuotation
-                .OrderByDescending(q => VersionNoAsInt(q.version_no))
-                .ThenByDescending(q => VersionNoAsInt(q.sub_version_no))
-                .ToList();
-
-            DataTable refreshedTable = JsonHelper.ToDataTable(latestQuotations);
-
-            int matchedRow = -1;
-            for (int i = 0; i < refreshedTable.Rows.Count; i++)
+            try
             {
-                if (ToInt(refreshedTable.Rows[i]["id"]) == currentId)
-                {
-                    matchedRow = i;
-                    break;
-                }
+                SalesProjectList detail = await ProjectService.GetProjectDetail(currentId);
+                if (detail == null || detail.SalesQuotation == null || !detail.SalesQuotation.Any()) return;
+
+                SalesProjectListData = detail;
+
+                int matchedRow = FindRowIndexById(transactionProjectDataTable, currentId);
+                if (matchedRow == -1) return; // record no longer present - leave the view as-is
+
+                selectedProjectRow = matchedRow;
+                fetchSalesProject();
             }
-
-            if (matchedRow == -1) return; // record no longer present - leave the view as-is
-
-            SalesProjectListData = refreshedData;
-            transactionProjectDataTable = refreshedTable;
-            selectedProjectRow = matchedRow;
-
-            fetchSalesProject();
+            catch
+            {
+                // Next 5-minute tick retries; never disturb the open view here.
+            }
         }
 
         private async void fetchSalesProject()
@@ -3697,7 +3960,7 @@ namespace smpc_sales_app.Pages.Sales
                                 MessageBox.Show("Quotation Successfully saved");
                                 // Open the quotation just saved - new or edited - not the user's
                                 // first one.
-                                await RunWithLoadingAsync(async () => await fetchQuotationDetails(savedDocumentNo));
+                                await ReopenSavedQuickAsync(isSuccess.Data, savedDocumentNo);
                                 KeepCurrentView();
 
                                 // Any RESERVE/release toggled in StockCheckModal before this
@@ -5856,7 +6119,26 @@ namespace smpc_sales_app.Pages.Sales
             }
         }
 
-        private void btn_new_Click(object sender, EventArgs e)
+        // Next version number for rawDocNo, resolved against that document's own
+        // version history (the list only carries the current page now). Falls
+        // back to the page table when the history fetch fails.
+        private async Task<string> GetNextVersionNoAsync(string rawDocNo)
+        {
+            string bare = (rawDocNo ?? "").Trim();
+            if (bare == "" || bare == "-") return "1";
+            DataTable versions = await GetQuickVersionsTableAsync(rawDocNo);
+            return GetNextVersionNo(versions ?? allTransactionList, rawDocNo);
+        }
+
+        private async Task<string> GetNextSubVersionNoAsync(string rawDocNo, string rawVersionNo)
+        {
+            string bare = (rawDocNo ?? "").Trim();
+            if (bare == "" || bare == "-") return "0";
+            DataTable versions = await GetQuickVersionsTableAsync(rawDocNo);
+            return GetNextSubVersionNo(versions ?? allTransactionList, rawDocNo, rawVersionNo);
+        }
+
+        private async void btn_new_Click(object sender, EventArgs e)
         {
             GetLatestDate();
             SetNewFormMode(true);
@@ -5867,7 +6149,7 @@ namespace smpc_sales_app.Pages.Sales
             Helpers.ResetControls(pnl_header);
             ResetControls(pnl_footer);
 
-            txt_version_no.Text = GetNextVersionNo(allTransactionList, txt_document_no.Text);
+            txt_version_no.Text = await GetNextVersionNoAsync(txt_document_no.Text);
 
             // New Quick Quote
             if (!isProject)
@@ -6205,7 +6487,7 @@ namespace smpc_sales_app.Pages.Sales
                 }
             }
         }
-        private void btn_new_version_Click(object sender, EventArgs e)
+        private async void btn_new_version_Click(object sender, EventArgs e)
         {
             GetLatestDate();
             SetNewFormMode(true);
@@ -6224,7 +6506,7 @@ namespace smpc_sales_app.Pages.Sales
             //toolstrip_quotation.Enabled = false;
             dgv_quick_quote_details.Enabled = true;
 
-            txt_version_no.Text = GetNextVersionNo(allTransactionList, txt_document_no.Text);
+            txt_version_no.Text = await GetNextVersionNoAsync(txt_document_no.Text);
         }
         private string GetNextVersionNo(DataTable allTransactions, string rawDocNo)
         {
@@ -6282,7 +6564,7 @@ namespace smpc_sales_app.Pages.Sales
             SelectedRowIndex = 0;
         }
         private bool isProject = false;
-        private void btn_next_Click(object sender, EventArgs e)
+        private async void btn_next_Click(object sender, EventArgs e)
         {
             // Previous/Next only step through the current user's OWN records - same
             // restriction as Search - otherwise these two buttons would be a way to browse
@@ -6292,6 +6574,14 @@ namespace smpc_sales_app.Pages.Sales
                 List<int> ownedIndexes = GetOwnedRowIndexes(transactionList);
                 if (ownedIndexes.Count == 0)
                 {
+                    // Maybe the user's records are just on another page.
+                    if (await LoadNextHeadersPageAsync())
+                    {
+                        ownedIndexes = GetOwnedRowIndexes(transactionList);
+                        if (ownedIndexes.Count > 0)
+                            await OpenQuickRowAsync(ownedIndexes[0]);
+                        return;
+                    }
                     MessageBox.Show("You have no saved quotations yet. Click New to create one.");
                     return;
                 }
@@ -6299,9 +6589,13 @@ namespace smpc_sales_app.Pages.Sales
                 int pos = ownedIndexes.IndexOf(SelectedRow);
                 if (pos < ownedIndexes.Count - 1)
                 {
-                    SelectedRow = ownedIndexes[pos == -1 ? 0 : pos + 1];
-                    bind(transactionList, SelectedRow, true);
-                    createFilterViewDgvQuickQouteDetails();
+                    await OpenQuickRowAsync(ownedIndexes[pos == -1 ? 0 : pos + 1]);
+                }
+                else if (await LoadNextHeadersPageAsync())
+                {
+                    ownedIndexes = GetOwnedRowIndexes(transactionList);
+                    if (ownedIndexes.Count > 0)
+                        await OpenQuickRowAsync(ownedIndexes[0]);
                 }
             }
             else
@@ -6309,6 +6603,13 @@ namespace smpc_sales_app.Pages.Sales
                 List<int> ownedIndexes = GetOwnedRowIndexes(transactionProjectDataTable);
                 if (ownedIndexes.Count == 0)
                 {
+                    if (await LoadNextProjectHeadersPageAsync())
+                    {
+                        ownedIndexes = GetOwnedRowIndexes(transactionProjectDataTable);
+                        if (ownedIndexes.Count > 0)
+                            await OpenProjectRowAsync(ownedIndexes[0]);
+                        return;
+                    }
                     MessageBox.Show("You have no project quotations yet. Click New to create one.");
                     return;
                 }
@@ -6316,16 +6617,23 @@ namespace smpc_sales_app.Pages.Sales
                 int pos = ownedIndexes.IndexOf(selectedProjectRow);
                 if (pos < ownedIndexes.Count - 1)
                 {
-                    selectedProjectRow = ownedIndexes[pos == -1 ? 0 : pos + 1];
                     // Navigating to a different record shouldn't carry over edit mode from
                     // whatever was previously open.
                     IsEdit = false;
-                    bind(transactionProjectDataTable, selectedProjectRow, true);
-                    fetchSalesProject();
+                    await OpenProjectRowAsync(ownedIndexes[pos == -1 ? 0 : pos + 1]);
+                }
+                else if (await LoadNextProjectHeadersPageAsync())
+                {
+                    ownedIndexes = GetOwnedRowIndexes(transactionProjectDataTable);
+                    if (ownedIndexes.Count > 0)
+                    {
+                        IsEdit = false;
+                        await OpenProjectRowAsync(ownedIndexes[0]);
+                    }
                 }
             }
         }
-        private void btn_prev_Click(object sender, EventArgs e)
+        private async void btn_prev_Click(object sender, EventArgs e)
         {
             // Same "own records only" restriction as btn_next_Click - see the comment there.
             if (!isProject)
@@ -6333,6 +6641,14 @@ namespace smpc_sales_app.Pages.Sales
                 List<int> ownedIndexes = GetOwnedRowIndexes(transactionList);
                 if (ownedIndexes.Count == 0)
                 {
+                    // Maybe the user's records are just on another page.
+                    if (await LoadPrevHeadersPageAsync())
+                    {
+                        ownedIndexes = GetOwnedRowIndexes(transactionList);
+                        if (ownedIndexes.Count > 0)
+                            await OpenQuickRowAsync(ownedIndexes[ownedIndexes.Count - 1]);
+                        return;
+                    }
                     MessageBox.Show("You have no saved quotations yet. Click New to create one.");
                     return;
                 }
@@ -6340,15 +6656,17 @@ namespace smpc_sales_app.Pages.Sales
                 int pos = ownedIndexes.IndexOf(SelectedRow);
                 if (pos == -1)
                 {
-                    SelectedRow = ownedIndexes[0];
-                    bind(transactionList, SelectedRow, true);
-                    createFilterViewDgvQuickQouteDetails();
+                    await OpenQuickRowAsync(ownedIndexes[0]);
                 }
                 else if (pos >= 1)
                 {
-                    SelectedRow = ownedIndexes[pos - 1];
-                    bind(transactionList, SelectedRow, true);
-                    createFilterViewDgvQuickQouteDetails();
+                    await OpenQuickRowAsync(ownedIndexes[pos - 1]);
+                }
+                else if (await LoadPrevHeadersPageAsync())
+                {
+                    ownedIndexes = GetOwnedRowIndexes(transactionList);
+                    if (ownedIndexes.Count > 0)
+                        await OpenQuickRowAsync(ownedIndexes[ownedIndexes.Count - 1]);
                 }
             }
             else
@@ -6356,6 +6674,16 @@ namespace smpc_sales_app.Pages.Sales
                 List<int> ownedIndexes = GetOwnedRowIndexes(transactionProjectDataTable);
                 if (ownedIndexes.Count == 0)
                 {
+                    if (await LoadPrevProjectHeadersPageAsync())
+                    {
+                        ownedIndexes = GetOwnedRowIndexes(transactionProjectDataTable);
+                        if (ownedIndexes.Count > 0)
+                        {
+                            IsEdit = false;
+                            await OpenProjectRowAsync(ownedIndexes[ownedIndexes.Count - 1]);
+                        }
+                        return;
+                    }
                     MessageBox.Show("You have no project quotations yet. Click New to create one.");
                     return;
                 }
@@ -6363,19 +6691,24 @@ namespace smpc_sales_app.Pages.Sales
                 int pos = ownedIndexes.IndexOf(selectedProjectRow);
                 if (pos == -1)
                 {
-                    selectedProjectRow = ownedIndexes[0];
                     IsEdit = false;
-                    bind(transactionProjectDataTable, selectedProjectRow, true);
-                    fetchSalesProject();
+                    await OpenProjectRowAsync(ownedIndexes[0]);
                 }
                 else if (pos >= 1)
                 {
-                    selectedProjectRow = ownedIndexes[pos - 1];
                     // Navigating to a different record shouldn't carry over edit mode from
                     // whatever was previously open.
                     IsEdit = false;
-                    bind(transactionProjectDataTable, selectedProjectRow, true);
-                    fetchSalesProject();
+                    await OpenProjectRowAsync(ownedIndexes[pos - 1]);
+                }
+                else if (await LoadPrevProjectHeadersPageAsync())
+                {
+                    ownedIndexes = GetOwnedRowIndexes(transactionProjectDataTable);
+                    if (ownedIndexes.Count > 0)
+                    {
+                        IsEdit = false;
+                        await OpenProjectRowAsync(ownedIndexes[ownedIndexes.Count - 1]);
+                    }
                 }
             }
         }
@@ -6688,7 +7021,7 @@ namespace smpc_sales_app.Pages.Sales
             return indexes;
         }
 
-        private void btn_search_Click_1(object sender, EventArgs e)
+        private async void btn_search_Click_1(object sender, EventArgs e)
         {
             // One Search button is shared between Quick Quote and Project mode, but this
             // always searched transactionList - Quick Quote's list only - even while in
@@ -6696,51 +7029,66 @@ namespace smpc_sales_app.Pages.Sales
             // (transactionProjectDataTable); searching it while in Project mode picked a
             // row index out of the wrong table and tried to bind Project's UI with Quick
             // Quote data (or a mismatched/nonexistent record).
+            //
+            // Phase 2: the list is one headers page, so browsing it cannot reach older
+            // records. Search runs server-side (20-row pages over the whole table) in
+            // the shared QuotationSearchModal; the picked header id reopens through
+            // the headers' at=, which also pulls its lines on open.
             if (isProject)
             {
-                string projectTitle = "Project List";
-                DataTable ownProjects = FilterToCurrentUserQuotations(transactionProjectDataTable);
-                SetupModal projectSetup = new SetupModal(projectTitle, ownProjects);
-                DialogResult projectResult = projectSetup.ShowDialog();
-
-                if (projectResult == DialogResult.OK)
+                using (var modal = new QuotationSearchModal("Project List", async (term, pg) =>
                 {
-                    int projectRowResult = projectSetup.GetResult();
-
-                    if (projectRowResult != -1)
+                    var result = await ProjectService.SearchProjects(term, pg);
+                    DataTable rows = result != null && result.Data != null && result.Data.SalesQuotation != null
+                        ? FilterToCurrentUserQuotations(JsonHelper.ToDataTable(result.Data.SalesQuotation))
+                        : new DataTable();
+                    var meta = result != null ? result.pagination : null;
+                    return new QuotationSearchModal.SearchFetchResult
                     {
-                        int mappedRow = FindRowIndexById(transactionProjectDataTable, ownProjects.Rows[projectRowResult]["id"]);
-                        selectedProjectRow = mappedRow != -1 ? mappedRow : projectRowResult;
-                        // IsEdit doesn't get reset just by opening a different record - if the
-                        // user was editing another project earlier in this same session,
-                        // IsEdit was still true here, so this newly opened project would come
-                        // up unlocked/editable by default instead of view-only.
-                        IsEdit = false;
-                        bind(transactionProjectDataTable, selectedProjectRow, true);
-                        fetchSalesProject();
-                    }
+                        Rows = rows,
+                        HasPrev = meta != null && meta.has_prev,
+                        HasNext = meta != null && meta.has_next,
+                        PageText = meta != null && meta.total > 0
+                            ? "Page " + meta.page + " of " + meta.total_pages + "  (" + meta.total + " projects)"
+                            : "No projects found"
+                    };
+                }))
+                {
+                    if (modal.ShowDialog(this) != DialogResult.OK) return;
+                    int pickedId = modal.GetPickedId();
+                    if (pickedId <= 0) return;
+
+                    IsEdit = false;
+                    await RunWithLoadingAsync(async () => await fetchSalesProjectData(pickedId));
+                    KeepCurrentView();
                 }
 
                 return;
             }
 
-            string Title = "Quotation List";
-            DataTable ownQuotes = FilterToCurrentUserQuotations(transactionList);
-            SetupModal setup = new SetupModal(Title, ownQuotes);
-            DialogResult r = setup.ShowDialog();
-
-            if (r == DialogResult.OK)
+            using (var modal = new QuotationSearchModal("Quotation List", async (term, pg) =>
             {
-                int result = setup.GetResult();
-
-                if (result != -1)
+                var result = await QuotationService.SearchQuotations(term, pg);
+                DataTable rows = result != null && result.Data != null && result.Data.SalesQuotation != null
+                    ? FilterToCurrentUserQuotations(JsonHelper.ToDataTable(result.Data.SalesQuotation))
+                    : new DataTable();
+                var meta = result != null ? result.pagination : null;
+                return new QuotationSearchModal.SearchFetchResult
                 {
-                    int mappedRow = FindRowIndexById(transactionList, ownQuotes.Rows[result]["id"]);
-                    SelectedRow = mappedRow != -1 ? mappedRow : result;
-                    bind(transactionList, SelectedRow, true);
-                    createFilterViewDgvQuickQouteDetails();
+                    Rows = rows,
+                    HasPrev = meta != null && meta.has_prev,
+                    HasNext = meta != null && meta.has_next,
+                    PageText = meta != null && meta.total > 0
+                        ? "Page " + meta.page + " of " + meta.total_pages + "  (" + meta.total + " quotations)"
+                        : "No quotations found"
+                };
+            }))
+            {
+                if (modal.ShowDialog(this) != DialogResult.OK) return;
+                int pickedId = modal.GetPickedId();
+                if (pickedId <= 0) return;
 
-                }
+                await RunWithLoadingAsync(async () => await fetchQuotationDetails(atId: pickedId));
             }
         }
 
@@ -7232,8 +7580,11 @@ namespace smpc_sales_app.Pages.Sales
             }
 
             // Same duplicate guard FinalizeQuickQuotation runs against allTransactionList,
-            // just against the Project quotation list instead.
-            var duplicateTransaction = transactionProjectDataTable.AsEnumerable()
+            // just against this document's own project version history (the list
+            // only carries the current page now) - the server unique index is
+            // the backstop if the fetch fails.
+            DataTable projectVersionsForGuard = await GetProjectVersionsTableAsync(pnl_quotation["document_no"].ToString());
+            var duplicateTransaction = (projectVersionsForGuard ?? transactionProjectDataTable).AsEnumerable()
                 .Where(t => t.Field<string>("document_no") == pnl_quotation["document_no"].ToString());
 
             if (duplicateTransaction.Any())
@@ -7463,7 +7814,11 @@ namespace smpc_sales_app.Pages.Sales
 
                     parentData["sales_quotation_quick"] = childCollection;
 
-                    var duplicateTransaction = allTransactionList.AsEnumerable()
+                    // Duplicate check against this document's own version history
+                    // (the list only carries the current page now) - the server
+                    // unique index is the backstop if the fetch fails.
+                    DataTable versionsForGuard = await GetQuickVersionsTableAsync(parentData["document_no"].ToString());
+                    var duplicateTransaction = (versionsForGuard ?? allTransactionList).AsEnumerable()
                                                 .Where(t => t.Field<string>("document_no") == parentData["document_no"].ToString());
 
                     if (duplicateTransaction.Any())
@@ -7501,7 +7856,7 @@ namespace smpc_sales_app.Pages.Sales
                             MessageBox.Show("Quotation Successfully saved");
                             // Open the finalized quote just added (FQ#), not the user's first.
                             string finalizedDocumentNo = ExtractSavedDocumentNo(isSuccess.Data) ?? savedDocumentNo;
-                            await RunWithLoadingAsync(async () => await fetchQuotationDetails(finalizedDocumentNo));
+                            await ReopenSavedQuickAsync(isSuccess.Data, finalizedDocumentNo);
                             KeepCurrentView();
 
                             // Same as IsQuickQuote() - this finalize path also inserts fresh
@@ -7957,7 +8312,7 @@ namespace smpc_sales_app.Pages.Sales
 
         }
 
-        private void btn_edit_Click(object sender, EventArgs e)
+        private async void btn_edit_Click(object sender, EventArgs e)
         {
             // Belt-and-suspenders like the IsRecordCreatedByCurrentUser check right
             // below: bind() hides this button when isFinalized, but that's the only
@@ -8007,7 +8362,7 @@ namespace smpc_sales_app.Pages.Sales
             SetFormEditMode(docNo.StartsWith("Q#") ? "Finalize" : "Order");
 
 
-            txt_sub_version_no.Text = GetNextSubVersionNo(allTransactionList, txt_document_no.Text, txt_version_no.Text);
+            txt_sub_version_no.Text = await GetNextSubVersionNoAsync(txt_document_no.Text, txt_version_no.Text);
 
             // New Quick Quote
             if (!isProject)
@@ -8208,7 +8563,7 @@ namespace smpc_sales_app.Pages.Sales
             if (isProject)
                 await RunWithLoadingAsync(async () => await fetchSalesProjectData(openId));
             else
-                await RunWithLoadingAsync(async () => await fetchQuotationDetails(openDocumentNo));
+                await RunWithLoadingAsync(async () => await fetchQuotationDetails(atId: openId));
 
             KeepCurrentView();
 

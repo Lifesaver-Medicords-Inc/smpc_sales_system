@@ -32,6 +32,43 @@ namespace smpc_sales_system.Services.Sales
             SalesProjectList projectData = response.Data;
             return projectData;
         }
+
+        // GET: one page of latest project headers, newest first, no children.
+        // after/before/at are ids (keyset); all zero means the first page.
+        public static async Task<ApiResponseModel<SalesProjectList>> GetProjectHeadersPage(int after = 0, int before = 0, int at = 0)
+        {
+            var response = await RequestToApi<ApiResponseModel<SalesProjectList>>.Get(
+                url + "/headers?after=" + after + "&before=" + before + "&at=" + at);
+            return response;
+        }
+
+        // GET: one project's full tree (tabs, contents, items, wiring,
+        // history, multipliers, images) for lazy loading on open.
+        // Null when the id is unknown or not a project.
+        public static async Task<SalesProjectList> GetProjectDetail(int id)
+        {
+            var response = await RequestToApi<ApiResponseModel<SalesProjectList>>.Get(url + "/detail/" + id);
+            return response.Data;
+        }
+
+        // GET: one project document's full version history (headers only).
+        // NOTE: this rides the project versions endpoint (project-only
+        // filter server-side) - not QuotationService.GetQuotationVersions,
+        // so quick/project rows with colliding bare numbers never mix.
+        public static async Task<SalesQuotationList> GetProjectVersions(string documentNo)
+        {
+            var response = await RequestToApi<ApiResponseModel<SalesQuotationList>>.Get(
+                url + "/versions?document_no=" + Uri.EscapeDataString(documentNo ?? ""));
+            return response.Data;
+        }
+
+        // GET: flat matching project headers, 20 to a page, no children.
+        public static async Task<ApiResponseModel<SalesProjectList>> SearchProjects(string term, int page = 1)
+        {
+            var response = await RequestToApi<ApiResponseModel<SalesProjectList>>.Get(
+                url + "/search?term=" + Uri.EscapeDataString(term ?? "") + "&page=" + page);
+            return response;
+        }
         
         public static async Task<BpiSupplierList> GetSuppliers()
         {

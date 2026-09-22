@@ -40,6 +40,29 @@ namespace smpc_sales_app.Services.Sales
             SalesQuotationList quotationData = response.Data;
             return quotationData;
         }
+        // GET: one page of latest headers, newest first, no children.
+        // after/before/at are ids (keyset); all zero means the first page.
+        // The envelope carries the page meta (has_next/has_prev/page/total).
+        public static async Task<ApiResponseModel<SalesQuotationList>> GetQuotationHeadersPage(int after = 0, int before = 0, int at = 0)
+        {
+            var response = await RequestToApi<ApiResponseModel<SalesQuotationList>>.Get(
+                url + "/headers?after=" + after + "&before=" + before + "&at=" + at);
+            return response;
+        }
+        // GET: one header with only its own lines and images (lazy detail).
+        // Null when the id is unknown.
+        public static async Task<SalesQuotationList> GetQuotationDetail(int id)
+        {
+            var response = await RequestToApi<ApiResponseModel<SalesQuotationList>>.Get(url + "/detail/" + id);
+            return response.Data;
+        }
+        // GET: flat matching headers, 20 to a page, no children.
+        public static async Task<ApiResponseModel<SalesQuotationList>> SearchQuotations(string term, int page = 1)
+        {
+            var response = await RequestToApi<ApiResponseModel<SalesQuotationList>>.Get(
+                url + "/search?term=" + Uri.EscapeDataString(term ?? "") + "&page=" + page);
+            return response;
+        }
         // GET: one document's full version history (headers + only that
         // document's lines/images) for the version viewer and
         // open-by-document flows - replaces downloading the whole list
