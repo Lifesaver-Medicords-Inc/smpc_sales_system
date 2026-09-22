@@ -46,6 +46,15 @@ namespace smpc_sales_app.Pages.Sales
         private bool isFinalized;
         private bool isNewRecord;
 
+        // Phase 2 - the list pages headers only (50/page, newest first). These
+        // track the page behind transactionList/allTransactionList so row
+        // Prev/Next can fetch the next/previous page at the edges, and which
+        // records' lines are already merged locally (lines arrive lazily via
+        // detail/:id, one record at a time).
+        private smpc_app.Services.Helpers.PaginationModel quickHeadersPage;
+        private smpc_app.Services.Helpers.PaginationModel projectHeadersPage;
+        private readonly HashSet<int> loadedQuickDetailIds = new HashSet<int>();
+
         // Guards chk_requested_for_engr_CheckedChanged (below) against firing on a
         // programmatic assignment - loading a record, resetting a new form, or reverting
         // a user's own toggle after a declined confirm/failed API call - so only an
@@ -1016,8 +1025,14 @@ namespace smpc_sales_app.Pages.Sales
 
         SalesProject projectData;
         // selectDocumentNo: the quotation to open once reloaded - the one just saved, searched
-        // or being closed. Without it the reload lands on this user's first quotation.
-        private async Task fetchQuotationDetails(string selectDocumentNo = null)
+        // or being closed. atId opens the headers page containing that header id instead
+        // (preferred - no extra round trip). Without either, the reload lands on this
+        // user's first quotation.
+        //
+        // Phase 2: the list is one headers page (50 newest headers, no lines).
+        // Lines/images arrive lazily per opened record (EnsureQuotationLinesAsync)
+        // instead of all crossing the VPN up front.
+        private async Task fetchQuotationDetails(string selectDocumentNo = null, int atId = 0)
         {
             Panel[] panels = { pnl_header, pnl_footer };
             Helpers.ReadOnlyControls(panels);
@@ -1859,10 +1874,15 @@ namespace smpc_sales_app.Pages.Sales
                 grid.EndEdit();
             }
 
-            if (grid.DataSource == null || BindingContext == null)
+            // The grid's OWN BindingContext, not this form's: the manager holding the
+            // pending new row is the one driving the grid, and a different context hands
+            // back a fresh manager that knows nothing about the row being typed.
+            BindingContext context = grid.BindingContext ?? BindingContext;
+
+            if (grid.DataSource == null || context == null)
                 return;
 
-            BindingManagerBase manager = BindingContext[grid.DataSource, grid.DataMember];
+            BindingManagerBase manager = context[grid.DataSource, grid.DataMember];
             if (manager != null)
                 manager.EndCurrentEdit();
         }

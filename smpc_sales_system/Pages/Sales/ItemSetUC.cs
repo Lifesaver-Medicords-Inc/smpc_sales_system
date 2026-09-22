@@ -540,10 +540,13 @@ namespace smpc_sales_system.Pages.Sales
                 // new-row line into the table behind the grid. Looked up from the grid's own
                 // DataSource, since these grids are bound to a DataTable directly in some
                 // paths and through a BindingSource in others.
-                if (grid.DataSource == null || BindingContext == null)
+                // The grid's own BindingContext, for the reason in Quotation.CommitGrid.
+                BindingContext context = grid.BindingContext ?? BindingContext;
+
+                if (grid.DataSource == null || context == null)
                     continue;
 
-                BindingManagerBase manager = BindingContext[grid.DataSource, grid.DataMember];
+                BindingManagerBase manager = context[grid.DataSource, grid.DataMember];
                 if (manager != null)
                     manager.EndCurrentEdit();
             }
