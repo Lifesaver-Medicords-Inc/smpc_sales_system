@@ -518,6 +518,23 @@ namespace smpc_sales_system.Pages.Sales
             //this.project_items_multiplier.DataSource = multiplier;
         }
 
+        // Closes any cell still being edited on this tab's grids, so what the user has typed
+        // is in the cell (and in the table behind it) before a save reads them. A DataGridView
+        // keeps the text in its editing control until the edit is committed - clicking Save
+        // straight from a cell therefore saved the value the cell had BEFORE it was typed
+        // into, which read as the save quietly ignoring the edit.
+        public void CommitPendingEdits()
+        {
+            foreach (DataGridView grid in new[] { dgv_project_items, dgv_wiring, dgv_final, dgv_size_up })
+            {
+                if (grid == null || !grid.IsCurrentCellInEditMode)
+                    continue;
+
+                grid.CommitEdit(DataGridViewDataErrorContexts.Commit);
+                grid.EndEdit();
+            }
+        }
+
         public Dictionary<string, dynamic> ProjectComputationLoop()
         {
             //dgv_project_items.EndEdit();

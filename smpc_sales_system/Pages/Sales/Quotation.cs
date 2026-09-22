@@ -1817,8 +1817,45 @@ namespace smpc_sales_app.Pages.Sales
             return true;
         }
 
+        // Ends any edit still open on the grids before a save reads them.
+        //
+        // A DataGridView keeps what is being typed in its editing control until the edit is
+        // committed, so clicking Save straight out of a cell harvested the value the cell had
+        // BEFORE it was typed into. On the PROJECT MULTIPLIERS grid that read as the system
+        // refusing to accept a new multiplier - type 10/10/5, press Save, and the row saved
+        // empty or unchanged (user-reported 2026-09-22). The same applied to every other grid
+        // on this page, including a row still sitting on the new-row line.
+        private void CommitPendingEdits()
+        {
+            foreach (DataGridView grid in new[] { dgv_project_multiplier, dgv_quick_quote_details })
+            {
+                if (grid == null || !grid.IsCurrentCellInEditMode)
+                    continue;
+
+                grid.CommitEdit(DataGridViewDataErrorContexts.Commit);
+                grid.EndEdit();
+            }
+
+            // Pushes the row itself into the table behind the binding source - a row typed on
+            // the new-row line is not in the table until the edit ends.
+            if (bs_project_multipliers != null && BindingContext != null)
+            {
+                BindingManagerBase manager = BindingContext[bs_project_multipliers];
+                if (manager != null)
+                    manager.EndCurrentEdit();
+            }
+
+            foreach (TabPage tab in tabControl2.TabPages)
+            {
+                if (tab.Controls.Count > 0 && tab.Controls[0] is ItemSetUC itemSet)
+                    itemSet.CommitPendingEdits();
+            }
+        }
+
         private async void  IsProject()
         {
+            CommitPendingEdits();
+
             // Belt-and-suspenders check alongside the one in btn_edit_Click/btn_update_Click -
             // IsEdit only means "editing an existing record" (see IsEdit's setter), so this
             // only fires on an update to a record that already exists, never on a brand new one.
@@ -3383,6 +3420,8 @@ namespace smpc_sales_app.Pages.Sales
         }
         private async void IsQuickQuote()
         {
+            CommitPendingEdits();
+
             // Belt-and-suspenders check alongside the one in btn_edit_Click/btn_update_Click -
             // IsEdit only means "editing an existing record" (see IsEdit's setter), so this
             // only fires on an update to a record that already exists, never on a brand new one.
@@ -6954,7 +6993,15 @@ namespace smpc_sales_app.Pages.Sales
         {
             List<string> multiply = fetchMultiplierData();
 
-            if (tabControl2.SelectedTab.Controls[0] is ItemSetUC currentControl)
+            // The "+" tab holds no ItemSetUC, and a project quote can be open with no item-set
+            // tabs at all, so indexing straight into Controls[0] threw "Index 0 is out of
+            // range" - and this runs on every edit of the PROJECT MULTIPLIERS grid, so typing
+            // a multiplier with that tab selected failed with "Something went wrong and that
+            // action could not be completed" from the app's crash guard. It reads as the
+            // system refusing the new multiplier (user-reported 2026-09-22).
+            TabPage selected = tabControl2.SelectedTab;
+
+            if (selected != null && selected.Controls.Count > 0 && selected.Controls[0] is ItemSetUC currentControl)
             {
                 currentControl.setMultiplier(multiply);
             }
@@ -6995,6 +7042,8 @@ namespace smpc_sales_app.Pages.Sales
 
         private async Task FinalizeProjectQuotation()
         {
+            CommitPendingEdits();
+
             // No customer selected (txt_customer_id is only ever populated by the
             // "Select Customer" dialog in btn_add_customer_Click) - block finalize
             // instead of letting a quotation with no customer through.
@@ -7166,6 +7215,8 @@ namespace smpc_sales_app.Pages.Sales
 
         private async Task FinalizeQuickQuotation()
         {
+            CommitPendingEdits();
+
             // No customer selected (txt_customer_id is only ever populated by the
             // "Select Customer" dialog in btn_add_customer_Click) - block finalize
             // instead of letting a quotation with no customer through.
