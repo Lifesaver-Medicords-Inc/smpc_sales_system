@@ -38,6 +38,16 @@ namespace smpc_sales_system
             Log.Information("Running in {Environment} environment", env);
             Log.Information("API URL: {Url}", ApiBaseUrl);
 
+            // The engineering assembly is hosted in-process (shared ItemSetUC +
+            // engineering sub-login at sign-in) so its own Main never runs and its
+            // ApiBaseUrl would stay null - every engineering call then fell back to
+            // http://127.0.0.1:3000/api, and a PC with no local API (e.g. VPN-only)
+            // failed sign-in with a bare "Something went wrong". Point it at this
+            // process's resolved URL: production on production PCs, dev URL under
+            // Development. WssBaseUrl is this app's own unresolved null, so only
+            // the API URL is mirrored.
+            smpc_engineering_app.Program.Configure(ApiBaseUrl);
+
             string reportsFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Reports");
             smpc_sales_system.Properties.Settings.Default.REPORTPATH = reportsFolder;
             Log.Information("Report path resolved to: {ReportsFolder}", reportsFolder);

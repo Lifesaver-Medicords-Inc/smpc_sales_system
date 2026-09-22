@@ -78,8 +78,20 @@ namespace smpc_sales_app.Pages
                     var inventoryLogin = new smpc_inventory_app.Pages.Login();
                     await inventoryLogin.LoginFromSalesAsync(data);
 
-                    var engineeringLogin = new smpc_engineering_app.Pages.Login();
-                    await engineeringLogin.LoginFromEngineerAsync(data);
+                    // The engineering session is auxiliary - Sales + inventory are
+                    // already established above. A failure here (unreachable API,
+                    // timeout over VPN) must degrade to a message and continue,
+                    // never abort sign-in with a bare "Something went wrong".
+                    try
+                    {
+                        var engineeringLogin = new smpc_engineering_app.Pages.Login();
+                        await engineeringLogin.LoginFromEngineerAsync(data);
+                    }
+                    catch (Exception engEx)
+                    {
+                        Debug.WriteLine("Engineering sub-login failed: " + engEx);
+                        Helpers.ShowDialogMessage("error", "Engineering session could not be established. Continuing with Sales only.");
+                    }
 
                     CacheData.PaymentTerms = await PaymentTermsServices.GetAsDatatable();
                     CacheData.ApplicationSetup = await ApplicationService.GetAsDatatable();
