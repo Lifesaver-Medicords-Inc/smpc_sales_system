@@ -149,12 +149,21 @@ namespace smpc_sales_system.Pages.Sales
         // same underlying "not found" failure).
         private async Task<bool> fetchQuotationDetailsByDocumentNo(string documentNo)
         {
-            SalesQuotationList data = await QuotationService.GetQuotations();
+            // Per-document endpoint: only this document's versions + its own
+            // lines/images cross the VPN, instead of the whole quotation list.
+            SalesQuotationList data = await QuotationService.GetQuotationVersions(documentNo);
 
             //SalesQuotationSelectedImageModel imageData = await QuotationService.GetItems();
-            if (data == null || string.IsNullOrEmpty(documentNo))
+            if (string.IsNullOrEmpty(documentNo))
             {
                 MessageBox.Show("No document number received");
+                return false;
+            }
+            // A 404 from the versions endpoint deserializes to a null envelope -
+            // report it as not-found, not as a missing argument.
+            if (data == null)
+            {
+                MessageBox.Show("No SalesQuotation found for the provided document number.");
                 return false;
             }
             // Any of these can legitimately come back null from the API (e.g. an empty

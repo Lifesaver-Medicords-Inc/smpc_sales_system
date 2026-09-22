@@ -32,12 +32,23 @@ namespace smpc_sales_app.Services.Sales
             SalesQuotationList quotationData = response.Data;
             return quotationData;
         }
-        // GET: latest quotation list
+        // GET: latest quotation list (one row per document - the module's
+        // default view; the full history lives behind GetQuotationVersions)
         public static async Task<SalesQuotationList> GetLatestQuotations()
         {
             var response = await RequestToApi<ApiResponseModel<SalesQuotationList>>.Get(latest_url);
             SalesQuotationList quotationData = response.Data;
             return quotationData;
+        }
+        // GET: one document's full version history (headers + only that
+        // document's lines/images) for the version viewer and
+        // open-by-document flows - replaces downloading the whole list
+        // to look at a single document.
+        public static async Task<SalesQuotationList> GetQuotationVersions(string documentNo)
+        {
+            var response = await RequestToApi<ApiResponseModel<SalesQuotationList>>.Get(
+                url + "/versions?document_no=" + Uri.EscapeDataString(documentNo ?? ""));
+            return response.Data;
         }
         //public static async Task
 

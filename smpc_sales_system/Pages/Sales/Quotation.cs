@@ -1038,7 +1038,12 @@ namespace smpc_sales_app.Pages.Sales
 
             try
             {
-                data = await QuotationService.GetQuotations();
+                // Latest-versions endpoint: one row per document with only
+                // those headers' lines/images. The GroupBy below is then a
+                // no-op safety net; version history (allTransactionList for
+                // the VersionModal, GetNextVersionNo) is served per-document
+                // by GetQuotationVersions instead of this full download.
+                data = await QuotationService.GetLatestQuotations();
 
                 //projectData = await
 
@@ -6492,10 +6497,40 @@ namespace smpc_sales_app.Pages.Sales
             bindVersion(true);
         }
 
-        private void txt_version_no_DoubleClick(object sender, EventArgs e)
+        // Adds rows from source that target doesn't already have (matched on
+        // idColumn) - used to fold one document's older version lines/images
+        // into the working tables without duplicating what's already there.
+        private static void MergeRowsById(DataTable target, DataTable source, string idColumn)
+        {
+            if (target == null || source == null) return;
+            if (!target.Columns.Contains(idColumn) || !source.Columns.Contains(idColumn)) return;
+            var known = new HashSet<string>(target.AsEnumerable().Select(r => r[idColumn] == null ? null : r[idColumn].ToString()));
+            foreach (DataRow row in source.Rows)
+            {
+                if (known.Add(row[idColumn] == null ? null : row[idColumn].ToString()))
+                    target.ImportRow(row);
+            }
+        }
+
+        private async void txt_version_no_DoubleClick(object sender, EventArgs e)
         {
             string docNum = txt_document_no.Text.ToString();
-            VersionModal vm = new VersionModal(allTransactionList, docNum);
+
+            // Version history lives behind the per-document endpoint now -
+            // the main list only carries latest versions, so an older
+            // version (and its lines) would no longer be found locally.
+            SalesQuotationList versions = await QuotationService.GetQuotationVersions(docNum);
+            if (versions == null || versions.SalesQuotation == null || !versions.SalesQuotation.Any())
+            {
+                MessageBox.Show("No versions found for this document.");
+                return;
+            }
+
+            DataTable versionsTable = JsonHelper.ToDataTable(versions.SalesQuotation);
+            MergeRowsById(childList, JsonHelper.ToDataTable(versions.SalesQuotationQuick), "id");
+            MergeRowsById(selectedImageList, JsonHelper.ToDataTable(versions.SalesQuotationSelectedImages), "id");
+
+            VersionModal vm = new VersionModal(versionsTable, docNum);
             DialogResult r = vm.ShowDialog();
 
             if (r == DialogResult.OK)
@@ -6510,7 +6545,7 @@ namespace smpc_sales_app.Pages.Sales
                     result.TryGetValue("version_no", out ver);
                     result.TryGetValue("document_no", out doc);
 
-                    var versionFilter = allTransactionList.AsEnumerable()
+                    var versionFilter = versionsTable.AsEnumerable()
                         .Where(row => row["document_no"].ToString() == doc && row["version_no"].ToString() == ver)
                         .CopyToDataTable();
 
@@ -7528,7 +7563,9 @@ namespace smpc_sales_app.Pages.Sales
         // Returns true if a Quick Quote record matching documentNo was found and bound.
         private async Task<bool> FetchQuotationDetailsByDocumentNo(string documentNo, string version_no = null, string sub_version_no = null)
         {
-            SalesQuotationList data = await QuotationService.GetQuotations();
+            // Per-document endpoint: only this document's versions + its own
+            // lines/images cross the VPN, instead of the whole quotation list.
+            SalesQuotationList data = await QuotationService.GetQuotationVersions(documentNo);
             var itemData = await ItemService.GetItem();
             ItemList = JsonHelper.ToDataTable(itemData.items);
 

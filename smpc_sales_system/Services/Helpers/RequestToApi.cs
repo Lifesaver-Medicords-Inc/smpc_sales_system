@@ -92,7 +92,12 @@ namespace smpc_sales_app.Services.Helpers
                 // reused. The CookieContainer is a shared static, so the session survives.
                 HttpClientHandler handler = new HttpClientHandler
                 {
-                    CookieContainer = cookieContainer
+                    CookieContainer = cookieContainer,
+                    // Lets multi-MB list payloads (item catalogue, quotations)
+                    // ride gzip-compressed across the VPN. .NET then sends
+                    // Accept-Encoding automatically and unwraps the response,
+                    // so ReadAsStringAsync still sees plain JSON.
+                    AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate
                 };
 
                 using (HttpClient client = new HttpClient(handler))
