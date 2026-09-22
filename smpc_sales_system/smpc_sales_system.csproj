@@ -32,7 +32,7 @@
     <SuiteName>SMPC %40copyright</SuiteName>
     <MinimumRequiredVersion>1.0.0.0</MinimumRequiredVersion>
     <ApplicationRevision>0</ApplicationRevision>
-    <ApplicationVersion>1.4.0.0</ApplicationVersion>
+    <ApplicationVersion>1.5.0.0</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
     <BootstrapperEnabled>true</BootstrapperEnabled>
@@ -831,4 +831,23 @@
     <Error Condition="!Exists('..\packages\FastReport.Net.Demo.2026.2.1\build\net462\FastReport.Net.Demo.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\FastReport.Net.Demo.2026.2.1\build\net462\FastReport.Net.Demo.props'))" />
   </Target>
   <Import Project="..\packages\System.ValueTuple.4.6.1\build\net471\System.ValueTuple.targets" Condition="Exists('..\packages\System.ValueTuple.4.6.1\build\net471\System.ValueTuple.targets')" />
+  <ItemGroup>
+    <!-- This app and the engineering app reference each other: sales opens engineering's
+         Login and Item Request pages, and engineering reuses this assembly's ItemSetUC. So
+         when ClickOnce walks the references it reaches smpc_sales_system.exe again, as a
+         dependency of smpc_engineering_app.exe, and resolves it to this project's build
+         output - a different file from the copy the publish itself produces.
+
+         The manifest then declared the same assembly identity twice, which the manifest
+         parser rejects outright: installing died on "the application is improperly
+         formatted", HRESULT 0x80070C81 (user-reported 2026-09-22). Excluding it here drops
+         only that second, transitively-resolved copy; the app still ships as the entry
+         point, and every other reference (engineering's exe included) is unaffected. -->
+    <PublishFile Include="smpc_sales_system">
+      <Visible>False</Visible>
+      <PublishState>Exclude</PublishState>
+      <IncludeHash>True</IncludeHash>
+      <FileType>Assembly</FileType>
+    </PublishFile>
+  </ItemGroup>
 </Project>
