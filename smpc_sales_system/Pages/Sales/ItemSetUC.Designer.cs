@@ -31,17 +31,16 @@ namespace smpc_sales_system.Pages.Sales
         {
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ItemSetUC));
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle6 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle7 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle5 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle8 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle9 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle10 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyleAmpReq = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle11 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle16 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle17 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle12 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle13 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle14 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle15 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle18 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle19 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle20 = new System.Windows.Forms.DataGridViewCellStyle();
             this.pnl_project_content = new System.Windows.Forms.Panel();
             this.dgv_final = new System.Windows.Forms.DataGridView();
             this.Id = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -191,7 +190,6 @@ namespace smpc_sales_system.Pages.Sales
             this.project_wiring_based_id = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.cmb_unit = new System.Windows.Forms.DataGridViewComboBoxColumn();
             this.project_wiring_materials = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.project_wiring_amp_req = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.project_wiring_wire_amp = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.project_wiring_description = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.project_wiring_num_of_wiring_set = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -405,8 +403,8 @@ namespace smpc_sales_system.Pages.Sales
             this.txt_item_set_notes.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F);
             this.txt_item_set_notes.Location = new System.Drawing.Point(584, 225);
             this.txt_item_set_notes.Multiline = true;
-            this.txt_item_set_notes.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
             this.txt_item_set_notes.Name = "txt_item_set_notes";
+            this.txt_item_set_notes.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
             this.txt_item_set_notes.Size = new System.Drawing.Size(468, 93);
             this.txt_item_set_notes.TabIndex = 169;
             // 
@@ -425,8 +423,8 @@ namespace smpc_sales_system.Pages.Sales
             this.txt_item_set_description.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F);
             this.txt_item_set_description.Location = new System.Drawing.Point(34, 225);
             this.txt_item_set_description.Multiline = true;
-            this.txt_item_set_description.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
             this.txt_item_set_description.Name = "txt_item_set_description";
+            this.txt_item_set_description.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
             this.txt_item_set_description.Size = new System.Drawing.Size(468, 93);
             this.txt_item_set_description.TabIndex = 167;
             this.txt_item_set_description.Text = resources.GetString("txt_item_set_description.Text");
@@ -520,8 +518,8 @@ namespace smpc_sales_system.Pages.Sales
             this.txt_item_designation.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F);
             this.txt_item_designation.Location = new System.Drawing.Point(29, 26);
             this.txt_item_designation.Multiline = true;
-            this.txt_item_designation.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
             this.txt_item_designation.Name = "txt_item_designation";
+            this.txt_item_designation.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
             this.txt_item_designation.Size = new System.Drawing.Size(290, 99);
             this.txt_item_designation.TabIndex = 104;
             // 
@@ -540,8 +538,8 @@ namespace smpc_sales_system.Pages.Sales
             this.txt_application.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F);
             this.txt_application.Location = new System.Drawing.Point(109, 136);
             this.txt_application.Multiline = true;
-            this.txt_application.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
             this.txt_application.Name = "txt_application";
+            this.txt_application.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
             this.txt_application.Size = new System.Drawing.Size(210, 54);
             this.txt_application.TabIndex = 104;
             // 
@@ -630,8 +628,8 @@ namespace smpc_sales_system.Pages.Sales
             this.txt_additional.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F);
             this.txt_additional.Location = new System.Drawing.Point(437, 144);
             this.txt_additional.Multiline = true;
-            this.txt_additional.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
             this.txt_additional.Name = "txt_additional";
+            this.txt_additional.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
             this.txt_additional.Size = new System.Drawing.Size(336, 61);
             this.txt_additional.TabIndex = 127;
             // 
@@ -787,12 +785,16 @@ namespace smpc_sales_system.Pages.Sales
             // 
             // cmb_starting_method
             // 
+            this.cmb_starting_method.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmb_starting_method.FormattingEnabled = true;
             this.cmb_starting_method.Items.AddRange(new object[] {
-            "WYE-DELTA OPEN",
-            "WYE-DELTA CLOSED",
-            "DIRECT ONLINE",
-            "SOFT STARTER"});
+            "DOL - Direct Online",
+            "WDO - Wye-Delta Open",
+            "WDC - Wye-Delta Closed",
+            "VFD - Variable Frequency Drive",
+            "SS - Soft Starter",
+            "ATO - Auto-Transformer Open ",
+            "ATC - Auto-Transformer Closed"});
             this.cmb_starting_method.Location = new System.Drawing.Point(842, 41);
             this.cmb_starting_method.Name = "cmb_starting_method";
             this.cmb_starting_method.Size = new System.Drawing.Size(167, 21);
@@ -963,14 +965,14 @@ namespace smpc_sales_system.Pages.Sales
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.dgv_project_items.BackgroundColor = System.Drawing.SystemColors.ActiveBorder;
-            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dgv_project_items.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
+            dataGridViewCellStyle11.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle11.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle11.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle11.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle11.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle11.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle11.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dgv_project_items.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle11;
             this.dgv_project_items.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dgv_project_items.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.project_items_id,
@@ -993,24 +995,24 @@ namespace smpc_sales_system.Pages.Sales
             this.project_items_discount,
             this.project_items_line_total,
             this.project_items_notes});
-            dataGridViewCellStyle6.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle6.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle6.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle6.ForeColor = System.Drawing.SystemColors.ControlText;
-            dataGridViewCellStyle6.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle6.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle6.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.dgv_project_items.DefaultCellStyle = dataGridViewCellStyle6;
+            dataGridViewCellStyle16.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle16.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle16.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle16.ForeColor = System.Drawing.SystemColors.ControlText;
+            dataGridViewCellStyle16.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle16.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle16.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.dgv_project_items.DefaultCellStyle = dataGridViewCellStyle16;
             this.dgv_project_items.Location = new System.Drawing.Point(17, 490);
             this.dgv_project_items.Name = "dgv_project_items";
-            dataGridViewCellStyle7.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle7.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle7.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle7.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle7.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle7.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle7.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dgv_project_items.RowHeadersDefaultCellStyle = dataGridViewCellStyle7;
+            dataGridViewCellStyle17.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle17.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle17.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle17.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle17.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle17.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle17.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dgv_project_items.RowHeadersDefaultCellStyle = dataGridViewCellStyle17;
             this.dgv_project_items.Size = new System.Drawing.Size(1092, 408);
             this.dgv_project_items.TabIndex = 151;
             this.dgv_project_items.CellBeginEdit += new System.Windows.Forms.DataGridViewCellCancelEventHandler(this.dgv_project_items_CellBeginEdit);
@@ -1059,14 +1061,6 @@ namespace smpc_sales_system.Pages.Sales
             // 
             // project_items_images
             // 
-            // Spec 5.1.2 lists IMAGE as a column of the shared item table, immediately after
-            // the exclude checkbox - so it is the first content column, which is where it
-            // already sits here (the five columns ahead of it are hidden ids). It was
-            // Visible = false, so the column existed and its whole click path worked but
-            // nothing could reach it (user-reported 2026-09-05).
-            //
-            // Header is IMAGE, singular, per 5.1.2's column list. Quick Quote's equivalent
-            // column says IMAGES - flagged, not silently harmonised either way.
             this.project_items_images.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
             this.project_items_images.HeaderText = "IMAGE";
             this.project_items_images.Name = "project_items_images";
@@ -1109,8 +1103,8 @@ namespace smpc_sales_system.Pages.Sales
             // 
             // project_inv_stock
             // 
-            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            this.project_inv_stock.DefaultCellStyle = dataGridViewCellStyle2;
+            dataGridViewCellStyle12.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            this.project_inv_stock.DefaultCellStyle = dataGridViewCellStyle12;
             this.project_inv_stock.HeaderText = "INV.";
             this.project_inv_stock.Name = "project_inv_stock";
             this.project_inv_stock.ReadOnly = true;
@@ -1142,16 +1136,16 @@ namespace smpc_sales_system.Pages.Sales
             // project_items_list_price
             // 
             this.project_items_list_price.DataPropertyName = "list_price_per_unit";
-            dataGridViewCellStyle3.NullValue = "0.00";
-            this.project_items_list_price.DefaultCellStyle = dataGridViewCellStyle3;
+            dataGridViewCellStyle13.NullValue = "0.00";
+            this.project_items_list_price.DefaultCellStyle = dataGridViewCellStyle13;
             this.project_items_list_price.HeaderText = "LIST PRICE";
             this.project_items_list_price.Name = "project_items_list_price";
             // 
             // project_items_unit_price
             // 
             this.project_items_unit_price.DataPropertyName = "unit_price";
-            dataGridViewCellStyle4.NullValue = "0.00";
-            this.project_items_unit_price.DefaultCellStyle = dataGridViewCellStyle4;
+            dataGridViewCellStyle14.NullValue = "0.00";
+            this.project_items_unit_price.DefaultCellStyle = dataGridViewCellStyle14;
             this.project_items_unit_price.HeaderText = "UNIT PRICE";
             this.project_items_unit_price.Name = "project_items_unit_price";
             // 
@@ -1167,8 +1161,8 @@ namespace smpc_sales_system.Pages.Sales
             // project_items_discount
             // 
             this.project_items_discount.DataPropertyName = "discount_price";
-            dataGridViewCellStyle5.NullValue = "0.00";
-            this.project_items_discount.DefaultCellStyle = dataGridViewCellStyle5;
+            dataGridViewCellStyle15.NullValue = "0.00";
+            this.project_items_discount.DefaultCellStyle = dataGridViewCellStyle15;
             this.project_items_discount.HeaderText = "DISCOUNT/ MARK UP PRICE";
             this.project_items_discount.Name = "project_items_discount";
             // 
@@ -1488,21 +1482,20 @@ namespace smpc_sales_system.Pages.Sales
             this.dgv_wiring.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.dgv_wiring.AutoGenerateColumns = false;
-            dataGridViewCellStyle8.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle8.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle8.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle8.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle8.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle8.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle8.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dgv_wiring.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle8;
+            dataGridViewCellStyle18.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle18.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle18.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle18.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle18.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle18.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle18.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dgv_wiring.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle18;
             this.dgv_wiring.ColumnHeadersHeight = 100;
             this.dgv_wiring.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.project_wiring_id,
             this.project_wiring_based_id,
             this.cmb_unit,
             this.project_wiring_materials,
-            this.project_wiring_amp_req,
             this.project_wiring_wire_amp,
             this.project_wiring_description,
             this.project_wiring_num_of_wiring_set,
@@ -1518,24 +1511,24 @@ namespace smpc_sales_system.Pages.Sales
             this.project_wiring_total_cost,
             this.project_wiring_unit});
             this.dgv_wiring.DataSource = this.bs_project_wiring;
-            dataGridViewCellStyle9.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle9.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle9.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle9.ForeColor = System.Drawing.SystemColors.ControlText;
-            dataGridViewCellStyle9.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle9.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle9.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.dgv_wiring.DefaultCellStyle = dataGridViewCellStyle9;
+            dataGridViewCellStyle19.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle19.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle19.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle19.ForeColor = System.Drawing.SystemColors.ControlText;
+            dataGridViewCellStyle19.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle19.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle19.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.dgv_wiring.DefaultCellStyle = dataGridViewCellStyle19;
             this.dgv_wiring.Location = new System.Drawing.Point(24, 965);
             this.dgv_wiring.Name = "dgv_wiring";
-            dataGridViewCellStyle10.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle10.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle10.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle10.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle10.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle10.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle10.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dgv_wiring.RowHeadersDefaultCellStyle = dataGridViewCellStyle10;
+            dataGridViewCellStyle20.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle20.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle20.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle20.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle20.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle20.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle20.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dgv_wiring.RowHeadersDefaultCellStyle = dataGridViewCellStyle20;
             this.dgv_wiring.Size = new System.Drawing.Size(1092, 416);
             this.dgv_wiring.TabIndex = 154;
             this.dgv_wiring.CellEndEdit += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgv_wiring_CellEndEdit);
@@ -1573,29 +1566,9 @@ namespace smpc_sales_system.Pages.Sales
             this.project_wiring_materials.HeaderText = "MATERIALS";
             this.project_wiring_materials.MinimumWidth = 200;
             this.project_wiring_materials.Name = "project_wiring_materials";
-            //
-            // project_wiring_amp_req
-            //
-            // Spec 8.4's AMP REQ. - the computed requirement on rows 1 (ECB -> controller)
-            // and 7 (controller -> motor), distinct from WIRE AMP. next to it, which is the
-            // rating of the wire actually chosen. This column was declared as a field at the
-            // bottom of this file but never instantiated and never added to the Columns
-            // collection, so SetWiringAmpReq's own
-            //     if (!dgv_wiring.Columns.Contains("project_wiring_amp_req")) return;
-            // guard fired on every call: both formulas computed correctly and threw the
-            // answer away, leaving rows 1 and 7 permanently blank (user-reported 2026-09-05).
-            // A formula cell, so grey and read-only per 8.4 - see SetEditable, which has to
-            // re-assert the ReadOnly after Helpers.SetControlsEditable blanket-clears it.
-            dataGridViewCellStyleAmpReq.BackColor = System.Drawing.SystemColors.Control;
-            this.project_wiring_amp_req.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.project_wiring_amp_req.DataPropertyName = "AMPREQ";
-            this.project_wiring_amp_req.DefaultCellStyle = dataGridViewCellStyleAmpReq;
-            this.project_wiring_amp_req.HeaderText = "AMP REQ.";
-            this.project_wiring_amp_req.Name = "project_wiring_amp_req";
-            this.project_wiring_amp_req.ReadOnly = true;
-            //
+            // 
             // project_wiring_wire_amp
-            //
+            // 
             this.project_wiring_wire_amp.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
             this.project_wiring_wire_amp.DataPropertyName = "WIRE AMP.";
             this.project_wiring_wire_amp.HeaderText = "WIRE AMP.";

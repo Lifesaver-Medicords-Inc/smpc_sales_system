@@ -147,7 +147,7 @@ namespace smpc_sales_app.Pages
             treeNode12.Text = "Logbook";
             treeNode13.Name = "Tracker";
             treeNode13.Text = "Tracker";
-            treeNode14.Name = "Inventory";
+            treeNode14.Name = "parent";
             treeNode14.Text = "Inventory";
             treeNode15.Name = "Ship Type Setup";
             treeNode15.Text = "Ship Type Setup";
