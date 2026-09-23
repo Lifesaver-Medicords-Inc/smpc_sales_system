@@ -624,6 +624,7 @@ namespace smpc_sales_app.Pages.Sales
             foreach (var row in includedRows)
             {
                 int qtyReceived = ParseInt(row.Cells["col_qty_received"].Value);
+                int qtyReturned = ParseInt(row.Cells["col_qty_returned"].Value);
                 int sum = ParseInt(row.Cells["col_qty_for_replacement"].Value)
                         + ParseInt(row.Cells["col_qty_to_stock"].Value)
                         + ParseInt(row.Cells["col_qty_for_purchase_return"].Value);
@@ -632,6 +633,14 @@ namespace smpc_sales_app.Pages.Sales
                 {
                     MessageBox.Show(
                         "QTY FOR REPLACEMENT + QTY TO STOCK + QTY FOR PURCHASE RETURN must equal QTY RECEIVED on every line (see the highlighted row).",
+                        "SMPC SOFTWARE", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                if (qtyReceived > qtyReturned)
+                {
+                    MessageBox.Show(
+                        "QTY RECEIVED cannot exceed QTY RETURNED (the quantity originally shipped/sold per the reference document).",
                         "SMPC SOFTWARE", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
