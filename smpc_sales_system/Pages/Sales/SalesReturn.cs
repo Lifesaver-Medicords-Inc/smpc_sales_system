@@ -515,7 +515,7 @@ namespace smpc_sales_app.Pages.Sales
                         // must not silently save as free.
                         row.Cells["col_unit_price"].Value = "";
                         row.Cells["col_total_cost"].Value = "";
-                        row.DefaultCellStyle.BackColor = Color.MistyRose;
+                        row.DefaultCellStyle.BackColor = Color.Red;
                     }
                 }
                 _suppressGridEvents = false;
