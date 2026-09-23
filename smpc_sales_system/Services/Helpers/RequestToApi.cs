@@ -3,6 +3,7 @@ using smpc_sales_app.Data;
 using smpc_sales_app.Pages.Sales;
 using smpc_sales_system;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -18,6 +19,11 @@ namespace smpc_sales_app.Services.Helpers
 {
     internal class RequestToApi<T> where T : class
     {
+        // In-flight request cache: deduplicates simultaneous identical GET requests.
+        // Key = "GET|url" (only GET is cached; writes are never deduplicated).
+        // Value = Task<T> representing the in-flight request.
+        private static readonly ConcurrentDictionary<string, Task<T>> _inFlightCache
+            = new ConcurrentDictionary<string, Task<T>>();
         static string baseUrl
         {
             get
@@ -54,6 +60,13 @@ namespace smpc_sales_app.Services.Helpers
 
         static CookieContainer cookieContainer = new CookieContainer();
 
+        // Generates a cache key for a request. Only GET requests are cached.
+        private static string GetCacheKey(HttpMethod method, string url)
+        {
+            if (method != HttpMethod.Get) return null;
+            return "GET|" + url;
+        }
+
         // Callers universally read response.Data straight off the result, so handing back
         // null on failure turned every unreachable-API call into a NullReferenceException
         // inside the service layer (ItemService.GetItem, ProjectService.GetBom, and 40-odd
@@ -79,6 +92,28 @@ namespace smpc_sales_app.Services.Helpers
         // does for a clean "no data" response. It is still counted as a failure, so the
         // owning screen can still offer to reload.
         static private async Task<T> SendRequestAsync(string url, HttpMethod method, string body = null, bool silent = false)
+        {
+            // Check in-flight cache for GET requests - deduplicate simultaneous identical requests
+            string cacheKey = GetCacheKey(method, url);
+            if (cacheKey != null)
+            {
+                var existing = _inFlightCache.GetOrAdd(cacheKey, _ => ExecuteRequestAsync(url, method, body, silent));
+                try
+                {
+                    return await existing;
+                }
+                finally
+                {
+                    // Remove from cache after completion (success or failure) so retries get fresh requests
+                    _inFlightCache.TryRemove(cacheKey, out _);
+                }
+            }
+
+            return await ExecuteRequestAsync(url, method, body, silent);
+        }
+
+        // Core request execution (extracted from SendRequestAsync for cache integration)
+        static private async Task<T> ExecuteRequestAsync(string url, HttpMethod method, string body = null, bool silent = false)
         {
             // Retries only ever apply to GET - see ApiConnection.IsRetryable for why a
             // write is never replayed.
@@ -248,7 +283,12 @@ namespace smpc_sales_app.Services.Helpers
             string jsonContent = JsonConvert.SerializeObject(data);
             return await SendRequestAsync(url, HttpMethod.Delete, jsonContent);
         }
-        // Returns null when the cookie carries no Authorization value, rather than throwing.
+        // Clears the in-flight request cache. Useful for testing or after
+        // explicit user actions that should bypass deduplication.
+        public static void ClearInFlightCache()
+        {
+            _inFlightCache.Clear();
+        }
         // This computed the Substring BEFORE testing tokenEndIndex for -1, so a Set-Cookie
         // with no trailing semicolon threw ArgumentOutOfRangeException on the line above the
         // check meant to handle exactly that case; and a cookie with no "Authorization=" at
