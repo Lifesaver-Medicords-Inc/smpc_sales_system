@@ -1,4 +1,4 @@
-using smpc_app.Services.Helpers;
+﻿using smpc_app.Services.Helpers;
 using smpc_sales_app.Pages;
 using smpc_sales_app.Services.Helpers;
 using smpc_sales_system.Services.Sales;
@@ -323,6 +323,8 @@ namespace smpc_sales_system.Pages.Sales
 
         /// <summary>
         /// Inserts a single (non-BOM) item at rowIndex.
+        /// If a reference (parent reference_code) is provided, the new item is inserted
+        /// at the bottom of existing children of that parent, not at the clicked row.
         /// </summary>
         public void GetItemData(int rowIndex, int itemID, DataGridView dgv, string reference, string counter = null)
         {
@@ -341,25 +343,37 @@ namespace smpc_sales_system.Pages.Sales
             DataTable dataSource = dgv.DataSource as DataTable;
             if (!IsProject && dataSource == null) return;
 
+            // If a reference (parent reference_code) is provided, find the correct insertion point
+            // at the bottom of existing children of that parent, not at the clicked rowIndex.
+            int insertIndex = rowIndex;
+            if (reference != null && dataSource != null)
+            {
+                int lastChildIndex = FindLastChildIndex(dataSource, reference);
+                if (lastChildIndex >= 0)
+                {
+                    insertIndex = lastChildIndex + 1;
+                }
+            }
+
             foreach (DataRow row in itemList.Rows)
             {
                 DataRow newRow = dataSource.NewRow();
                 if (dataSource.Columns.Contains("unit_of_measure"))
                     newRow["unit_of_measure"] = row["unit_of_measure"];
 
-                reference = (reference != null) ? reference : (counter != null) ? counter : CounterReference.ToString();
+                string refCode = (reference != null) ? reference : (counter != null) ? counter : CounterReference.ToString();
 
                 newRow["item_id"] = row["id"];
                 newRow["model"] = row["item_model"];
                 newRow["components"] = new string(' ', level * 4) + row["item_name"];
-                newRow["reference_code"] = reference;
+                newRow["reference_code"] = reference ?? refCode;
 
-                dataSource.Rows.InsertAt(newRow, rowIndex);
+                dataSource.Rows.InsertAt(newRow, insertIndex);
 
                 // Bug #089: this used dataSource.Rows.Count - 1 as "the row we just
                 // added", but InsertAt puts it AT rowIndex and shifts the rest down, so
                 // the styling/stock check landed on an unrelated row.
-                int addedRowIndex = rowIndex;
+                int addedRowIndex = insertIndex;
                 Helpers.SalesItemRowStyler.ApplyStyle(dgv, addedRowIndex, "single");
 
                 RefreshStockIndicator?.Invoke(addedRowIndex, dgv);
@@ -378,6 +392,35 @@ namespace smpc_sales_system.Pages.Sales
                     count++;
             }
             return count;
+        }
+
+        /// <summary>
+        /// Finds the index of the last child row of a given parent reference_code.
+        /// Returns -1 if no children found.
+        /// </summary>
+        private int FindLastChildIndex(DataTable dt, string parentRef)
+        {
+            if (string.IsNullOrEmpty(parentRef) || dt == null)
+                return -1;
+
+            string childPrefix = parentRef + ".";
+            int lastIndex = -1;
+
+            for (int i = 0; i < dt.Rows.Count; i++)
+            {
+                var refCode = dt.Rows[i].Table.Columns.Contains("reference_code") ? dt.Rows[i]["reference_code"]?.ToString() : null;
+                if (!string.IsNullOrEmpty(refCode) && refCode.StartsWith(childPrefix))
+                {
+                    // Check if it's a direct child (one level deeper) not a grandchild
+                    string remainder = refCode.Substring(parentRef.Length + 1);
+                    if (!remainder.Contains("."))
+                    {
+                        lastIndex = i;
+                    }
+                }
+            }
+
+            return lastIndex;
         }
 
         private string ResolveItemUom(int itemId)
