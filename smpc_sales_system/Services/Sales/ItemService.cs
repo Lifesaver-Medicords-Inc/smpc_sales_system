@@ -94,6 +94,16 @@ namespace smpc_sales_app.Services.Sales
         public string Message { get; set; }
     }
 
+    // One catalogue row with only its own descriptions and images - the lazy
+    // answer to what the full GetItem() download used to provide. Mirrors
+    // ERP_API's ItemDetailResponse keys (item/specs/images).
+    public class ItemDetailResult
+    {
+        public ItemModel item { get; set; }
+        public List<AdditionalSpecsModel> specs { get; set; }
+        public List<smpc_sales_system.Services.Sales.Models.ItemImageModel> images { get; set; }
+    }
+
      class ItemService
      {
         static string url = "/setup/item";
@@ -140,6 +150,49 @@ namespace smpc_sales_app.Services.Sales
                 Success = response?.Success ?? false,
                 Message = response?.message
             };
+        }
+
+        // One catalogue row with only its own descriptions and images (null when
+        // the id is unknown). The lazy replacement for looking an item up in the
+        // old full-catalogue tables.
+        public static async Task<ItemDetailResult> GetItemDetail(int itemId)
+        {
+            var response = await RequestToApi<ApiResponseModel<ItemDetailResult>>.Get(url + "/detail/" + itemId);
+            return response.Data;
+        }
+
+        // Light picker rows for item_name = PUMP (Size Up / Final pickers),
+        // fetched on modal open. Optional search narrows by code/name/model.
+        //
+        // ids asks for exactly those items and nothing else. SIZE UP passes none - it
+        // offers every pump - while FINAL passes the ids already on its SIZE UP grid,
+        // because spec 5.1.4 limits FINAL to what SIZE UP lists. It used to fetch all of
+        // them and filter client-side: 3,684 rows over the wire to show three.
+        public static async Task<List<ItemPickerRow>> GetPumpPickerRows(string search = null, IEnumerable<int> ids = null)
+        {
+            var query = new List<string>();
+
+            if (!string.IsNullOrWhiteSpace(search))
+                query.Add($"search={Uri.EscapeDataString(search)}");
+
+            string idList = JoinIds(ids);
+            if (idList.Length > 0)
+                query.Add($"ids={idList}");
+
+            string queryString = query.Count > 0 ? "?" + string.Join("&", query) : "";
+
+            var response = await RequestToApi<ApiResponseModel<List<ItemPickerRow>>>.Get(url + "/picker/pumps" + queryString);
+            return response?.Data ?? new List<ItemPickerRow>();
+        }
+
+        // A comma-separated id list for an ?ids= filter, or "" for no filter. Shared so
+        // the two calls FINAL makes build it the same way.
+        internal static string JoinIds(IEnumerable<int> ids)
+        {
+            if (ids == null)
+                return string.Empty;
+
+            return string.Join(",", ids.Where(id => id > 0).Distinct());
         }
 
 

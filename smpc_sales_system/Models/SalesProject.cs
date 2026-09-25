@@ -40,6 +40,47 @@ namespace smpc_sales_system.Models
         public string new_data { get; set; }
     }
 
+    // Which quotation a Change History row belongs to, and whether it is a PROJECT (header)
+    // row or a tab row.
+    //
+    // tbl_trans_sales_project_history.based_id holds two different kinds of id: a TAB row
+    // stores its item set's id, a PROJECT row stores the quotation's id. The two sequences
+    // overlap - quotation 25 and item set 25 both exist - so "based_id == this quotation" also
+    // picked up another quotation's tab rows, and "based_id is one of my item sets" could pick
+    // up another quotation's header rows. That is part of why the history "combined" wrongly.
+    //
+    // Every row this system writes is labelled - PROJECT rows "PROJECT - ...", tab rows
+    // "ITEM/SET ..." - and the older builders used other fixed prefixes, so the label settles
+    // it. A row with a label from neither family is taken at face value.
+    public static class ProjectHistoryRows
+    {
+        private static readonly string[] HeaderPrefixes =
+            { "PROJECT - ", "Header -> ", "Footer -> ", "Project Header: ", "Multiplier Table -> " };
+
+        private static readonly string[] TabPrefixes =
+            { "ITEM/SET ", "Sub Project: ", "Advance Conditions: ", "Project Items Table -> ", "Project Wiring Table -> " };
+
+        private static bool StartsWithAny(string text, string[] prefixes)
+        {
+            if (string.IsNullOrEmpty(text)) return false;
+            foreach (string prefix in prefixes)
+            {
+                if (text.StartsWith(prefix, StringComparison.Ordinal)) return true;
+            }
+            return false;
+        }
+
+        public static bool IsProjectRow(SalesProjectHistory row, int quotationId)
+        {
+            return row != null && row.based_id == (uint)quotationId && !StartsWithAny(row.old_data, TabPrefixes);
+        }
+
+        public static bool IsTabRow(SalesProjectHistory row, ICollection<int> itemSetIds)
+        {
+            return row != null && itemSetIds.Contains((int)row.based_id) && !StartsWithAny(row.old_data, HeaderPrefixes);
+        }
+    }
+
     public class SalesProjectItemSet
     {
         public int itemset_id { get; set; }
@@ -66,6 +107,19 @@ namespace smpc_sales_system.Models
         public string item_set_notes { get; set; }
         public int template_project_id { get; set; }
         public bool is_wiring { get; set; }
+
+        // The client-needs unit dropdowns (FLOW: 1 gpm/lpm, 2 m^2/hr, 3 lps; HEAD: 1 psi,
+        // 2 ft, 3 m) and ASSIGNED ENGR. ItemSetUC has always put all three in the save
+        // payload, and the API has the columns - but this class had no property for any of
+        // them, so they were dropped the moment the payload was read into it (on save) and
+        // never existed in the table the panel is bound from (on load). Every change to them
+        // was lost, and every reload showed the default (user-reported 2026-09-24).
+        //
+        // Nullable: "not in the payload" has to stay distinguishable from "set to 0", or a
+        // save that simply did not carry one of these would erase it. See GetContentChanges.
+        public int? flow_id { get; set; }
+        public int? head_id { get; set; }
+        public int? assign_engineer_user_id { get; set; }
 
         // §5.1.4's right-click tab exclusion. Persisted as of 2026-09-05 - it was a
         // HashSet<TabPage> in Quotation.cs and nothing else, so it never survived a reload
@@ -128,6 +182,21 @@ namespace smpc_sales_system.Models
         public string starting_method { get; set; }
         public string suction_size { get; set; }
         public string discharge_size { get; set; }
+
+        // The six Advanced Conditions dropdowns store an id, not text (2026-09-24). The
+        // dropdowns were built and the API and database were given the columns, but this
+        // class never got the properties - so what the user picked was dropped on save,
+        // and on load every dropdown came back as "-- Select --" because the column was not
+        // in the table it binds from. That is the "Advanced Conditions not updating on either
+        // side" report. The old text columns above stay for rows saved before the change.
+        //
+        // Nullable for the same reason as the content ids: absent is not the same as 0.
+        public int? pump_brand_id { get; set; }
+        public int? driver_type_id { get; set; }
+        public int? motor_enclosure_id { get; set; }
+        public int? motor_manufacturer_id { get; set; }
+        public int? liquid_type_id { get; set; }
+        public int? controller_manufacturer_id { get; set; }
     }
 
     public class SalesProjectItems

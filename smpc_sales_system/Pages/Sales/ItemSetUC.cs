@@ -1,4 +1,5 @@
-﻿using smpc_app.Services.Helpers;
+﻿using smpc_app.Data;
+using smpc_app.Services.Helpers;
 using smpc_sales_app.Data;
 using smpc_sales_app.Models;
 using smpc_sales_app.Pages.Sales;
@@ -89,6 +90,23 @@ namespace smpc_sales_system.Pages.Sales
             // for the identical reason - see its constructor. This grid was simply never given
             // the same treatment.
             dgv_project_items.AutoGenerateColumns = false;
+
+            // Use the whole width of the tab (user, 2026-09-24). Designed at 1132px, this
+            // control sits in tabs that are often wider, and the extra showed as an empty band
+            // down the right. The items grid, wiring grid and Advanced Conditions box were
+            // already anchored to widen, but nothing inside them did; the top block (client
+            // needs, size up, final, description, notes) did not widen at all. See
+            // StretchLayout for the rules - text size is unchanged.
+            pnl_project_content.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            StretchLayout.Attach(pnl_project_content);
+            StretchLayout.Attach(pnl_advanced_conditions);
+            StretchLayout.FillColumns(dgv_project_items);
+            StretchLayout.FillColumns(dgv_wiring);
+            StretchLayout.FillColumns(dgv_size_up);
+            StretchLayout.FillColumns(dgv_final);
+
+            BindClientNeedsUnits();
+            BindAdvancedConditions();
 
             // methods for event changes
             AttachTextChangedEventConditions(pnl_advanced_conditions);
@@ -252,6 +270,13 @@ namespace smpc_sales_system.Pages.Sales
             var data = Helpers.GetControlsValues(pnl_adv);
             Dictionary<string, dynamic> conditions = new Dictionary<string, dynamic>();
 
+            // Until the brand list has loaded, the combo can only say "-- Select --", and a
+            // save that sent that would erase the stored brand - the save now writes a
+            // deliberate 0. The loaded brand wins until the list is in and the user can
+            // actually choose. Same rule as ASSIGNED ENGR. in GetProjectContentsData.
+            if (!_brandListLoaded && _pendingBrandId > 0)
+                data["pump_brand_id"] = _pendingBrandId;
+
             if (data.ContainsKey("conditions_id") && data["conditions_id"] is string customerIdStr)
             {
                 if (int.TryParse(customerIdStr, out int Id))
@@ -300,6 +325,106 @@ namespace smpc_sales_system.Pages.Sales
             if (combo?.SelectedValue == null) return 0;
             if (combo.SelectedValue is DataRowView) return 0;
             return int.TryParse(combo.SelectedValue.ToString(), out int id) ? id : 0;
+        }
+
+        // FLOW and HEAD carry a unit, and the quotation stores that unit's ID - see
+        // STATIC_CLIENT_NEEDS_UNIT for why, and for the rule that the ids never move.
+        //
+        // Bound rather than typed into the designer so the list exists in exactly one place
+        // the day either of them becomes a Setup list. Both combos are tagged DYNAMIC, which
+        // is what makes Helpers read and write them as flow_id and head_id.
+        // The Advanced Conditions dropdowns. Five come from STATIC_ADVANCED_CONDITIONS and
+        // one - BRAND - from the brand setup list Item Entry uses, fetched in
+        // ItemSetUC_Load; until it arrives the combo holds just "-- Select --", which is
+        // also what an unanswered dropdown stores.
+        //
+        // All six are tagged DYNAMIC, which is what makes Helpers read and write them as
+        // pump_brand_id, driver_type_id, and so on. See the Go model for why the id is
+        // stored rather than the words.
+        private void BindAdvancedConditions()
+        {
+            BindUnitCombo(cmb_driver_type, STATIC_ADVANCED_CONDITIONS.DRIVER_TYPE());
+            BindUnitCombo(cmb_motor_enclosure, STATIC_ADVANCED_CONDITIONS.MOTOR_ENCLOSURE());
+            BindUnitCombo(cmb_motor_manufacturer, STATIC_ADVANCED_CONDITIONS.MOTOR_MANUFACTURER());
+            BindUnitCombo(cmb_liquid_type, STATIC_ADVANCED_CONDITIONS.LIQUID_TYPE());
+            BindUnitCombo(cmb_controller_manufacturer, STATIC_ADVANCED_CONDITIONS.CONTROLLER_MANUFACTURER());
+            BindUnitCombo(cmb_pump_brand, STATIC_ADVANCED_CONDITIONS.NewTable());
+        }
+
+        // Fills BRAND from Setup. Called once the brand list is in hand; keeps whatever was
+        // already selected, so a record bound before the list arrived still shows its brand.
+        public void SetBrandList(DataTable brands)
+        {
+            if (cmb_pump_brand == null || brands == null) return;
+
+            DataTable list = STATIC_ADVANCED_CONDITIONS.NewTable();
+            foreach (DataRow row in brands.Rows)
+            {
+                string id = row.Table.Columns.Contains("id") ? row["id"]?.ToString() : null;
+                string name = row.Table.Columns.Contains("name") ? row["name"]?.ToString() : null;
+                if (!string.IsNullOrWhiteSpace(id) && !string.IsNullOrWhiteSpace(name))
+                    list.Rows.Add(id, name);
+            }
+
+            // What to show once the list is in: a brand the user already picked, otherwise the
+            // one the record was loaded with. Reading SelectedValue alone lost the stored
+            // brand every time - it had nothing to match in the placeholder list, so it was
+            // already null by the time this ran.
+            string selected = cmb_pump_brand.SelectedValue?.ToString();
+            if (string.IsNullOrWhiteSpace(selected) || selected == "0")
+                selected = _pendingBrandId > 0 ? _pendingBrandId.ToString() : null;
+
+            BindUnitCombo(cmb_pump_brand, list);
+            if (!string.IsNullOrWhiteSpace(selected))
+                cmb_pump_brand.SelectedValue = selected;
+            if (cmb_pump_brand.SelectedIndex < 0 && cmb_pump_brand.Items.Count > 0)
+                cmb_pump_brand.SelectedIndex = 0;
+
+            _brandListLoaded = true;
+        }
+
+        private void BindClientNeedsUnits()
+        {
+            BindUnitCombo(cmb_flow, STATIC_CLIENT_NEEDS_UNIT.FLOW());
+            BindUnitCombo(cmb_head, STATIC_CLIENT_NEEDS_UNIT.HEAD());
+        }
+
+        private static void BindUnitCombo(ComboBox combo, DataTable units)
+        {
+            if (combo == null) return;
+
+            // Members before DataSource. Set the other way round the combo binds while it
+            // still has no DisplayMember, and every row renders as "System.Data.DataRowView"
+            // until something forces a redraw.
+            combo.DisplayMember = "title";
+            combo.ValueMember = "id";
+            combo.DataSource = units;
+            combo.SelectedIndex = 0;
+        }
+
+        // Nothing chosen - a brand new item set, or one saved before these two were stored
+        // at all - shows the first unit rather than an empty box. Called after the panel is
+        // bound, because BindControls leaves a combo untouched when the stored id is 0 or
+        // missing and an empty unit beside a figure reads as a missing unit rather than an
+        // unanswered question.
+        private void EnsureClientNeedsUnitsSelected()
+        {
+            foreach (ComboBox combo in new[] { cmb_flow, cmb_head })
+            {
+                if (combo == null || combo.Items.Count == 0) continue;
+
+                if (combo.SelectedIndex < 0)
+                    combo.SelectedIndex = 0;
+            }
+        }
+
+        // Whether this tab has actually bound its item table, as opposed to merely existing.
+        // Used by the autosave to tell "the user emptied this tab" apart from "this tab has
+        // not loaded yet" - the second must never reach a save, because an empty content is
+        // read by the diff as a deletion.
+        public bool HasLoadedItems()
+        {
+            return dgv_project_items?.DataSource is DataTable dt && dt.Columns.Count > 0;
         }
 
         public Dictionary<string, dynamic>  GetProjectContentsData()
@@ -359,7 +484,16 @@ namespace smpc_sales_system.Pages.Sales
             // "Error converting value {null} to type 'System.Int32'. Path
             // 'template_project_id'". Nothing selected means 0, which is what the column
             // already stores for "no template".
-            data["template_project_id"] = SelectedIdOrZero(cmb_template_project);
+            //
+            // Except while the template list has not loaded yet (ItemSetUC_Load fetches it):
+            // the combo is empty then, so 0 would mean "failed to load", not "chose none" - and
+            // now that TEMPLATE is actually compared and saved, sending it would erase the
+            // stored template. Until the list is in, the loaded value (txt_template_id) wins.
+            int templateId = SelectedIdOrZero(cmb_template_project);
+            if (templateId == 0 && cmb_template_project.Items.Count == 0
+                && int.TryParse(txt_template_id.Text, out int storedTemplateId) && storedTemplateId > 0)
+                templateId = storedTemplateId;
+            data["template_project_id"] = templateId;
 
             // Never let a combo that FAILED TO LOAD erase a stored value (2026-09-04).
             // SelectedIdOrZero cannot tell "the user chose nothing" apart from "the
@@ -472,6 +606,13 @@ namespace smpc_sales_system.Pages.Sales
                     multiplier = item["project_items_multiplier"]?.ToString() ?? string.Empty,
                     discount_price = decimal.TryParse(Helpers.GetCleanedPriceValue(item["project_items_discount"]?.ToString()), out decimal discountPrice) ? discountPrice : 0.0m,
                     component_total = decimal.TryParse(Helpers.GetCleanedPriceValue(item["project_items_line_total"]?.ToString()), out decimal total) ? total : 0.0m,
+
+                    // NOTES is bound (DataPropertyName "notes") - it shows what was saved and
+                    // accepts typing - but was never read back here, so a note typed on an item
+                    // row was never saved. Null when the column is absent: not sent, not cleared.
+                    notes = item.Table.Columns.Contains("project_items_notes")
+                        ? item["project_items_notes"]?.ToString() ?? string.Empty
+                        : null,
                 };
 
                 // Each row only carries the images actually picked for that row (falls
@@ -636,14 +777,27 @@ namespace smpc_sales_system.Pages.Sales
         //
         public void SetAdvancedPanelData(DataTable dt)
         {
+            // BRAND's list arrives after this runs (ItemSetUC_Load fetches it), so the stored
+            // brand has nothing to select yet. Hold it until SetBrandList - the same shape as
+            // _pendingAssignedEngineerId - and until then report IT as the brand, not the
+            // "-- Select --" the combo is showing (see GetAdvancedConditionsData).
+            _pendingBrandId = 0;
+            if (dt != null && dt.Rows.Count > 0 && dt.Columns.Contains("pump_brand_id")
+                && int.TryParse(dt.Rows[0]["pump_brand_id"]?.ToString(), out int brandId))
+                _pendingBrandId = brandId;
+
             Panel[] pnls = { pnl_advanced_conditions };
             Helpers.BindControls(pnls, dt);
         }
+
+        private int _pendingBrandId;
+        private bool _brandListLoaded;
 
         public void SetContentsPanelData(DataTable dt)
         {
             Panel[] pnls = { pnl_project_content };
             Helpers.BindControls(pnls, dt);
+            EnsureClientNeedsUnitsSelected();
 
             // BindControls does set cmb_assign_engineer_user_id, but it is a no-op here:
             // the combo has no DataSource yet (ItemSetUC_Load fills it asynchronously,
@@ -1647,6 +1801,48 @@ namespace smpc_sales_system.Pages.Sales
         public DataTable BomHead { get; set; } = new DataTable();
         public DataTable BomDetails { get; set; } = new DataTable();
 
+        // Phase 3: per-item detail merged on demand (same pattern as the
+        // Quotation form's own tables). ImageList doubles as the merge table
+        // here; this control shows no descriptions so it keeps no specs table.
+        private readonly HashSet<int> loadedItemDetailIds = new HashSet<int>();
+
+        private void InitItemMergeTables()
+        {
+            if (ItemList == null || ItemList.Columns.Count == 0)
+                ItemList = ItemCatalogTables.NewItemTable();
+            if (ImageList == null || ImageList.Columns.Count == 0)
+                ImageList = ItemCatalogTables.NewItemImageTable();
+        }
+
+        private Task<bool> EnsureItemDetailAsync(int itemId)
+        {
+            InitItemMergeTables();
+            return ItemCatalogTables.FetchAndMergeAsync(ItemList, null, ImageList, loadedItemDetailIds, itemId);
+        }
+
+        // Any item named PUMP for the blank-PUMP-row model anchor, merged on
+        // first need. The full catalogue used to be scanned for this.
+        private async Task<DataRow> EnsurePumpAnchorAsync()
+        {
+            InitItemMergeTables();
+            DataRow anchor = ItemList.AsEnumerable()
+                .FirstOrDefault(row => string.Equals(row["item_name"]?.ToString(), "PUMP", StringComparison.OrdinalIgnoreCase));
+            if (anchor != null)
+                return anchor;
+            try
+            {
+                var pumps = await ItemService.GetPumpPickerRows();
+                foreach (var pump in pumps)
+                    ItemCatalogTables.AddPickerRow(ItemList, pump);
+            }
+            catch
+            {
+                return null;
+            }
+            return ItemList.AsEnumerable()
+                .FirstOrDefault(row => string.Equals(row["item_name"]?.ToString(), "PUMP", StringComparison.OrdinalIgnoreCase));
+        }
+
         // for wiring soon
         private async void ItemSetUC_Load(object sender, EventArgs e)
         {
@@ -1670,13 +1866,27 @@ namespace smpc_sales_system.Pages.Sales
             if (!isViewProjectItem)
                 ClearProjectItemsDgv();
 
+            // BRAND comes from the same setup list Item Entry uses. Fetched here rather
+            // than in the constructor because it is a round trip, and failing it must not
+            // stop the tab loading - the combo then simply holds "-- Select --".
+            try
+            {
+                SetBrandList(await BrandService.GetAsDatatable());
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Brand list unavailable: " + ex.Message);
+            }
+
             // Load the engineer dropdown before the project-templates call below, which
             // returns early on failure/empty data. It used to sit after that check, so
             // any hiccup fetching templates (unrelated to engineers) silently skipped
             // this block entirely and left the ASSIGNED ENGR. dropdown with no items to
             // choose from - it wasn't a data/filtering problem, the code just never ran.
-            var engineers = await EngineerService.GetEngineerList();
-            cmb_assign_engineer_user_id.DataSource = engineers ?? new List<EngineerModel>();
+            // Shared across tabs (ItemSetLookups) - one request however many tabs load. The
+            // copy is this combo's own: combos bound to one list share a selection.
+            var engineers = await ItemSetLookups.EngineersForBinding();
+            cmb_assign_engineer_user_id.DataSource = engineers;
             cmb_assign_engineer_user_id.DisplayMember = nameof(EngineerModel.FullName);
             cmb_assign_engineer_user_id.ValueMember = nameof(EngineerModel.Id);
 
@@ -1701,24 +1911,30 @@ namespace smpc_sales_system.Pages.Sales
             else
                 cmb_assign_engineer_user_id.SelectedIndex = -1;
 
-            var dt = await ProjectTemplatesService.GetProjectTemplates();
+            var dt = await ItemSetLookups.Templates();
 
             if (dt == null || dt.SalesProjectTemplate == null) return;
 
             DataTable listOfTemplates = JsonHelper.ToDataTable(dt.SalesProjectTemplate);
             DataTable templates = JsonHelper.ToDataTable(dt.sales_project_template_child);
 
-            var itemData = await ItemService.GetItem();
-            var bomData = await ProjectService.GetBom();
+            // Every BOM head and line in the system - fetched once and shared by all tabs
+            // (ItemSetLookups), instead of downloaded again by each tab on every load.
+            var bomData = await ItemSetLookups.Bom();
 
             // Both return null when the API call fails - same guard Quotation.fetchItemData
             // already had, which this call site was missing. The template dropdown above is
             // populated by this point and stays usable; only the item/BOM lookups are lost.
-            if (itemData == null || bomData == null) return;
+            // Phase 3: no full-catalogue download here either (that was the other
+            // ~6 MB copy). Item rows merge per item on demand; BOM stays fully
+            // loaded (tiny).
+            if (bomData == null) return;
 
-            ItemList = JsonHelper.ToDataTable(itemData.items);
-            BomHead = JsonHelper.ToDataTable(bomData.bom_head);
-            BomDetails = JsonHelper.ToDataTable(bomData.bom_details);
+            InitItemMergeTables();
+            // Shared, read-only tables: nothing here or in ModelModal/CascadeBomQuantity writes
+            // to them, which is what makes handing every tab the same instance safe.
+            BomHead = bomData.Head;
+            BomDetails = bomData.Details;
 
             // --- ADD initial 0/default row ---
             DataRow defaultRow = listOfTemplates.NewRow();
@@ -1756,7 +1972,8 @@ namespace smpc_sales_system.Pages.Sales
             cmb_template_project.SelectedIndexChanged -= cb_template_project_SelectedIndexChanged;
             cmb_template_project.SelectedIndexChanged += cb_template_project_SelectedIndexChanged;
 
-            var dtProjectTemplates = await ProjectService.GetProjects();
+            // (A GetProjects() call sat here - every project in the database, with all of its
+            // items, content and history - and its result was never used. Removed.)
 
             // Restoring the SAVED template id into the combo - a programmatic assignment,
             // not a user pick. It fires cb_template_project_SelectedIndexChanged, which
@@ -1932,8 +2149,8 @@ namespace smpc_sales_system.Pages.Sales
                 if (templateId == "0")
                     return;
 
-                // Get templates
-                var dt = await ProjectTemplatesService.GetProjectTemplates();
+                // Get templates (shared cache; Template Setup clears it on save)
+                var dt = await ItemSetLookups.Templates();
                 DataTable templatesChild = JsonHelper.ToDataTable(dt.sales_project_template_child);
 
                 // Filter children
@@ -1955,7 +2172,12 @@ namespace smpc_sales_system.Pages.Sales
                 {
                     DataRow newRow = dataSource.NewRow();
 
-                    int level = row.Field<int?>("Level") ?? 0;
+                    // 1-based: level 1 is the top and there is no level 0. A template row
+                    // saved by an older build of the Template Setup screen carries 0 for a
+                    // parent, and with the counters indexed by level that would number it
+                    // from slot 0 - which is not part of the code, so the row would arrive
+                    // with a blank reference_code.
+                    int level = Math.Max(1, row.Field<int?>("Level") ?? 1);
 
                     // Expand counters list to match this level
                     while (levelCounters.Count <= level)
@@ -1968,8 +2190,22 @@ namespace smpc_sales_system.Pages.Sales
                     // Increment this level counter
                     levelCounters[level]++;
 
-                    // Create hierarchical number like 1.2.3
-                    string refCode = string.Join(".", levelCounters.Where(v => v > 0));
+                    // A level nobody has used yet still counts as the first of its family.
+                    //
+                    // This used to be string.Join(".", levelCounters.Where(v => v > 0)), which
+                    // drops EVERY zero, not just the unused slot 0 that 1-based levels leave
+                    // at the front - and the CPS template goes straight from level 1 to level
+                    // 3 (BLADDER TANK, then GATE VALVE), so counters read [0,7,0,1] and the
+                    // filter turned that into "7.1". A genuine level-2 row later produced
+                    // "7.1" as well: two different rows, two different depths, one code,
+                    // with the indent agreeing with neither. reference_code is what groups a
+                    // parent with its children and orders the printed quote, so a duplicate
+                    // there is not a display problem.
+                    for (int i = 1; i < level; i++)
+                        if (levelCounters[i] == 0) levelCounters[i] = 1;
+
+                    // Skip(1): slot 0 is never used, because level 1 is the top.
+                    string refCode = string.Join(".", levelCounters.Skip(1).Take(level));
 
                     // Level is 1-based (top-level rows are stored as Level=1, not 0) -
                     // same convention already relied on elsewhere in this file (see the
@@ -2542,18 +2778,21 @@ namespace smpc_sales_system.Pages.Sales
         // whichever item's images were picked last.
         private Dictionary<int, List<Dictionary<string, object>>> SelectedImagesByRow { get; set; } = new Dictionary<int, List<Dictionary<string, object>>>();
 
-        private void HandleItemImageSelectionClick(int rowIndex, int itemId)
+        private async void HandleItemImageSelectionClick(int rowIndex, int itemId)
         {
-            DataView dvItems = new DataView(ItemList);
-            DataTable filteredItems = dvItems.ToTable();
+            // The item's images merge on demand - no full catalogue load.
+            await EnsureItemDetailAsync(itemId);
 
-            if (filteredItems.Rows.Count == 0)
+            string itemName = ItemList.AsEnumerable()
+                .Where(row => row["id"] != DBNull.Value && Convert.ToInt32(row["id"]) == itemId)
+                .Select(row => row["item_name"]?.ToString() ?? "")
+                .FirstOrDefault();
+
+            if (string.IsNullOrEmpty(itemName))
             {
                 MessageBox.Show("Item not found.");
                 return;
             }
-
-            string itemName = filteredItems.Rows[0]["item_name"].ToString();
 
             DataView dvImages = new DataView(ImageList);
             dvImages.RowFilter = $"based_id = {itemId}";
@@ -2564,7 +2803,7 @@ namespace smpc_sales_system.Pages.Sales
             // of filtering selectedImageList (which has no row-index concept).
             DataTable filteredSelectedImages = BuildSelectedImagesTableForRow(rowIndex);
 
-            ItemImagesModal itemImageModal = new ItemImagesModal(itemName, filteredItems, filteredImages, filteredSelectedImages);
+            ItemImagesModal itemImageModal = new ItemImagesModal(itemName, ItemList.Clone(), filteredImages, filteredSelectedImages);
             DialogResult r = itemImageModal.ShowDialog();
 
             if (r == DialogResult.OK)
@@ -2663,7 +2902,7 @@ namespace smpc_sales_system.Pages.Sales
             dataSource.Rows.InsertAt(projectItem, rowIndex);
         }
 
-        private void AssignModel(int index, DataGridView dgv)
+        private async void AssignModel(int index, DataGridView dgv)
         {
             // Reverts 76bd5b5's block-and-redirect-to-FINAL behavior for this grid
             // entirely (confirmed wrong for Project Quotation, including a template's own
@@ -2686,8 +2925,8 @@ namespace smpc_sales_system.Pages.Sales
                     // scopes the list to pumps, same mechanism every already-filled
                     // component already relies on. The anchor is never itself selected;
                     // GetItemId() below still returns whatever the user actually picks.
-                    DataRow pumpAnchor = ItemList.AsEnumerable()
-                        .FirstOrDefault(row => string.Equals(row["item_name"]?.ToString(), "PUMP", StringComparison.OrdinalIgnoreCase));
+                    // Merged on first need - the full catalogue used to be scanned.
+                    DataRow pumpAnchor = await EnsurePumpAnchorAsync();
 
                     if (pumpAnchor == null)
                     {
@@ -2723,6 +2962,21 @@ namespace smpc_sales_system.Pages.Sales
                 bool isBom = createModal.IsBom();
                 int BomId = createModal.GetBomId();
                 int ItemId = createModal.GetItemId();
+
+                // Pre-merge every item the build below can touch (BOM subtree
+                // + template children): with no full-catalogue load these rows
+                // would otherwise resolve blank.
+                var warmIds = ItemCatalogTables.CollectBomSubtreeIds(BomHead, BomDetails, BomId);
+                warmIds.Add(ItemId);
+                foreach (DataRow templateRow in GetTemplateChildren(referenceCode).Rows)
+                {
+                    if (int.TryParse(templateRow["item_id"]?.ToString(), out int templateItemId) && templateItemId > 0)
+                        warmIds.Add(templateItemId);
+                }
+                var warmFetches = warmIds
+                    .Where(warmId => warmId > 0)
+                    .Select(warmId => ItemCatalogTables.FetchAndMergeAsync(ItemList, null, ImageList, loadedItemDetailIds, warmId));
+                await Task.WhenAll(warmFetches);
 
                 DataTable SelectedItem = ItemList.AsEnumerable()
                     .Where(row => row.Field<int>("id") == createModal.GetItemId())
@@ -2853,40 +3107,77 @@ namespace smpc_sales_system.Pages.Sales
             RenumberReferenceCodes(dgv_project_items);
         }
 
-        // Walks the grid's rows in their current display order and rebuilds every
-        // reference_code from scratch so numbering stays gapless after a delete -
-        // top-level items are renumbered 1, 2, 3... in order, and every descendant keeps
-        // its original sub-level suffix but adopts its (possibly renumbered) parent's new
-        // top-level number, so e.g. "3.3.1" becomes "2.3.1" if the row that used to be
-        // "3" is now "2".
+        // Four spaces per level, which is what every path that adds a row here writes:
+        // the template branch uses (level - 1) * 4 and the BOM branch the same. It is the
+        // one depth marker the grid actually carries - there is no level column on the
+        // project items table, only reference_code and the indent on components.
+        private const int ProjectItemIndentPerLevel = 4;
+
+        // Walks the grid in display order and rebuilds every reference_code so the whole
+        // list reads as one outline: 1, 2, 2.1, 2.2.1, 3 ...
+        //
+        // Depth comes from each row's INDENT, not from its old code. The old version
+        // counted dots - a code with one segment was taken for a top-level row, and a
+        // deeper one kept its suffix and adopted the running prefix - which means it
+        // trusted the codes it was handed and could only ever propagate a wrong one. The
+        // CPS template produced exactly that: it jumps from level 1 to level 3, the
+        // numbering collapsed the missing level (see the template branch above), and this
+        // sweep then preserved the collapsed code and reprinted it. Two rows at two
+        // different depths ended up sharing "2.1", each with an indent matching neither.
+        //
+        // Rebuilding from the indent makes the sweep self-correcting instead: whatever
+        // state the codes are in when it runs - collapsed, restarted mid-list, shifted by
+        // an insert - the result is a correct outline over the rows as displayed, and it
+        // agrees with what the user is looking at.
+        //
+        // reference_code is not decoration: it is what groups a parent with its children,
+        // what orders the printed quote, and what the save payload carries, so a duplicate
+        // is a real defect rather than a cosmetic one.
         private void RenumberReferenceCodes(DataGridView dgv)
         {
             if (!(dgv.DataSource is DataTable dataSource) || !dataSource.Columns.Contains("reference_code"))
                 return;
 
-            int topLevelCounter = 0;
-            string currentNewTopPrefix = null;
+            bool hasComponents = dataSource.Columns.Contains("components");
+
+            // One counter per depth, 0-based here (the display's own top level).
+            List<int> counters = new List<int>();
 
             foreach (DataRow row in dataSource.Rows)
             {
-                string oldCode = row["reference_code"]?.ToString();
-                if (string.IsNullOrWhiteSpace(oldCode))
+                if (row.RowState == DataRowState.Deleted)
                     continue;
 
-                string[] segments = oldCode.Split('.');
+                // A row with no code is a blank placeholder - it is not part of the
+                // outline and must not advance the counters.
+                if (string.IsNullOrWhiteSpace(row["reference_code"]?.ToString()))
+                    continue;
 
-                if (segments.Length == 1)
-                {
-                    topLevelCounter++;
-                    currentNewTopPrefix = topLevelCounter.ToString();
-                    row["reference_code"] = currentNewTopPrefix;
-                }
-                else
-                {
-                    string newTopPrefix = currentNewTopPrefix ?? segments[0];
-                    string suffix = string.Join(".", segments.Skip(1));
-                    row["reference_code"] = $"{newTopPrefix}.{suffix}";
-                }
+                string text = hasComponents ? (row["components"]?.ToString() ?? "") : "";
+                int indent = text.Length - text.TrimStart().Length;
+                int level = indent / ProjectItemIndentPerLevel;
+
+                while (counters.Count <= level)
+                    counters.Add(0);
+
+                // Coming back up, everything deeper starts again - what turns the row
+                // after 2.2.4 into 2.3 rather than 2.5.
+                for (int deeper = level + 1; deeper < counters.Count; deeper++)
+                    counters[deeper] = 0;
+
+                counters[level]++;
+
+                // A depth nobody has used yet still counts as the first of its family, so
+                // a jump from level 1 straight to level 3 gives 7.1.1 - never 7.1, which
+                // is a level-2 code and belongs to a different row.
+                for (int above = 0; above < level; above++)
+                    if (counters[above] == 0) counters[above] = 1;
+
+                row["reference_code"] = string.Join(".", counters.Take(level + 1));
+
+                // Keep the indent in step with the code it just produced.
+                if (hasComponents)
+                    row["components"] = new string(' ', level * ProjectItemIndentPerLevel) + text.TrimStart();
             }
         }
 
@@ -3713,6 +4004,23 @@ namespace smpc_sales_system.Pages.Sales
             FinalTxtBoxClicked?.Invoke(this, EventArgs.Empty);
         }
 
+        // The rows still in the table.
+        //
+        // dt.AsEnumerable() hands back deleted rows too, and reading any field off one throws
+        // RowNotInTableException - "this row has been removed from a table and does not have
+        // any data". Deleting an item line and then touching anything that recomputes totals
+        // was enough to hit it, and the exception aborts the load half-way, which is far
+        // worse than the crash itself: a half-built page is one whose tabs exist but whose
+        // contents have not loaded, and an autosave over that reads as "delete the real rows"
+        // to the id-keyed diff.
+        private static IEnumerable<DataRow> LiveRows(DataTable dt)
+        {
+            if (dt == null) return Enumerable.Empty<DataRow>();
+
+            return dt.AsEnumerable().Where(row => row.RowState != DataRowState.Deleted
+                                               && row.RowState != DataRowState.Detached);
+        }
+
         private void ComputeByReferenceHierarchy(DataGridView dgv)
         {
 
@@ -3720,7 +4028,7 @@ namespace smpc_sales_system.Pages.Sales
 
             if (dt == null || dgv == null) return;
 
-            var parentReferenceCodes = dt.AsEnumerable()
+            var parentReferenceCodes = LiveRows(dt)
                 .Select(row => GetParentReferenceCode(dt, row.Field<string>("reference_code")))
                 .Where(parentCode => !string.IsNullOrEmpty(parentCode))
                 .Distinct()
@@ -3773,7 +4081,7 @@ namespace smpc_sales_system.Pages.Sales
                 decimal discount = CalculateDiscountMultiplier(row.Cells[ProjectQuoteDGV.MULTIPLIER].Value?.ToString());
                 decimal qty = Convert.ToDecimal(row.Cells["project_items_qty"].Value);
                 decimal TotalUnitPrice = unitPrice * qty;
-                decimal discounted = TotalUnitPrice * discount;
+                decimal discounted = Math.Round(TotalUnitPrice * discount, 2, MidpointRounding.AwayFromZero);
 
                 row.Cells["project_items_line_total"].Value = discounted;
 
@@ -3882,14 +4190,14 @@ namespace smpc_sales_system.Pages.Sales
         private decimal GetTotalUnitPriceForChildren(DataTable dt, string parentReferenceCode)
         {
 
-            var ParentRow = dt.AsEnumerable()
+            var ParentRow = LiveRows(dt)
                 .FirstOrDefault(row => row.Field<string>("reference_code") == parentReferenceCode);
 
             // Find all direct children of the parent reference_code
             if (dt == null)
                 return 0;
 
-            var children = dt.AsEnumerable()
+            var children = LiveRows(dt)
                 .Where(row =>
                 {
                     var refCode = row.Field<string>("reference_code");

@@ -94,6 +94,14 @@ namespace smpc_sales_app.Pages.Sales
         {
             InitializeComponent();
 
+            // PROJECT MULTIPLIERS and CHANGE HISTORY sit side by side in a row that already
+            // widens with the page; their contents did not, leaving an empty band on the right
+            // (user, 2026-09-24). Spread them across it - see StretchLayout. The item-set tabs
+            // below do the same inside ItemSetUC.
+            StretchLayout.Attach(panel2);
+            StretchLayout.FillColumns(dgv_project_multiplier);
+            flowLayoutPanelChangeHistory.Resize += flowLayoutPanelChangeHistory_Resize;
+
             // Every column dgv_quick_quote_details needs is already defined explicitly in
             // the designer (quick_id, quick_images, reference_code, etc.). With
             // AutoGenerateColumns left at its WinForms default (true), every time the grid
@@ -154,6 +162,10 @@ namespace smpc_sales_app.Pages.Sales
             {
                 projectAutoRefreshTimer.Stop();
                 projectAutoRefreshTimer.Dispose();
+                _remoteRefreshTimer?.Stop();
+                _remoteRefreshTimer?.Dispose();
+                _autoSaveTimer?.Stop();
+                _autoSaveTimer?.Dispose();
                 DisconnectSaveNotify();
             };
         }
@@ -266,13 +278,51 @@ namespace smpc_sales_app.Pages.Sales
         {
             try
             {
-                // Never refresh out from under someone who's actively editing/creating, and
-                // ignore a stale notification for a record that isn't even open anymore (the
-                // user navigated away since this notification was sent).
-                if (!isProject || IsEdit || isNewRecord) return;
+                // Ignore a stale notification for a record that isn't even open any more -
+                // the user navigated away since it was sent.
+                if (!isProject) return;
                 if (ToInt(txt_id.Text) != ToInt(projectId)) return;
 
-                await RunWithLoadingAsync(async () => await RefreshCurrentProjectQuotationAsync(), "Another user just updated this quotation - refreshing...");
+                // A record being created has no saved state to reconcile with, so it is the
+                // one case still left alone.
+                if (isNewRecord) return;
+
+                // Editing is NO LONGER a reason to skip this (client decision 2026-09-24,
+                // "like Gsheet"): an engineer's change has to reach the sales screen while
+                // sales is mid-edit, and the other way round. It is only safe because the
+                // other side's change is already saved before it is broadcast, and because
+                // this side autosaves - so what is on screen here has been committed too,
+                // and refreshing cannot throw away work that only exists locally.
+                //
+                // A save of ours in flight is no longer handled here: the refresh below is
+                // queued, not immediate, and its timer re-queues itself for as long as a save
+                // is running - so a change from the other side that lands mid-save is applied
+                // once ours has settled rather than on top of it. Re-arming the autosave from
+                // here (as this used to) sent an empty diff the server still broadcasts, which
+                // is a save the user never made and another notification for the other app.
+
+                // Our own save's echo. The server broadcasts to every socket on the project
+                // channel INCLUDING the one that saved, so without this the sequence is:
+                // type -> autosave -> broadcast -> we rebuild every tab from data we just
+                // sent ourselves. Every two seconds, while you are still typing. That is the
+                // "loading" the user is seeing with both apps open, and a spreadsheet plainly
+                // does not do it.
+                //
+                // The API's message carries no sender, so the client recognises its own echo
+                // by having just produced it: exactly one notification per save it made,
+                // inside a short window. If the other side happened to save in that same
+                // instant we consume theirs instead - their next save, or the five-minute
+                // poll, brings it in. That is the one accepted cost of not having an origin
+                // on the message.
+                if (ConsumeOwnSaveEcho()) return;
+
+                // Collapsed into one refresh once the other side pauses, rather than one per
+                // notification. With both apps open on the same project quotation, the
+                // engineer's screen autosaves every two seconds while they type - so every
+                // two seconds this screen was told to rebuild every tab. Waiting out a short
+                // gap turns a stream of saves into a single refresh, which is what "it should
+                // not keep loading" asks for.
+                QueueRemoteRefresh();
             }
             catch (Exception ex)
             {
@@ -307,8 +357,625 @@ namespace smpc_sales_app.Pages.Sales
         // ItemSet_DataChanged/Content_DataChanged still push the SAME payloads over the
         // websocket on their own shorter debounces.
  
+        // ---- Autosave -------------------------------------------------------------
+        //
+        // The client asked for this to work "like Gsheet": what you type is saved on its
+        // own, you are told it saved, and you stay in edit mode rather than being dropped
+        // back to view. The other side then sees it, because a save is what the server
+        // broadcasts on (BroadcastToProject -> quotation_saved), so no second live-edit
+        // protocol is needed - the relay IS the save.
+        //
+        // This is deliberately a return to something removed on 2026-09-05, and the two
+        // reasons it was removed are answered rather than ignored:
+        //
+        //   * it showed a MessageBox on every success - this shows an inline "saved HH:mm"
+        //     beside the action strip, per the shell convention on saved-successfully
+        //     modals;
+        //   * it broke discard - and it still does. Once your change is saved and sent to
+        //     the other side there is nothing left to discard, which is exactly what
+        //     "like Gsheet" means. Change History is the way back to an earlier state.
+        //
+        // Only ever for an existing, unfinalized project quotation: a brand-new record has
+        // no id to save against and needs its first explicit Save, and a finalized quote is
+        // immutable (spec 5.2).
+        private System.Windows.Forms.Timer _autoSaveTimer;
+        private System.Windows.Forms.Label _autoSaveStatus;
+        private bool _autoSaving;
+
+        private const int AutoSaveIdleMs = 2000;
+
+        // One save this screen made, still waiting for its own broadcast to come back. See
+        // HandleQuotationSavedNotification for why the echo has to be recognised at all.
+        // Time-boxed so a broadcast that never arrives (dropped socket, a save that reached
+        // the database but whose notification did not) cannot leave the screen permanently
+        // ignoring the first real update that follows.
+        private DateTime _ownSaveAt = DateTime.MinValue;
+        private bool _ownSaveEchoPending;
+
+        private static readonly TimeSpan OwnSaveEchoWindow = TimeSpan.FromSeconds(10);
+
+        // ---- Live updates from the other app, collapsed ---------------------------
+        //
+        // Deliberately not a straight "notification arrives -> refresh now". A save on the
+        // other side is a keystroke-driven autosave, so notifications come in bursts, and
+        // acting on each one means rebuilding every tab several times for one piece of work.
+        // The timer restarts on each notification and only fires once they stop.
+        private System.Windows.Forms.Timer _remoteRefreshTimer;
+
+        private const int RemoteRefreshDebounceMs = 2500;
+
+        private void QueueRemoteRefresh()
+        {
+            if (_remoteRefreshTimer == null)
+            {
+                _remoteRefreshTimer = new System.Windows.Forms.Timer { Interval = RemoteRefreshDebounceMs };
+                _remoteRefreshTimer.Tick += RemoteRefreshTimer_Tick;
+            }
+
+            _remoteRefreshTimer.Stop();
+            _remoteRefreshTimer.Start();
+        }
+
+        private async void RemoteRefreshTimer_Tick(object sender, EventArgs e)
+        {
+            _remoteRefreshTimer.Stop();
+
+            try
+            {
+                if (!isProject || isNewRecord) return;
+                if (ToInt(txt_id.Text) <= 0) return;
+
+                // Rebinding on top of our own in-flight save would read from data that does
+                // not include it yet. Wait for the next gap instead.
+                if (_autoSaving || _loadingProject || _isFetchingSalesProject)
+                {
+                    QueueRemoteRefresh();
+                    return;
+                }
+
+                // Nor on top of someone who is in the middle of an edit. A rebuild replaces
+                // every tab with what the server holds, so a change typed here and not yet
+                // saved would simply vanish - and the cell being typed in with it. The update
+                // waits until the user pauses; the user decides when, not the other app.
+                if (IsUserMidEdit())
+                {
+                    QueueRemoteRefresh();
+                    return;
+                }
+
+                await RefreshCurrentProjectQuotationAsync();
+                ShowAutoSaveStatus("updated by another user " + DateTime.Now.ToString("HH:mm"));
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Live refresh failed: " + ex.Message);
+            }
+        }
+
+        private void NoteOwnSave()
+        {
+            _ownSaveAt = DateTime.UtcNow;
+            _ownSaveEchoPending = true;
+        }
+
+        // Set by a live refresh in edit mode; read and cleared by the next fetchSalesProject.
+        private bool _keepHeaderOnNextBuild;
+
+        // Brings the stored header row for this record up to date with what was just fetched,
+        // so bind() - which reads that row - shows the real header rather than the one read
+        // at navigation time. Only columns both tables carry are copied.
+        private void RefreshHeaderRow(int row, SalesQuotationModel fresh)
+        {
+            if (fresh == null || transactionProjectDataTable == null
+                || row < 0 || row >= transactionProjectDataTable.Rows.Count) return;
+
+            DataTable one = JsonHelper.ToDataTable(new List<SalesQuotationModel> { fresh });
+            if (one == null || one.Rows.Count == 0) return;
+
+            DataRow target = transactionProjectDataTable.Rows[row];
+            foreach (DataColumn col in one.Columns)
+            {
+                if (!transactionProjectDataTable.Columns.Contains(col.ColumnName)) continue;
+                try { target[col.ColumnName] = one.Rows[0][col] ?? DBNull.Value; }
+                catch (ArgumentException) { }
+                catch (InvalidCastException) { }
+            }
+        }
+
+        // After our own autosave. The diff is always measured against SalesProjectListData,
+        // so it has to reflect what was just written - otherwise every later autosave resends
+        // every earlier change and regenerates its Change History lines.
+        //
+        // This used to happen by accident: our own save's broadcast came back and rebuilt the
+        // page. ConsumeOwnSaveEcho now (rightly) ignores that echo, so it has to be done here -
+        // and only the data, not the page, because what is on screen is already what was
+        // written. The exception is a save that INSERTED: new rows and tabs have ids now that
+        // the screen does not, and a grid still holding 0 would insert them again next time,
+        // so those get a real rebuild (which keeps the user's place).
+        private async Task RefreshBaselineAfterOwnSaveAsync(bool rebuild)
+        {
+            int id = ToInt(txt_id.Text);
+            if (id <= 0) return;
+
+            try
+            {
+                if (rebuild)
+                {
+                    await RefreshCurrentProjectQuotationAsync();
+                    return;
+                }
+
+                SalesProjectList detail = await ProjectService.GetProjectDetail(id);
+                if (detail?.SalesQuotation != null && detail.SalesQuotation.Any())
+                {
+                    SalesProjectListData = detail;
+
+                    // The lines this save just wrote. Without a rebuild nothing else redraws the
+                    // panel, so your own change never appeared in CHANGE HISTORY until something
+                    // unrelated reloaded the page.
+                    RenderTabHistory();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Baseline refresh after autosave failed: " + ex.Message);
+            }
+        }
+
+        // Whether a payload from BuildProjectQuotationPayload creates anything: a tab added with
+        // "+", or an item or wiring row that has no id yet.
+        private static bool ProjectPayloadHasInserts(Dictionary<string, dynamic> payload)
+        {
+            if (payload == null || !payload.ContainsKey("sales_project_all_tabs")) return false;
+
+            object rawTabs = payload["sales_project_all_tabs"];
+            if (!(rawTabs is List<Dictionary<string, object>> tabs)) return false;
+
+            foreach (var tab in tabs)
+            {
+                if (tab.TryGetValue("sales_project_item_set", out object set)
+                    && set is Dictionary<string, object> setData
+                    && setData.TryGetValue("is_new_tab", out object isNew)
+                    && isNew is bool newTab && newTab)
+                    return true;
+
+                if (tab.TryGetValue("sales_project_items", out object items)
+                    && items is List<SalesProjectItems> itemList
+                    && itemList.Any(x => x.items_id == 0))
+                    return true;
+
+                if (tab.TryGetValue("sales_project_wiring", out object wiring)
+                    && wiring is List<SalesWiringModel> wiringList
+                    && wiringList.Any(x => x.id == 0))
+                    return true;
+            }
+
+            return false;
+        }
+
+        // ---- Is the user in the middle of something? -------------------------------
+        //
+        // Three signals, any one of which means "not now":
+        //   * an autosave is queued - a change has been made and not yet saved;
+        //   * a key was pressed in the last few seconds - they are typing, possibly in a
+        //     field whose change event has not fired yet;
+        //   * a grid cell is open for editing - its text is not in the grid until they leave.
+        private static DateTime _lastKeyUtc = DateTime.MinValue;
+        private static bool _keyFilterInstalled;
+
+        private static readonly TimeSpan TypingPause = TimeSpan.FromSeconds(3);
+
+        // Watches key presses application-wide, without consuming any. One per process.
+        private sealed class KeyActivityFilter : IMessageFilter
+        {
+            public bool PreFilterMessage(ref Message m)
+            {
+                // WM_KEYDOWN, WM_CHAR, WM_SYSKEYDOWN
+                if (m.Msg == 0x0100 || m.Msg == 0x0102 || m.Msg == 0x0104)
+                    _lastKeyUtc = DateTime.UtcNow;
+                return false;
+            }
+        }
+
+        private static void EnsureKeyActivityFilter()
+        {
+            if (_keyFilterInstalled) return;
+            Application.AddMessageFilter(new KeyActivityFilter());
+            _keyFilterInstalled = true;
+        }
+
+        private bool IsUserMidEdit()
+        {
+            EnsureKeyActivityFilter();
+
+            if (_autoSaveTimer != null && _autoSaveTimer.Enabled) return true;
+            if (DateTime.UtcNow - _lastKeyUtc < TypingPause) return true;
+
+            for (Control c = LiveViewSnapshot.FocusedControl(FindForm()); c != null; c = c.Parent)
+            {
+                if (c is DataGridView grid && grid.IsCurrentCellInEditMode) return true;
+            }
+
+            return false;
+        }
+
+        // ---- Keeping the user's place across a rebuild ------------------------------
+        //
+        // What the user is looking at, captured before the item-set tabs are torn down and
+        // put back after they are rebuilt: the scroll position of every scrolling container
+        // above the tabs, the selected tab's own scroll, the items grid's scroll, and which
+        // field or cell had focus. Controls are matched by Name inside the rebuilt tab, since
+        // the old ones no longer exist.
+        private sealed class LiveViewSnapshot
+        {
+            private readonly List<KeyValuePair<ScrollableControl, Point>> _scrolls = new List<KeyValuePair<ScrollableControl, Point>>();
+            private Point _tabScroll;
+            private string _focusName;
+            private Control _focusOutside;
+            private int _gridRow = -1;
+            private string _gridColumn;
+            private int _gridFirstRow = -1;
+            private int _gridHOffset;
+
+            public static LiveViewSnapshot Capture(TabControl tabs)
+            {
+                var snap = new LiveViewSnapshot();
+                if (tabs == null) return snap;
+
+                for (Control c = tabs.Parent; c != null; c = c.Parent)
+                {
+                    if (c is ScrollableControl sc && sc.AutoScroll)
+                        snap._scrolls.Add(new KeyValuePair<ScrollableControl, Point>(sc, sc.AutoScrollPosition));
+                }
+
+                TabPage tab = tabs.SelectedTab;
+                if (tab != null)
+                {
+                    snap._tabScroll = tab.AutoScrollPosition;
+
+                    DataGridView items = ItemsGridOf(tab);
+                    if (items != null)
+                    {
+                        snap._gridFirstRow = items.FirstDisplayedScrollingRowIndex;
+                        snap._gridHOffset = items.HorizontalScrollingOffset;
+                    }
+                }
+
+                Control focused = FocusedControl(tabs.FindForm());
+                if (focused == null) return snap;
+
+                if (tab != null && IsInside(focused, tab))
+                {
+                    DataGridView grid = GridOf(focused);
+                    if (grid != null)
+                    {
+                        snap._focusName = grid.Name;
+                        if (grid.CurrentCell != null)
+                        {
+                            snap._gridRow = grid.CurrentCell.RowIndex;
+                            snap._gridColumn = grid.CurrentCell.OwningColumn?.Name;
+                        }
+                    }
+                    else
+                    {
+                        snap._focusName = focused.Name;
+                    }
+                }
+                else if (!IsInside(focused, tabs))
+                {
+                    // Outside the tabs - it survives the rebuild, so it can simply be refocused.
+                    snap._focusOutside = focused;
+                }
+
+                return snap;
+            }
+
+            public void Restore(TabControl tabs)
+            {
+                TabPage tab = tabs?.SelectedTab;
+                if (tab != null)
+                {
+                    if (tab.AutoScroll)
+                        tab.AutoScrollPosition = new Point(-_tabScroll.X, -_tabScroll.Y);
+
+                    if (!string.IsNullOrEmpty(_focusName))
+                    {
+                        Control target = tab.Controls.Find(_focusName, true).FirstOrDefault();
+
+                        if (target is DataGridView grid && _gridRow >= 0 && _gridColumn != null
+                            && _gridRow < grid.Rows.Count && grid.Columns.Contains(_gridColumn)
+                            && grid.Columns[_gridColumn].Visible)
+                        {
+                            try { grid.CurrentCell = grid.Rows[_gridRow].Cells[_gridColumn]; }
+                            catch (InvalidOperationException) { }
+                        }
+
+                        if (target != null && target.CanFocus) target.Focus();
+                    }
+
+                    // After the focus, which may have scrolled the grid to its current cell.
+                    DataGridView items = ItemsGridOf(tab);
+                    if (items != null)
+                    {
+                        if (_gridFirstRow >= 0 && _gridFirstRow < items.Rows.Count)
+                        {
+                            try { items.FirstDisplayedScrollingRowIndex = _gridFirstRow; }
+                            catch (InvalidOperationException) { }
+                        }
+                        try { items.HorizontalScrollingOffset = _gridHOffset; }
+                        catch (InvalidOperationException) { }
+                        catch (ArgumentOutOfRangeException) { }
+                    }
+                }
+
+                if (_focusOutside != null && !_focusOutside.IsDisposed && _focusOutside.CanFocus && !_focusOutside.Focused)
+                    _focusOutside.Focus();
+
+                // Last: every focus change above is allowed to scroll, and this undoes it.
+                RestoreScroll();
+            }
+
+            public void RestoreScroll()
+            {
+                foreach (var entry in _scrolls)
+                {
+                    if (!entry.Key.IsDisposed)
+                        entry.Key.AutoScrollPosition = new Point(-entry.Value.X, -entry.Value.Y);
+                }
+            }
+
+            private static DataGridView ItemsGridOf(TabPage tab)
+            {
+                return tab.Controls.Count > 0 && tab.Controls[0] is ItemSetUC uc ? uc.DgvProjectItems : null;
+            }
+
+            private static DataGridView GridOf(Control c)
+            {
+                for (; c != null; c = c.Parent)
+                {
+                    if (c is DataGridView grid) return grid;
+                }
+                return null;
+            }
+
+            private static bool IsInside(Control c, Control ancestor)
+            {
+                for (; c != null; c = c.Parent)
+                {
+                    if (c == ancestor) return true;
+                }
+                return false;
+            }
+
+            // The control that actually holds focus, following ActiveControl down through
+            // nested containers (the page, the item-set control, their panels).
+            public static Control FocusedControl(Form form)
+            {
+                Control active = form?.ActiveControl;
+                while (active is ContainerControl container && container.ActiveControl != null)
+                    active = container.ActiveControl;
+                return active;
+            }
+        }
+
+        private void ForgetOwnSave()
+        {
+            _ownSaveEchoPending = false;
+        }
+
+        private bool ConsumeOwnSaveEcho()
+        {
+            if (!_ownSaveEchoPending) return false;
+
+            _ownSaveEchoPending = false;
+
+            // Outside the window this is somebody else's save that merely arrived after ours
+            // went missing, so let it through rather than swallowing it.
+            return DateTime.UtcNow - _ownSaveAt <= OwnSaveEchoWindow;
+        }
+
+        private bool CanAutoSave()
+        {
+            if (!(isProject && IsEdit && !isNewRecord && !isFinalized && ToInt(txt_id.Text) > 0))
+                return false;
+
+            // Never against a page that has not finished building.
+            //
+            // This is the guard that matters most. An autosave over a half-built page sends
+            // tabs whose contents have not loaded yet, and an empty content is NOT read as
+            // "unchanged" - the id-keyed diff reports it as "delete the real row, insert a
+            // blank one", so the item set is destroyed. A user-reported crash inside
+            // ComputeByReferenceHierarchy (RowNotInTableException on a deleted row) aborted
+            // a load exactly that way, and the autosave that followed removed the item set.
+            //
+            // The explicit Save button is unaffected: a person pressing Save on a page they
+            // can see is making a decision. A background save is not, so it holds off.
+            // _loadingProject is not enough on its own: RefreshCurrentProjectQuotationAsync
+            // clears it as soon as it returns, but the rebuild it kicks off (fetchSalesProject)
+            // is async void and is still tearing down and re-adding tabs after that. Its own
+            // re-entry flag is the one that actually spans the rebuild.
+            return !_loadingProject && !_isFetchingSalesProject && ProjectTabsLookLoaded();
+        }
+
+        // A tab whose ItemSetUC is missing, or whose items grid has no columns at all, has
+        // not bound its data yet. Cheap to check, and it is the difference between "the user
+        // emptied this tab" and "this tab never loaded".
+        private bool ProjectTabsLookLoaded()
+        {
+            if (tabControl2 == null || tabControl2.TabPages.Count == 0) return false;
+
+            // Every tab present must be loaded - AND every tab that should be here must be
+            // present. Checking only the first half passes a half-built page: fetchSalesProject
+            // adds its tabs one at a time, so between the first and the last, every tab on
+            // screen looks perfectly loaded while the rest simply do not exist yet. A save
+            // then sends the ones that made it and the diff removes the others.
+            int expected = SalesProjectListData?.sales_project_item_set?
+                .Count(x => x.based_id.ToString() == txt_id.Text.Trim()) ?? 0;
+
+            int present = 0;
+
+            foreach (TabPage tab in tabControl2.TabPages)
+            {
+                if (tab.Text == "+") continue;
+
+                if (!(tab.Controls.Count > 0 && tab.Controls[0] is ItemSetUC uc)) return false;
+                if (!uc.HasLoadedItems()) return false;
+
+                present++;
+            }
+
+            // A tab added with "+" and not yet saved is on screen but not in the fetched
+            // data, so more on screen than expected is normal; fewer is a page still building.
+            if (expected == 0 || present < expected) return false;
+
+            return true;
+        }
+
+        // Whether this diff would delete an item set the user did not remove - i.e. a whole tab
+        // and everything filed under it, lost to a payload that merely failed to mention it.
+        // Removals the user asked for (Remove Tabs) are allowed through.
+        private bool DiffRemovesUnrequestedItemSet(Dictionary<string, dynamic> changes, ICollection<int> requested)
+        {
+            if (changes == null || !changes.ContainsKey("Tabs")) return false;
+
+            if (!(changes["Tabs"] is List<Dictionary<string, dynamic>> tabs)) return false;
+
+            foreach (var tab in tabs)
+            {
+                if (tab == null || !tab.ContainsKey("SalesProjectItemSet")) continue;
+
+                var itemSet = tab["SalesProjectItemSet"] as Newtonsoft.Json.Linq.JObject;
+                if (itemSet == null) continue;
+
+                var removed = itemSet["Removed"] as Newtonsoft.Json.Linq.JArray;
+                if (removed == null) continue;
+
+                foreach (var row in removed)
+                {
+                    int id = row["itemset_id"]?.ToObject<int>() ?? 0;
+                    if (!requested.Contains(id)) return true;
+                }
+            }
+
+            return false;
+        }
+
+        // Set for the whole of a project load, so an autosave cannot fire into the middle of
+        // one - including a load that threw part-way.
+        private bool _loadingProject;
+
+        // Restarted on every change, so the save lands once you stop typing rather than
+        // per keystroke.
+        private void QueueAutoSave()
+        {
+            if (!CanAutoSave()) return;
+
+            EnsureAutoSaveTimer();
+            _autoSaveTimer.Stop();
+            _autoSaveTimer.Start();
+        }
+
+        private void EnsureAutoSaveTimer()
+        {
+            if (_autoSaveTimer != null) return;
+
+            _autoSaveTimer = new System.Windows.Forms.Timer { Interval = AutoSaveIdleMs };
+            _autoSaveTimer.Tick += AutoSaveTimer_Tick;
+        }
+
+        // Built in code rather than the designer so it sits next to whichever action strip
+        // this page is showing, and costs nothing on a page that never autosaves.
+        private void ShowAutoSaveStatus(string text)
+        {
+            if (_autoSaveStatus == null)
+            {
+                _autoSaveStatus = new System.Windows.Forms.Label
+                {
+                    AutoSize = true,
+                    ForeColor = System.Drawing.SystemColors.GrayText,
+                    BackColor = System.Drawing.Color.Transparent,
+                    Location = new System.Drawing.Point(toolstrip_quotation.Right + 12, toolstrip_quotation.Top + 6)
+                };
+                toolstrip_quotation.Parent?.Controls.Add(_autoSaveStatus);
+                _autoSaveStatus.BringToFront();
+            }
+
+            _autoSaveStatus.Text = text;
+            _autoSaveStatus.Visible = !string.IsNullOrEmpty(text);
+        }
+
+        private async void AutoSaveTimer_Tick(object sender, EventArgs e)
+        {
+            _autoSaveTimer.Stop();
+
+            if (_autoSaving || !CanAutoSave()) return;
+
+            _autoSaving = true;
+            try
+            {
+                ShowAutoSaveStatus("saving...");
+
+                // The SAME payload the Save button sends - tabs, multipliers, the lot. This
+                // used to collect three panels and nothing else, which the diff read as
+                // "every tab removed" and acted on. See BuildProjectQuotationPayload.
+                var pnl_quotation = BuildProjectQuotationPayload();
+                pnl_quotation["id"] = ToInt(txt_id.Text);
+
+                Dictionary<string, dynamic> changes = GetFullDiff(SalesProjectListData, pnl_quotation);
+                changes["id"] = ToInt(txt_id.Text);
+
+                // Last line of defence. Removing a tab is something a person does on purpose
+                // (right-click > Remove Tabs); there is no circumstance in which a save
+                // nobody asked for should delete one, so if the diff says it would, the save
+                // is wrong - abandon it and reload rather than let it through. Costs one
+                // autosave; the alternative cost is the item set and everything keyed to it.
+                if (DiffRemovesUnrequestedItemSet(changes, _removedItemSetIds))
+                {
+                    ShowAutoSaveStatus("not saved - refreshing");
+                    Console.WriteLine("Autosave aborted: the diff would have removed an item set.");
+                    QueueRemoteRefresh();
+                    return;
+                }
+
+                // Marked BEFORE the request, not after. The API commits, broadcasts, and
+                // only then answers, so our own echo can reach the socket before this await
+                // returns - and an echo that arrives before it has been marked is not
+                // recognised as ours, which is exactly the rebuild this is here to stop.
+                NoteOwnSave();
+
+                var response = await ProjectService.UpdateChange(changes);
+
+                // Nothing was written, so nothing will be broadcast: stop waiting for an
+                // echo that is never coming, or it would swallow the next real update.
+                if (response == null || !response.Success) ForgetOwnSave();
+
+                // No mode change on either branch: the whole point is that you keep typing.
+                ShowAutoSaveStatus(response != null && response.Success
+                    ? "saved " + DateTime.Now.ToString("HH:mm")
+                    : "not saved - keep working, it will try again");
+
+                if (response != null && response.Success)
+                {
+                    // Written; nothing left to request.
+                    _removedItemSetIds.Clear();
+                    await RefreshBaselineAfterOwnSaveAsync(ProjectPayloadHasInserts(pnl_quotation));
+                }
+            }
+            catch (Exception ex)
+            {
+                ShowAutoSaveStatus("not saved - keep working, it will try again");
+                Console.WriteLine("Autosave failed: " + ex.Message);
+            }
+            finally
+            {
+                _autoSaving = false;
+            }
+        }
+
         private async void ItemSet_DataChanged(object sender, EventArgs e)
         {
+            QueueAutoSave();
+
             if (IsEdit)
             {
                 if (tabControl2.SelectedTab.Controls[0] is ItemSetUC currentControl)
@@ -327,6 +994,8 @@ namespace smpc_sales_app.Pages.Sales
 
         private async void Content_DataChanged(object sender, EventArgs e)
         {
+            QueueAutoSave();
+
             if (IsEdit)
             {
                 if (tabControl2.SelectedTab.Controls[0] is ItemSetUC currentControl)
@@ -545,7 +1214,7 @@ namespace smpc_sales_app.Pages.Sales
 
         private async void Button_ClickedUC(object sender, EventArgs e)
         {
-            var dt = await ProjectTemplatesService.GetProjectTemplates();
+            var dt = await ItemSetLookups.Templates();
             DataTable templates = JsonHelper.ToDataTable(dt.sales_project_template_child);
 
             if (tabControl2.SelectedTab.Controls[0] is ItemSetUC currentControl)
@@ -857,15 +1526,17 @@ namespace smpc_sales_app.Pages.Sales
             if (quotationId <= 0 || SalesProjectListData == null)
                 return new List<SalesProjectHistory>();
 
-            var itemSetIds = new HashSet<uint>(
+            var itemSetIds = new HashSet<int>(
                 (SalesProjectListData.sales_project_item_set ?? new List<SalesProjectItemSet>())
                     .Where(s => s.based_id == quotationId)
-                    .Select(s => (uint)s.itemset_id)
+                    .Select(s => s.itemset_id)
             );
-            itemSetIds.Add((uint)quotationId);
 
+            // Every tab and the project header together, newest first - one list for "did
+            // anyone change anything". Classified by label as well as id, because the two
+            // kinds of based_id overlap (see ProjectHistoryRows).
             return (SalesProjectListData.sales_project_history ?? new List<SalesProjectHistory>())
-                .Where(h => itemSetIds.Contains(h.based_id))
+                .Where(h => ProjectHistoryRows.IsProjectRow(h, quotationId) || ProjectHistoryRows.IsTabRow(h, itemSetIds))
                 .OrderByDescending(h => h.history_id)
                 .ToList();
         }
@@ -876,17 +1547,39 @@ namespace smpc_sales_app.Pages.Sales
         // could show up duplicated. It's driven by the actual SalesProjectHistory rows for the
         // whole project (not just whichever tab is selected) and redraws whenever the selected
         // tab changes, since that's also when it's convenient to catch a freshly loaded project.
+        // The inline panel is a quick glance; FULL DETAILS opens everything. Each entry here is
+        // a control with seven labels of its own, so a busy quotation (Q#0026 has 80-odd rows)
+        // meant hundreds of window handles, all torn down and rebuilt on every tab switch and
+        // every live refresh.
+        private const int InlineHistoryRows = 30;
+
+        // What the panel is currently showing, so an unchanged history is not rebuilt. The
+        // list is the same whichever tab is selected, so switching tabs alone never needs it.
+        private string _renderedHistoryKey;
+
         private void RenderTabHistory()
         {
-            flowLayoutPanelChangeHistory.Controls.Clear();
-
-            if (!isProject || tabControl2.SelectedTab == null)
-                return;
-
             int quotationId = ToInt(txt_id.Text);
-            var entries = GetFullProjectHistory(quotationId);
+            var entries = (!isProject || tabControl2.SelectedTab == null)
+                ? new List<SalesProjectHistory>()
+                : GetFullProjectHistory(quotationId);
 
-            foreach (var entry in entries)
+            string key = quotationId + ":" + entries.Count + ":" + (entries.Count > 0 ? entries[0].history_id : 0);
+            if (key == _renderedHistoryKey && flowLayoutPanelChangeHistory.Controls.Count > 0)
+                return;
+            _renderedHistoryKey = key;
+
+            // Dispose, not just Clear: Clear() detaches the rows but every one keeps its window
+            // handles - the same leak that ran engineering out of handles.
+            flowLayoutPanelChangeHistory.SuspendLayout();
+            for (int i = flowLayoutPanelChangeHistory.Controls.Count - 1; i >= 0; i--)
+            {
+                Control row = flowLayoutPanelChangeHistory.Controls[i];
+                flowLayoutPanelChangeHistory.Controls.RemoveAt(i);
+                row.Dispose();
+            }
+
+            foreach (var entry in entries.Take(InlineHistoryRows))
             {
                 UC_History h = new UC_History();
                 h.SetHistory(entry);
@@ -896,8 +1589,26 @@ namespace smpc_sales_app.Pages.Sales
                     ctrl.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Bottom;
                 }
 
+                // As wide as the panel - the panel now widens with the page (StretchLayout), and
+                // a row left at its designed 355px would leave the same empty band inside it.
+                h.Width = HistoryRowWidth(h);
+
                 flowLayoutPanelChangeHistory.Controls.Add(h);
             }
+            flowLayoutPanelChangeHistory.ResumeLayout();
+        }
+
+        private int HistoryRowWidth(Control row)
+        {
+            int width = flowLayoutPanelChangeHistory.ClientSize.Width - row.Margin.Horizontal
+                - (flowLayoutPanelChangeHistory.VerticalScroll.Visible ? 0 : SystemInformation.VerticalScrollBarWidth);
+            return Math.Max(355, width);
+        }
+
+        private void flowLayoutPanelChangeHistory_Resize(object sender, EventArgs e)
+        {
+            foreach (Control row in flowLayoutPanelChangeHistory.Controls)
+                row.Width = HistoryRowWidth(row);
         }
 
         // Opens the full, scrollable Change History list for the whole project - the inline
@@ -952,30 +1663,39 @@ namespace smpc_sales_app.Pages.Sales
         public DataTable BomDetails { get; set; } = new DataTable();
         public DataTable Company { get; set; } = new DataTable();
 
+        // Item/sub-item descriptions for the footer (txt_long_description), keyed
+        // off whatever these tables currently hold. Phase 3: per-item detail is
+        // merged on demand - which records have been merged.
+        private readonly HashSet<int> loadedItemDetailIds = new HashSet<int>();
+
         private async Task fetchItemData()
         {
-            // Started together: the three are independent, and awaited one after another the
-            // page waited for the sum of their times instead of the longest one.
-            var itemTask = ItemService.GetItem();
+            // Phase 3: the full 3,707-row catalogue (GetItem, ~6 MB) no longer
+            // loads here. BOM heads/details are tiny and stay fully loaded
+            // (explosions walk them); item rows, descriptions and images merge
+            // per item on demand (EnsureItemDetailAsync) or on pick (the picker
+            // modals merge what they hand back). The merge tables below start
+            // with columns but no rows - every consumer binds/filters/merges
+            // against the schema, never a row count.
+            InitItemMergeTables();
+
+            // Started together: the two are independent, and awaited one after
+            // another the page waited for the sum of their times instead of
+            // the longest one.
             var bomTask = ProjectService.GetBom();
             var companyTask = CompanyService.GetAsDatatable();
-            var itemData = await itemTask;
             var bomData = await bomTask;
             var companyData = await companyTask;
 
             // Null here means the API answered with an error (a server problem, not a dropped
             // connection, so the request layer does not count it). Count it, so the page's
-            // loader offers to reload instead of carrying on with no items - picking a
-            // component then failed with "Invalid selection. Item not found."
-            if (itemData == null || bomData == null)
+            // loader offers to reload instead of carrying on with no BOM data.
+            if (bomData == null)
             {
                 ApiConnection.NoteFailure();
                 return;
             }
 
-            ItemList = JsonHelper.ToDataTable(itemData.items);
-            ItemAdditionalSpecs = JsonHelper.ToDataTable(itemData.additionalspecs);
-            ImageList = JsonHelper.ToDataTable(itemData.ItemImages);
             BomHead = JsonHelper.ToDataTable(bomData.bom_head);
             BomDetails = JsonHelper.ToDataTable(bomData.bom_details);
             Company = companyData;
@@ -983,6 +1703,31 @@ namespace smpc_sales_app.Pages.Sales
             //Apply Quotation Terms and Conditions
             quotationTerms();
             projectQuotationTerms();
+
+            // The starting state, before any quotation is opened: read-only, like the rest
+            // of the form. Edit / New / New Version unlock them.
+            SetQuoteTermsReadOnly(true);
+        }
+
+        // Fixed schemas for the item merge tables - called once per load, and
+        // a no-op once columns exist, so re-fetches never wipe merged rows.
+        // ItemSetUC keeps its own instances (same schemas, same helper).
+        private void InitItemMergeTables()
+        {
+            if (ItemList == null || ItemList.Columns.Count == 0)
+                ItemList = ItemCatalogTables.NewItemTable();
+            if (ItemAdditionalSpecs == null || ItemAdditionalSpecs.Columns.Count == 0)
+                ItemAdditionalSpecs = ItemCatalogTables.NewItemSpecsTable();
+            if (ImageList == null || ImageList.Columns.Count == 0)
+                ImageList = ItemCatalogTables.NewItemImageTable();
+        }
+
+        // Merges one item's row, descriptions and images into the merge tables.
+        // False when the id is unknown or the request failed.
+        private Task<bool> EnsureItemDetailAsync(int itemId)
+        {
+            InitItemMergeTables();
+            return ItemCatalogTables.FetchAndMergeAsync(ItemList, ItemAdditionalSpecs, ImageList, loadedItemDetailIds, itemId);
         }
 
         // Bug #024 (Trello) / spec §5.1, §14.32: entity_names is a comma-separated
@@ -1411,6 +2156,19 @@ namespace smpc_sales_app.Pages.Sales
         // through version history like the full list used to.
         private async Task fetchSalesProjectData(int selectId = 0, string selectDocumentNo = null)
         {
+            _loadingProject = true;
+            try
+            {
+                await FetchSalesProjectDataCore(selectId, selectDocumentNo);
+            }
+            finally
+            {
+                _loadingProject = false;
+            }
+        }
+
+        private async Task FetchSalesProjectDataCore(int selectId = 0, string selectDocumentNo = null)
+        {
             Helpers.ResetControls(pnl_header);
             ResetControls(pnl_footer);
 
@@ -1446,8 +2204,12 @@ namespace smpc_sales_app.Pages.Sales
             {
                 MessageBox.Show("No project data found. Creating a new entry.", "Empty Data", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
-                // Get the last index (before the add new tab)
-                var lastIndex = this.tabControl2.TabCount - 1;
+                // Get the last index (before the add new tab). With no tabs at all -
+                // which is exactly where this branch starts, since it runs when the user has
+                // no project quotations - TabCount is 0 and this is -1, and TabPages.Insert(-1)
+                // throws "Value of '-1' is not valid for 'index'". Index 0 is where the first
+                // tab goes anyway.
+                var lastIndex = Math.Max(this.tabControl2.TabCount - 1, 0);
                 // Create a new TabPage
                 TabPage newTab = new TabPage("New Project 1");
 
@@ -1630,7 +2392,12 @@ namespace smpc_sales_app.Pages.Sales
             if (!isProject || IsEdit || isNewRecord) return;
             if (ToInt(txt_id.Text) <= 0) return;
 
-            await RunWithLoadingAsync(async () => await RefreshCurrentProjectQuotationAsync(), "Checking for updates...");
+            // Deliberately silent. This is a background poll nobody asked for, so covering
+            // the page with "Checking for updates..." every five minutes announces a reload
+            // the user did not start - and disables the action strip mid-click while it
+            // runs. It is also the safety net behind the live socket (and behind
+            // ConsumeOwnSaveEcho), which only works if it is unobtrusive enough to leave on.
+            await RefreshCurrentProjectQuotationAsync();
         }
 
         // Silent background refresh for the auto-refresh timer above - unlike
@@ -1642,6 +2409,19 @@ namespace smpc_sales_app.Pages.Sales
         // anymore (e.g. deleted), it leaves the current view untouched rather
         // than guessing.
         private async Task RefreshCurrentProjectQuotationAsync()
+        {
+            _loadingProject = true;
+            try
+            {
+                await RefreshCurrentProjectQuotationCoreAsync();
+            }
+            finally
+            {
+                _loadingProject = false;
+            }
+        }
+
+        private async Task RefreshCurrentProjectQuotationCoreAsync()
         {
             if (!isProject) return;
 
@@ -1658,6 +2438,21 @@ namespace smpc_sales_app.Pages.Sales
                 int matchedRow = FindRowIndexById(transactionProjectDataTable, currentId);
                 if (matchedRow == -1) return; // record no longer present - leave the view as-is
 
+                // The header is rebound from transactionProjectDataTable - the page of headers
+                // read when the user navigated here - not from the record just fetched. So a
+                // refresh put back whatever the header said at navigation time, and in edit mode
+                // the next autosave then diffed those stale values against the fresh baseline
+                // and wrote them back: a saved header edit quietly undone.
+                //
+                // In edit mode the screen's header is the authority - only the quotation's
+                // creator may edit it, and they are the one looking at it - so it is left
+                // exactly as it is. Outside edit mode there is nothing local to protect, so
+                // the stored header row is brought up to date and rebound from that.
+                bool keepHeader = IsEdit;
+                if (!keepHeader)
+                    RefreshHeaderRow(matchedRow, detail.SalesQuotation.FirstOrDefault(q => q.id == currentId));
+
+                _keepHeaderOnNextBuild = keepHeader;
                 selectedProjectRow = matchedRow;
                 fetchSalesProject();
             }
@@ -1689,6 +2484,23 @@ namespace smpc_sales_app.Pages.Sales
             string selectedId = this.transactionProjectDataTable.Rows[this.selectedProjectRow]["id"].ToString();
             int selectedIdInt = int.Parse(selectedId);
 
+            // Taken once, here, and cleared - it describes this build only.
+            bool keepHeader = _keepHeaderOnNextBuild;
+            _keepHeaderOnNextBuild = false;
+
+            // Rebuilding the record already on screen (a live update, the five-minute poll,
+            // a reload after save) must leave the user where they were: same tab, same scroll,
+            // same field or cell. Tearing the tabs down disposes whatever had focus, and
+            // WinForms then scrolls the page to whichever control it hands focus to next -
+            // which is the jump to the middle of the page the user reported (2026-09-24).
+            // Opening a DIFFERENT record keeps the old behaviour and starts at the top.
+            LiveViewSnapshot view = ToInt(txt_id.Text) == selectedIdInt
+                ? LiveViewSnapshot.Capture(tabControl2)
+                : null;
+
+            // Another record: removals requested on the previous one do not carry over.
+            if (view == null) _removedItemSetIds.Clear();
+
             // Listen for real-time "someone else saved this" notifications for whichever
             // project is actually open now - no-ops if already connected to this same id.
             EnsureSaveNotifyConnected(selectedId);
@@ -1702,7 +2514,8 @@ namespace smpc_sales_app.Pages.Sales
 
             if (transactionData == null || transactionData.Rows.Count == 0) return;
 
-            bind(transactionProjectDataTable, selectedProjectRow, true);
+            if (!keepHeader)
+                bind(transactionProjectDataTable, selectedProjectRow, true);
 
             List<SalesProjectItemSet> fetchedTabs = SalesProjectListData.sales_project_item_set;
             
@@ -1729,13 +2542,24 @@ namespace smpc_sales_app.Pages.Sales
 
             //Helpers.BindControls(pnls, dt2, selectedProject);
 
-            txt_project_name.Text = transactionData.Rows[0]["project_name"].ToString();
+            if (!keepHeader)
+                txt_project_name.Text = transactionData.Rows[0]["project_name"].ToString();
 
             //DataView dataview = new DataView(dt_multiplier);
             //dataview.RowFilter = "based_id = '" + this.allTransactionList.Rows[this.selectedProject]["id"].ToString() + "'";
             //dgv_project_multiplier.DataSource = dataview;
 
-             tabControl2.TabPages.Clear();
+            // Which tab the user is on, by the item set it holds rather than by position -
+            // a live update can add or remove a tab, and an index would then land on a
+            // different item set than the one being worked on. Restored at the end of the
+            // rebuild; without it every live update snaps whoever is editing back to tab 1.
+            object selectedTabKey = tabControl2.SelectedTab?.Tag;
+            bool wasOnAddTab = tabControl2.SelectedTab != null && tabControl2.SelectedTab.Text == "+";
+
+            SetRedraw(tabControl2, false);
+            try
+            {
+             ClearProjectTabs();
 
             var filteredtabs = fetchedTabs.Where(tab => tab.based_id.ToString() == selectedId).ToList();
             foreach (var tab in filteredtabs)
@@ -1885,6 +2709,21 @@ namespace smpc_sales_app.Pages.Sales
             // which would have made a persisted exclusion look like it had not been saved.
             tabControl2.Invalidate();
 
+            RestoreSelectedProjectTab(selectedTabKey, wasOnAddTab);
+
+            // Inside the no-redraw window, so the user never sees the in-between state.
+            view?.Restore(tabControl2);
+            }
+            finally
+            {
+                SetRedraw(tabControl2, true);
+            }
+
+            // Once more after the message queue drains: focus changes and layout that settle
+            // after this returns can still scroll the page, and this puts it back.
+            if (view != null && IsHandleCreated)
+                BeginInvoke(new Action(() => { if (!IsDisposed) view.RestoreScroll(); }));
+
             fetchProjectMultipliers();
             //ConnectToWebSocket("Sales", selectedSalesQuotationId);
 
@@ -1967,8 +2806,8 @@ namespace smpc_sales_app.Pages.Sales
         {
             // Get all the quotations from the service
             SalesQuotationList data = await QuotationService.GetQuotations();
-            var itemData = await ItemService.GetItem();
-            ItemList = JsonHelper.ToDataTable(itemData.items);
+            // No catalogue re-download: item rows merge on demand into the
+            // page-level tables (EnsureItemDetailAsync / picker merges).
             // Check if data is valid
             if (data == null || string.IsNullOrEmpty(documentNo))
             {
@@ -1996,6 +2835,7 @@ namespace smpc_sales_app.Pages.Sales
 
                 Panel[] panels = { pnl_header, pnl_footer };
                 Helpers.ResetReadOnlyControls(panels);
+                SetQuoteTermsReadOnly(false);
                 //pnl_header.Enabled = true;
                 //pnl_footer.Enabled = true;
                 toolstrip_quotation.Enabled = false;
@@ -2150,28 +2990,28 @@ namespace smpc_sales_app.Pages.Sales
                 manager.EndCurrentEdit();
         }
 
-        private async void  IsProject()
+        // The Project Quotation save payload, built in ONE place.
+        //
+        // Both the Save button and the autosave send this. They used to build it
+        // separately, and the autosave's copy was a subset - three panels, project_name and
+        // id, and nothing else. That is not a smaller save, it is a DESTRUCTIVE one, because
+        // the diff reads anything the payload does not carry as "removed":
+        //
+        //   * no "sales_project_all_tabs" meant GetFullDiff matched no tab against the
+        //     database and reported every item set as Removed - so every autosave deleted
+        //     the tab and everything hanging off it (user-reported 2026-09-24; item sets 28
+        //     and 29 on Q#0026 were destroyed exactly this way, leaving orphaned content
+        //     rows behind).
+        //   * no "is_requested_for_engr" / "additional_discounted" meant Compare saw the
+        //     stored value against null and cleared them.
+        //
+        // So: nothing may build this payload by hand again. Anything that needs to save this
+        // form calls this, and a field added here reaches both paths at once.
+        //
+        // Validation stays with the callers - a background save must not raise a dialog or
+        // decide to abandon itself.
+        private Dictionary<string, dynamic> BuildProjectQuotationPayload()
         {
-            CommitPendingEdits();
-
-            // Belt-and-suspenders check alongside the one in btn_edit_Click/btn_update_Click -
-            // IsEdit only means "editing an existing record" (see IsEdit's setter), so this
-            // only fires on an update to a record that already exists, never on a brand new one.
-            if (IsEdit && !IsRecordCreatedByCurrentUser(txt_created_by.Text))
-            {
-                MessageBox.Show("Only the user who created this quotation can update it.", "Not Allowed", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
-            // No customer selected (txt_customer_id is only ever populated by the
-            // "Select Customer" dialog in btn_add_customer_Click) - block the save
-            // instead of letting a quotation with no customer through.
-            if (string.IsNullOrWhiteSpace(txt_customer_id.Text))
-            {
-                MessageBox.Show("Please select a customer before saving.", "Missing Information", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
             Panel[] pnl_list = { pnl_header, pnl_footer, pnl_project_name };
             var pnl_quotation = Helpers.GetControlsValues(pnl_list);
 
@@ -2182,17 +3022,6 @@ namespace smpc_sales_app.Pages.Sales
             // "is_requested_for_engr". Set explicitly so a Project Quote checked before
             // its first save carries the flag into this same insert.
             pnl_quotation["is_requested_for_engr"] = chk_requested_for_engr.Checked;
-
-            if (string.IsNullOrWhiteSpace(txt_project_name.Text))
-            {
-                MessageBox.Show("Please enter a valid project name. The project name cannot be empty or consist only of spaces.",
-                                "Invalid Project Name", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                txt_project_name.Focus();
-                return;
-            }
-
-            if (!ValidateProjectRequiredFields())
-                return;
 
             var multiplierSource = Helpers.ConvertDataGridViewToDataTable(dgv_project_multiplier);
 
@@ -2256,14 +3085,8 @@ namespace smpc_sales_app.Pages.Sales
 
             pnl_quotation["sales_project_all_tabs"] = allTabsData;
 
-            if (!ConvertToInt(pnl_quotation, "customer_id", "Invalid customer ID"))
-                return;
-
-            if (isNewRecord)
-                pnl_quotation["id"] = 0;
-
-            if (IsEdit)
-                pnl_quotation["id"] = int.Parse(pnl_quotation["id"].ToString());
+            // The tabs the user removed on purpose - the only item sets this save may delete.
+            pnl_quotation["removed_item_set_ids"] = _removedItemSetIds.ToList();
 
             // document_no is saved with its "Q#"/"FQ#" prefix intact - that's the intended
             // identifier for draft vs. finalized status at a glance, not an accident. Search
@@ -2287,7 +3110,56 @@ namespace smpc_sales_app.Pages.Sales
             // here, so what's sent always matches what's on screen.
             pnl_quotation["percent_discount"] = float.TryParse(Helpers.GetCleanedPriceValue(txt_percent_discount.Text), out float computedPercentDiscount) ? computedPercentDiscount : 0;
 
-            var quotation = JsonConvert.SerializeObject(pnl_quotation, Formatting.Indented);
+            return pnl_quotation;
+        }
+
+        private async void  IsProject()
+        {
+            CommitPendingEdits();
+
+            // Belt-and-suspenders check alongside the one in btn_edit_Click/btn_update_Click -
+            // IsEdit only means "editing an existing record" (see IsEdit's setter), so this
+            // only fires on an update to a record that already exists, never on a brand new one.
+            if (IsEdit && !IsRecordCreatedByCurrentUser(txt_created_by.Text))
+            {
+                MessageBox.Show("Only the user who created this quotation can update it.", "Not Allowed", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            // No customer selected (txt_customer_id is only ever populated by the
+            // "Select Customer" dialog in btn_add_customer_Click) - block the save
+            // instead of letting a quotation with no customer through.
+            if (string.IsNullOrWhiteSpace(txt_customer_id.Text))
+            {
+                MessageBox.Show("Please select a customer before saving.", "Missing Information", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(txt_project_name.Text))
+            {
+                MessageBox.Show("Please enter a valid project name. The project name cannot be empty or consist only of spaces.",
+                                "Invalid Project Name", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                txt_project_name.Focus();
+                return;
+            }
+
+            if (!ValidateProjectRequiredFields())
+                return;
+
+            // One shared builder - see BuildProjectQuotationPayload for why this must never
+            // be assembled inline again.
+            var pnl_quotation = BuildProjectQuotationPayload();
+
+            if (!ConvertToInt(pnl_quotation, "customer_id", "Invalid customer ID"))
+                return;
+
+            if (isNewRecord)
+                pnl_quotation["id"] = 0;
+
+            if (IsEdit)
+                pnl_quotation["id"] = int.Parse(pnl_quotation["id"].ToString());
+
+
 
             Helpers.Loading.ShowLoading(this);
             try
@@ -2330,10 +3202,19 @@ namespace smpc_sales_app.Pages.Sales
 
                     changes["id"] = (int)pnl_quotation["id"];
 
+                    // This save broadcasts too, and the reload below already brings the
+                    // screen up to date - so its echo would only rebuild every tab a second
+                    // time. Marked before the request for the same reason as the autosave's:
+                    // the echo can reach the socket before this await returns.
+                    NoteOwnSave();
+
                     var response = await ProjectService.UpdateChange(changes);
+
+                    if (!response.Success) ForgetOwnSave();
 
                     if(response.Success)
                     {
+                        _removedItemSetIds.Clear();
                         MessageBox.Show("Updated successfully.");
                         SetNewFormMode(false);
 
@@ -2551,6 +3432,36 @@ namespace smpc_sales_app.Pages.Sales
                 BuildTabDiffEntry(itemSetId, new TabDbData(), tab, result);
             }
 
+            // Tabs the user removed on purpose (right-click > Remove Tabs). Sent explicitly: the
+            // API deletes an item set only when its id is on this list, so a payload that merely
+            // fails to mention a tab can no longer delete it. And logged as a PROJECT line - the
+            // tab's own rows go with it, so that is the only place the removal can be seen.
+            var requestedRemovals = new List<int>();
+            if (pnlQuotation.TryGetValue("removed_item_set_ids", out object removedRaw) && removedRaw is IEnumerable<int> removedIds)
+                requestedRemovals.AddRange(removedIds.Where(id => id > 0 && dbByTab.ContainsKey(id)));
+
+            if (requestedRemovals.Count > 0)
+            {
+                result["removed_item_set_ids"] = requestedRemovals;
+
+                string user = CacheData.CurrentUser != null
+                    ? $"{CacheData.CurrentUser.first_name} {CacheData.CurrentUser.last_name}".Trim()
+                    : string.Empty;
+
+                foreach (int removedId in requestedRemovals)
+                {
+                    headerHistoryEntries.Add(new SalesProjectHistory
+                    {
+                        based_id = (uint)ProjectQuotationId,
+                        user = user,
+                        date = DateTime.Now.ToString("M/d/yyyy"),
+                        time = DateTime.Now.ToString("h:mm tt"),
+                        old_data = "PROJECT - TAB REMOVED",
+                        new_data = $"{dbByTab[removedId].ItemSets?.FirstOrDefault()?.tab_number ?? removedId.ToString()} => -"
+                    });
+                }
+            }
+
             return result;
         }
 
@@ -2628,12 +3539,23 @@ namespace smpc_sales_app.Pages.Sales
             tabDiff.SalesProjectWirings = DiffModels(db.Wiring, WiringMatchedTab, x => x.id, GetWiringChanges);
             tabDiff.SalesProjectHistory = DiffModels(db.History, HistoryMatchedTab, x => (int)x.history_id, GetHistoryChanges);
 
+            // Change History is an audit trail: a save adds to it and never takes from it.
+            // Sales sends each tab's history from ItemSetUC.GetHistoryList(), which has always
+            // returned an empty list - so every existing row came out of the diff as Removed
+            // and the server deleted it. Every sales save wiped the history of every tab it
+            // sent (on Q#0026, rows written at 4:37 PM were gone an hour later; 418 of 588
+            // rows ever written are missing). Nothing on either screen deletes history on
+            // purpose, so no save may.
+            tabDiff.SalesProjectHistory.Removed.Clear();
+            tabDiff.SalesProjectHistory.Updated.Clear();
+
             // Auto-generate a readable Change History entry for every meaningful change this
             // save is about to make - GetHistoryList() (ItemSetUC) never produced real entries
             // on its own, so this is what actually populates the history table now, driven
             // straight off the diffs already computed above rather than requiring anything to
             // be logged manually.
-            tabDiff.SalesProjectHistory.Added.AddRange(BuildAutoHistoryEntries(itemSetId, tabDiff));
+            string tabName = TabNameOf(matchedTab) ?? db.ItemSets?.FirstOrDefault()?.tab_number;
+            tabDiff.SalesProjectHistory.Added.AddRange(BuildAutoHistoryEntries(itemSetId, tabName, tabDiff));
 
             if (tabDiff.HasChanges())
             {
@@ -2646,9 +3568,14 @@ namespace smpc_sales_app.Pages.Sales
         // Turns the diffs already computed for one tab into readable Change History rows -
         // one per changed field/item, matching the "OLD DESCRIPTION => NEW VALUE" layout the
         // (formerly static-mockup) UC_History control displays.
-        private List<SalesProjectHistory> BuildAutoHistoryEntries(int itemSetId, TabDiff tabDiff)
+        private List<SalesProjectHistory> BuildAutoHistoryEntries(int itemSetId, string tabName, TabDiff tabDiff)
         {
             var entries = new List<SalesProjectHistory>();
+
+            // A tab being removed gets one PROJECT line (GetFullDiff) instead. Lines keyed to an
+            // item set that is about to stop existing could never be shown to anyone.
+            if (tabDiff.SalesProjectItemSet.Removed.Any())
+                return entries;
 
             string user = CacheData.CurrentUser != null
                 ? $"{CacheData.CurrentUser.first_name} {CacheData.CurrentUser.last_name}".Trim()
@@ -2656,7 +3583,13 @@ namespace smpc_sales_app.Pages.Sales
             string date = DateTime.Now.ToString("M/d/yyyy");
             string time = DateTime.Now.ToString("h:mm tt");
 
-            void AddEntry(string label, object oldVal, object newVal)
+            // The tab's NAME, not its database id - "ITEM/SET AA", never "ITEM/SET 30", and never
+            // "ITEM/SET 0" for a tab being created. The "ITEM/SET " prefix itself must stay: it is
+            // how ProjectHistoryRows tells a tab row from a PROJECT row.
+            string tab = !string.IsNullOrWhiteSpace(tabName) ? tabName.Trim()
+                : itemSetId > 0 ? itemSetId.ToString() : "NEW TAB";
+
+            void Add(string what, string key, object oldVal, object newVal)
             {
                 entries.Add(new SalesProjectHistory
                 {
@@ -2664,39 +3597,172 @@ namespace smpc_sales_app.Pages.Sales
                     user = user,
                     date = date,
                     time = time,
-                    old_data = $"ITEM/SET {itemSetId} - {label}",
-                    new_data = $"{FormatHistoryValue(oldVal)} => {FormatHistoryValue(newVal)}"
+                    old_data = $"ITEM/SET {tab} - {what}",
+                    new_data = $"{HistoryValue(key, oldVal)} => {HistoryValue(key, newVal)}"
                 });
             }
 
+            void AddChanges(string prefix, Dictionary<string, FieldChange> changes, ICollection<string> skip = null)
+            {
+                foreach (var change in changes)
+                {
+                    if (skip != null && skip.Contains(change.Key)) continue;
+                    Add(prefix + HistoryFieldName(change.Key), change.Key, change.Value.OldValue, change.Value.NewValue);
+                }
+            }
+
+            // ---- the tab itself
+            foreach (var added in tabDiff.SalesProjectItemSet.Added)
+                Add("TAB ADDED", null, null, added.tab_number);
+            foreach (var updated in tabDiff.SalesProjectItemSet.Updated)
+                AddChanges("", updated.Changes);
+
+            // ---- item rows. Each line names the row it is about (code and model), so "QTY 2 => 3"
+            // says which item. A brand-new item is diffed against a blank one, which gives each
+            // field it was created with its own "- => value" line.
             foreach (var updated in tabDiff.SalesProjectItems.Updated)
-                foreach (var change in updated.Changes)
-                    AddEntry($"ITEM - {change.Key.ToUpperInvariant()}", change.Value.OldValue, change.Value.NewValue);
-
-            // A brand-new item is diffed against a blank SalesProjectItems the same way an
-            // edit is diffed against the old row - that's what makes an empty field getting
-            // its first value ("" -> "Gate Valve") show up as its own readable line instead of
-            // being collapsed into one generic "item added" entry.
+                AddChanges($"ITEM {ItemRowLabel(updated.Item)} - ", updated.Changes, InternalItemFields);
             foreach (var added in tabDiff.SalesProjectItems.Added)
-                foreach (var change in GetItemFieldChanges(new SalesProjectItems(), added))
-                    AddEntry($"ITEM - {change.Key.ToUpperInvariant()}", change.Value.OldValue, change.Value.NewValue);
-
+                AddChanges($"ITEM {ItemRowLabel(added)} - ", GetItemFieldChanges(new SalesProjectItems(), added), InternalItemFields);
             foreach (var removed in tabDiff.SalesProjectItems.Removed)
-                AddEntry("ITEM REMOVED", string.IsNullOrWhiteSpace(removed.model) ? removed.components : removed.model, null);
+                Add("ITEM REMOVED", null, ItemRowLabel(removed), null);
 
+            // ---- client needs, description, notes, template, size up, final selection...
             foreach (var updated in tabDiff.SalesProjectContent.Updated)
-                foreach (var change in updated.Changes)
-                    AddEntry($"CONTENT - {change.Key.ToUpperInvariant()}", change.Value.OldValue, change.Value.NewValue);
-
-            // Same idea for a tab's content record the first time it's ever saved (no prior
-            // row existed, so it lands in Added rather than Updated) - each field the user
-            // actually typed into (Application, Additional, Item/Set Notes, etc.) gets logged
-            // as its own "(empty) -> new value" line instead of being silently skipped.
+                AddChanges("", updated.Changes);
             foreach (var added in tabDiff.SalesProjectContent.Added)
-                foreach (var change in GetContentChanges(new SalesProjectContent(), added))
-                    AddEntry($"CONTENT - {change.Key.ToUpperInvariant()}", change.Value.OldValue, change.Value.NewValue);
+                AddChanges("", GetContentChanges(new SalesProjectContent(), added));
+
+            // ---- advanced conditions: never logged before, so a changed dropdown left no trace.
+            foreach (var updated in tabDiff.SalesProjectContentAdvancedCondition.Updated)
+                AddChanges("ADVANCED CONDITIONS - ", updated.Changes);
+            foreach (var added in tabDiff.SalesProjectContentAdvancedCondition.Added)
+                AddChanges("ADVANCED CONDITIONS - ", GetAdvancedConditionsChanges(new SalesProjectAdvancedConditions(), added));
+
+            // ---- wiring: never logged before either.
+            foreach (var updated in tabDiff.SalesProjectWirings.Updated)
+                AddChanges($"WIRING {WiringRowLabel(updated.Item)} - ", updated.Changes);
+            foreach (var added in tabDiff.SalesProjectWirings.Added)
+                Add("WIRING ADDED", null, null, WiringRowLabel(added));
+            foreach (var removed in tabDiff.SalesProjectWirings.Removed)
+                Add("WIRING REMOVED", null, WiringRowLabel(removed), null);
 
             return entries;
+        }
+
+        // Which item/BOM/template a row came from: bookkeeping ids that mean nothing to a
+        // reader, and any real swap already shows as a MODEL or COMPONENTS change.
+        private static readonly HashSet<string> InternalItemFields =
+            new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "item_id", "bom_id", "template_id" };
+
+        private static string ItemRowLabel(SalesProjectItems item)
+        {
+            if (item == null) return string.Empty;
+            string what = string.IsNullOrWhiteSpace(item.model) ? item.components : item.model;
+            return $"{item.reference_code} {what}".Trim();
+        }
+
+        private static string WiringRowLabel(SalesWiringModel row)
+        {
+            if (row == null) return string.Empty;
+            return (string.IsNullOrWhiteSpace(row.materials) ? row.description : row.materials) ?? string.Empty;
+        }
+
+        // ---- Change History wording --------------------------------------------------
+        //
+        // What the screen calls a field, not its column name: "PUMP BRAND", not
+        // "PUMP_BRAND_ID". Anything not listed is its column name with underscores as spaces.
+        private static readonly Dictionary<string, string> HistoryFieldNames =
+            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["item_designation"] = "ITEMS AND PUMP DESIGNATION",
+                ["item_set_description"] = "ITEM/SET DESCRIPTION",
+                ["item_set_notes"] = "ITEM/SET NOTES",
+                ["no_of_sets"] = "NO. OF SETS",
+                ["no_of_pump_set"] = "NO. OF PUMP/SET",
+                ["flow_id"] = "FLOW UNIT",
+                ["head_id"] = "HEAD UNIT",
+                ["template_project_id"] = "TEMPLATE",
+                ["assign_engineer_user_id"] = "ASSIGNED ENGR.",
+                ["is_wiring"] = "WIRING",
+                ["is_excluded"] = "EXCLUDED FROM QUOTE",
+                ["size_up"] = "SIZE UP",
+                ["final_selection"] = "FINAL SELECTION",
+                ["pump_brand_id"] = "PUMP BRAND",
+                ["driver_type_id"] = "DRIVER TYPE",
+                ["motor_enclosure_id"] = "MOTOR ENCLOSURE",
+                ["motor_manufacturer_id"] = "MOTOR MANUFACTURER",
+                ["liquid_type_id"] = "LIQUID TYPE",
+                ["controller_manufacturer_id"] = "CONTROLLER MANUFACTURER",
+                ["pressure"] = "PRESSURE TYPE",
+                ["list_price_per_unit"] = "LIST PRICE",
+                ["discount_price"] = "DISCOUNT/MARK UP PRICE",
+                ["component_total"] = "LINE TOTAL",
+                ["item_inv_type"] = "ITEM INV TYPE",
+                ["reference_code"] = "CODE",
+                ["wire_req"] = "WIRE AMP.",
+                ["num_of_wires_set"] = "NO. OF WIRES/SET",
+                ["num_of_qty_set"] = "QTY/SET",
+                ["distance_travelled_set"] = "DISTANCE",
+                ["allowance_wire_set"] = "ALLOWANCE",
+                ["tab_number"] = "TAB NAME",
+                ["is_requested_for_engr"] = "REQUEST FOR ENGR.",
+            };
+
+        private static string HistoryFieldName(string key)
+        {
+            if (string.IsNullOrEmpty(key)) return string.Empty;
+            if (HistoryFieldNames.TryGetValue(key, out string name)) return name;
+
+            string bare = key.EndsWith("_id", StringComparison.OrdinalIgnoreCase) ? key.Substring(0, key.Length - 3) : key;
+            return bare.Replace('_', ' ').ToUpperInvariant();
+        }
+
+        // A value as a reader wants it: a dropdown's words rather than its id, Yes/No rather
+        // than True/False, "-" for nothing.
+        private static string HistoryValue(string key, object value)
+        {
+            if (value == null) return "-";
+            string text = value.ToString();
+            if (string.IsNullOrWhiteSpace(text)) return "-";
+
+            if (value is bool flag) return flag ? "Yes" : "No";
+
+            if (!string.IsNullOrEmpty(key) && int.TryParse(text, out int id))
+            {
+                string named = HistoryNameForId(key, id);
+                if (named != null) return named;
+            }
+
+            return text;
+        }
+
+        private static string HistoryNameForId(string key, int id)
+        {
+            switch (key.ToLowerInvariant())
+            {
+                case "flow_id": return HistoryTitle(STATIC_CLIENT_NEEDS_UNIT.FLOW(), id);
+                case "head_id": return HistoryTitle(STATIC_CLIENT_NEEDS_UNIT.HEAD(), id);
+                case "driver_type_id": return HistoryTitle(STATIC_ADVANCED_CONDITIONS.DRIVER_TYPE(), id);
+                case "motor_enclosure_id": return HistoryTitle(STATIC_ADVANCED_CONDITIONS.MOTOR_ENCLOSURE(), id);
+                case "motor_manufacturer_id": return HistoryTitle(STATIC_ADVANCED_CONDITIONS.MOTOR_MANUFACTURER(), id);
+                case "liquid_type_id": return HistoryTitle(STATIC_ADVANCED_CONDITIONS.LIQUID_TYPE(), id);
+                case "controller_manufacturer_id": return HistoryTitle(STATIC_ADVANCED_CONDITIONS.CONTROLLER_MANUFACTURER(), id);
+                case "pump_brand_id": return id == 0 ? "-" : smpc_sales_app.Services.Sales.BrandService.NameOf(id);
+                case "template_project_id": return id == 0 ? "No Template" : ItemSetLookups.TemplateName(id);
+                case "assign_engineer_user_id": return id == 0 ? "-" : ItemSetLookups.EngineerName(id);
+            }
+            return null;
+        }
+
+        private static string HistoryTitle(DataTable list, int id)
+        {
+            if (id == 0) return "-";
+            foreach (DataRow row in list.Rows)
+            {
+                if (row["id"]?.ToString() == id.ToString()) return row["title"]?.ToString();
+            }
+            return null;
         }
 
         // Same idea as BuildAutoHistoryEntries, but for changes that don't belong to any one
@@ -2730,7 +3796,7 @@ namespace smpc_sales_app.Pages.Sales
             }
 
             foreach (var change in quotationFieldChanges)
-                AddEntry(change.Key.ToUpperInvariant(), change.Value.OldValue, change.Value.NewValue);
+                AddEntry(HistoryFieldName(change.Key), HistoryValue(change.Key, change.Value.OldValue), HistoryValue(change.Key, change.Value.NewValue));
 
             foreach (var updated in multiplierDiff.Updated)
                 foreach (var change in updated.Changes)
@@ -2967,8 +4033,6 @@ namespace smpc_sales_app.Pages.Sales
 
             var raw = dict[key];
 
-            Console.WriteLine($"DeserializeList key={key} type={raw.GetType().Name}");
-            Console.WriteLine($"DeserializeList value={JsonConvert.SerializeObject(raw)}");
 
             // use DefaultContractResolver only when preserveCase is true
             var serializer = preserveCase
@@ -3143,6 +4207,15 @@ namespace smpc_sales_app.Pages.Sales
             }
         }
 
+        private static string TabNameOf(Dictionary<string, object> tab)
+        {
+            if (tab == null || !tab.ContainsKey("sales_project_item_set")) return null;
+            var set = tab["sales_project_item_set"] as Dictionary<string, object>;
+            if (set == null || !set.ContainsKey("tab_number")) return null;
+            string name = set["tab_number"]?.ToString();
+            return string.IsNullOrWhiteSpace(name) ? null : name;
+        }
+
         private int GetItemSetIdFromTab(Dictionary<string, object> tab)
         {
             if (tab == null || !tab.ContainsKey("sales_project_item_set"))
@@ -3203,6 +4276,13 @@ namespace smpc_sales_app.Pages.Sales
 
             Compare(changes, "man_days", db.man_days, upd.man_days);
             Compare(changes, "labor_rate", db.labor_rate, upd.labor_rate);
+
+            // Which item, which BOM, which template a row came from. All three are in the
+            // payload (GetProjectItems) and none was listed, so swapping a row's item or model
+            // changed its label on screen and nothing in the database.
+            Compare(changes, "item_id", db.item_id, upd.item_id);
+            Compare(changes, "bom_id", db.bom_id, upd.bom_id);
+            Compare(changes, "template_id", db.template_id, upd.template_id);
 
             return changes;
         }
@@ -3369,6 +4449,18 @@ namespace smpc_sales_app.Pages.Sales
             return changes;
         }
 
+        // A header field is compared only when the payload carries it. Absent means "this
+        // save does not touch it" - never "clear it". Reading an absent key as null is what
+        // wrote NULL over is_project, final_ref_no and discounted_amount on every project
+        // save: none of the three is on the form, so each save saw "value -> nothing" and
+        // sent it (every project quote on the rehearsal database has is_project = 0 because
+        // of it), and logged a bogus "X => -" history line for each while it was at it.
+        private void CompareSent(Dictionary<string, FieldChange> c, Dictionary<string, object> upd, string field, object dbVal)
+        {
+            if (upd == null || !upd.TryGetValue(field, out object val)) return;
+            Compare(c, field, dbVal, val);
+        }
+
         private Dictionary<string, FieldChange> GetQuotationFieldChanges(
             SalesQuotationModel db,
             Dictionary<string, object> upd)
@@ -3377,44 +4469,44 @@ namespace smpc_sales_app.Pages.Sales
             if (db == null) return c;
 
             object val;
-            Compare(c, "project_name", db.project_name, upd.TryGetValue("project_name", out val) ? val : null);
-            Compare(c, "customer_id", db.customer_id, upd.TryGetValue("customer_id", out val) ? val : null);
-            Compare(c, "application_id", db.application_id, upd.TryGetValue("application_id", out val) ? val : null);
-            Compare(c, "payment_terms_id", db.payment_terms_id, upd.TryGetValue("payment_terms_id", out val) ? val : null);
-            Compare(c, "ship_to_id", db.ship_to_id, upd.TryGetValue("ship_to_id", out val) ? val : null);
-            Compare(c, "bill_to_id", db.bill_to_id, upd.TryGetValue("bill_to_id", out val) ? val : null);
-            Compare(c, "ship_type_id", db.ship_type_id, upd.TryGetValue("ship_type_id", out val) ? val : null);
-            Compare(c, "purpose", db.purpose, upd.TryGetValue("purpose", out val) ? val : null);
-            Compare(c, "date", db.date, upd.TryGetValue("date", out val) ? val : null);
-            Compare(c, "validity_days", db.validity_days, upd.TryGetValue("validity_days", out val) ? val : null);
-            Compare(c, "warranty", db.warranty, upd.TryGetValue("warranty", out val) ? val : null);
-            Compare(c, "address_to", db.address_to, upd.TryGetValue("address_to", out val) ? val : null);
-            Compare(c, "thru", db.thru, upd.TryGetValue("thru", out val) ? val : null);
-            Compare(c, "gross_sales", db.gross_sales, upd.TryGetValue("gross_sales", out val) ? val : null);
-            Compare(c, "vat_amount", db.vat_amount, upd.TryGetValue("vat_amount", out val) ? val : null);
-            Compare(c, "net_sales", db.net_sales, upd.TryGetValue("net_sales", out val) ? val : null);
-            Compare(c, "percent_discount", db.percent_discount, upd.TryGetValue("percent_discount", out val) ? val : null);
-            Compare(c, "discounted_amount", db.discounted_amount, upd.TryGetValue("discounted_amount", out val) ? val : null);
-            Compare(c, "additional_discounted", db.additional_discounted_amount, upd.TryGetValue("additional_discounted", out val) ? val : null);
-            Compare(c, "cash_discount", db.cash_discount, upd.TryGetValue("cash_discount", out val) ? val : null);
-            Compare(c, "net_amount_due", db.net_amount_due, upd.TryGetValue("net_amount_due", out val) ? val : null);
-            Compare(c, "total_amount_due", db.total_amount_due, upd.TryGetValue("total_amount_due", out val) ? val : null);
-            Compare(c, "contact_1", db.contact_1, upd.TryGetValue("contact_1", out val) ? val : null);
-            Compare(c, "contact_2", db.contact_2, upd.TryGetValue("contact_2", out val) ? val : null);
-            Compare(c, "document_no", db.document_no, upd.TryGetValue("document_no", out val) ? val : null);
-            Compare(c, "version_no", db.version_no, upd.TryGetValue("version_no", out val) ? val : null);
-            Compare(c, "sub_version_no", db.sub_version_no, upd.TryGetValue("sub_version_no", out val) ? val : null);
-            Compare(c, "created_by", db.created_by, upd.TryGetValue("created_by", out val) ? val : null);
-            Compare(c, "final_ref_no", db.final_ref_no, upd.TryGetValue("final_ref_no", out val) ? val : null);
-            Compare(c, "is_finalized", db.is_finalized, upd.TryGetValue("is_finalized", out val) ? val : null);
-            Compare(c, "is_project", db.is_project, upd.TryGetValue("is_project", out val) ? val : null);
+            CompareSent(c, upd, "project_name", db.project_name);
+            CompareSent(c, upd, "customer_id", db.customer_id);
+            CompareSent(c, upd, "application_id", db.application_id);
+            CompareSent(c, upd, "payment_terms_id", db.payment_terms_id);
+            CompareSent(c, upd, "ship_to_id", db.ship_to_id);
+            CompareSent(c, upd, "bill_to_id", db.bill_to_id);
+            CompareSent(c, upd, "ship_type_id", db.ship_type_id);
+            CompareSent(c, upd, "purpose", db.purpose);
+            CompareSent(c, upd, "date", db.date);
+            CompareSent(c, upd, "validity_days", db.validity_days);
+            CompareSent(c, upd, "warranty", db.warranty);
+            CompareSent(c, upd, "address_to", db.address_to);
+            CompareSent(c, upd, "thru", db.thru);
+            CompareSent(c, upd, "gross_sales", db.gross_sales);
+            CompareSent(c, upd, "vat_amount", db.vat_amount);
+            CompareSent(c, upd, "net_sales", db.net_sales);
+            CompareSent(c, upd, "percent_discount", db.percent_discount);
+            CompareSent(c, upd, "discounted_amount", db.discounted_amount);
+            CompareSent(c, upd, "additional_discounted", db.additional_discounted_amount);
+            CompareSent(c, upd, "cash_discount", db.cash_discount);
+            CompareSent(c, upd, "net_amount_due", db.net_amount_due);
+            CompareSent(c, upd, "total_amount_due", db.total_amount_due);
+            CompareSent(c, upd, "contact_1", db.contact_1);
+            CompareSent(c, upd, "contact_2", db.contact_2);
+            CompareSent(c, upd, "document_no", db.document_no);
+            CompareSent(c, upd, "version_no", db.version_no);
+            CompareSent(c, upd, "sub_version_no", db.sub_version_no);
+            CompareSent(c, upd, "created_by", db.created_by);
+            CompareSent(c, upd, "final_ref_no", db.final_ref_no);
+            CompareSent(c, upd, "is_finalized", db.is_finalized);
+            CompareSent(c, upd, "is_project", db.is_project);
             // This was missing, and it is what GetFullDiff sends as the header payload
             // (result["Header"]["QuotationFields"]) - not merely what Change History
             // renders. Without it REQUEST FOR ENGR. rode along fine on the INSERT that
             // creates a quotation, but could never be turned on or off again: updating
             // an existing project quote produced no diff entry for the flag, so nothing
             // was sent and the engineer never received the quote (§5.1, §6.3).
-            Compare(c, "is_requested_for_engr", db.is_requested_for_engr, upd.TryGetValue("is_requested_for_engr", out val) ? val : null);
+            CompareSent(c, upd, "is_requested_for_engr", db.is_requested_for_engr);
             return c;
         }
 
@@ -3446,6 +4538,21 @@ namespace smpc_sales_app.Pages.Sales
             Compare(c, "item_set_notes", db.item_set_notes, upd.item_set_notes);
             Compare(c, "is_wiring", db.is_wiring, upd.is_wiring);
 
+            // A field this list does not name is a field no save ever sends: DiffModels puts a
+            // content row into Updated only when one of THESE differs. TEMPLATE was in the
+            // payload all along and never listed, so picking one saved nothing and every
+            // reload - which the live sync now does constantly - put it back to
+            // "-- No Template --" (user-reported 2026-09-24). Same for the unit dropdowns and
+            // ASSIGNED ENGR.
+            Compare(c, "template_project_id", db.template_project_id, upd.template_project_id);
+
+            // Nullable, and compared only when the payload carried a value: a dropdown that
+            // reported nothing must not read as "set to 0" - the server now writes an
+            // explicit 0, so that would erase the stored choice.
+            if (upd.flow_id.HasValue) Compare(c, "flow_id", db.flow_id, upd.flow_id);
+            if (upd.head_id.HasValue) Compare(c, "head_id", db.head_id, upd.head_id);
+            if (upd.assign_engineer_user_id.HasValue) Compare(c, "assign_engineer_user_id", db.assign_engineer_user_id, upd.assign_engineer_user_id);
+
             // Without this, toggling the red flag and saving did nothing at all: DiffModels
             // decides whether a content row goes into Updated by comparing exactly the fields
             // listed here, so a change no line covers reads as "no changes" and the row is
@@ -3455,7 +4562,13 @@ namespace smpc_sales_app.Pages.Sales
             // Compared through IsExcluded rather than the raw bool? so null and false are the
             // same thing here - a row that predates the column must not look like a change on
             // every save.
-            Compare(c, "is_excluded", db.IsExcluded, upd.IsExcluded);
+            //
+            // Only when the payload carries the flag at all. Sales stamps it on every tab it
+            // saves; Engineering has no red-flag and never sends it - and IsExcluded reads a
+            // missing flag as false, so every Engineering save of an excluded tab read as
+            // "un-exclude it" and (now that the server writes explicit false) did it.
+            if (upd.is_excluded.HasValue)
+                Compare(c, "is_excluded", db.IsExcluded, upd.IsExcluded);
 
             // Size Up and Final Selection are child COLLECTIONS of the content row, not
             // scalar fields - so adding or removing a candidate pump changed none of the
@@ -3510,15 +4623,41 @@ namespace smpc_sales_app.Pages.Sales
             Compare(c, "starting_method", db.starting_method, upd.starting_method);
             Compare(c, "suction_size", db.suction_size, upd.suction_size);
             Compare(c, "discharge_size", db.discharge_size, upd.discharge_size);
+
+            // The dropdowns. Without these a changed dropdown was never sent - see the note
+            // on the properties in SalesProjectAdvancedConditions.
+            // Only when sent - see the content ids above for why.
+            if (upd.pump_brand_id.HasValue) Compare(c, "pump_brand_id", db.pump_brand_id, upd.pump_brand_id);
+            if (upd.driver_type_id.HasValue) Compare(c, "driver_type_id", db.driver_type_id, upd.driver_type_id);
+            if (upd.motor_enclosure_id.HasValue) Compare(c, "motor_enclosure_id", db.motor_enclosure_id, upd.motor_enclosure_id);
+            if (upd.motor_manufacturer_id.HasValue) Compare(c, "motor_manufacturer_id", db.motor_manufacturer_id, upd.motor_manufacturer_id);
+            if (upd.liquid_type_id.HasValue) Compare(c, "liquid_type_id", db.liquid_type_id, upd.liquid_type_id);
+            if (upd.controller_manufacturer_id.HasValue) Compare(c, "controller_manufacturer_id", db.controller_manufacturer_id, upd.controller_manufacturer_id);
             return c;
         }
 
         private Dictionary<string, FieldChange> GetWiringChanges(SalesWiringModel db, SalesWiringModel upd)
         {
+            // Every field on the row. This compared description and qty and nothing else
+            // (under a leftover "replace these with actual SalesWiringModel field names"),
+            // so editing materials, amps, wire, sets, distance, allowance or cost on its own
+            // was never sent - the wiring block looked edited and reloaded unchanged.
             var c = new Dictionary<string, FieldChange>();
-            // replace these with actual SalesWiringModel field names
+            // amp_req is left out on purpose: the grid has no column for it (the designer
+            // declares project_wiring_amp_req but never adds it to dgv_wiring), so it is never
+            // in the payload and comparing it would only manufacture changes.
+            Compare(c, "materials", db.materials, upd.materials);
+            Compare(c, "wire_req", db.wire_req, upd.wire_req);
             Compare(c, "description", db.description, upd.description);
+            Compare(c, "num_of_wires_set", db.num_of_wires_set, upd.num_of_wires_set);
+            Compare(c, "num_of_qty_set", db.num_of_qty_set, upd.num_of_qty_set);
+            Compare(c, "distance_travelled_set", db.distance_travelled_set, upd.distance_travelled_set);
+            Compare(c, "allowance_wire_set", db.allowance_wire_set, upd.allowance_wire_set);
             Compare(c, "qty", db.qty, upd.qty);
+            Compare(c, "num_of_sets", db.num_of_sets, upd.num_of_sets);
+            Compare(c, "total_qty", db.total_qty, upd.total_qty);
+            Compare(c, "cost", db.cost, upd.cost);
+            Compare(c, "total_cost", db.total_cost, upd.total_cost);
             return c;
         }
         private Dictionary<string, FieldChange> GetHistoryChanges(
@@ -4009,9 +5148,11 @@ namespace smpc_sales_app.Pages.Sales
         }
 
         // `id` here is an ITEM id - see the call site, which reads it out of the row's
-        // "item_id" cell.
-        private void getItemShortDescription(int id)
+        // "item_id" cell. Ensures the item's descriptions first: with no full
+        // catalogue load, an item picked this session may not be merged yet.
+        private async Task getItemShortDescription(int id)
         {
+            await EnsureItemDetailAsync(id);
             // Matched on based_id, not id.
             //
             // tbl_setup_item_additional_specs.id is the specs row's OWN primary key;
@@ -4368,7 +5509,7 @@ namespace smpc_sales_app.Pages.Sales
         }
         int SelectedRowIndex = 0;
 
-        private void ConnectGridviewToDescriptionText(int RowIndex, DataGridView dgv)
+        private async void ConnectGridviewToDescriptionText(int RowIndex, DataGridView dgv)
         {
 
             DataTable dataSource = dgv_quick_quote_details.DataSource as DataTable;
@@ -4391,7 +5532,7 @@ namespace smpc_sales_app.Pages.Sales
             {
                 EnableDescription(true);
                 int item_id_parent = int.Parse(dgv.Rows[RowIndex].Cells["item_id"].Value.ToString());
-                getItemShortDescription(item_id_parent);
+                await getItemShortDescription(item_id_parent);
                 txt_short_description.Text = (dgv.Rows[RowIndex].Cells["short_description"].Value.ToString() == "" ? txt_long_description.Text : dgv.Rows[RowIndex].Cells["short_description"].Value.ToString());
             }
             else
@@ -4410,7 +5551,7 @@ namespace smpc_sales_app.Pages.Sales
 
         string temp_refence_code = null;
 
-        private void HandleModelSelectionClick(int RowIndex, DataGridView dgv)
+        private async void HandleModelSelectionClick(int RowIndex, DataGridView dgv)
         {
             string Id = dgv.Rows[RowIndex].Cells["item_id"].Value?.ToString();
 
@@ -4453,6 +5594,10 @@ namespace smpc_sales_app.Pages.Sales
                     GetItemData(RowIndex, itemId, dgv, referenceCode);
                 }
 
+                // Same post-fill as the item picker path: BOM children resolve
+                // here so their UOM cells don't stay blank.
+                await ItemCatalogTables.EnsureGridItemsAsync(ItemList, ItemAdditionalSpecs, ImageList, loadedItemDetailIds, dgv);
+
             }
         }
 
@@ -4485,6 +5630,10 @@ namespace smpc_sales_app.Pages.Sales
                 await RunWithLoadingAsync(async () => await fetchItemData());
 
             ItemGridEditor.HandleItemSelectionClick(rowIndex, dgv);
+            // BOM children and merged picks resolve here: any grid item still
+            // missing from the merge tables is fetched (tiny per-item detail
+            // calls) and blank UOM cells are backfilled from them.
+            await ItemCatalogTables.EnsureGridItemsAsync(ItemList, ItemAdditionalSpecs, ImageList, loadedItemDetailIds, dgv);
         }
 
         // Cache of the last-fetched available stock per item, keyed by item_id - avoids
@@ -5306,18 +6455,21 @@ namespace smpc_sales_app.Pages.Sales
         // row on Save, so every line item ended up with a copy of whichever item's images
         // were picked last - this keeps each row's image selection independent.
         private Dictionary<int, List<Dictionary<string, object>>> SelectedImagesByRow { get; set; } = new Dictionary<int, List<Dictionary<string, object>>>();
-        private void HandleItemImageSelectionClick(int rowIndex, int quickId, int itemId)
+        private async void HandleItemImageSelectionClick(int rowIndex, int quickId, int itemId)
         {
-            DataView dvItems = new DataView(ItemList);
-            DataTable filteredItems = dvItems.ToTable();
+            // The item's images merge on demand - no full catalogue load.
+            await EnsureItemDetailAsync(itemId);
 
-            if (filteredItems.Rows.Count == 0)
+            string itemName = ItemList.AsEnumerable()
+                .Where(row => row["id"] != DBNull.Value && Convert.ToInt32(row["id"]) == itemId)
+                .Select(row => row["item_name"]?.ToString() ?? "")
+                .FirstOrDefault();
+
+            if (string.IsNullOrEmpty(itemName))
             {
                 MessageBox.Show("Item not found.");
                 return;
             }
-
-            string itemName = filteredItems.Rows[0]["item_name"].ToString();
 
             DataView dvImages = new DataView(ImageList);
             dvImages.RowFilter = $"based_id = {itemId}";
@@ -5328,7 +6480,7 @@ namespace smpc_sales_app.Pages.Sales
             dvSelectedImages.RowFilter = $"quotation_quick_id = {quickId}";
             DataTable filteredSelectedImages = dvSelectedImages.ToTable();
 
-            ItemImagesModal itemImageModal = new ItemImagesModal(itemName, filteredItems, filteredImages, filteredSelectedImages);
+            ItemImagesModal itemImageModal = new ItemImagesModal(itemName, ItemList.Clone(), filteredImages, filteredSelectedImages);
             DialogResult r = itemImageModal.ShowDialog();
 
             if (r == DialogResult.OK)
@@ -5690,6 +6842,7 @@ namespace smpc_sales_app.Pages.Sales
                 {
                     Panel[] panels = { pnl_header, pnl_footer };
                     Helpers.ReadOnlyControls(panels);
+                    SetQuoteTermsReadOnly(true);
                     dgv_quick_quote_details.ReadOnly = true;
                 }
 
@@ -6208,6 +7361,7 @@ namespace smpc_sales_app.Pages.Sales
 
                 Panel[] panels = { pnl_header, pnl_footer };
                 Helpers.ResetReadOnlyControls(panels);
+                SetQuoteTermsReadOnly(false);
 
 
                 //pnl_header.Enabled = true;
@@ -6332,7 +7486,7 @@ namespace smpc_sales_app.Pages.Sales
                         : null);
         }
 
-        private void SizeUpClicked(object sender, EventArgs e)
+        private async void SizeUpClicked(object sender, EventArgs e)
         {
             if (_pumpPickerOpen) return;
             _pumpPickerOpen = true;
@@ -6345,7 +7499,7 @@ namespace smpc_sales_app.Pages.Sales
 
             try
             {
-                SizeUpClickedCore();
+                await SizeUpClickedCore();
             }
             finally
             {
@@ -6354,26 +7508,36 @@ namespace smpc_sales_app.Pages.Sales
             }
         }
 
-        private void SizeUpClickedCore()
+        private async Task SizeUpClickedCore()
         {
             // "Is this a pump" = ITEM NAME "PUMP" (spec §17.2, code PMP) - a required
-            // field on every item, already present on ItemList (vw_items). Deliberately
-            // NOT item_class (spec §4.2.1: "There is no ... PUMP ... class; any code or
-            // report filter still keying on one is stale") and NOT the engineering specs
-            // table (tbl_setup_item_specs.template), which only exists for an item once
+            // field on every item. Deliberately NOT item_class (spec §4.2.1:
+            // "There is no ... PUMP ... class; any code or report filter still
+            // keying on one is stale") and NOT the engineering specs table
+            // (tbl_setup_item_specs.template), which only exists for an item once
             // someone has actually filled its electrical specs in - keying on that
             // excluded every pump that hadn't been through that separate step yet.
-            var sizeUpFilteredItems = ItemList.AsEnumerable()
-                                .Where(row => string.Equals(row["item_name"]?.ToString(), "PUMP", StringComparison.OrdinalIgnoreCase))
-                                .ToList();
+            //
+            // Phase 3: light pump rows from the server on modal open instead of
+            // filtering the old full-catalogue ItemList.
+            List<ItemPickerRow> pumpRows;
+            try
+            {
+                pumpRows = await ItemService.GetPumpPickerRows();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Could not load the pump list." + Environment.NewLine + ex.Message, "No Pump Data", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
 
-            if (sizeUpFilteredItems.Count == 0)
+            if (pumpRows.Count == 0)
             {
                 MessageBox.Show("No pump items are set up yet. Please add pump items before using this.", "No Pump Data", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            DataTable sizeUpItemListPump = sizeUpFilteredItems.CopyToDataTable();
+            DataTable sizeUpItemListPump = JsonHelper.ToDataTable(pumpRows);
 
             if (!(tabControl2.SelectedTab.Controls[0] is ItemSetUC sizeUpControl)) return;
 
@@ -6417,44 +7581,54 @@ namespace smpc_sales_app.Pages.Sales
 
         private async Task FinalTxtBoxClickedCore()
         {
-            // "Is this a pump" for the purposes of what FINAL's picker OFFERS = ITEM NAME
-            // "PUMP" (spec §17.2), same as SizeUpClicked - NOT GetPumpsViewList() (vw_
-            // PumpSpecifications). That used to gate entry to this picker entirely, so a
-            // real SIZE UP list could never fully appear if some of its pumps lacked
-            // electrical specs. GetPumpsViewList() is still used below, per pick, to look
-            // up FLA/Voltage where available - it no longer decides what's offered.
-            var data = await ProjectService.GetPumpsViewList();
-            DataTable pumps = (data?.ItemPumpsView != null) ? JsonHelper.ToDataTable(data.ItemPumpsView) : new DataTable();
+            // FINAL only ever offers what this tab's SIZE UP lists (spec §5.1.4: "Final
+            // Selection - dropdown limited to what is listed in Size Up"), and that list is
+            // already on screen in dgv_size_up. So it is read FIRST and the server is asked
+            // for those rows - it used to download every pump in the catalogue (3,684 rows
+            // on the rehearsal database) and every row of vw_PumpSpecifications (4,884) and
+            // then filter locally down to the three the user could actually pick.
+            //
+            // Reading it first also means the "add a candidate" message now appears on the
+            // click instead of after two round trips.
+            if (!(tabControl2.SelectedTab.Controls[0] is ItemSetUC currentControl2)) return;
 
-            var filteredPumpItems = ItemList.AsEnumerable()
-                                .Where(row => string.Equals(row["item_name"]?.ToString(), "PUMP", StringComparison.OrdinalIgnoreCase))
-                                .ToList();
-
-            // Trello #043/#049: FINAL must only offer what's actually listed in this
-            // tab's SIZE UP (spec §5.1.4: "Final Selection - dropdown limited to what is
-            // listed in Size Up"), not every pump item in the system.
-            if (tabControl2.SelectedTab.Controls[0] is ItemSetUC currentControlForFilter)
+            var sizeUpIds = currentControl2.GetSizeUpItemIds();
+            if (sizeUpIds.Count == 0)
             {
-                var sizeUpIds = currentControlForFilter.GetSizeUpItemIds();
-                if (sizeUpIds.Count == 0)
-                {
-                    MessageBox.Show("Add at least one candidate under SIZE UP before selecting FINAL.", "Size Up Required", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    return;
-                }
-                filteredPumpItems = filteredPumpItems
-                                    .Where(row => int.TryParse(row["id"]?.ToString(), out int rowId) && sizeUpIds.Contains(rowId))
-                                    .ToList();
+                MessageBox.Show("Add at least one candidate under SIZE UP before selecting FINAL.", "Size Up Required", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
             }
 
-            if (filteredPumpItems.Count == 0)
+            // "Is this a pump" for the purposes of what FINAL's picker OFFERS = ITEM NAME
+            // "PUMP" (spec §17.2), same as SizeUpClicked - NOT the pump specs view. That
+            // used to gate entry to this picker entirely, so a real SIZE UP list could
+            // never fully appear if some of its pumps lacked electrical specs. The specs
+            // are fetched further down, after the pick, for the pumps actually chosen.
+            List<ItemPickerRow> pumpRows;
+            try
+            {
+                pumpRows = await ItemService.GetPumpPickerRows(null, sizeUpIds);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Could not load the pump list." + Environment.NewLine + ex.Message, "No Matching Items", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            // Kept even though the server now filters: an API that predates ?ids= ignores
+            // the parameter and answers with every pump, and without this the picker would
+            // silently offer all of them - the one thing spec 5.1.4 forbids. Against a
+            // current API it has nothing to remove.
+            var sizeUpIdSet = new HashSet<int>(sizeUpIds);
+            pumpRows = pumpRows.Where(row => sizeUpIdSet.Contains(row.id)).ToList();
+
+            if (pumpRows.Count == 0)
             {
                 MessageBox.Show("None of the items in the item list match the pump data. Please check that the pump items still exist in the item catalog.", "No Matching Items", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            DataTable ItemListPump = filteredPumpItems.CopyToDataTable();
-
-            if (!(tabControl2.SelectedTab.Controls[0] is ItemSetUC currentControl2)) return;
+            DataTable ItemListPump = JsonHelper.ToDataTable(pumpRows);
 
             // Multi-select, same as SIZE UP's own picker (Trello #044/#043/#049) - reuses
             // SizeUpPickerModal rather than a second copy of it, since the picking UI
@@ -6465,16 +7639,30 @@ namespace smpc_sales_app.Pages.Sales
             {
                 if (finalModal.ShowDialog() != DialogResult.OK) return;
 
+                var picks = finalModal.GetSelectedItems()
+                                      .Where(pick => !pick.Model.IsNullOrEmpty())
+                                      .ToList();
+
+                // The electrical specs of the pumps just picked, and nothing else. Which
+                // ids those are is not knowable before the pick, which is exactly why the
+                // call belongs here rather than ahead of the picker.
+                DataTable pumps = new DataTable();
+                if (picks.Count > 0)
+                {
+                    var pickedIds = picks.Select(pick => pick.ItemId).ToList();
+                    var data = await ProjectService.GetPumpsViewList(pickedIds);
+                    if (data?.ItemPumpsView != null)
+                        pumps = JsonHelper.ToDataTable(data.ItemPumpsView);
+                }
+
                 // FINAL's choices MUST match SIZE UP's exactly, regardless of whether
                 // FLA/VOLTAGE exist yet - added unconditionally, same as SIZE UP itself
                 // never gates on anything beyond "was it picked". A pump missing FLA/
                 // VOLTAGE just gets a blank cell here (SetFinalPumpData's own aggregate
                 // already treats an unparseable/blank FLA as 0 - see its decimal.TryParse
                 // fallback), not left out of FINAL entirely.
-                foreach (var pick in finalModal.GetSelectedItems())
+                foreach (var pick in picks)
                 {
-                    if (pick.Model.IsNullOrEmpty()) continue;
-
                     string id = pick.ItemId.ToString();
 
                     var FLA = pumps.AsEnumerable()
@@ -6497,6 +7685,7 @@ namespace smpc_sales_app.Pages.Sales
 
             Panel[] panels = { pnl_header, pnl_footer };
             Helpers.ResetReadOnlyControls(panels);
+            SetQuoteTermsReadOnly(false);
 
             //pnl_header.Enabled = true;
             //pnl_footer.Enabled = true;
@@ -7104,10 +8293,13 @@ namespace smpc_sales_app.Pages.Sales
         // into the deleted computationLoop().
         private void tabControl2_DrawItem(object sender, DrawItemEventArgs e)
         {
-            if (tabControl2.TabPages.Count == 0 || e.Index >= tabControl2.TabPages.Count) return;
-
+            // Check the control being drawn, not tabControl2: the guard used to test one
+            // and index the other, and it never looked for a negative index at all. Both
+            // TabPages[-1] and GetTabRect(-1) throw "Value of '-1' is not valid for 'index'",
+            // and a redraw arriving while the tabs are being rebuilt hits exactly that.
             TabControl tabControl = sender as TabControl;
             if (tabControl == null) return;
+            if (e.Index < 0 || e.Index >= tabControl.TabPages.Count) return;
 
             TabPage tabPage = tabControl.TabPages[e.Index];
             Rectangle tabBounds = tabControl.GetTabRect(e.Index);
@@ -7599,7 +8791,6 @@ namespace smpc_sales_app.Pages.Sales
             pnl_quotation["additional_discounted"] = float.TryParse(txt_additional_discount.Text, out float additionalDiscount) ? additionalDiscount : 0;
             pnl_quotation["percent_discount"] = float.TryParse(Helpers.GetCleanedPriceValue(txt_percent_discount.Text), out float computedPercentDiscount) ? computedPercentDiscount : 0;
 
-            var quotation = JsonConvert.SerializeObject(pnl_quotation, Formatting.Indented);
 
             // Always insert as a new (finalized) record - this used to be gated behind
             // "if (isNewRecord)", so clicking Finalize on an already-existing project
@@ -7912,7 +9103,14 @@ namespace smpc_sales_app.Pages.Sales
                 // of isProject, so a Project Quotation print always showed whatever text
                 // happened to be in the Quick Quote panel (often blank, since that panel
                 // isn't populated while viewing a Project Quotation).
-                SalesPrintModal printPage = new SalesPrintModal(false, true, documentNo, ProjectInclusionsRichTextBox.Text, ProjectExclusionsRichTextBox.Text, ProjectTermAndConditionsRichTextBox.Text);
+                // The id of the record on screen, not just its number. Q#0004 and its finalized
+                // FQ#0004 share the number 0004, and the print used to take the first match -
+                // the draft - so printing an FQ printed the draft's lines (spec 5.3: the print
+                // renders the FQ as frozen).
+                SalesPrintModal printPage = new SalesPrintModal(false, true, documentNo, ProjectInclusionsRichTextBox.Text, ProjectExclusionsRichTextBox.Text, ProjectTermAndConditionsRichTextBox.Text)
+                {
+                    ProjectId = ToInt(txt_id.Text)
+                };
                 int screenHeight = Screen.PrimaryScreen.Bounds.Height;
                 printPage.Height = (int)(screenHeight);
                 printPage.StartPosition = FormStartPosition.CenterParent;
@@ -7950,9 +9148,9 @@ namespace smpc_sales_app.Pages.Sales
         {
             // Per-document endpoint: only this document's versions + its own
             // lines/images cross the VPN, instead of the whole quotation list.
+            // No catalogue re-download either: item rows merge on demand into
+            // the page-level tables.
             SalesQuotationList data = await QuotationService.GetQuotationVersions(documentNo);
-            var itemData = await ItemService.GetItem();
-            ItemList = JsonHelper.ToDataTable(itemData.items);
 
             if (data == null || string.IsNullOrEmpty(documentNo))
             {
@@ -8005,6 +9203,7 @@ namespace smpc_sales_app.Pages.Sales
                 // isFinalized.
                 Panel[] panels = { pnl_header, pnl_footer };
                 Helpers.ReadOnlyControls(panels);
+                SetQuoteTermsReadOnly(true);
                 dgv_quick_quote_details.ReadOnly = true;
 
                 //pnl_header.Enabled = true;
@@ -8041,9 +9240,19 @@ namespace smpc_sales_app.Pages.Sales
         // Returns true if a Project quotation record matching documentNo was found and bound.
         private async Task<bool> FetchProjectDetailsByDocumentNo(string documentNo, string version_no = null, string sub_version_no = null)
         {
-            SalesProjectList data = await ProjectService.GetProjects();
+            if (string.IsNullOrEmpty(documentNo))
+                return false;
 
-            if (data == null || string.IsNullOrEmpty(documentNo))
+            // Only this document's version headers - which is all this method ever used. It
+            // used to download every project in the database, with all their items, content
+            // and history, to find them. The tabs themselves load separately, one project at a
+            // time (EnsureProjectDetailAsync). A document that is not a project quote comes back
+            // empty, which the caller already reads as "try Quick Quote".
+            SalesQuotationList data = null;
+            try { data = await ProjectService.GetProjectVersions(documentNo); }
+            catch { data = null; }
+
+            if (data == null)
             {
                 return false;
             }
@@ -8071,6 +9280,7 @@ namespace smpc_sales_app.Pages.Sales
                 // always land in locked/view mode, not editable, regardless of isFinalized.
                 Panel[] panels = { pnl_header, pnl_footer };
                 Helpers.ReadOnlyControls(panels);
+                SetQuoteTermsReadOnly(true);
 
                 toolstrip_quotation.Enabled = false;
                 dgv_quick_quote_details.Enabled = true;
@@ -8136,6 +9346,15 @@ namespace smpc_sales_app.Pages.Sales
         // loop back into this handler.
         private async void chk_requested_for_engr_CheckedChanged(object sender, EventArgs e)
         {
+            // A tick in edit mode is an edit like any other, so it autosaves like one - the
+            // flag reaches the database (and the engineer's list, via the API's push) a couple
+            // of seconds later instead of waiting for Update. Loading a record or reverting a
+            // declined toggle goes through SetRequestForEngrChecked, which sets the guard, so
+            // those never count as the user changing it. QueueAutoSave does nothing on a new
+            // record or outside edit mode, where Save/Update still carries the flag.
+            if (!_suppressRequestForEngrToggle)
+                QueueAutoSave();
+
             //if (_suppressRequestForEngrToggle)
             //    return;
 
@@ -8498,6 +9717,7 @@ namespace smpc_sales_app.Pages.Sales
 
             Panel[] panels = { pnl_header, pnl_footer };
             Helpers.ResetReadOnlyControls(panels);
+            SetQuoteTermsReadOnly(false);
 
             //pnl_header.Enabled = true;
             //pnl_footer.Enabled = true;
@@ -8529,6 +9749,7 @@ namespace smpc_sales_app.Pages.Sales
                 btn_savee.Visible = false;
                 btn_close.Visible = false;
                 Helpers.ReadOnlyControls(panels);
+                SetQuoteTermsReadOnly(true);
                 //pnl_header.Enabled = false;
                 //pnl_footer.Enabled = false;
                 dgv_quick_quote_details.Enabled = false;
@@ -8580,10 +9801,103 @@ namespace smpc_sales_app.Pages.Sales
         // Everything that belongs to the record currently on screen: the header and footer
         // fields, the Quick Quote lines, and the project's item-set tabs and multipliers.
         // Leaves the page in the same empty state it has before a quotation is opened.
+        // Clear() detaches a control; it does NOT dispose it, and an undisposed control keeps
+        // its window handle. Each project tab holds an ItemSetUC - a 1132x1390 control tree
+        // of grids and panels - so every rebuild leaked hundreds of handles. A process gets
+        // 10,000 USER handles, and when they run out WinForms throws Win32Exception "Error
+        // creating window handle" from whatever control is next to be created, nowhere near
+        // the leak itself.
+        //
+        // Harmless while a rebuild meant "somebody pressed Refresh". Autosave and live
+        // updates rebuild after every save from either side, which turns a slow leak into
+        // minutes - it was hit in engineering first because its reload is a full BuildTabs.
+        // Put the user back on the item set they were on before the rebuild. Matched on the
+        // tab's Tag (its itemset_id), never on index - see the capture site in
+        // fetchSalesProject. Falls back to leaving the selection where WinForms put it (the
+        // first tab) when that item set is genuinely gone, which is the honest answer.
+        private void RestoreSelectedProjectTab(object selectedTabKey, bool wasOnAddTab)
+        {
+            if (tabControl2.TabPages.Count == 0) return;
+
+            if (wasOnAddTab)
+            {
+                // "+" is always last and is not an item set, so it has no Tag to match on.
+                tabControl2.SelectedIndex = tabControl2.TabPages.Count - 1;
+                return;
+            }
+
+            if (selectedTabKey == null) return;
+
+            string key = selectedTabKey.ToString();
+
+            foreach (TabPage page in tabControl2.TabPages)
+            {
+                if (page.Tag != null && page.Tag.ToString() == key)
+                {
+                    tabControl2.SelectedTab = page;
+                    return;
+                }
+            }
+        }
+
+        // Painting held off while the item-set tabs are torn down and rebuilt.
+        //
+        // SuspendLayout does not do this - it defers layout, not painting, so a rebuild
+        // still draws every intermediate state: tabs vanishing one by one, then reappearing,
+        // then each grid filling in. Harmless when a rebuild meant "somebody pressed
+        // Refresh"; with a live update after every save from either side it is a flicker
+        // every couple of seconds, which is precisely what the screen must not do.
+        //
+        // WM_SETREDRAW is the standard way to stop that. Always paired through try/finally -
+        // a control left with redraw off stays blank until something else invalidates it.
+        private const int WM_SETREDRAW = 0x000B;
+
+        [System.Runtime.InteropServices.DllImport("user32.dll", CharSet = System.Runtime.InteropServices.CharSet.Auto)]
+        private static extern IntPtr SendMessage(IntPtr hWnd, int msg, IntPtr wParam, IntPtr lParam);
+
+        private static void SetRedraw(Control control, bool enabled)
+        {
+            if (control == null || !control.IsHandleCreated) return;
+
+            SendMessage(control.Handle, WM_SETREDRAW, (IntPtr)(enabled ? 1 : 0), IntPtr.Zero);
+
+            if (enabled)
+            {
+                control.Invalidate(true);
+                control.Update();
+            }
+        }
+
+        private void ClearProjectTabs()
+        {
+            for (int i = tabControl2.TabPages.Count - 1; i >= 0; i--)
+            {
+                TabPage page = tabControl2.TabPages[i];
+                tabControl2.TabPages.RemoveAt(i);
+
+                for (int c = page.Controls.Count - 1; c >= 0; c--)
+                {
+                    Control child = page.Controls[c];
+                    page.Controls.RemoveAt(c);
+                    child.Dispose();
+                }
+
+                _redFlaggedTabs.Remove(page);
+                page.Dispose();
+            }
+
+            // Belt and braces: the loop above already emptied the collection, so this only
+            // ever matters if a page removed itself mid-loop. NOT a recursive call to this
+            // method - that is an instant StackOverflowException, which no catch block can
+            // save the app from.
+            tabControl2.TabPages.Clear();
+        }
+
         private void ClearOpenRecord()
         {
             Panel[] panels = { pnl_header, pnl_footer };
             Helpers.ReadOnlyControls(panels);
+            SetQuoteTermsReadOnly(true);
 
             // Clears txt_id and txt_document_no along with the rest - both live in
             // pnl_header - which is what leaves the page with no record open.
@@ -8777,8 +10091,8 @@ namespace smpc_sales_app.Pages.Sales
                 decimal discount = CalculateDiscountMultiplier(row.Cells["quick_discount"].Value?.ToString());
                 decimal qty = Convert.ToDecimal(row.Cells["quick_qty"].Value);
                 decimal TotalUnitPrice = unitPrice * qty;
-                decimal discounted = TotalUnitPrice * discount;
-                decimal netDiscount = discounted - TotalUnitPrice;
+                decimal discounted = Math.Round(TotalUnitPrice * discount, 2, MidpointRounding.AwayFromZero);
+                decimal netDiscount = Math.Round(discounted - TotalUnitPrice, 2, MidpointRounding.AwayFromZero);
                 decimal netTotal = TotalUnitPrice;
 
                 row.Cells["quick_line_total"].Value = discounted;
@@ -8899,6 +10213,42 @@ namespace smpc_sales_app.Pages.Sales
             catch (ArgumentOutOfRangeException ex)
             {
                 Serilog.Log.Warning(ex, "canvasToolStripMenuItem_Click: grid row collection was in a transient inconsistent state (SelectedRowIndex={SelectedRowIndex}, Rows.Count={RowCount})", SelectedRowIndex, dgv_quick_quote_details.Rows.Count);
+            }
+        }
+
+        // Quote Terms follows the form, like every other field on it.
+        //
+        // The six boxes sit on their own tab pages, so Helpers.ReadOnlyControls - which walks
+        // pnl_header and pnl_footer only, and only knows TextBox/ComboBox/DateTimePicker -
+        // never reached them. They stayed typeable in view mode, on a finalized quote, and
+        // with no record open at all. Worse than an ordinary unlocked field: the terms are
+        // never saved with the quotation, they are read straight off these boxes when PRINT
+        // runs (SalesPrintModal in btn_print_Click), so typing here rewrites the printed terms
+        // of an FQ# that spec 5.2 requires to print the same a year later, and leaves no trace.
+        //
+        // Locked is the default and unlocking is explicit, per the shell convention that a
+        // form opens read-only: a path that forgets to lock them is then harmless, and a path
+        // that forgets to unlock shows up at once as terms that will not type. A finalized
+        // quote never unlocks, whoever asks.
+        //
+        // ReadOnly, not Enabled: the text stays black, selectable and copyable, and the
+        // styling quotationTerms() applies survives - programmatic SelectionColor still works.
+        private void SetQuoteTermsReadOnly(bool readOnly)
+        {
+            if (!readOnly && isFinalized)
+                readOnly = true;
+
+            RichTextBox[] termsBoxes =
+            {
+                InclusionsRichTextBox, ExclusionsRichTextBox, TermAndConditionsRichTextBox,
+                ProjectInclusionsRichTextBox, ProjectExclusionsRichTextBox,
+                ProjectTermAndConditionsRichTextBox
+            };
+
+            foreach (RichTextBox box in termsBoxes)
+            {
+                if (box != null)
+                    box.ReadOnly = readOnly;
             }
         }
 
@@ -9193,7 +10543,12 @@ namespace smpc_sales_app.Pages.Sales
 
         private void toolStripMenuItemTagRed_Click(object sender, EventArgs e)
         {
+            // -1 when no tab is selected - a right-click on the strip of a project that has
+            // just been cleared, or of a Quick Quote - and TabPages[-1] throws.
             int selectedIndex = tabControl2.SelectedIndex;
+            if (selectedIndex < 0 || selectedIndex >= tabControl2.TabPages.Count)
+                return;
+
             TabPage selectedTabPage = tabControl2.TabPages[selectedIndex];
 
             // Tracked separately from Tag - Tag holds the tab's itemset_id and must not be
@@ -9219,6 +10574,13 @@ namespace smpc_sales_app.Pages.Sales
         {
             // Select the tab that was right-clicked (optional, but good UX)
             int selectedIndex = tabControl2.SelectedIndex;
+
+            // Checked before the naming modal opens, not after: asking for a name and then
+            // throwing on TabPages[-1] is worse than not asking. Same guard the Remove Tabs
+            // item below already uses.
+            if (selectedIndex < 0 || selectedIndex >= tabControl2.TabPages.Count)
+                return;
+
             string tabNewName = NamingTabControl(selectedIndex);
 
             // Renames the tab here
@@ -9263,11 +10625,38 @@ namespace smpc_sales_app.Pages.Sales
             if (confirm != DialogResult.Yes)
                 return;
 
-            _redFlaggedTabs.Remove(tabControl2.TabPages[selectedIndex]);
-            _newlyCreatedTabs.Remove(tabControl2.TabPages[selectedIndex]);
+            TabPage removedPage = tabControl2.TabPages[selectedIndex];
+
+            // A saved tab is recorded as a deliberate removal: the save sends its id, and only
+            // ids on that list may be deleted - by the autosave guard here and by the API. A tab
+            // added this session and never saved has nothing to delete.
+            bool wasSaved = !_newlyCreatedTabs.Contains(removedPage)
+                && int.TryParse(removedPage.Tag?.ToString(), out int removedId) && removedId > 0;
+            if (wasSaved)
+                _removedItemSetIds.Add(int.Parse(removedPage.Tag.ToString()));
+
+            _redFlaggedTabs.Remove(removedPage);
+            _newlyCreatedTabs.Remove(removedPage);
             tabControl2.TabPages.RemoveAt(selectedIndex);
+
+            // Dispose what was removed - the item set control holds hundreds of handles.
+            for (int c = removedPage.Controls.Count - 1; c >= 0; c--)
+            {
+                Control child = removedPage.Controls[c];
+                removedPage.Controls.RemoveAt(c);
+                child.Dispose();
+            }
+            removedPage.Dispose();
+
             RecomputeParentTotals();
+
+            // Saved like any other edit. Before, the autosave refused every save that removed
+            // a tab and reloaded - which put the removed tab straight back.
+            QueueAutoSave();
         }
+
+        // Item sets removed on purpose and not yet saved. See toolStripMenuItemRemoveTabs_Click.
+        private readonly HashSet<int> _removedItemSetIds = new HashSet<int>();
 
         //
         const string HeaderLabel = "Header -> ";
@@ -9316,7 +10705,14 @@ namespace smpc_sales_app.Pages.Sales
             {
                 // Same fix as btn_print_Click - use the Project Quotation's own
                 // Inclusions/Exclusions/Terms rich text boxes, not Quick Quote's.
-                SalesPrintModal printPage = new SalesPrintModal(false, true, documentNo, ProjectInclusionsRichTextBox.Text, ProjectExclusionsRichTextBox.Text, ProjectTermAndConditionsRichTextBox.Text);
+                // The id of the record on screen, not just its number. Q#0004 and its finalized
+                // FQ#0004 share the number 0004, and the print used to take the first match -
+                // the draft - so printing an FQ printed the draft's lines (spec 5.3: the print
+                // renders the FQ as frozen).
+                SalesPrintModal printPage = new SalesPrintModal(false, true, documentNo, ProjectInclusionsRichTextBox.Text, ProjectExclusionsRichTextBox.Text, ProjectTermAndConditionsRichTextBox.Text)
+                {
+                    ProjectId = ToInt(txt_id.Text)
+                };
                 int screenHeight = Screen.PrimaryScreen.Bounds.Height;
                 printPage.Height = (int)(screenHeight);
                 printPage.StartPosition = FormStartPosition.CenterParent;

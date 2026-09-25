@@ -169,9 +169,21 @@ namespace smpc_sales_system.Services.Sales
             return bomData;
         }
 
-        public static async Task<ItemPumpsViewList> GetPumpsViewList()
+        // The pump electrical specs (FLA, VOLTAGE, ...). ids asks for those items only;
+        // no ids means the whole view, which is what every caller got before.
+        //
+        // FINAL calls this AFTER the pick, for the pumps actually chosen. It used to call
+        // it before the picker opened and for every pump in the catalogue - 4,884 rows on
+        // the rehearsal database, sitting between the click and the modal appearing.
+        public static async Task<ItemPumpsViewList> GetPumpsViewList(IEnumerable<int> ids = null)
         {
-            var response = await RequestToApi<ApiResponseModel<ItemPumpsViewList>>.Get(url_pumps);
+            // Fully qualified: ItemService is in smpc_sales_app.Services.Sales, this file is
+            // in smpc_sales_system.Services.Sales, and a using for the other would make
+            // every unqualified name in here ambiguous.
+            string idList = smpc_sales_app.Services.Sales.ItemService.JoinIds(ids);
+            string query = idList.Length > 0 ? "?ids=" + idList : "";
+
+            var response = await RequestToApi<ApiResponseModel<ItemPumpsViewList>>.Get(url_pumps + query);
             ItemPumpsViewList pumpsData = response.Data;
             return pumpsData;
         }

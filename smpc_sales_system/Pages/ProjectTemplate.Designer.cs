@@ -46,6 +46,7 @@
             this.dgv_template = new System.Windows.Forms.DataGridView();
             this.ID = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.ItemId = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.ref_code = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.component = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.qty = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
@@ -53,6 +54,7 @@
             this.Level = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.ParentId = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.lbl_code = new System.Windows.Forms.Label();
+            this.lbl_how_to = new System.Windows.Forms.Label();
             this.txt_template_name = new System.Windows.Forms.TextBox();
             this.pnl_name.SuspendLayout();
             this.pnl_input.SuspendLayout();
@@ -84,6 +86,7 @@
             // 
             this.pnl_input.Controls.Add(this.toolstrip_quotation);
             this.pnl_input.Controls.Add(this.dgv_template);
+            this.pnl_input.Controls.Add(this.lbl_how_to);
             this.pnl_input.Controls.Add(this.lbl_code);
             this.pnl_input.Controls.Add(this.txt_template_name);
             this.pnl_input.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -200,6 +203,7 @@
             this.dgv_template.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.ID,
             this.ItemId,
+            this.ref_code,
             this.component,
             this.qty,
             this.Level,
@@ -211,6 +215,7 @@
             this.dgv_template.TabIndex = 1;
             this.dgv_template.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgv_template_CellClick);
             this.dgv_template.CellMouseDown += new System.Windows.Forms.DataGridViewCellMouseEventHandler(this.dgv_template_CellMouseDown);
+            this.dgv_template.UserDeletedRow += new System.Windows.Forms.DataGridViewRowEventHandler(this.dgv_template_UserDeletedRow);
             // 
             // ID
             // 
@@ -225,6 +230,19 @@
             this.ItemId.HeaderText = "ITEMID";
             this.ItemId.Name = "ItemId";
             this.ItemId.Visible = false;
+            // 
+            // ref_code
+            // 
+            // The row's place in the hierarchy - 1, 2, 2.1, 2.2.1 - worked out from its
+            // level every time the grid is rebuilt (RenumberTemplateRows). Never typed and
+            // never stored: Level is the record, this is how it reads.
+            this.ref_code.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
+            this.ref_code.DataPropertyName = "RefCode";
+            this.ref_code.HeaderText = "#";
+            this.ref_code.MinimumWidth = 50;
+            this.ref_code.Name = "ref_code";
+            this.ref_code.ReadOnly = true;
+            this.ref_code.Width = 70;
             // 
             // component
             // 
@@ -281,6 +299,20 @@
             this.lbl_code.TabIndex = 3;
             this.lbl_code.Text = "Template Name:";
             // 
+            // lbl_how_to
+            // 
+            // Sits in the empty space under Template Name, above the list. The two ways of
+            // adding a row are a plain click and a right-click, neither of which the screen
+            // showed anywhere - which is how a component ended up re-added as a parent by
+            // someone trying to rename it.
+            this.lbl_how_to.AutoSize = true;
+            this.lbl_how_to.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lbl_how_to.ForeColor = System.Drawing.SystemColors.GrayText;
+            this.lbl_how_to.Location = new System.Drawing.Point(21, 88);
+            this.lbl_how_to.Name = "lbl_how_to";
+            this.lbl_how_to.TabIndex = 4;
+            this.lbl_how_to.Text = "Press Edit first - the list is read-only until then.\r\n\r\nAdd a component by clicking the COMPONENTS cell on the blank row at the bottom. It goes\r\nin at the top level.\r\nClick a COMPONENTS cell that already has a component to swap the item; the row keeps its\r\nplace in the list.\r\nRight-click a row and choose Add Child to put a component one level under it.\r\nSelect a row and press Delete to remove it.\r\n\r\nThe # column numbers itself from the indent - 1, 2, 2.1, 2.2.1 - and closes up again\r\nafter a delete. There is no level 0: a top-level component is 1.";
+            // 
             // txt_template_name
             // 
             this.txt_template_name.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
@@ -316,6 +348,7 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Panel pnl_input;
         private System.Windows.Forms.Label lbl_code;
+        private System.Windows.Forms.Label lbl_how_to;
         private System.Windows.Forms.TextBox txt_template_name;
         private System.Windows.Forms.DataGridView dgv_template;
         private System.Windows.Forms.ToolStrip toolstrip_quotation;
@@ -331,6 +364,7 @@
         private System.Windows.Forms.ToolStripMenuItem addChildToolStripMenuItem;
         private System.Windows.Forms.DataGridViewTextBoxColumn ID;
         private System.Windows.Forms.DataGridViewTextBoxColumn ItemId;
+        private System.Windows.Forms.DataGridViewTextBoxColumn ref_code;
         private System.Windows.Forms.DataGridViewTextBoxColumn component;
         private System.Windows.Forms.DataGridViewTextBoxColumn qty;
         private System.Windows.Forms.DataGridViewTextBoxColumn Level;

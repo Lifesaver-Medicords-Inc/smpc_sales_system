@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace smpc_inventory_app.Services.Setup.Model.Item
 {
-    class ItemModel
+    public class ItemModel
     {
         public int id { get; set; }
         public int item_name_id { get; set; }
@@ -25,7 +25,7 @@ namespace smpc_inventory_app.Services.Setup.Model.Item
         public string item_brand { get; set; }
         public string unit_of_measure { get; set; }
     }
-    class Items
+    public class Items
     {
         public List<ItemModel> items { get; set; }
         public List<ItemSpecsModel> itemspecs {get; set;}

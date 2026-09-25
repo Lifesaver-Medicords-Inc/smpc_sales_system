@@ -62,9 +62,9 @@ namespace smpc_sales_system.Pages.Sales
             this.textBox6 = new System.Windows.Forms.TextBox();
             this.textBox5 = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
-            this.comboBox2 = new System.Windows.Forms.ComboBox();
+            this.cmb_head = new System.Windows.Forms.ComboBox();
             this.txt_discharge_size = new System.Windows.Forms.TextBox();
-            this.comboBox1 = new System.Windows.Forms.ComboBox();
+            this.cmb_flow = new System.Windows.Forms.ComboBox();
             this.txt_content_id = new System.Windows.Forms.TextBox();
             this.label5 = new System.Windows.Forms.Label();
             this.txt_item_designation = new System.Windows.Forms.TextBox();
@@ -99,18 +99,18 @@ namespace smpc_sales_system.Pages.Sales
             this.label3 = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
             this.txt_pressure = new System.Windows.Forms.TextBox();
-            this.txt_driver_type = new System.Windows.Forms.TextBox();
-            this.txt_pump_brand = new System.Windows.Forms.TextBox();
+            this.cmb_driver_type = new System.Windows.Forms.ComboBox();
+            this.cmb_pump_brand = new System.Windows.Forms.ComboBox();
             this.txt_conditions_id = new System.Windows.Forms.TextBox();
             this.label53 = new System.Windows.Forms.Label();
             this.label54 = new System.Windows.Forms.Label();
             this.label49 = new System.Windows.Forms.Label();
             this.label50 = new System.Windows.Forms.Label();
             this.label51 = new System.Windows.Forms.Label();
-            this.txt_controller_manufacturer = new System.Windows.Forms.TextBox();
-            this.txt_liquid_type = new System.Windows.Forms.TextBox();
-            this.txt_motor_manufacturer = new System.Windows.Forms.TextBox();
-            this.txt_motor_enclosure = new System.Windows.Forms.TextBox();
+            this.cmb_controller_manufacturer = new System.Windows.Forms.ComboBox();
+            this.cmb_liquid_type = new System.Windows.Forms.ComboBox();
+            this.cmb_motor_manufacturer = new System.Windows.Forms.ComboBox();
+            this.cmb_motor_enclosure = new System.Windows.Forms.ComboBox();
             this.label45 = new System.Windows.Forms.Label();
             this.label56 = new System.Windows.Forms.Label();
             this.txt_template_name = new System.Windows.Forms.TextBox();
@@ -239,9 +239,9 @@ namespace smpc_sales_system.Pages.Sales
             this.pnl_project_content.Controls.Add(this.textBox6);
             this.pnl_project_content.Controls.Add(this.textBox5);
             this.pnl_project_content.Controls.Add(this.label1);
-            this.pnl_project_content.Controls.Add(this.comboBox2);
+            this.pnl_project_content.Controls.Add(this.cmb_head);
             this.pnl_project_content.Controls.Add(this.txt_discharge_size);
-            this.pnl_project_content.Controls.Add(this.comboBox1);
+            this.pnl_project_content.Controls.Add(this.cmb_flow);
             this.pnl_project_content.Controls.Add(this.txt_content_id);
             this.pnl_project_content.Controls.Add(this.label5);
             this.pnl_project_content.Controls.Add(this.txt_item_designation);
@@ -469,14 +469,16 @@ namespace smpc_sales_system.Pages.Sales
             this.label1.TabIndex = 161;
             this.label1.Text = "V";
             // 
-            // comboBox2
+            // cmb_head
             // 
-            this.comboBox2.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.comboBox2.FormattingEnabled = true;
-            this.comboBox2.Location = new System.Drawing.Point(548, 44);
-            this.comboBox2.Name = "comboBox2";
-            this.comboBox2.Size = new System.Drawing.Size(40, 21);
-            this.comboBox2.TabIndex = 156;
+            this.cmb_head.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmb_head.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.cmb_head.FormattingEnabled = true;
+            this.cmb_head.Location = new System.Drawing.Point(548, 44);
+            this.cmb_head.Name = "cmb_head";
+            this.cmb_head.Size = new System.Drawing.Size(40, 21);
+            this.cmb_head.TabIndex = 156;
+            this.cmb_head.Tag = "DYNAMIC";
             // 
             // txt_discharge_size
             // 
@@ -486,14 +488,16 @@ namespace smpc_sales_system.Pages.Sales
             this.txt_discharge_size.Size = new System.Drawing.Size(102, 20);
             this.txt_discharge_size.TabIndex = 151;
             // 
-            // comboBox1
+            // cmb_flow
             // 
-            this.comboBox1.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.comboBox1.FormattingEnabled = true;
-            this.comboBox1.Location = new System.Drawing.Point(548, 26);
-            this.comboBox1.Name = "comboBox1";
-            this.comboBox1.Size = new System.Drawing.Size(40, 21);
-            this.comboBox1.TabIndex = 155;
+            this.cmb_flow.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmb_flow.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.cmb_flow.FormattingEnabled = true;
+            this.cmb_flow.Location = new System.Drawing.Point(548, 26);
+            this.cmb_flow.Name = "cmb_flow";
+            this.cmb_flow.Size = new System.Drawing.Size(40, 21);
+            this.cmb_flow.TabIndex = 155;
+            this.cmb_flow.Tag = "DYNAMIC";
             // 
             // txt_content_id
             // 
@@ -766,18 +770,18 @@ namespace smpc_sales_system.Pages.Sales
             this.pnl_advanced_conditions.Controls.Add(this.label3);
             this.pnl_advanced_conditions.Controls.Add(this.label4);
             this.pnl_advanced_conditions.Controls.Add(this.txt_pressure);
-            this.pnl_advanced_conditions.Controls.Add(this.txt_driver_type);
-            this.pnl_advanced_conditions.Controls.Add(this.txt_pump_brand);
+            this.pnl_advanced_conditions.Controls.Add(this.cmb_driver_type);
+            this.pnl_advanced_conditions.Controls.Add(this.cmb_pump_brand);
             this.pnl_advanced_conditions.Controls.Add(this.txt_conditions_id);
             this.pnl_advanced_conditions.Controls.Add(this.label53);
             this.pnl_advanced_conditions.Controls.Add(this.label54);
             this.pnl_advanced_conditions.Controls.Add(this.label49);
             this.pnl_advanced_conditions.Controls.Add(this.label50);
             this.pnl_advanced_conditions.Controls.Add(this.label51);
-            this.pnl_advanced_conditions.Controls.Add(this.txt_controller_manufacturer);
-            this.pnl_advanced_conditions.Controls.Add(this.txt_liquid_type);
-            this.pnl_advanced_conditions.Controls.Add(this.txt_motor_manufacturer);
-            this.pnl_advanced_conditions.Controls.Add(this.txt_motor_enclosure);
+            this.pnl_advanced_conditions.Controls.Add(this.cmb_controller_manufacturer);
+            this.pnl_advanced_conditions.Controls.Add(this.cmb_liquid_type);
+            this.pnl_advanced_conditions.Controls.Add(this.cmb_motor_manufacturer);
+            this.pnl_advanced_conditions.Controls.Add(this.cmb_motor_enclosure);
             this.pnl_advanced_conditions.Location = new System.Drawing.Point(22, 352);
             this.pnl_advanced_conditions.Name = "pnl_advanced_conditions";
             this.pnl_advanced_conditions.Size = new System.Drawing.Size(1092, 107);
@@ -835,19 +839,25 @@ namespace smpc_sales_system.Pages.Sales
             this.txt_pressure.Size = new System.Drawing.Size(167, 20);
             this.txt_pressure.TabIndex = 156;
             // 
-            // txt_driver_type
+            // cmb_driver_type
             // 
-            this.txt_driver_type.Location = new System.Drawing.Point(124, 41);
-            this.txt_driver_type.Name = "txt_driver_type";
-            this.txt_driver_type.Size = new System.Drawing.Size(167, 20);
-            this.txt_driver_type.TabIndex = 155;
+            this.cmb_driver_type.Location = new System.Drawing.Point(124, 41);
+            this.cmb_driver_type.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmb_driver_type.FormattingEnabled = true;
+            this.cmb_driver_type.Tag = "DYNAMIC";
+            this.cmb_driver_type.Name = "cmb_driver_type";
+            this.cmb_driver_type.Size = new System.Drawing.Size(167, 21);
+            this.cmb_driver_type.TabIndex = 155;
             // 
-            // txt_pump_brand
+            // cmb_pump_brand
             // 
-            this.txt_pump_brand.Location = new System.Drawing.Point(124, 21);
-            this.txt_pump_brand.Name = "txt_pump_brand";
-            this.txt_pump_brand.Size = new System.Drawing.Size(167, 20);
-            this.txt_pump_brand.TabIndex = 154;
+            this.cmb_pump_brand.Location = new System.Drawing.Point(124, 21);
+            this.cmb_pump_brand.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmb_pump_brand.FormattingEnabled = true;
+            this.cmb_pump_brand.Tag = "DYNAMIC";
+            this.cmb_pump_brand.Name = "cmb_pump_brand";
+            this.cmb_pump_brand.Size = new System.Drawing.Size(167, 21);
+            this.cmb_pump_brand.TabIndex = 154;
             // 
             // txt_conditions_id
             // 
@@ -860,11 +870,11 @@ namespace smpc_sales_system.Pages.Sales
             // label53
             // 
             this.label53.AutoSize = true;
-            this.label53.Location = new System.Drawing.Point(736, 43);
+            this.label53.Location = new System.Drawing.Point(728, 43);
             this.label53.Name = "label53";
-            this.label53.Size = new System.Drawing.Size(104, 13);
+            this.label53.Size = new System.Drawing.Size(112, 13);
             this.label53.TabIndex = 149;
-            this.label53.Text = "STATING METHOD";
+            this.label53.Text = "STARTING METHOD";
             // 
             // label54
             // 
@@ -902,33 +912,45 @@ namespace smpc_sales_system.Pages.Sales
             this.label51.TabIndex = 145;
             this.label51.Text = "MOTOR ENCLOSURE";
             // 
-            // txt_controller_manufacturer
+            // cmb_controller_manufacturer
             // 
-            this.txt_controller_manufacturer.Location = new System.Drawing.Point(842, 21);
-            this.txt_controller_manufacturer.Name = "txt_controller_manufacturer";
-            this.txt_controller_manufacturer.Size = new System.Drawing.Size(167, 20);
-            this.txt_controller_manufacturer.TabIndex = 139;
+            this.cmb_controller_manufacturer.Location = new System.Drawing.Point(842, 21);
+            this.cmb_controller_manufacturer.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmb_controller_manufacturer.FormattingEnabled = true;
+            this.cmb_controller_manufacturer.Tag = "DYNAMIC";
+            this.cmb_controller_manufacturer.Name = "cmb_controller_manufacturer";
+            this.cmb_controller_manufacturer.Size = new System.Drawing.Size(167, 21);
+            this.cmb_controller_manufacturer.TabIndex = 139;
             // 
-            // txt_liquid_type
+            // cmb_liquid_type
             // 
-            this.txt_liquid_type.Location = new System.Drawing.Point(478, 61);
-            this.txt_liquid_type.Name = "txt_liquid_type";
-            this.txt_liquid_type.Size = new System.Drawing.Size(167, 20);
-            this.txt_liquid_type.TabIndex = 138;
+            this.cmb_liquid_type.Location = new System.Drawing.Point(478, 61);
+            this.cmb_liquid_type.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmb_liquid_type.FormattingEnabled = true;
+            this.cmb_liquid_type.Tag = "DYNAMIC";
+            this.cmb_liquid_type.Name = "cmb_liquid_type";
+            this.cmb_liquid_type.Size = new System.Drawing.Size(167, 21);
+            this.cmb_liquid_type.TabIndex = 138;
             // 
-            // txt_motor_manufacturer
+            // cmb_motor_manufacturer
             // 
-            this.txt_motor_manufacturer.Location = new System.Drawing.Point(478, 41);
-            this.txt_motor_manufacturer.Name = "txt_motor_manufacturer";
-            this.txt_motor_manufacturer.Size = new System.Drawing.Size(167, 20);
-            this.txt_motor_manufacturer.TabIndex = 137;
+            this.cmb_motor_manufacturer.Location = new System.Drawing.Point(478, 41);
+            this.cmb_motor_manufacturer.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmb_motor_manufacturer.FormattingEnabled = true;
+            this.cmb_motor_manufacturer.Tag = "DYNAMIC";
+            this.cmb_motor_manufacturer.Name = "cmb_motor_manufacturer";
+            this.cmb_motor_manufacturer.Size = new System.Drawing.Size(167, 21);
+            this.cmb_motor_manufacturer.TabIndex = 137;
             // 
-            // txt_motor_enclosure
+            // cmb_motor_enclosure
             // 
-            this.txt_motor_enclosure.Location = new System.Drawing.Point(478, 21);
-            this.txt_motor_enclosure.Name = "txt_motor_enclosure";
-            this.txt_motor_enclosure.Size = new System.Drawing.Size(167, 20);
-            this.txt_motor_enclosure.TabIndex = 136;
+            this.cmb_motor_enclosure.Location = new System.Drawing.Point(478, 21);
+            this.cmb_motor_enclosure.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmb_motor_enclosure.FormattingEnabled = true;
+            this.cmb_motor_enclosure.Tag = "DYNAMIC";
+            this.cmb_motor_enclosure.Name = "cmb_motor_enclosure";
+            this.cmb_motor_enclosure.Size = new System.Drawing.Size(167, 21);
+            this.cmb_motor_enclosure.TabIndex = 136;
             // 
             // label45
             // 
@@ -1782,10 +1804,10 @@ namespace smpc_sales_system.Pages.Sales
         private System.Windows.Forms.Label label50;
         private System.Windows.Forms.Label label51;
         private System.Windows.Forms.TextBox txt_suction_size;
-        private System.Windows.Forms.TextBox txt_controller_manufacturer;
-        private System.Windows.Forms.TextBox txt_liquid_type;
-        private System.Windows.Forms.TextBox txt_motor_manufacturer;
-        private System.Windows.Forms.TextBox txt_motor_enclosure;
+        private System.Windows.Forms.ComboBox cmb_controller_manufacturer;
+        private System.Windows.Forms.ComboBox cmb_liquid_type;
+        private System.Windows.Forms.ComboBox cmb_motor_manufacturer;
+        private System.Windows.Forms.ComboBox cmb_motor_enclosure;
         private System.Windows.Forms.Label label45;
         private System.Windows.Forms.Label label56;
         private System.Windows.Forms.TextBox txt_template_name;
@@ -1812,8 +1834,8 @@ namespace smpc_sales_system.Pages.Sales
         private System.Windows.Forms.BindingSource bs_multiplier;
         private System.Data.DataTable dataTable1;
         private System.Data.DataColumn dataColumn1;
-        private System.Windows.Forms.ComboBox comboBox2;
-        private System.Windows.Forms.ComboBox comboBox1;
+        private System.Windows.Forms.ComboBox cmb_head;
+        private System.Windows.Forms.ComboBox cmb_flow;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.TextBox textBox6;
         private System.Windows.Forms.TextBox textBox5;
@@ -1821,8 +1843,8 @@ namespace smpc_sales_system.Pages.Sales
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.TextBox txt_pressure;
-        private System.Windows.Forms.TextBox txt_driver_type;
-        private System.Windows.Forms.TextBox txt_pump_brand;
+        private System.Windows.Forms.ComboBox cmb_driver_type;
+        private System.Windows.Forms.ComboBox cmb_pump_brand;
         private System.Windows.Forms.TextBox txt_size_up_4;
         private System.Data.DataTable dataTable2;
         private System.Data.DataColumn dataColumn2;

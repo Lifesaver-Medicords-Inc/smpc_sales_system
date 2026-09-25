@@ -748,7 +748,9 @@ namespace smpc_app.Services.Helpers
                     if (comboBox.Tag == "DYNAMIC")
                     {
                         key = key + "_id";
-                        val = comboBox.SelectedValue.ToString();
+                        // Null-safe: a combo with nothing selected reads as 0 ("not answered")
+                        // instead of throwing and taking the whole save down with it.
+                        val = comboBox.SelectedValue?.ToString() ?? "0";
                     }
                     else if (string.IsNullOrEmpty(comboBox.Text.ToString()))
                     {
@@ -761,7 +763,7 @@ namespace smpc_app.Services.Helpers
 
                     if (comboBox.Tag == "DYNAMIC")
                     {
-                        values.Add(key, int.Parse(val));
+                        values.Add(key, int.TryParse(val, out int dynamicId) ? dynamicId : 0);
                     }
                     else
                     {
@@ -1112,11 +1114,34 @@ namespace smpc_app.Services.Helpers
                                 Console.WriteLine(comboBox.Name);
                                 string key = comboBox.Name.Replace("cmb_", "") + "_id";
 
-                                if (comboBox.Tag == "DYNAMIC")
+                                if (comboBox.Tag?.ToString() == "DYNAMIC")
                                 {
-                                   
-                                    //Console.WriteLine(comboBox.Name);
-                                    comboBox.SelectedValue = (string)dt.Rows[selectedIndex][key].ToString();
+                                    // Two guards, both needed because this branch is reached
+                                    // by Name.Contains(column), not by an exact match: a combo
+                                    // called cmb_flow is visited for the column "flow" as well
+                                    // as for "flow_id", and indexing a column the table does
+                                    // not carry throws. That is what an older API returns -
+                                    // one without the newer id column - and a page must not
+                                    // die on it.
+                                    //
+                                    // Tag compared by value, not by reference: == on object
+                                    // only worked here because the literal happened to be
+                                    // interned, and silently did nothing for a Tag set any
+                                    // other way.
+                                    if (dt.Columns.Contains(key))
+                                    {
+                                        comboBox.SelectedValue = dt.Rows[selectedIndex][key].ToString();
+
+                                        // A stored id the list does not contain leaves the combo
+                                        // with nothing selected - and GetControlsValues then has a
+                                        // null SelectedValue to read. Rows saved before an id
+                                        // column existed hold 0 (NULL), and FLOW/HEAD's ids start
+                                        // at 1, so every such quotation hit this. The first entry
+                                        // is the right fallback for every DYNAMIC list: "-- Select --"
+                                        // where the list has one, the default unit where it does not.
+                                        if (comboBox.SelectedIndex < 0 && comboBox.Items.Count > 0)
+                                            comboBox.SelectedIndex = 0;
+                                    }
                                 }
                                 else
                                 {

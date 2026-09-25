@@ -1,4 +1,5 @@
 ﻿using Microsoft.Reporting.WinForms;
+using smpc_app.Services.Helpers;
 using smpc_sales_app.Pages.Sales;
 using smpc_sales_app.Services.Helpers;
 using smpc_sales_app.Services.Sales;
@@ -131,11 +132,30 @@ namespace smpc_sales_system.Pages.Sales
             smpc_app.Services.Helpers.DocumentNo.Strip(docNo);
 
         //FETCHERS OF DATA METHODS
+        // Phase 3: fixed schemas only - item rows/images merge per printed
+        // line after the quotation fetch (EnsurePrintItemsAsync), instead of
+        // the whole catalogue up front.
+        private readonly HashSet<int> loadedItemIds = new HashSet<int>();
+
+        private void InitItemMergeTables()
+        {
+            if (ItemList == null || ItemList.Columns.Count == 0)
+                ItemList = ItemCatalogTables.NewItemTable();
+            if (ImageList == null || ImageList.Columns.Count == 0)
+                ImageList = ItemCatalogTables.NewItemImageTable();
+        }
+
+        private async Task EnsurePrintItemsAsync(DataTable lines, string itemCol)
+        {
+            InitItemMergeTables();
+            var ids = ItemCatalogTables.CollectIds(lines, itemCol);
+            var fetches = ids.Select(id => ItemCatalogTables.FetchAndMergeAsync(ItemList, null, ImageList, loadedItemIds, id));
+            await Task.WhenAll(fetches);
+        }
+
         private async Task fetchItemData()
         {
-            var itemData = await ItemService.GetItem();
-            ItemList = JsonHelper.ToDataTable(itemData.items);
-            ImageList = JsonHelper.ToDataTable(itemData.ItemImages);
+            InitItemMergeTables();
         }
         private async Task fetchBpiData()
         {
@@ -211,18 +231,45 @@ namespace smpc_sales_system.Pages.Sales
                 return false;
             }
         }
+        // The project quotation to print, by id. Set by the caller whenever it knows which
+        // record is on screen - see fetchQuotationProjectByDocumentNo for why the number
+        // alone is not enough.
+        public int ProjectId { get; set; }
+
         private async Task fetchQuotationProjectByDocumentNo(string documentNo)
         {
-            SalesProjectList data = await ProjectService.GetProjects();
-            if (data == null || string.IsNullOrEmpty(documentNo))
+            // One project, not all of them: this used to download every project in the
+            // database, with all their items, content and history, to print one.
+            //
+            // And the RIGHT one. A draft and its finalized copy share a number (Q#0004 /
+            // FQ#0004 both normalise to 0004), so matching on the number took whichever came
+            // first - the draft - and printing an FQ printed the draft's lines. With an id the
+            // record is exact; without one, the latest version for the number is used.
+            int id = ProjectId;
+            if (id <= 0 && !string.IsNullOrEmpty(documentNo))
             {
+                SalesQuotationList versions = null;
+                try { versions = await ProjectService.GetProjectVersions(documentNo); }
+                catch { versions = null; }
+
+                id = (versions?.SalesQuotation ?? new List<SalesQuotationModel>())
+                    .Where(q => NormalizeDocumentNo(q.document_no) == documentNo)
+                    .OrderByDescending(q => q.id)
+                    .Select(q => q.id)
+                    .FirstOrDefault();
+            }
+
+            SalesProjectList data = id > 0 ? await ProjectService.GetProjectDetail(id) : null;
+            if (data == null)
+            {
+                MessageBox.Show("No Quotation found for the provided document number.");
                 return;
             }
             // Any of these can legitimately come back null from the API - fall back to an
             // empty list instead of letting .Where() throw ArgumentNullException on a null
             // source.
             var filteredSalesQuotation = (data.SalesQuotation ?? Enumerable.Empty<SalesQuotationModel>())
-                .Where(q => NormalizeDocumentNo(q.document_no) == documentNo)
+                .Where(q => q.id == id)
                 .ToList();
             var quotationId = filteredSalesQuotation.FirstOrDefault()?.id;
 
@@ -343,6 +390,10 @@ namespace smpc_sales_system.Pages.Sales
 
                     if (!IsSafeToUpdateReport) return;
 
+                    // Phase 3: ensure project items/images merged before report build.
+                    await EnsurePrintItemsAsync(OriginalProjectItemList, "item_id");
+                    await EnsurePrintItemsAsync(ImageList, "id");
+
                     if (transactionList != null && transactionList.Rows.Count > 0)
                     {
                         // transactionList was already filtered down to this exact document by
@@ -416,6 +467,8 @@ namespace smpc_sales_system.Pages.Sales
                                     unitprices.Add(componentTotalSum.ToString("F2"));
                                 }
                             }
+                            // Phase 3: ensure items are merged before looking up descriptions.
+                            await EnsurePrintItemsAsync(ProjectItemList, "item_id");
                             DataRow[] componentitemRows = ProjectItemList.Select();
 
                             List<string> itemDescriptions = new List<string>();
@@ -434,6 +487,8 @@ namespace smpc_sales_system.Pages.Sales
                                     }
                                     else
                                     {
+                                        // Phase 3: merge on demand, then look up.
+                                        await EnsurePrintItemsAsync(ItemList, "id");
                                         // Otherwise, proceed with the selection from ItemList
                                         DataRow[] itemrows = ItemList.Select($"id = '{itemid}'");
 
@@ -498,6 +553,8 @@ namespace smpc_sales_system.Pages.Sales
                             {
 
                                 int itemSetId = (int)itemSetRow["itemset_id"];
+                                // Phase 3: ensure items merged before filtering.
+                                await EnsurePrintItemsAsync(ProjectItemList, "item_id");
                                 var filterComponentItemRows = ProjectItemList.Select($"based_id = '{itemSetId}' ");
 
                                 // The tab's own content row - carries ITEM / SET DESCRIPTION and
@@ -694,6 +751,8 @@ namespace smpc_sales_system.Pages.Sales
                             }
 
                             DataRow[] quotequoteRows = childList.Select($"based_id = '{Id}'");
+                            // Phase 3: ensure items merged before looking up descriptions.
+                            await EnsurePrintItemsAsync(ItemList, "id");
                             List<string> itemDescriptions = new List<string>();
                             if (quotequoteRows.Length > 0)
                             {
@@ -728,6 +787,8 @@ namespace smpc_sales_system.Pages.Sales
                             {
                                 childList.Columns.Add("Image", typeof(byte[]));
                             }
+                            // Phase 3: ensure images are merged before looking up by image_id.
+                            await EnsurePrintItemsAsync(ImageList, "id");
 
                             foreach (DataRow childRow in childList.Rows)
                             {
@@ -984,8 +1045,11 @@ namespace smpc_sales_system.Pages.Sales
         // around line 592) - just matched against a project item's items_id instead of a
         // Quick Quote item's id, since that's the key selectedImageList rows carry for
         // Project Quotation (see fetchQuotationProjectByDocumentNo).
-        private byte[] GetFirstUploadedProjectItemImageBytes(int itemsId)
+        private async Task<byte[]> GetFirstUploadedProjectItemImageBytes(int itemsId)
         {
+            // Phase 3: ensure images merged before lookup.
+            InitItemMergeTables();
+            await EnsurePrintItemsAsync(ImageList, "id");
             var matchingImageRows = selectedImageList != null
                 ? selectedImageList.AsEnumerable()
                     .Where(row => row.Field<int>("quotation_quick_id") == itemsId)

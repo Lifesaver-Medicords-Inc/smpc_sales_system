@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using smpc_app.Services.Helpers;
 using smpc_sales_app.Services.Helpers;
 using smpc_sales_system.Models;
 using smpc_sales_system.Services.Sales;
@@ -284,6 +285,15 @@ namespace smpc_sales_system.Pages
             DataTable parent = JsonHelper.ToDataTable(data.bom_head);
             DataTable child = JsonHelper.ToDataTable(data.bom_details);
 
+            // Phase 3: names resolve against the caller's merge table, which no
+            // longer arrives fully loaded. Merge every BOM item up front (one
+            // batch of tiny detail fetches) so nothing below reads "Unknown Item".
+            var bomItemIds = ItemCatalogTables.CollectIds(parent, "item_id");
+            bomItemIds.UnionWith(ItemCatalogTables.CollectIds(child, "item_id"));
+            var detailFetches = bomItemIds
+                .Select(id => ItemCatalogTables.FetchAndMergeAsync(itemlist, null, null, null, id));
+            await Task.WhenAll(detailFetches);
+
             DataTable parentCopy = parent.Clone();
             DataTable childCopy = child.Clone();
 
@@ -341,6 +351,8 @@ namespace smpc_sales_system.Pages
             var dataa = ConvertToApiModel("TEST");
 
             var send = await ProjectTemplatesService.Insert(dataa);
+            // Tabs cache the template list; a saved template must show up on the next one.
+            smpc_sales_system.Services.Sales.ItemSetLookups.InvalidateTemplates();
             if (send.Success)
             {
                 MessageBox.Show("POST");

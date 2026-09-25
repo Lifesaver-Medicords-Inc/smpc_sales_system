@@ -23,6 +23,11 @@ namespace smpc_sales_system.Models
         public int ItemId { get; set; }
         [JsonProperty("components")]
         public string Components { get; set; }
+        // The item's name as Item Entry holds it today, joined on by the API and never
+        // stored. Components is the text that was typed when the row was made; this is
+        // what the row's item is actually called now.
+        [JsonProperty("item_name")]
+        public string ItemName { get; set; }
         [JsonProperty("level")]
         public int Level { get; set; }
         // Nullable on purpose: "no quantity set" and "quantity is zero" are

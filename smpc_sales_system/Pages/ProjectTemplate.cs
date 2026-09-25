@@ -55,15 +55,17 @@ namespace smpc_sales_system.Pages
                 Template = JsonHelper.ToDataTable(data.SalesProjectTemplate ?? new List<ProjectTemplateModel>());
                 TemplateChild = JsonHelper.ToDataTable(data.sales_project_template_child ?? new List<ProjectTemplateChildModel>());
 
-                var itemData = await ItemService.GetItem();
-
                 var bomData = await ProjectService.GetBom();
                 var companyData = await CompanyService.GetAsDatatable();
 
-                if (itemData == null || bomData == null)
+                if (bomData == null)
                     return;
 
-                ItemList = JsonHelper.ToDataTable(itemData.items);
+                // Phase 3: no full-catalogue download (picked rows merge via
+                // the picker modal, like the quotation module). Fixed schema
+                // so lookups keep working with zero rows merged yet.
+                if (ItemList == null || ItemList.Columns.Count == 0)
+                    ItemList = ItemCatalogTables.NewItemTable();
                 BomHead = JsonHelper.ToDataTable(bomData.bom_head);
                 BomDetails = JsonHelper.ToDataTable(bomData.bom_details);
 
@@ -90,7 +92,8 @@ namespace smpc_sales_system.Pages
 
             if (Template.Rows.Count > 0 && TemplateChild.Rows.Count > 0)
             {
-                var item = await ItemService.GetItem();
+                // Dead full-catalogue download removed (Phase 3): its result
+                // was never read. Picked rows merge via the picker modal.
 
                 DataRow firstRow = Template.Rows[selectedRow];
 
@@ -120,6 +123,7 @@ namespace smpc_sales_system.Pages
                 dgv_template.DataSource = stockQuickDataTable;
             }
 
+            RenumberTemplateRows();
             NewButtonActive(true);
         }
 
@@ -201,6 +205,7 @@ namespace smpc_sales_system.Pages
             txt_template_name.Text = txt_template_name.Text.Trim() + " - COPY";
 
             dgv_template.DataSource = copy;
+            RenumberTemplateRows();
 
             NewButtonActive(false);
         }
@@ -250,6 +255,10 @@ namespace smpc_sales_system.Pages
 
             parent["template_name"] = txt_template_name.Text;
 
+            // Once more before the payload is built, so what reaches the server carries the
+            // same indent that was on screen.
+            RenumberTemplateRows();
+
             var dataSource = Helpers.ConvertDataGridViewToDataTable(dgv_template);
             var newDatasource = Helpers.ConvertDataTableToStringTable(dataSource);
             List<Dictionary<string, dynamic>> quickQuoteList = new List<Dictionary<string, dynamic>>();
@@ -298,10 +307,14 @@ namespace smpc_sales_system.Pages
                 if (editMode)
                 {
                     send = await ProjectTemplatesService.Update(parent);
+                    // Tabs cache the template list; a saved template must show up on the next one.
+                    smpc_sales_system.Services.Sales.ItemSetLookups.InvalidateTemplates();
                 }
                 else
                 {  
                     send = await ProjectTemplatesService.Insert(parent);
+                    // Tabs cache the template list; a saved template must show up on the next one.
+                    smpc_sales_system.Services.Sales.ItemSetLookups.InvalidateTemplates();
                 }
 
                 if (send.Success)
@@ -404,8 +417,15 @@ namespace smpc_sales_system.Pages
             {
                 int itemid = itemModal.GetParentItemId();
 
+                // Level 1 is the top - there is no level 0. Every template row already
+                // stored is 1-based (levels 1/2/3 on the live data), which is also what the
+                // quotation assumes when it applies a template: it indents by
+                // (level - 1) * 4 and numbers from counter 1. A parent written as 0 here
+                // therefore disagreed with every row saved before it, and reached the
+                // quotation as a row it numbers from a counter slot that is not part of the
+                // code at all - a blank reference_code.
                 if (dgv.Rows[rowIndex].Cells["level"].Value == DBNull.Value)
-                    dgv.Rows[rowIndex].Cells["level"].Value = 0;
+                    dgv.Rows[rowIndex].Cells["level"].Value = 1;
 
 
 
@@ -415,13 +435,29 @@ namespace smpc_sales_system.Pages
                 int parentItemId = Convert.ToInt32(dgv.Rows[rowIndex].Cells["ItemId"].Value);
                 int level = Convert.ToInt32(dgv.Rows[rowIndex].Cells["level"].Value);
 
+                // Clicking a row that already holds a component means "this one, not that
+                // one" - so the item is swapped on the row and its place in the tree is
+                // left exactly as it was. It used to insert a NEW row at the top level
+                // instead, which is how a child came back as a parent after somebody tried
+                // to rename it: nothing on screen says the way to change a component is to
+                // delete the row and add it again in the right place.
+                //
+                // Add Child still adds; only a plain click on a filled row replaces.
+                if (!child && parentItemId > 0)
+                {
+                    ReplaceComponent(rowIndex, itemid, dgv, Math.Max(level, 1));
+                    return;
+                }
+
                 if (!child)
                 {
-                    level = 0;
+                    level = 1;
                 }
                 else
                 {
-                    level += 1;
+                    // A row saved before the top level was settled at 1 reads as 0; its
+                    // child is still level 2, not level 1.
+                    level = Math.Max(level, 1) + 1;
                 }
 
                     GetItemData(rowIndex, itemid, dgv, level, parentItemId);
@@ -431,6 +467,15 @@ namespace smpc_sales_system.Pages
 
         private int contextRowIndex = -1;
         private int contextColIndex = -1;
+
+        // Deleting a row shifts everything below it, so the codes have to be worked out
+        // again - otherwise the list keeps the numbers of a shape it no longer has, with a
+        // gap where the deleted row was and children still quoting a parent number that has
+        // moved. UserDeletedRow fires after the row has gone from the bound table.
+        private void dgv_template_UserDeletedRow(object sender, DataGridViewRowEventArgs e)
+        {
+            RenumberTemplateRows();
+        }
 
         private void dgv_template_CellMouseDown(object sender, DataGridViewCellMouseEventArgs e)
         {
@@ -442,6 +487,34 @@ namespace smpc_sales_system.Pages
                 dgv_template.ClearSelection();
                 dgv_template.Rows[e.RowIndex].Selected = true;
             }
+        }
+
+        // Swaps the item on an existing row, keeping its level and therefore its place in
+        // the hierarchy. The name comes from the item, never from what was in the cell.
+        private void ReplaceComponent(int rowIndex, int itemID, DataGridView dgv, int level)
+        {
+            DataTable itemList = Helpers.FilterExactDataTable(ItemList, itemID.ToString(), "id");
+            if (itemList.Rows.Count == 0)
+            {
+                MessageBox.Show("Invalid selection. Item not found.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            DataTable dataSource = dgv.DataSource as DataTable;
+            if (dataSource == null || rowIndex < 0 || rowIndex >= dataSource.Rows.Count) return;
+
+            DataRow target = dataSource.Rows[rowIndex];
+            DataRow picked = itemList.Rows[0];
+
+            target["ItemId"] = picked["id"];
+            target["Components"] = new string(' ', Math.Max(0, level - 1) * IndentPerLevel)
+                                 + picked["item_name"];
+            target["Level"] = level;
+
+            if (dataSource.Columns.Contains("unit_of_measure") && itemList.Columns.Contains("unit_of_measure"))
+                target["unit_of_measure"] = picked["unit_of_measure"];
+
+            RenumberTemplateRows();
         }
 
         private void GetItemData(int rowIndex, int itemID, DataGridView dgv, int level, int ParentItemId)
@@ -464,7 +537,7 @@ namespace smpc_sales_system.Pages
                     newRow["unit_of_measure"] = row["unit_of_measure"];
 
                 newRow["ItemId"] = row["id"];
-                newRow["Components"] = new string(' ', level * 4) + row["item_name"];
+                newRow["Components"] = new string(' ', Math.Max(0, level - 1) * IndentPerLevel) + row["item_name"];
                 newRow["Level"] = level;
 
                 if (ParentItemId != 0)
@@ -479,6 +552,95 @@ namespace smpc_sales_system.Pages
                 Helpers.SalesItemRowStyler.ApplyStyle(dgv, addedRowIndex, "single"); 
             }
 
+            // The new row shifts everything below it, so the codes and indents below are
+            // now wrong - rebuild the lot rather than trying to patch the difference.
+            RenumberTemplateRows();
+
+        }
+
+        // Four spaces per level, the same step the quotation uses when it applies a
+        // template (ItemSetUC's template branch), so a set of components reads the same on
+        // both screens.
+        private const int IndentPerLevel = 4;
+
+        // Gives every row its place in the hierarchy - 1, 2, 2.1, 2.2.1, 2.3, 3 - and the
+        // indent that shows it at a glance.
+        //
+        // Worked out from Level and row order every time, never stored: Level already IS the
+        // record, so a code computed from it cannot go stale, and an old template picks up
+        // correct codes the first time it is opened with no data migration. GetItemData
+        // writes an indent when a row is added, but nothing ever rebuilt it, so a saved
+        // template came back flat however deep its levels went.
+        //
+        // No depth limit (user decision, 2026-09-23): 2.2.4.1.3 is as valid as 2.1.
+        //
+        // Levels are 1-based: the top of the tree is level 1 and there is no level 0. That
+        // is what the live template data holds and what the quotation assumes when it
+        // applies a template, so both screens number and indent the same components the
+        // same way.
+        private void RenumberTemplateRows()
+        {
+            DataTable rows = dgv_template.DataSource as DataTable;
+            if (rows == null) return;
+
+            if (!rows.Columns.Contains("RefCode"))
+                rows.Columns.Add("RefCode", typeof(string));
+
+            // One counter per depth, indexed by level, so slot 0 is never used. Walking top
+            // to bottom is what makes this work: a row's code depends only on the rows above
+            // it.
+            List<int> counters = new List<int>();
+
+            foreach (DataRow row in rows.Rows)
+            {
+                if (row.RowState == DataRowState.Deleted) continue;
+
+                int level = 1;
+                if (rows.Columns.Contains("Level"))
+                    int.TryParse(row["Level"]?.ToString(), out level);
+
+                // A row saved by an older build as level 0 is a top-level row.
+                if (level < 1) level = 1;
+
+                while (counters.Count <= level)
+                    counters.Add(0);
+
+                // Coming back up, everything deeper starts again - which is what turns the
+                // row after 2.2.4 into 2.3 rather than 2.5.
+                for (int deeper = level + 1; deeper < counters.Count; deeper++)
+                    counters[deeper] = 0;
+
+                counters[level]++;
+
+                // A depth nobody has used yet still counts as the first of its family, so a
+                // child above any parent reads as 1.1 rather than 0.1 (user decision,
+                // 2026-09-23), and a jump from level 1 to level 3 gives 7.1.1 rather than
+                // 7.1 - which is a level-2 code belonging to a different row.
+                for (int above = 1; above < level; above++)
+                    if (counters[above] == 0) counters[above] = 1;
+
+                // Skip(1): slot 0 is not part of any code.
+                row["RefCode"] = string.Join(".", counters.Skip(1).Take(level));
+
+                if (rows.Columns.Contains("Components"))
+                {
+                    // The name comes from the item wherever the row has one, so a rename in
+                    // Item Entry shows here without anybody editing the template, and a row
+                    // cannot drift from the item it points at. A row with no item - a
+                    // heading somebody typed - keeps its own text.
+                    string text = (row["Components"]?.ToString() ?? "").TrimStart();
+
+                    if (rows.Columns.Contains("ItemName") && rows.Columns.Contains("ItemId"))
+                    {
+                        string itemName = row["ItemName"]?.ToString() ?? "";
+                        int.TryParse(row["ItemId"]?.ToString(), out int itemId);
+                        if (itemId > 0 && !string.IsNullOrWhiteSpace(itemName))
+                            text = itemName.Trim();
+                    }
+
+                    row["Components"] = new string(' ', (level - 1) * IndentPerLevel) + text;
+                }
+            }
         }
 
         private void btn_prev_Click(object sender, EventArgs e)

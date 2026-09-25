@@ -31,8 +31,8 @@
     <PublisherName>SMPC %40copyright</PublisherName>
     <SuiteName>SMPC %40copyright</SuiteName>
     <MinimumRequiredVersion>1.0.0.0</MinimumRequiredVersion>
-    <ApplicationRevision>0</ApplicationRevision>
-    <ApplicationVersion>1.5.0.0</ApplicationVersion>
+    <ApplicationRevision>1</ApplicationRevision>
+    <ApplicationVersion>1.5.0.1</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
     <BootstrapperEnabled>true</BootstrapperEnabled>
@@ -280,6 +280,8 @@
     <Compile Include="Config\LoggerConfig.cs" />
     <Compile Include="Data\CacheData.cs" />
     <Compile Include="Data\ITEM_DATA.cs" />
+    <Compile Include="Data\STATIC_ADVANCED_CONDITIONS.cs" />
+    <Compile Include="Data\STATIC_CLIENT_NEEDS_UNIT.cs" />
     <Compile Include="Data\STATIC_ENTITY_TYPE.cs" />
     <Compile Include="Data\STATIC_ITEM_SPECS.cs" />
     <Compile Include="Data\STATIC_PAYMENT_TERMS.cs" />
@@ -306,7 +308,9 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Pages\Sales\SalesCalendarPage.cs" />
+    <Compile Include="Pages\Sales\SalesCalendarPage.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Include="Models\NavigationAccess.cs" />
     <Compile Include="Models\ApplicationModel.cs" />
     <Compile Include="Models\CompanyModel.cs" />
@@ -605,6 +609,8 @@
     <Compile Include="Services\Helpers\ApiResponseModel.cs" />
     <Compile Include="Services\Helpers\DocumentNo.cs" />
     <Compile Include="Services\Helpers\Helpers.cs" />
+    <Compile Include="Services\Helpers\StretchLayout.cs" />
+    <Compile Include="Services\Helpers\ItemCatalogTables.cs" />
     <Compile Include="Services\Helpers\JsonHelper.cs" />
     <Compile Include="Services\Helpers\ApiConnection.cs" />
     <Compile Include="Services\Helpers\RequestToApi.cs" />
@@ -655,10 +661,12 @@
     <Compile Include="Services\Sales\OpportunityService.cs" />
     <Compile Include="Services\Sales\OrderService.cs" />
     <Compile Include="Services\Sales\ProjectService.cs" />
+    <Compile Include="Services\Sales\ItemSetLookups.cs" />
     <Compile Include="Services\Sales\QuotationService.cs" />
     <Compile Include="Services\Sales\ShipService.cs" />
     <Compile Include="Services\Sales\UnitOfMeasurementServices.cs" />
     <Compile Include="Services\Setup\ApplicationService.cs" />
+    <Compile Include="Services\Setup\BrandService.cs" />
     <Compile Include="Services\Setup\CompanyService.cs" />
     <Compile Include="Services\Setup\EngineerService.cs" />
     <Compile Include="Services\Setup\ItemClassServices.cs" />
