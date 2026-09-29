@@ -28,6 +28,8 @@ namespace smpc_sales_app.Pages
             // Sales Order/Quotation tab when a document link inside it is clicked.
             redBoxControl.TriggerNewForm += showForm;
 
+            this.FormClosing += Layout_FormClosing;
+
             // SO Approvals (spec 3.2, 3.4). Added at runtime rather than in the
             // generated tree so the queue ships without reshuffling the designer file,
             // and placed straight after Sales Order - it is the other half of the same
@@ -98,6 +100,38 @@ namespace smpc_sales_app.Pages
         private void Form1_Load(object sender, EventArgs e)
         {
 
+        }
+
+        // A project quotation autosaves a second or so after the last edit. Closing the app inside
+        // that second, or while a failed save waited for its retry, dropped the edit: it never
+        // reached the database or the Engineering screen (2026-09-29 sync audit). The close waits
+        // for those saves once, then goes ahead whatever they return.
+        private bool _savedBeforeClose;
+
+        private async void Layout_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (_savedBeforeClose) return;
+
+            var pending = tabContainer.TabPages.Cast<TabPage>()
+                .SelectMany(page => page.Controls.OfType<smpc_sales_app.Pages.Sales.Quotation>())
+                .Where(q => !q.IsDisposed && q.HasUnsavedProjectEdits)
+                .ToList();
+            if (pending.Count == 0) return;
+
+            e.Cancel = true;
+            _savedBeforeClose = true;
+            try
+            {
+                foreach (var quotation in pending)
+                {
+                    try { await quotation.FlushProjectAutoSaveAsync(); }
+                    catch (Exception ex) { Console.WriteLine("Save before closing failed: " + ex.Message); }
+                }
+            }
+            finally
+            {
+                Close();
+            }
         }
 
         private void InitializeTabEvents()
