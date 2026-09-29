@@ -225,6 +225,11 @@ namespace smpc_sales_app.Pages
                 Quotation quotationControl = (Quotation)control;
                 quotationControl.TriggerNewForm += showForm;
             }
+            // The inventory Logbook's MAKE REPORT opens the report builder in a tab.
+            else if (control is smpc_inventory_app.Pages.Inventory.InventoryLogbookPage logbookControl)
+            {
+                logbookControl.TriggerNewForm += showForm;
+            }
 
             // The page's size is Helpers.PageFit's job: it fills the tab, is never made
             // smaller than the size it was built at (a narrower page clips or overlaps its
