@@ -62,6 +62,13 @@ namespace smpc_sales_system.Pages.Sales
         public int CounterReference { get; set; } = 0;
         public int CounterParent { get; set; } = 1;
 
+        // The tables items fetched one at a time are merged into (see
+        // ItemCatalogTables.EnsureGridItemsAsync). Quotation feeds its own in, so a pick here
+        // lands in the same tables the rest of that form reads; Engineering keeps these.
+        public DataTable ItemAdditionalSpecs { get; set; } = new DataTable();
+        public DataTable ImageList { get; set; } = new DataTable();
+        public HashSet<int> LoadedItemDetailIds { get; set; } = new HashSet<int>();
+
         /// <summary>
         /// Builds an editor with its catalogs already fetched.
         ///
@@ -84,33 +91,39 @@ namespace smpc_sales_system.Pages.Sales
         }
 
         /// <summary>
-        /// (Re)fetches the item and BOM catalogs. Each table is only replaced when its
-        /// fetch actually returned something, so a failed call leaves the previous
-        /// catalog in place instead of emptying the picker.
+        /// Readies the editor's tables, the way the Sales quotation screen readies its own:
+        /// item rows merge in one item at a time as they are picked (the pickers page on the
+        /// server and hand back the row picked) and BOMs are fetched as they are expanded
+        /// (BomCatalog). Only Company Setup is read here.
+        ///
+        /// This used to download the whole item catalogue (GET /setup/item: every item with
+        /// every spec, image, purchasing and inventory row) and the whole BOM catalogue (GET
+        /// /setup/bom: 32.6 MB of JSON on test_fresh) each time Engineering opened a quotation
+        /// (user request 2026-09-26: "optimize the BOM ... also update the engineering side").
         /// </summary>
         public async Task LoadCatalogsAsync()
         {
-            var itemData = await smpc_sales_app.Services.Sales.ItemService.GetItem();
-            var bomData = await ProjectService.GetBom();
+            if (ItemList == null || ItemList.Columns.Count == 0)
+                ItemList = ItemCatalogTables.NewItemTable();
+            if (ItemAdditionalSpecs == null || ItemAdditionalSpecs.Columns.Count == 0)
+                ItemAdditionalSpecs = ItemCatalogTables.NewItemSpecsTable();
+            if (ImageList == null || ImageList.Columns.Count == 0)
+                ImageList = ItemCatalogTables.NewItemImageTable();
+
+            BomHead = BomCatalog.Head;
+            BomDetails = BomCatalog.Details;
+
             var companyData = await CompanyService.GetAsDatatable();
-
-            if (itemData != null)
-                ItemList = JsonHelper.ToDataTable(itemData.items);
-
-            if (bomData != null)
-            {
-                BomHead = JsonHelper.ToDataTable(bomData.bom_head);
-                BomDetails = JsonHelper.ToDataTable(bomData.bom_details);
-            }
-
             if (companyData != null)
                 Company = companyData;
         }
 
         /// <summary>
-        /// Opens the item/BOM picker and inserts whatever was chosen at rowIndex.
+        /// Opens the item/BOM picker and inserts whatever was chosen at rowIndex. A BOM is
+        /// fetched - with its sub-BOMs - before it is expanded, and the rows it adds get their
+        /// items' details (UOM) afterwards.
         /// </summary>
-        public void HandleItemSelectionClick(int rowIndex, DataGridView dgv)
+        public async Task HandleItemSelectionClickAsync(int rowIndex, DataGridView dgv)
         {
             // Was counterReference++ - a running counter that only ever goes up, so it
             // drifted away from what's actually on the grid the moment anything got
@@ -128,6 +141,12 @@ namespace smpc_sales_system.Pages.Sales
             if (itemModal.isBom)
             {
                 int bomID = itemModal.GetBomResult();
+                if (!await BomCatalog.EnsureAsync(bomID))
+                {
+                    MessageBox.Show("The BOM could not be loaded. Please try again in a moment.",
+                                    "BOM", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
                 GetBomDataRecursive(rowIndex, bomID, itemid, dgv);
                 CounterParent = 1;
             }
@@ -141,7 +160,104 @@ namespace smpc_sales_system.Pages.Sales
                                 "Invalid Selection",
                                 MessageBoxButtons.OK,
                                 MessageBoxIcon.Error);
+                return;
             }
+
+            await ItemCatalogTables.EnsureGridItemsAsync(ItemList, ItemAdditionalSpecs, ImageList, LoadedItemDetailIds, dgv);
+        }
+
+        /// <summary>
+        /// The MODEL cell: swap the row's component for another model of the same item, or
+        /// for a BOM of it. The row and everything under it make way for the new pick, which
+        /// keeps the row's reference code.
+        ///
+        /// Moved from Quotation.cs (HandleModelSelectionClick) on 2026-09-26. The Engineering
+        /// app had to answer the same click with "isn't available from this screen yet"
+        /// because the logic lived out of its reach; QA found the MODEL could not be changed
+        /// there, which is not meant to be the case.
+        /// </summary>
+        public async Task HandleModelSelectionClickAsync(int rowIndex, DataGridView dgv)
+        {
+            if (dgv == null || rowIndex < 0 || rowIndex >= dgv.Rows.Count) return;
+
+            string id = dgv.Rows[rowIndex].Cells["item_id"].Value?.ToString();
+
+            // No component on the row yet - passing a blank id to ModelModal's constructor
+            // is what threw the raw "Input string was not in a correct format".
+            if (string.IsNullOrWhiteSpace(id) || id == "0")
+            {
+                MessageBox.Show(
+                    "It doesn't have a component, that's why it can't select any models. Please select a component first.",
+                    "No Component Selected", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            int itemId;
+            int bomId;
+            using (var modal = new ModelModal(ItemList, BomHead, BomDetails, id))
+            {
+                if (modal.ShowDialog() != DialogResult.OK) return;
+
+                itemId = modal.GetItemId();
+                bomId = modal.GetBomId();
+            }
+
+            // Read after the modal: nothing on the grid moves while it is open, but the row
+            // is about to be removed, and with it the code the new pick has to keep.
+            string referenceCode = dgv.Rows[rowIndex].Cells["reference_code"].Value?.ToString();
+
+            // Only a grid bound straight to a DataTable: GetItemData and GetBomDataRecursive
+            // insert into that and nothing else, so on any other binding the row would be
+            // removed below with nothing put back in its place.
+            if (!(dgv.DataSource is DataTable)) return;
+
+            // Fetched before the row is cleared, so a failed fetch leaves the row as it was.
+            if (bomId != 0 && !await BomCatalog.EnsureAsync(bomId))
+            {
+                MessageBox.Show("The BOM could not be loaded. Please try again in a moment.",
+                                "BOM", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            DeleteRowsByReferenceCode(rowIndex, dgv);
+
+            if (bomId != 0)
+            {
+                GetBomDataRecursive(rowIndex, bomId, itemId, dgv, referenceCode);
+                CounterParent = 1;
+            }
+            else
+            {
+                GetItemData(rowIndex, itemId, dgv, referenceCode);
+            }
+
+            // Same post-fill as the item picker path: BOM children resolve here so their UOM
+            // cells don't stay blank.
+            await ItemCatalogTables.EnsureGridItemsAsync(ItemList, ItemAdditionalSpecs, ImageList, LoadedItemDetailIds, dgv);
+        }
+
+        /// <summary>
+        /// Removes the row at rowIndex and every row under it (reference codes "3" and
+        /// "3.x"). Works on a grid bound to a DataTable or to a DataView of one.
+        /// </summary>
+        public void DeleteRowsByReferenceCode(int rowIndex, DataGridView dgv)
+        {
+            string referenceCode = dgv.Rows[rowIndex].Cells["reference_code"].Value?.ToString();
+            if (string.IsNullOrEmpty(referenceCode)) return;
+
+            DataTable dataSource = dgv.DataSource as DataTable ?? (dgv.DataSource as DataView)?.Table;
+            if (dataSource == null || !dataSource.Columns.Contains("reference_code")) return;
+
+            var rowsToDelete = dataSource.Rows.Cast<DataRow>()
+                .Where(row =>
+                {
+                    string code = row["reference_code"]?.ToString();
+                    return !string.IsNullOrEmpty(code) && (code == referenceCode || code.StartsWith(referenceCode + "."));
+                })
+                .ToList();
+
+            foreach (var row in rowsToDelete)
+                dataSource.Rows.Remove(row);
         }
 
         /// <summary>
@@ -444,6 +560,28 @@ namespace smpc_sales_system.Pages.Sales
                 if (value > 0) return value;
             }
             return 1.186m;
+        }
+
+        /// <summary>
+        /// Company Setup's price multiplier and VAT rate (a fraction: 0.12), the two figures
+        /// ItemSetUC prices lines with. Sales hands its own to every tab; this is so the
+        /// Engineering app can hand over the same ones instead of leaving the control on its
+        /// built-in 1.186 and 12% - prices on the two screens have to agree.
+        /// </summary>
+        public decimal CompanyMarkupMultiplier => GetCompanyMarkupMultiplier();
+
+        public decimal CompanyVatRate
+        {
+            get
+            {
+                DataRow row = GetCompanyRow();
+                if (row != null && row.Table.Columns.Contains("VatRatePercent"))
+                {
+                    decimal percent = Convert.ToDecimal(row["VatRatePercent"]);
+                    if (percent > 0) return percent / 100m;
+                }
+                return 0.12m;
+            }
         }
 
         private DataRow GetCompanyRow()

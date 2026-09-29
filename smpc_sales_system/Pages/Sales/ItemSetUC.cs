@@ -3248,6 +3248,11 @@ namespace smpc_sales_system.Pages.Sales
                 int BomId = createModal.GetBomId();
                 int ItemId = createModal.GetItemId();
 
+                // The picked BOM and its sub-BOMs, before anything below walks them - the BOM
+                // tables hold only what has been fetched so far (BomCatalog).
+                if (isBom && BomId > 0)
+                    await BomCatalog.EnsureAsync(BomId);
+
                 // Pre-merge every item the build below can touch (BOM subtree
                 // + template children): with no full-catalogue load these rows
                 // would otherwise resolve blank.
@@ -3774,8 +3779,16 @@ namespace smpc_sales_system.Pages.Sales
             // than the stale ones.
             if (e.RowIndex >= 0 && dgv_project_items.Columns[e.ColumnIndex].Name == "project_items_qty")
             {
-                Helpers.CascadeBomQuantity(dgv_project_items, BomDetails, e.RowIndex,
-                    "project_items_qty", "reference_code", "item_id", "project_items_bom_id");
+                // When the row's BOM has to be fetched first (a quotation opened from the
+                // database), the cascade lands after CellEdited below has already run, so it
+                // raises the recompute again once the children have their new quantities.
+                BomCatalog.CascadeQuantity(dgv_project_items, e.RowIndex,
+                    "project_items_qty", "reference_code", "item_id", "project_items_bom_id",
+                    () =>
+                    {
+                        CellEdited?.Invoke(this, EventArgs.Empty);
+                        ItemChanged?.Invoke(this, EventArgs.Empty);
+                    });
             }
 
             // The actual recompute (ComputeByReferenceHierarchy + ComputeReferenceNonHierarchy,

@@ -1940,23 +1940,13 @@ namespace smpc_sales_app.Pages.Sales
             // Started together: the two are independent, and awaited one after
             // another the page waited for the sum of their times instead of
             // the longest one.
-            var bomTask = ProjectService.GetBom();
-            var companyTask = CompanyService.GetAsDatatable();
-            var bomData = await bomTask;
-            var companyData = await companyTask;
-
-            // Null here means the API answered with an error (a server problem, not a dropped
-            // connection, so the request layer does not count it). Count it, so the page's
-            // loader offers to reload instead of carrying on with no BOM data.
-            if (bomData == null)
-            {
-                ApiConnection.NoteFailure();
-                return;
-            }
-
-            BomHead = JsonHelper.ToDataTable(bomData.bom_head);
-            BomDetails = JsonHelper.ToDataTable(bomData.bom_details);
-            Company = companyData;
+            // BOMs are no longer downloaded here. This read every BOM head and line in the
+            // system (32.6 MB of JSON on test_fresh) on every open; BomCatalog now fetches a BOM
+            // - with its sub-BOMs - when one is picked or a BOM row's quantity changes, into
+            // tables every screen shares.
+            BomHead = BomCatalog.Head;
+            BomDetails = BomCatalog.Details;
+            Company = await CompanyService.GetAsDatatable();
 
             //Apply Quotation Terms and Conditions
             quotationTerms();
@@ -5932,56 +5922,14 @@ namespace smpc_sales_app.Pages.Sales
             txt_long_description.Enabled = Enable;
         }
 
-        string temp_refence_code = null;
-
+        // The MODEL cell. Lives in SalesItemGridEditor since 2026-09-26 so the Engineering app
+        // runs the same code - see HandleModelSelectionClickAsync there.
         private async void HandleModelSelectionClick(int RowIndex, DataGridView dgv)
         {
-            string Id = dgv.Rows[RowIndex].Cells["item_id"].Value?.ToString();
+            await ItemGridEditor.HandleModelSelectionClickAsync(RowIndex, dgv);
 
-            // No component picked yet for this row - item_id is blank, and passing that
-            // straight into ModelModal's constructor is what threw the raw "Input string
-            // was not in a correct format" FormatException. Catch it here instead with a
-            // message that actually tells the user what to do.
-            if (string.IsNullOrWhiteSpace(Id) || Id == "0")
-            {
-                MessageBox.Show(
-                    "It doesn't have a component, that's why it can't select any models. Please select a component first.",
-                    "No Component Selected", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
-            ModelModal createModal = new ModelModal(ItemList, BomHead, BomDetails, Id);
-            DialogResult result = createModal.ShowDialog();
-
-            string referenceCode = dgv.Rows[RowIndex].Cells["reference_code"].Value.ToString();
-
-
-            if (result == DialogResult.OK)
-            {
-                int itemId = createModal.GetItemId();
-                int bomId = createModal.GetBomId();
-
-                DataTable dataSource = dgv.DataSource as DataTable;
-                if (dataSource == null) return;
-
-                temp_refence_code = dgv.Rows[RowIndex].Cells["reference_code"].Value.ToString();
-                DeleteRowsByReferenceCode(RowIndex, dgv);
-
-                if (bomId != 0)
-                {
-                    GetBomDataRecursive(RowIndex, bomId, itemId, dgv, referenceCode);
-                    counterParent = 1;
-                }
-                else
-                {
-                    GetItemData(RowIndex, itemId, dgv, referenceCode);
-                }
-
-                // Same post-fill as the item picker path: BOM children resolve
-                // here so their UOM cells don't stay blank.
-                await ItemCatalogTables.EnsureGridItemsAsync(ItemList, ItemAdditionalSpecs, ImageList, loadedItemDetailIds, dgv);
-
-            }
+            // A model swap is an edit like any other.
+            QueueAutoSave();
         }
 
         private void dgv_quick_quote_details_CellContentDoubleClick(object sender, DataGridViewCellEventArgs e)
@@ -6012,11 +5960,17 @@ namespace smpc_sales_app.Pages.Sales
             if (ItemList == null || ItemList.Columns.Count == 0)
                 await RunWithLoadingAsync(async () => await fetchItemData());
 
-            ItemGridEditor.HandleItemSelectionClick(rowIndex, dgv);
+            int rowsBefore = dgv.Rows.Count;
+            await ItemGridEditor.HandleItemSelectionClickAsync(rowIndex, dgv);
             // BOM children and merged picks resolve here: any grid item still
             // missing from the merge tables is fetched (tiny per-item detail
             // calls) and blank UOM cells are backfilled from them.
             await ItemCatalogTables.EnsureGridItemsAsync(ItemList, ItemAdditionalSpecs, ImageList, loadedItemDetailIds, dgv);
+
+            // A picked item goes into the grid's table directly, which raises no cell-change
+            // event - so the autosave the item table now has would never hear of it.
+            if (dgv.Rows.Count != rowsBefore)
+                QueueAutoSave();
         }
 
         // Cache of the last-fetched available stock per item, keyed by item_id - avoids
@@ -6893,6 +6847,9 @@ namespace smpc_sales_app.Pages.Sales
                 _itemGridEditor.BomHead = BomHead;
                 _itemGridEditor.BomDetails = BomDetails;
                 _itemGridEditor.Company = Company;
+                _itemGridEditor.ItemAdditionalSpecs = ItemAdditionalSpecs;
+                _itemGridEditor.ImageList = ImageList;
+                _itemGridEditor.LoadedItemDetailIds = loadedItemDetailIds;
                 _itemGridEditor.IsProject = isProject;
                 _itemGridEditor.RefreshStockIndicator = (rowIndex, grid) =>
                 {
@@ -7071,7 +7028,10 @@ namespace smpc_sales_app.Pages.Sales
             // so it had exactly the same gap.
             if (e.RowIndex >= 0 && dgv_quick_quote_details.Columns[e.ColumnIndex].Name == "quick_qty")
             {
-                Helpers.CascadeBomQuantity(dgv_quick_quote_details, BomDetails, e.RowIndex,
+                // Fetches the row's BOM first when this session has not needed it yet (a
+                // quotation opened from the database); the cells it then sets recompute the
+                // totals through the grid's own value-changed handling.
+                BomCatalog.CascadeQuantity(dgv_quick_quote_details, e.RowIndex,
                     "quick_qty", "reference_code", "item_id", "quick_bom_id");
             }
 

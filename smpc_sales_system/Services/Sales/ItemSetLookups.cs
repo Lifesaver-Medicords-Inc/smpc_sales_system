@@ -43,11 +43,9 @@ namespace smpc_sales_system.Services.Sales
 
         private static Slot<List<EngineerModel>> _engineers;
         private static Slot<ProjectTemplateList> _templates;
-        private static Slot<BomTables> _bom;
 
         private static readonly TimeSpan EngineersFor = TimeSpan.FromMinutes(10);
         private static readonly TimeSpan TemplatesFor = TimeSpan.FromMinutes(5);
-        private static readonly TimeSpan BomFor = TimeSpan.FromMinutes(10);
 
         private static Task<T> Get<T>(ref Slot<T> slot, Func<Task<T>> fetch, TimeSpan keepFor) where T : class
         {
@@ -91,21 +89,13 @@ namespace smpc_sales_system.Services.Sales
             _templates = null;
         }
 
+        // BomCatalog's tables - the BOMs fetched so far, one BOM (and its sub-BOMs) at a time as
+        // they are picked. This used to be every BOM head and line in the system (32.6 MB of
+        // JSON on test_fresh), downloaded before a tab could finish loading; now nothing is
+        // downloaded here at all, and whoever expands a BOM fetches it first (BomCatalog.EnsureAsync).
         public static Task<BomTables> Bom()
         {
-            return Get(ref _bom, FetchBom, BomFor);
-        }
-
-        private static async Task<BomTables> FetchBom()
-        {
-            BomList bom = await ProjectService.GetBom();
-            if (bom == null) return null;
-
-            return new BomTables
-            {
-                Head = JsonHelper.ToDataTable(bom.bom_head),
-                Details = JsonHelper.ToDataTable(bom.bom_details),
-            };
+            return Task.FromResult(new BomTables { Head = BomCatalog.Head, Details = BomCatalog.Details });
         }
 
         // Names for Change History, from whatever has already been fetched. Never fetches -

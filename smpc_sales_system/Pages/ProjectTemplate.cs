@@ -79,19 +79,18 @@ namespace smpc_sales_system.Pages
                 Template = JsonHelper.ToDataTable(data.SalesProjectTemplate ?? new List<ProjectTemplateModel>());
                 TemplateChild = JsonHelper.ToDataTable(data.sales_project_template_child ?? new List<ProjectTemplateChildModel>());
 
-                var bomData = await ProjectService.GetBom();
                 var companyData = await CompanyService.GetAsDatatable();
-
-                if (bomData == null)
-                    return;
 
                 // Phase 3: no full-catalogue download (picked rows merge via
                 // the picker modal, like the quotation module). Fixed schema
                 // so lookups keep working with zero rows merged yet.
                 if (ItemList == null || ItemList.Columns.Count == 0)
                     ItemList = ItemCatalogTables.NewItemTable();
-                BomHead = JsonHelper.ToDataTable(bomData.bom_head);
-                BomDetails = JsonHelper.ToDataTable(bomData.bom_details);
+                // Every BOM head and line in the system used to be downloaded here, and
+                // nothing on this screen reads them. The shared tables keep the properties
+                // meaningful for anything that does later.
+                BomHead = BomCatalog.Head;
+                BomDetails = BomCatalog.Details;
 
                 LoadAll();
             }
