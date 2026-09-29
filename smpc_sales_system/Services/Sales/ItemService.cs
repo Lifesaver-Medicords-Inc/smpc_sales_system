@@ -28,6 +28,9 @@ namespace smpc_sales_app.Services.Sales
         // 0 when the item has no BOM - drives BOM vs SINGLE and which branch the
         // quotation takes after a pick.
         public int bom_id { get; set; }
+        // Shown in the Size Up / Final pump picker's BRAND column (SizeUpPickerModal reads
+        // "item_brand"). Blank there since these light rows replaced the full catalogue.
+        public string item_brand { get; set; }
 
         // Adds this row to the page's ItemList if it isn't already there.
         //
