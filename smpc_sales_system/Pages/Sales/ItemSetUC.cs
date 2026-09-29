@@ -390,7 +390,7 @@ namespace smpc_sales_system.Pages.Sales
         // ItemSetUC_Load; until it arrives the combo holds just "-- Select --", which is
         // also what an unanswered dropdown stores.
         //
-        // All six are tagged DYNAMIC, which is what makes Helpers read and write them as
+        // All seven are tagged DYNAMIC, which is what makes Helpers read and write them as
         // pump_brand_id, driver_type_id, and so on. See the Go model for why the id is
         // stored rather than the words.
         private void BindAdvancedConditions()
@@ -401,6 +401,7 @@ namespace smpc_sales_system.Pages.Sales
             BindUnitCombo(cmb_liquid_type, STATIC_ADVANCED_CONDITIONS.LIQUID_TYPE());
             BindUnitCombo(cmb_controller_manufacturer, STATIC_ADVANCED_CONDITIONS.CONTROLLER_MANUFACTURER());
             BindUnitCombo(cmb_pump_brand, STATIC_ADVANCED_CONDITIONS.NewTable());
+            BindUnitCombo(cmb_pressure_unit, STATIC_ADVANCED_CONDITIONS.PRESSURE_UNIT());
         }
 
         // Fills BRAND from Setup. Called once the brand list is in hand; keeps whatever was
@@ -1025,6 +1026,11 @@ namespace smpc_sales_system.Pages.Sales
 
             Panel[] pnls = { pnl_advanced_conditions };
             Helpers.BindControls(pnls, dt);
+
+            // A tab saved before PRESSURE had a unit stores 0, which BindControls skips -
+            // show bar, the first unit, rather than an empty box (same rule as FLOW/HEAD).
+            if (cmb_pressure_unit != null && cmb_pressure_unit.Items.Count > 0 && cmb_pressure_unit.SelectedIndex < 0)
+                cmb_pressure_unit.SelectedIndex = 0;
         }
 
         private int _pendingBrandId;

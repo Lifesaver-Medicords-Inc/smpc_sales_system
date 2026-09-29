@@ -203,6 +203,10 @@ namespace smpc_sales_system.Models
         public int? motor_manufacturer_id { get; set; }
         public int? liquid_type_id { get; set; }
         public int? controller_manufacturer_id { get; set; }
+
+        // The unit beside PRESSURE (2026-09-28): 1 bar, 2 psi, 3 ft, 4 m -
+        // STATIC_ADVANCED_CONDITIONS.PRESSURE_UNIT.
+        public int? pressure_unit_id { get; set; }
     }
 
     public class SalesProjectItems

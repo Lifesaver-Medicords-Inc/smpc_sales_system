@@ -44,6 +44,24 @@ namespace smpc_app.Data
             return Build("Eaton", "Marathon", "WEG");
         }
 
+        // The unit beside PRESSURE (user, 2026-09-28): 1 = bar, 2 = psi, 3 = ft, 4 = m.
+        //
+        // The one list here WITHOUT "-- Select --": it is a unit beside a figure, not a
+        // question, so it starts on its first unit the way HEAD's unit does
+        // (STATIC_CLIENT_NEEDS_UNIT). An empty unit would read as a missing unit.
+        public static DataTable PRESSURE_UNIT()
+        {
+            DataTable table = new DataTable();
+            table.Columns.Add("id", typeof(string));
+            table.Columns.Add("title", typeof(string));
+
+            string[] units = { "bar", "psi", "ft", "m" };
+            for (int i = 0; i < units.Length; i++)
+                table.Rows.Add((i + 1).ToString(), units[i]);
+
+            return table;
+        }
+
         // A two-column table the combo binds to: id as text, so ComboBox.SelectedValue
         // matches what Helpers.BindControls assigns it - the id read off the record
         // arrives as a string.

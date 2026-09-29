@@ -4072,7 +4072,8 @@ namespace smpc_sales_app.Pages.Sales
                 ["motor_manufacturer_id"] = "MOTOR MANUFACTURER",
                 ["liquid_type_id"] = "LIQUID TYPE",
                 ["controller_manufacturer_id"] = "CONTROLLER MANUFACTURER",
-                ["pressure"] = "PRESSURE TYPE",
+                ["pressure"] = "PRESSURE",
+                ["pressure_unit_id"] = "PRESSURE UNIT",
                 ["list_price_per_unit"] = "LIST PRICE",
                 ["discount_price"] = "DISCOUNT/MARK UP PRICE",
                 ["component_total"] = "LINE TOTAL",
@@ -4126,6 +4127,7 @@ namespace smpc_sales_app.Pages.Sales
                 case "motor_manufacturer_id": return HistoryTitle(STATIC_ADVANCED_CONDITIONS.MOTOR_MANUFACTURER(), id);
                 case "liquid_type_id": return HistoryTitle(STATIC_ADVANCED_CONDITIONS.LIQUID_TYPE(), id);
                 case "controller_manufacturer_id": return HistoryTitle(STATIC_ADVANCED_CONDITIONS.CONTROLLER_MANUFACTURER(), id);
+                case "pressure_unit_id": return HistoryTitle(STATIC_ADVANCED_CONDITIONS.PRESSURE_UNIT(), id);
                 case "pump_brand_id": return id == 0 ? "-" : smpc_sales_app.Services.Sales.BrandService.NameOf(id);
                 case "template_project_id": return id == 0 ? "No Template" : ItemSetLookups.TemplateName(id);
                 case "assign_engineer_user_id": return id == 0 ? "-" : ItemSetLookups.EngineerName(id);
@@ -5020,6 +5022,7 @@ namespace smpc_sales_app.Pages.Sales
             if (upd.motor_manufacturer_id.HasValue) Compare(c, "motor_manufacturer_id", db.motor_manufacturer_id, upd.motor_manufacturer_id);
             if (upd.liquid_type_id.HasValue) Compare(c, "liquid_type_id", db.liquid_type_id, upd.liquid_type_id);
             if (upd.controller_manufacturer_id.HasValue) Compare(c, "controller_manufacturer_id", db.controller_manufacturer_id, upd.controller_manufacturer_id);
+            if (upd.pressure_unit_id.HasValue) Compare(c, "pressure_unit_id", db.pressure_unit_id, upd.pressure_unit_id);
             return c;
         }
 

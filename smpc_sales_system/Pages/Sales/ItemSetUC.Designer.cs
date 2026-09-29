@@ -99,6 +99,7 @@ namespace smpc_sales_system.Pages.Sales
             this.label3 = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
             this.txt_pressure = new System.Windows.Forms.TextBox();
+            this.cmb_pressure_unit = new System.Windows.Forms.ComboBox();
             this.cmb_driver_type = new System.Windows.Forms.ComboBox();
             this.cmb_pump_brand = new System.Windows.Forms.ComboBox();
             this.txt_conditions_id = new System.Windows.Forms.TextBox();
@@ -770,6 +771,7 @@ namespace smpc_sales_system.Pages.Sales
             this.pnl_advanced_conditions.Controls.Add(this.label3);
             this.pnl_advanced_conditions.Controls.Add(this.label4);
             this.pnl_advanced_conditions.Controls.Add(this.txt_pressure);
+            this.pnl_advanced_conditions.Controls.Add(this.cmb_pressure_unit);
             this.pnl_advanced_conditions.Controls.Add(this.cmb_driver_type);
             this.pnl_advanced_conditions.Controls.Add(this.cmb_pump_brand);
             this.pnl_advanced_conditions.Controls.Add(this.txt_conditions_id);
@@ -808,11 +810,11 @@ namespace smpc_sales_system.Pages.Sales
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(21, 63);
+            this.label2.Location = new System.Drawing.Point(55, 63);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(97, 13);
+            this.label2.Size = new System.Drawing.Size(63, 13);
             this.label2.TabIndex = 159;
-            this.label2.Text = "PRESSURE TYPE";
+            this.label2.Text = "PRESSURE";
             // 
             // label3
             // 
@@ -836,8 +838,21 @@ namespace smpc_sales_system.Pages.Sales
             // 
             this.txt_pressure.Location = new System.Drawing.Point(124, 61);
             this.txt_pressure.Name = "txt_pressure";
-            this.txt_pressure.Size = new System.Drawing.Size(167, 20);
+            this.txt_pressure.Size = new System.Drawing.Size(117, 20);
             this.txt_pressure.TabIndex = 156;
+            //
+            // cmb_pressure_unit
+            //
+            // The unit beside PRESSURE (bar, psi, ft, m) - DYNAMIC, so it saves as
+            // pressure_unit_id, the same way HEAD's unit saves as head_id.
+            this.cmb_pressure_unit.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmb_pressure_unit.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.cmb_pressure_unit.FormattingEnabled = true;
+            this.cmb_pressure_unit.Location = new System.Drawing.Point(243, 61);
+            this.cmb_pressure_unit.Name = "cmb_pressure_unit";
+            this.cmb_pressure_unit.Size = new System.Drawing.Size(48, 21);
+            this.cmb_pressure_unit.TabIndex = 162;
+            this.cmb_pressure_unit.Tag = "DYNAMIC";
             // 
             // cmb_driver_type
             // 
@@ -1843,6 +1858,7 @@ namespace smpc_sales_system.Pages.Sales
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.TextBox txt_pressure;
+        private System.Windows.Forms.ComboBox cmb_pressure_unit;
         private System.Windows.Forms.ComboBox cmb_driver_type;
         private System.Windows.Forms.ComboBox cmb_pump_brand;
         private System.Windows.Forms.TextBox txt_size_up_4;
