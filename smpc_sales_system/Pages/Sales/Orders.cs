@@ -80,6 +80,40 @@ namespace smpc_sales_app.Pages.Sales
             // the link doesn't wait on one of those to appear.
             txt_remarks.TextChanged += (s, e) => UpdateRemarksReferenceLink();
         }
+
+        // Opens an EXISTING order by its own number - the 0005 of SO#0005, the order's `doc`.
+        //
+        // Not the constructor's documentNo: that is the QUOTATION an order is made from, and
+        // it is matched against the order's document_no, which holds the FQ's code
+        // (FQ#2026-0020.1.0). Links that passed an SO number there matched nothing, and the
+        // page took the number for a quotation to convert - it opened a new, unsaved SO under
+        // the next number, with no customer (red box SO#0005 showed "SO#0008", 2026-09-28).
+        public static Orders ForSalesOrder(string soNumber)
+        {
+            return new Orders { orderDocNo = DocumentNo.Strip(soNumber) };
+        }
+
+        // Set by ForSalesOrder; null when the page was opened any other way.
+        private string orderDocNo;
+
+        // The row in OrderList whose doc is this number: exact first, then the same number
+        // with different zero padding (a remarks reference typed as SO#5). -1 if none.
+        private int FindOrderRowByDoc(string soNumber)
+        {
+            if (OrderList == null || !OrderList.Columns.Contains("doc") || string.IsNullOrWhiteSpace(soNumber)) return -1;
+
+            string wanted = DocumentNo.Strip(soNumber);
+            for (int i = 0; i < OrderList.Rows.Count; i++)
+                if (string.Equals(DocumentNo.Strip(OrderList.Rows[i]["doc"]?.ToString()), wanted, StringComparison.OrdinalIgnoreCase))
+                    return i;
+
+            string unpadded = wanted.TrimStart('0');
+            for (int i = 0; i < OrderList.Rows.Count; i++)
+                if (string.Equals((DocumentNo.Strip(OrderList.Rows[i]["doc"]?.ToString()) ?? "").TrimStart('0'), unpadded, StringComparison.OrdinalIgnoreCase))
+                    return i;
+
+            return -1;
+        }
         private DataTable bpi_dt = new DataTable();
         private DataTable bpi_general = new DataTable();
         private DataTable bpi_address = new DataTable();
@@ -754,9 +788,27 @@ namespace smpc_sales_app.Pages.Sales
             await FetchBpiData();
             await FetchItemData();
             await FetchSalesOrder(false);
-            
 
-            if (!string.IsNullOrEmpty(documentNo))
+
+            if (!string.IsNullOrEmpty(orderDocNo))
+            {
+                // A link to an existing SO (red box, SO Approvals, a remarks reference). Viewed
+                // exactly as << PREV / NEXT >> would show it, so browsing carries on from here.
+                // Never the convert-a-quotation path below, whatever happens.
+                int row = FindOrderRowByDoc(orderDocNo);
+                if (row >= 0)
+                {
+                    SelectedRow = row;
+                    bindOrder(true);
+                    CalculateTotalPrice();
+                }
+                else
+                {
+                    MessageBox.Show(DocumentNo.Apply(orderDocNo, "SO#") + " was not found.", "Sales Order",
+                        MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+            }
+            else if (!string.IsNullOrEmpty(documentNo))
             {
                 if (OrderList != null && OrderList.Rows.Count > 0)
                 {
@@ -2205,10 +2257,10 @@ namespace smpc_sales_app.Pages.Sales
 
             // Read-only citation only, same as dispatching's own use of a closed SO
             // (§5.4/§5.25): opens the original order in a new tab exactly like RedBox's
-            // own document links (new Orders(rawDocNo) + TriggerNewForm). It never
+            // own document links (Orders.ForSalesOrder + TriggerNewForm). It never
             // reopens or rewrites that order - Orders.cs has no path that unlocks a
             // CLOSED order for editing, so viewing it this way is inherently safe.
-            Orders ordersPage = new Orders(referencedSo);
+            Orders ordersPage = ForSalesOrder(referencedSo);
             TriggerNewForm?.Invoke(DocumentNo.Apply(referencedSo, "SO#"), ordersPage);
         }
         private void btn_edit_Click(object sender, EventArgs e)

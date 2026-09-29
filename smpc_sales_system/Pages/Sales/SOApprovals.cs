@@ -227,7 +227,8 @@ namespace smpc_sales_system.Pages.Sales
             string doc = row["_doc"]?.ToString();
             if (string.IsNullOrWhiteSpace(doc)) return;
 
-            var page = new Orders(doc);
+            // _doc is the order's own number - see Orders.ForSalesOrder.
+            var page = Orders.ForSalesOrder(doc);
             TriggerNewForm?.Invoke(DocumentNo.Apply(doc, "SO#"), page);
         }
 

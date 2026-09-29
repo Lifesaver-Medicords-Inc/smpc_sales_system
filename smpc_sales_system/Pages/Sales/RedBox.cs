@@ -646,7 +646,8 @@ namespace smpc_sales_system.Pages.Sales
         {
             if (entry.IsOrder)
             {
-                Orders ordersPage = new Orders(entry.DocumentNoRaw);
+                // By the SO's own number (order.doc) - see Orders.ForSalesOrder.
+                Orders ordersPage = Orders.ForSalesOrder(entry.DocumentNoRaw);
                 TriggerNewForm?.Invoke(entry.DocumentNoDisplay, ordersPage);
             }
             else
