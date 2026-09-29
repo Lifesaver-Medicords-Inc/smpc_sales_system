@@ -104,6 +104,16 @@ namespace smpc_sales_app.Pages
         {
             tabContainer.DrawMode = TabDrawMode.OwnerDrawFixed;
 
+            // Set once, here, before the window exists - never again. Changing Multiline (like
+            // DrawMode or SizeMode) makes WinForms rebuild the tab control's window and every
+            // page inside it, and a rebuilt page raises its Load again: Item Entry and BPI
+            // re-fetched, jumped to their first record and dropped out of edit mode, losing
+            // what was typed. RecalculateTabSizes used to set it on every resize, so minimising
+            // (width 0: "doesn't fit") and restoring flipped it twice (user-reported
+            // 2026-09-29). A multiline strip whose tabs fit is one row, identical to a
+            // single-line one, and still wraps to a second row when they don't.
+            tabContainer.Multiline = true;
+
             tabContainer.DrawItem += (sender, e) =>
             {
                 var tab = tabContainer.TabPages[e.Index];
@@ -272,6 +282,9 @@ namespace smpc_sales_app.Pages
                     ? pnl_content_capped.ClientSize.Width
                     : tabContainer.Width;
 
+                // Minimised: there is no width to share out, and nothing is on screen.
+                if (availableWidth <= 0 || WindowState == FormWindowState.Minimized) return;
+
                 int count = tabContainer.TabPages.Count;
                 const int minTabWidth = 90;
                 const int maxTabWidth = 200;
@@ -282,9 +295,9 @@ namespace smpc_sales_app.Pages
 
                 tabContainer.ItemSize = new Size(computedWidth, tabHeight);
 
-                // If even minTabWidth-per-tab doesn't fit everyone on one row, let
-                // the strip wrap to a second row instead of clipping/scrolling.
-                tabContainer.Multiline = (long)computedWidth * count > availableWidth;
+                // If even minTabWidth-per-tab doesn't fit everyone on one row, the strip
+                // wraps to a second row instead of clipping/scrolling - by itself, because
+                // Multiline is on from the start (see InitializeTabEvents). Never set it here.
             }
             catch (Exception)
             {
