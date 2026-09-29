@@ -1226,6 +1226,10 @@ namespace smpc_sales_app.Pages.Sales
                     // Written; nothing left to request.
                     _removedItemSetIds.Clear();
                     await RefreshBaselineAfterOwnSaveAsync(savedFrom);
+
+                    // Lines this save gave an id to can now take the RESERVE ticked on them -
+                    // before, only UPDATE / CREATE / FINALIZE applied them.
+                    await ApplyPendingProjectReservationsAsync();
                 }
             }
             catch (Exception ex)
@@ -6591,9 +6595,9 @@ namespace smpc_sales_app.Pages.Sales
         // Project Quotation's counterpart to the CellClicked/CellClickedModel wiring -
         // ItemSetUC raises CellClickedStock (INV. column click or right-click on the QTY
         // header, both already gated by _isEditable there) and this runs the actual
-        // stock-check logic against that tab's own grid, reusing the same StockCheckModal/
-        // _pendingReservationByReferenceCode/HandleCanvasSelectionClick machinery Quick
-        // Quote already uses.
+        // stock-check logic against that tab's own grid, with the same StockCheckModal and
+        // HandleCanvasSelectionClick Quick Quote uses - and its own per-tab pending store
+        // (_pendingProjectReservations), not Quick Quote's.
         private void ItemSetUC_CellClickedStock(object sender, EventArgs e)
         {
             if (sender is ItemSetUC uc)
@@ -6615,74 +6619,15 @@ namespace smpc_sales_app.Pages.Sales
             var dgv = uc.DgvProjectItems;
             if (dgv == null || !dgv.Columns.Contains("item_id")) return;
 
-            var lines = new List<StockCheckRow>();
-            DateTime? expiresAt = dtp_valid_until.Value.Date;
-            int quotationId = ToInt(txt_id.Text);
+            // This tab's own pending ticks - see _pendingProjectReservations.
+            Dictionary<string, bool> pending = PendingProjectReservationsFor(uc.Parent as TabPage);
 
-            for (int i = 0; i < dgv.Rows.Count; i++)
-            {
-                var row = dgv.Rows[i];
-                if (row.IsNewRow) continue;
-
-                if (!int.TryParse(row.Cells["item_id"].Value?.ToString(), out int itemId) || itemId <= 0) continue;
-
-                int.TryParse(row.Cells["project_items_qty"].Value?.ToString(), out int requiredQty);
-                if (requiredQty <= 0) continue;
-
-                // A brand-new, not-yet-saved line has no id yet, same as Quick Quote's
-                // quickId == 0 case - lineId stays 0 and StockCheckModal disables RESERVE
-                // for it rather than hiding the row entirely.
-                int.TryParse(row.Cells["project_items_id"].Value?.ToString(), out int lineId);
-                string referenceCode = row.Cells["reference_code"].Value?.ToString();
-
-                string itemName = dgv.Columns.Contains("project_items_components")
-                    ? row.Cells["project_items_components"].Value?.ToString()
-                    : null;
-
-                AvailableStockModel stock;
-                bool isReserved = false;
-                int ownReservedQty = 0;
-                try
-                {
-                    if (!_availableStockByItemId.TryGetValue(itemId, out stock))
-                    {
-                        stock = await ItemStockCheckService.GetAvailableStock(itemId);
-                        _availableStockByItemId[itemId] = stock;
-                    }
-
-                    if (lineId > 0)
-                    {
-                        var reservation = await ItemStockCheckService.GetReservation(lineId, "sales_project_item");
-                        isReserved = reservation != null;
-                        if (reservation != null) ownReservedQty = reservation.qty;
-                    }
-
-                    if (!string.IsNullOrEmpty(referenceCode) &&
-                        _pendingReservationByReferenceCode.TryGetValue(referenceCode, out bool pendingState))
-                    {
-                        isReserved = pendingState;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Failed to check stock for \"{itemName}\": {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    continue;
-                }
-
-                lines.Add(new StockCheckRow
-                {
-                    ItemId = itemId,
-                    ItemName = itemName,
-                    QuickId = lineId,
-                    QuotationId = quotationId,
-                    RequiredQty = requiredQty,
-                    Stock = stock,
-                    IsReserved = isReserved,
-                    OwnReservedQty = ownReservedQty,
-                    ExpiresAt = expiresAt,
-                    ReferenceCode = referenceCode
-                });
-            }
+            // Built in ProjectItemSetActions, which the Engineering app's check uses too, so
+            // both show the same figures. This screen's own caches go in: stock already
+            // fetched, and this tab's reservations toggled but not yet applied.
+            var lines = await ProjectItemSetActions.BuildStockCheckRowsAsync(
+                dgv, ToInt(txt_id.Text), dtp_valid_until.Value.Date,
+                _availableStockByItemId, pending);
 
             if (lines.Count == 0)
             {
@@ -6695,8 +6640,79 @@ namespace smpc_sales_app.Pages.Sales
 
             foreach (var change in modal.PendingChangesByReferenceCode)
             {
-                _pendingReservationByReferenceCode[change.Key] = change.Value;
+                pending[change.Key] = change.Value;
             }
+
+            // A project quote autosaves, so there is no later "save" to wait for: lines already
+            // saved take their reservation now, the rest after the save that gives them an id.
+            if (ToInt(txt_id.Text) > 0)
+                await ApplyPendingProjectReservationsAsync();
+        }
+
+        // Project RESERVE ticks not applied yet, per tab (fixed 2026-09-28). They were kept in
+        // _pendingReservationByReferenceCode - Quick Quote's store, one for the whole form, keyed
+        // by the line's reference code alone - and reference codes repeat from tab to tab (every
+        // tab has a "1"), so ticking line 1 on one tab reserved line 1 on every tab at the next
+        // save. They also waited for UPDATE / CREATE / FINALIZE, which an autosaving project
+        // quote may never get, and outlived the quotation they were ticked on.
+        //
+        // Keyed by the tab's name (and which of the tabs with that name it is), not its item set
+        // id: a tab added this session has no id yet, and FINALIZE copies every tab onto new ids -
+        // the name carries across both. Held for one quotation only (_pendingProjectReservationsQuote):
+        // once another quotation is on screen they are dropped, never applied to it.
+        private readonly Dictionary<string, Dictionary<string, bool>> _pendingProjectReservations = new Dictionary<string, Dictionary<string, bool>>();
+        private string _pendingProjectReservationsQuote;
+
+        private static string ProjectTabKey(TabPage page)
+        {
+            if (page == null) return string.Empty;
+
+            int nth = 0;
+            if (page.Parent is TabControl tabs)
+            {
+                foreach (TabPage other in tabs.TabPages)
+                {
+                    if (other == page) break;
+                    if (other.Text == page.Text) nth++;
+                }
+            }
+            return page.Text + "#" + nth;
+        }
+
+        // The quotation's number without its Q# / FQ# prefix, so the copy FINALIZE makes is
+        // still the same quotation. PendingDocNoPlaceholder on a new, unsaved one.
+        private string CurrentQuoteNumber()
+        {
+            string doc = txt_document_no.Text ?? string.Empty;
+            int hash = doc.IndexOf('#');
+            return (hash >= 0 ? doc.Substring(hash + 1) : doc).Trim();
+        }
+
+        // Whether the pending ticks belong to the quotation on screen. Ticks made on a new
+        // quotation before its first save go with the number that save gave it.
+        private bool PendingProjectReservationsAreCurrent()
+        {
+            string quote = CurrentQuoteNumber();
+            if (_pendingProjectReservationsQuote == quote) return true;
+
+            if (_pendingProjectReservationsQuote == PendingDocNoPlaceholder && quote != PendingDocNoPlaceholder)
+            {
+                _pendingProjectReservationsQuote = quote;
+                return true;
+            }
+            return _pendingProjectReservations.Count == 0;
+        }
+
+        private Dictionary<string, bool> PendingProjectReservationsFor(TabPage page)
+        {
+            if (!PendingProjectReservationsAreCurrent())
+                _pendingProjectReservations.Clear();
+            _pendingProjectReservationsQuote = CurrentQuoteNumber();
+
+            string key = ProjectTabKey(page);
+            if (!_pendingProjectReservations.TryGetValue(key, out var pending))
+                _pendingProjectReservations[key] = pending = new Dictionary<string, bool>();
+            return pending;
         }
 
         // Extends ApplyPendingReservationsAsync (below it, right after this) to also cover
@@ -6707,81 +6723,49 @@ namespace smpc_sales_app.Pages.Sales
         // (and vice versa), so calling both costs nothing extra in the common case.
         private async Task ApplyPendingProjectReservationsAsync()
         {
-            if (_pendingReservationByReferenceCode.Count == 0) return;
+            if (_pendingProjectReservations.Count == 0) return;
+
+            // Ticked on another quotation: dropped, never applied to this one.
+            if (!PendingProjectReservationsAreCurrent())
+            {
+                _pendingProjectReservations.Clear();
+                return;
+            }
 
             int quotationId = ToInt(txt_id.Text);
-            var applied = new List<string>();
             var failures = new List<string>();
             var affectedItemIds = new HashSet<int>();
-            var affectedTabs = new List<ItemSetUC>();
 
+            // Each tab with its OWN ticks (the shared per-tab apply the Engineering app uses).
             foreach (TabPage tab in tabControl2.TabPages)
             {
                 if (!(tab.Controls.Count > 0 && tab.Controls[0] is ItemSetUC uc)) continue;
+                if (!_pendingProjectReservations.TryGetValue(ProjectTabKey(tab), out var pending) || pending.Count == 0) continue;
 
-                var dgv = uc.DgvProjectItems;
-                if (dgv == null || !dgv.Columns.Contains("reference_code")) continue;
-
-                foreach (DataGridViewRow row in dgv.Rows)
-                {
-                    if (row.IsNewRow) continue;
-
-                    string referenceCode = row.Cells["reference_code"].Value?.ToString();
-                    if (string.IsNullOrEmpty(referenceCode) ||
-                        !_pendingReservationByReferenceCode.TryGetValue(referenceCode, out bool shouldReserve))
-                        continue;
-
-                    int.TryParse(row.Cells["project_items_id"].Value?.ToString(), out int lineId);
-                    if (lineId <= 0) continue; // still not saved somehow - leave it pending
-
-                    int.TryParse(row.Cells["item_id"].Value?.ToString(), out int itemId);
-
-                    try
-                    {
-                        if (shouldReserve)
-                        {
-                            int.TryParse(row.Cells["project_items_qty"].Value?.ToString(), out int qty);
-                            if (itemId <= 0 || qty <= 0) { applied.Add(referenceCode); continue; }
-                            await ItemStockCheckService.CreateReservation(itemId, qty, lineId, quotationId, dtp_valid_until.Value.Date, "sales_project_item");
-                        }
-                        else
-                        {
-                            await ItemStockCheckService.ReleaseReservation(lineId, "sales_project_item");
-                        }
-
-                        if (itemId > 0) affectedItemIds.Add(itemId);
-                        if (!affectedTabs.Contains(uc)) affectedTabs.Add(uc);
-                        applied.Add(referenceCode);
-                    }
-                    catch (Exception ex)
-                    {
-                        failures.Add($"{referenceCode}: {ex.Message}");
-                    }
-                }
+                failures.AddRange(await ProjectItemSetActions.ApplyPendingReservationsAsync(
+                    uc, pending, quotationId, dtp_valid_until.Value.Date, affectedItemIds));
             }
 
-            foreach (var referenceCode in applied)
-            {
-                _pendingReservationByReferenceCode.Remove(referenceCode);
-            }
+            foreach (string emptied in _pendingProjectReservations.Where(p => p.Value.Count == 0).Select(p => p.Key).ToList())
+                _pendingProjectReservations.Remove(emptied);
 
+            // A reservation changes the stock every tab showing that item reads, not only its own.
             if (affectedItemIds.Count > 0)
             {
-                foreach (var itemId in affectedItemIds)
+                foreach (int itemId in affectedItemIds)
                 {
                     _availableStockByItemId.Remove(itemId);
                     foreach (TabPage tab in tabControl2.TabPages)
                     {
                         if (tab.Controls.Count > 0 && tab.Controls[0] is ItemSetUC anyUc)
-                        {
                             anyUc.ClearStockCache(itemId);
-                        }
                     }
                 }
 
-                foreach (var uc in affectedTabs)
+                foreach (TabPage tab in tabControl2.TabPages)
                 {
-                    uc.RefreshAllStockIndicators();
+                    if (tab.Controls.Count > 0 && tab.Controls[0] is ItemSetUC anyUc && ShowsAnyItem(anyUc, affectedItemIds))
+                        anyUc.RefreshAllStockIndicators();
                 }
             }
 
@@ -6793,6 +6777,21 @@ namespace smpc_sales_app.Pages.Sales
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Warning);
             }
+        }
+
+        // Whether any line on this tab is one of these items - only those tabs' stock figures
+        // are fetched again.
+        private static bool ShowsAnyItem(ItemSetUC uc, ICollection<int> itemIds)
+        {
+            var dgv = uc.DgvProjectItems;
+            if (dgv == null || !dgv.Columns.Contains("item_id")) return false;
+
+            foreach (DataGridViewRow row in dgv.Rows)
+            {
+                if (!row.IsNewRow && int.TryParse(row.Cells["item_id"].Value?.ToString(), out int itemId) && itemIds.Contains(itemId))
+                    return true;
+            }
+            return false;
         }
 
         public List<Dictionary<string, object>> SelectedImages { get; private set; }

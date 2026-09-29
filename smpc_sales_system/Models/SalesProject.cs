@@ -247,6 +247,19 @@ namespace smpc_sales_system.Models
         public List<SalesProjectItems> sales_project_items { get; set; }
         public List<SalesWiringModel> sales_project_wiring { get; set; }
         public List<SalesQuotationSelectedImageModel> sales_project_items_selected_images { get; set; }
+
+        // The names behind the header's lookup ids (/sales/projects/detail only) - for the
+        // Engineering app's read-only header. Null from an older API.
+        public SalesProjectHeaderNames header_names { get; set; }
+    }
+
+    public class SalesProjectHeaderNames
+    {
+        public string application { get; set; }
+        public string payment_terms { get; set; }
+        public string ship_type { get; set; }
+        public string ship_to { get; set; }
+        public string bill_to { get; set; }
     }
 
 }
