@@ -163,7 +163,22 @@ namespace smpc_sales_system.Pages.Sales
                 return;
             }
 
+            // Inserted at the clicked row as max+1 - renumbered to where it sits (a project
+            // item set only; see ItemSetUC.NormalizeItemOrder).
+            ItemSetOf(dgv)?.NormalizeItemOrder();
+
             await ItemCatalogTables.EnsureGridItemsAsync(ItemList, ItemAdditionalSpecs, ImageList, LoadedItemDetailIds, dgv);
+        }
+
+        // The project item set a grid belongs to; null for the quick quote grid, which sits on
+        // the Quotation form itself.
+        private static ItemSetUC ItemSetOf(DataGridView dgv)
+        {
+            for (Control c = dgv?.Parent; c != null; c = c.Parent)
+            {
+                if (c is ItemSetUC uc) return uc;
+            }
+            return null;
         }
 
         /// <summary>
@@ -230,6 +245,9 @@ namespace smpc_sales_system.Pages.Sales
             {
                 GetItemData(rowIndex, itemId, dgv, referenceCode);
             }
+
+            // A BOM swapped in brings its own children; the outline is worked out again.
+            ItemSetOf(dgv)?.NormalizeItemOrder();
 
             // Same post-fill as the item picker path: BOM children resolve here so their UOM
             // cells don't stay blank.

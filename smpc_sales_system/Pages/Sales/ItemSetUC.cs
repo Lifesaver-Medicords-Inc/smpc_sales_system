@@ -1553,6 +1553,10 @@ namespace smpc_sales_system.Pages.Sales
                     return 0;
                 }
 
+                // In CODE order, wiring last - see InOutlineOrder. Before the bind, so the image
+                // seeding below lines up with the rows as shown.
+                stringTable = InOutlineOrder(stringTable);
+
                 DgvProjectItems.DataSource = stringTable;
                 RefreshAllStockIndicators();
 
@@ -1936,6 +1940,9 @@ namespace smpc_sales_system.Pages.Sales
                 newDataRow["reference_code"] = newTopLevelNumber;
                 newDataRow["template_id"] = FinalPumpTemplateId;
                 dataSource.Rows.InsertAt(newDataRow, insertIndex);
+
+                // The shift above assumed the codes were already 1, 2, 3 ... with no gap.
+                NormalizeItemOrder();
                 return;
             }
 
@@ -2583,6 +2590,10 @@ namespace smpc_sales_system.Pages.Sales
                     AddWiringRowsComponentProject();
                 }
 
+                // Pumps kept from FINAL and the wiring block went in around the template's
+                // own rows - one outline, wiring last.
+                NormalizeItemOrder();
+
                 // The grid now reflects this template, so it becomes both the baseline a
                 // later cancelled change reverts to and the value the "did anything actually
                 // change" test at the top compares against.
@@ -2713,11 +2724,12 @@ namespace smpc_sales_system.Pages.Sales
             return false;
         }
 
-        private void RemoveWiringRowsComponentByBaseReference()
+        // Returns how many rows it took out.
+        private int RemoveWiringRowsComponentByBaseReference()
         {
             DataTable dataSource = dgv_project_items.DataSource as DataTable;
             if (dataSource == null)
-                return;
+                return 0;
 
             var rowsToRemove = dataSource.AsEnumerable()
                 .Where(r => IsWiringComponentRow(
@@ -2727,6 +2739,8 @@ namespace smpc_sales_system.Pages.Sales
 
             foreach (DataRow row in rowsToRemove)
                 dataSource.Rows.Remove(row);
+
+            return rowsToRemove.Count;
         }
 
         private void textBox64_MouseClick(object sender, MouseEventArgs e)
@@ -3339,6 +3353,9 @@ namespace smpc_sales_system.Pages.Sales
                 {
                     AddModel(dgv, index, isBom, BomId, ItemId, referenceCode);
                 }
+
+                NormalizeItemOrder();
+                NotifyItemsChanged();
             }
         }
 
@@ -3464,7 +3481,7 @@ namespace smpc_sales_system.Pages.Sales
             if (string.IsNullOrWhiteSpace(referenceCode)) return;
 
             DeleteRowsByReferenceCode(e.Row.Index, dgv_project_items);
-            RenumberReferenceCodes(dgv_project_items);
+            NormalizeItemOrder();
         }
 
         // Four spaces per level, which is what every path that adds a row here writes:
@@ -3533,13 +3550,103 @@ namespace smpc_sales_system.Pages.Sales
                 for (int above = 0; above < level; above++)
                     if (counters[above] == 0) counters[above] = 1;
 
-                row["reference_code"] = string.Join(".", counters.Take(level + 1));
+                // Written only where it differs: a rewrite of an unchanged value still raises the
+                // grid's change events, and every one of those is an autosave and a history line.
+                string code = string.Join(".", counters.Take(level + 1));
+                if (row["reference_code"]?.ToString() != code)
+                    row["reference_code"] = code;
 
                 // Keep the indent in step with the code it just produced.
                 if (hasComponents)
-                    row["components"] = new string(' ', level * ProjectItemIndentPerLevel) + text.TrimStart();
+                {
+                    string indented = new string(' ', level * ProjectItemIndentPerLevel) + text.TrimStart();
+                    if (text != indented)
+                        row["components"] = indented;
+                }
             }
         }
+
+        // The item table's CODE follows its rows (provisional standard 2026-09-28 - the spec
+        // numbers Template Setup this way, §14.177, and says nothing of the quotation's item
+        // table): top to bottom 1, 2, 3 ..., each child under its parent's number, and the
+        // wiring block last. Run after every change to the table's shape - an item or BOM
+        // added (inserted at the clicked row), a model swapped, WIRING ticked or unticked, a
+        // FINAL pump added, a template applied, a row deleted.
+        //
+        // User-reported 2026-09-28 (a table reading 1, 2, 9, 9.1, 9.2, 10, 3, 3.1 ...): a new
+        // line took max+1 wherever it was inserted, the wiring block was appended with max+1
+        // and max+2, a swapped model kept its old code, and a delete left the gap - so the
+        // codes recorded the order things were added in, not where they sit. Only a delete
+        // renumbered.
+        public void NormalizeItemOrder()
+        {
+            if (!(dgv_project_items.DataSource is DataTable dataSource)) return;
+
+            MoveWiringBlockLast(dataSource);
+            RenumberReferenceCodes(dgv_project_items);
+        }
+
+        private static bool IsWiringRow(DataRow row)
+        {
+            return IsWiringComponentRow(
+                row.Table.Columns.Contains("template_id") ? row["template_id"]?.ToString() : null,
+                row.Table.Columns.Contains("components") ? row["components"]?.ToString() : null);
+        }
+
+        // The wiring block goes under everything else - an item added on the empty row at the
+        // bottom lands below it otherwise. Moved only when a line sits under it.
+        private static void MoveWiringBlockLast(DataTable dataSource)
+        {
+            List<DataRow> rows = dataSource.Rows.Cast<DataRow>().Where(r => r.RowState != DataRowState.Deleted).ToList();
+
+            int lastOther = rows.FindLastIndex(r => !IsWiringRow(r));
+            if (lastOther < 0 || !rows.Take(lastOther).Any(IsWiringRow)) return;
+
+            foreach (DataRow row in rows.Where(IsWiringRow).ToList())
+            {
+                object[] values = row.ItemArray;
+                dataSource.Rows.Remove(row);
+
+                DataRow moved = dataSource.NewRow();
+                moved.ItemArray = values;
+                dataSource.Rows.Add(moved);
+            }
+        }
+
+        // Stored lines in the order their codes give, the wiring block last - not the order
+        // the database hands them over in (by line id), which put a BOM swapped in or a line
+        // added later under the wiring block the moment the quote was reloaded or updated
+        // from the other app. Reorders only; no code is changed, so opening a quote writes
+        // nothing.
+        private static DataTable InOutlineOrder(DataTable table)
+        {
+            if (table == null || table.Rows.Count < 2 || !table.Columns.Contains("reference_code")) return table;
+
+            var ordered = table.AsEnumerable()
+                .Select((row, index) => new { row, index })
+                .OrderBy(x => IsWiringRow(x.row) ? 2 : string.IsNullOrWhiteSpace(x.row["reference_code"]?.ToString()) ? 1 : 0)
+                .ThenBy(x => x.row["reference_code"]?.ToString() ?? string.Empty, OutlineOrder)
+                .ThenBy(x => x.index)
+                .Select(x => x.row)
+                .ToList();
+
+            DataTable sorted = table.Clone();
+            foreach (DataRow row in ordered)
+                sorted.ImportRow(row);
+            return sorted;
+        }
+
+        // "2" < "2.1" < "2.10" < "3": segment by segment, as numbers.
+        private static readonly Comparer<string> OutlineOrder = Comparer<string>.Create((a, b) =>
+        {
+            int[] Parts(string s) => (s ?? string.Empty).Split('.').Select(p => int.TryParse(p, out int n) ? n : 0).ToArray();
+            int[] x = Parts(a), y = Parts(b);
+            for (int i = 0; i < Math.Min(x.Length, y.Length); i++)
+            {
+                if (x[i] != y[i]) return x[i].CompareTo(y[i]);
+            }
+            return x.Length.CompareTo(y.Length);
+        });
 
         private void GenerateReferenceCode(DataTable tempBOM, string startReference)
         {
@@ -4491,14 +4598,21 @@ namespace smpc_sales_system.Pages.Sales
                 // there.
                 int nextReference = GetMaxTopLevelReferenceCode();
                 AddWiringRowsComponent(nextReference);
+
+                // max+1 after a gap is not the next number - renumber, wiring last.
+                NormalizeItemOrder();
             }
             else
+            {
                 // Always attempt removal, regardless of whether a wiring block is
                 // currently present - RemoveWiringRowsComponentByBaseReference is
                 // naturally a no-op when there's nothing to remove, so this is safe on
                 // every call (a genuinely wiring-free grid, or a second uncheck in a
                 // row), not just the one case this dedupe guard used to leave reachable.
-                RemoveWiringRowsComponentByBaseReference();
+                // Renumbered only when rows went: unticked on load, nothing else moves.
+                if (RemoveWiringRowsComponentByBaseReference() > 0)
+                    NormalizeItemOrder();
+            }
         }
 
         // Finds the highest top-level reference_code already on the grid (e.g. for codes
