@@ -1149,11 +1149,22 @@ namespace smpc_sales_app.Pages.Sales
             _autoSaveStatus.Visible = !string.IsNullOrEmpty(text);
         }
 
+        // Ticks spent waiting for a tab just added with "+" to load (capped - see below).
+        private int _newTabSaveWaits;
+
         private async void AutoSaveTimer_Tick(object sender, EventArgs e)
         {
             _autoSaveTimer.Stop();
 
-            if (_autoSaving || !CanAutoSave()) return;
+            if (_autoSaving) return;
+            if (!CanAutoSave())
+            {
+                // A tab just added with "+" is still loading its lists: its save waits for it
+                // rather than being dropped - for half a minute at most.
+                if (IsEdit && !isNewRecord && _newlyCreatedTabs.Count > 0 && _newTabSaveWaits++ < 30)
+                    _autoSaveTimer.Start();
+                return;
+            }
 
             _autoSaving = true;
             try
@@ -1372,6 +1383,30 @@ namespace smpc_sales_app.Pages.Sales
                     //}
                 }
             }
+        }
+
+        // Every item-set tab listens to the same events, whichever path built it (user-reported
+        // 2026-09-28: a WIRING change made in Sales never reached the Engineering screen).
+        // There were four builders - a saved project's tabs, the "+" tab, NEW, and the first
+        // blank project - each with its own hand-written list. Only the first subscribed
+        // CellChangedWiring, and the "+" tab subscribed none of the change events: on a tab
+        // built that way a wiring edit - or a client-needs, conditions, item or template change
+        // - queued no autosave, so it reached neither the database nor the other app until a
+        // change on some other tab happened to save everything. Its TEMPLATE button did
+        // nothing either (ButtonClicked).
+        private void WireItemSetEvents(ItemSetUC uc)
+        {
+            uc.ButtonClicked += Button_ClickedUC;
+            uc.DataChangedConditions += ItemSet_DataChanged;
+            uc.DataChangedContent += Content_DataChanged;
+            uc.CellChangedProject += Cell_DataChanged;
+            uc.CellChangedWiring += Cell_WiringChanged;
+            uc.CellClicked += Cell_ClickedUC;
+            uc.CellEdited += Cell_EditedUC;
+            uc.CellClickedModel += CellClickedModelUC;
+            uc.CellClickedStock += ItemSetUC_CellClickedStock;
+            uc.FinalTxtBoxClicked += FinalTxtBoxClicked;
+            uc.SizeUpClicked += SizeUpClicked;
         }
 
         private async void Cell_WiringChanged(object sender, EventArgs e)
@@ -2478,18 +2513,8 @@ namespace smpc_sales_app.Pages.Sales
                 UC.MarkUpMultiplier = GetCompanyMarkupMultiplier();
                 UC.VatRate = GetCompanyVatRate();
 
-                // Attach event handlers
-                UC.ButtonClicked += Button_ClickedUC;
-                UC.DataChangedConditions += ItemSet_DataChanged;
-                UC.DataChangedContent += Content_DataChanged;
-
-
-                UC.CellChangedProject += Cell_DataChanged;
-                UC.CellClicked += Cell_ClickedUC;
-                UC.CellClicked += Cell_EditedUC;
-                UC.CellClickedModel += CellClickedModelUC;
-                UC.CellClickedStock += ItemSetUC_CellClickedStock;
-                //UC.DeleteReferenceCode += DeleteRowsByReferenceCode;
+                // Attach event handlers - the same set on every tab (WireItemSetEvents).
+                WireItemSetEvents(UC);
 
                 // Add the UserControl to the new tab
                 newTab.Controls.Add(UC);
@@ -2839,30 +2864,12 @@ namespace smpc_sales_app.Pages.Sales
                 UC.MarkUpMultiplier = GetCompanyMarkupMultiplier();
                 UC.VatRate = GetCompanyVatRate();
 
-                //UC.DataChangedConditions += ItemSet_DataChanged;
-                //UC.DataChangedContent += Content_DataChanged;
-                //UC.CellChangedProject += Cell_DataChanged;
-                //UC.ButtonClicked += Button_ClickedUC;
-                UC.ButtonClicked += Button_ClickedUC;
-                UC.DataChangedConditions += ItemSet_DataChanged;
-                UC.DataChangedContent += Content_DataChanged;
-                UC.CellChangedProject += Cell_DataChanged;
-                UC.CellChangedWiring += Cell_WiringChanged;
-                UC.CellClicked += Cell_ClickedUC;
-                UC.CellEdited += Cell_EditedUC;
-                UC.CellClickedModel += CellClickedModelUC;
-                UC.CellClickedStock += ItemSetUC_CellClickedStock;
-                //UC.DeleteReferenceCode += DeleteRowsByReferenceCode;
+                WireItemSetEvents(UC);
 
-                //UC.ItemChanged += ItemChanged;
-                UC.FinalTxtBoxClicked += FinalTxtBoxClicked;
-                UC.SizeUpClicked += SizeUpClicked;
-                //UC.SetUnitsOfMeasure(CacheData.UoM, CacheData.UoM);
-
-                DataView multipliers = new DataView(dt_multiplier);
-                multipliers.RowFilter = $"based_id = '{tab.based_id}'";
-                //bs_project_multipliers.DataSource = multipliers.ToTable();
-                dgv_project_multiplier.DataSource = multipliers;
+                // The multipliers belong to the quotation, not to a tab, so they are bound once,
+                // before this loop (BindProjectMultipliers). This used to rebind them here, once
+                // per tab, through a DataView filtered to based_id = this quote - see that
+                // method for the two bugs that caused.
 
                 // setMultiplier() was only ever called for a brand-new tab (the "+" handler)
                 // or as a side effect of editing the multiplier setup grid on whichever tab
@@ -7764,21 +7771,8 @@ namespace smpc_sales_app.Pages.Sales
                 UC.MarkUpMultiplier = GetCompanyMarkupMultiplier();
                 UC.VatRate = GetCompanyVatRate();
 
-                // Attach event handlers
-                UC.ButtonClicked += Button_ClickedUC;
-                UC.DataChangedConditions += ItemSet_DataChanged;
-                UC.DataChangedContent += Content_DataChanged;
-                UC.ItemChanged += ItemChanged;
-                UC.CellChangedProject += Cell_DataChanged;
-                UC.CellClicked += Cell_ClickedUC;
-                UC.CellClickedModel += CellClickedModelUC;
-                UC.CellClickedStock += ItemSetUC_CellClickedStock;
-                UC.CellEdited += Cell_EditedUC;
-                UC.FinalTxtBoxClicked += FinalTxtBoxClicked;
-                UC.SizeUpClicked += SizeUpClicked;
-                UC.HandleItemSelectionClick += HandleItemSelectionClick;
-                //UC.DeleteReferenceCode += DeleteRowsByReferenceCode;
-                //UC.SetUnitsOfMeasure(CacheData.UoM, CacheData.UoM);
+                // Attach event handlers - the same set on every tab (WireItemSetEvents).
+                WireItemSetEvents(UC);
 
                 // Add the UserControl to the new tab
                 newTab.Controls.Add(UC);
@@ -8716,13 +8710,9 @@ namespace smpc_sales_app.Pages.Sales
                 myControl.MarkUpMultiplier = GetCompanyMarkupMultiplier();
                 myControl.VatRate = GetCompanyVatRate();
 
-                //plus events function
-                myControl.CellClicked += Cell_ClickedUC;
-                myControl.CellClickedModel += CellClickedModelUC;
-                myControl.CellClickedStock += ItemSetUC_CellClickedStock;
-                myControl.CellEdited += Cell_EditedUC;
-                myControl.FinalTxtBoxClicked += FinalTxtBoxClicked;
-                myControl.SizeUpClicked += SizeUpClicked;
+                // The same events as every other tab (WireItemSetEvents). This one listened to
+                // clicks only - nothing typed on a tab added here autosaved, WIRING included.
+                WireItemSetEvents(myControl);
                 myControl.setMultiplier(fetchMultiplierData());
 
                 // Add the UserControl to the new tab
@@ -8738,6 +8728,18 @@ namespace smpc_sales_app.Pages.Sales
 
                 // Select the new tab
                 this.tabControl2.SelectedIndex = lastIndex;
+
+                // Saved like any other edit on a saved quote, so the tab reaches the database
+                // and the Engineering screen now, not with the next change on another tab. Its
+                // lists are still loading, so the timer is started directly and the tick waits
+                // for them (see AutoSaveTimer_Tick).
+                if (IsEdit && !isNewRecord && ToInt(txt_id.Text) > 0)
+                {
+                    _newTabSaveWaits = 0;
+                    EnsureAutoSaveTimer();
+                    _autoSaveTimer.Stop();
+                    _autoSaveTimer.Start();
+                }
             }
 
         }
