@@ -1380,17 +1380,17 @@ namespace smpc_sales_system.Pages.Sales
             // 
             // timer_send_message_content
             // 
-            this.timer_send_message_content.Interval = 2000;
+            this.timer_send_message_content.Interval = 800;
             this.timer_send_message_content.Tick += new System.EventHandler(this.timer_push_content_Tick);
             // 
             // timer_send_message_cell_items
             // 
-            this.timer_send_message_cell_items.Interval = 2000;
+            this.timer_send_message_cell_items.Interval = 800;
             this.timer_send_message_cell_items.Tick += new System.EventHandler(this.timer_push_cell_project_Tick);
             // 
             // timer_send_message_cell_wiring
             // 
-            this.timer_send_message_cell_wiring.Interval = 2000;
+            this.timer_send_message_cell_wiring.Interval = 800;
             this.timer_send_message_cell_wiring.Tick += new System.EventHandler(this.timer_push_cell_wiring_Tick);
             // 
             // button1

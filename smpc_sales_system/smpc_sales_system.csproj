@@ -414,6 +414,8 @@
       <DependentUpon>ItemSetUC.cs</DependentUpon>
     </Compile>
     <Compile Include="Pages\Sales\SalesItemGridEditor.cs" />
+    <Compile Include="Pages\Sales\ProjectItemSetActions.cs" />
+    <Compile Include="Pages\Sales\ProjectLiveMerge.cs" />
     <Compile Include="Pages\ModelModal.cs">
       <SubType>Form</SubType>
     </Compile>

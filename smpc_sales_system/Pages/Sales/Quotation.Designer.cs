@@ -1973,6 +1973,7 @@
             this.dgv_project_multiplier.Size = new System.Drawing.Size(745, 150);
             this.dgv_project_multiplier.TabIndex = 82;
             this.dgv_project_multiplier.CellEndEdit += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgv_project_multiplier_CellEndEdit);
+            this.dgv_project_multiplier.UserDeletedRow += new System.Windows.Forms.DataGridViewRowEventHandler(this.dgv_project_multiplier_UserDeletedRow);
             // 
             // brandDataGridViewTextBoxColumn
             // 

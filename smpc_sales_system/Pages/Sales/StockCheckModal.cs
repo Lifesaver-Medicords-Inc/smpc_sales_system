@@ -86,11 +86,17 @@ namespace smpc_sales_system.Pages.Sales
         // which line was picked rather than this modal opening the canvas sheet itself.
         private readonly Action<StockCheckRow> _onSendRequest;
 
-        public StockCheckModal(List<StockCheckRow> rows, Action<StockCheckRow> onSendRequest)
+        // allowReserve = false: the check without the reservation - what the Engineering app
+        // shows. Spec 10.4 lets sales users raise a reservation; an engineer looking at the
+        // same quotation sees the same stock and projection but cannot hold anything, and has
+        // no canvass sheet to send a request to. RESERVE and APPROVAL still show what sales
+        // has already reserved, read-only.
+        public StockCheckModal(List<StockCheckRow> rows, Action<StockCheckRow> onSendRequest, bool allowReserve = true)
         {
             InitializeComponent();
 
             _onSendRequest = onSendRequest;
+            _allowReserve = allowReserve;
 
             bool anyUnsaved = false;
 
@@ -139,7 +145,18 @@ namespace smpc_sales_system.Pages.Sales
             lbl_reserve_note.Text = anyUnsaved
                 ? "Toggle RESERVE for any line, then press OK. Nothing is actually reserved/released until you save the whole quotation - including lines marked \"not saved yet\"."
                 : "Toggle RESERVE for any line, then press OK. Nothing is actually reserved/released until you save the whole quotation.";
+
+            if (!_allowReserve)
+            {
+                col_reserve.ReadOnly = true;
+                btn_send_request.Visible = false;
+                btn_ok.Visible = false;
+                btn_close.Text = "CLOSE";
+                lbl_reserve_note.Text = "Stock check only. Reservations are raised by Sales on the quotation.";
+            }
         }
+
+        private readonly bool _allowReserve;
 
         private void StockCheckModal_Load(object sender, EventArgs e)
         {
@@ -187,6 +204,7 @@ namespace smpc_sales_system.Pages.Sales
         private void dgv_projected_inventory_CellValueChanged(object sender, DataGridViewCellEventArgs e)
         {
             if (e.RowIndex < 0) return;
+            if (!_allowReserve) return;
             if (dgv_projected_inventory.Columns[e.ColumnIndex].Name != "col_reserve") return;
 
             var gridRow = dgv_projected_inventory.Rows[e.RowIndex];

@@ -159,14 +159,23 @@ namespace smpc_sales_system.Pages.Sales
         }
 
 
+        // Text boxes only, until 2026-09-26 - and every Advanced Conditions field but the PRESSURE
+        // figure is a dropdown (its unit is one too), as are the CLIENT NEEDS units and ASSIGNED ENGR. A changed
+        // dropdown told nobody, so it was never autosaved and never reached the other app
+        // (user-reported: "update the advance conditions ... it will not update"). Dropdowns
+        // report on SelectionChangeCommitted and check boxes on Click, both of which only a
+        // person raises - loading a tab or merging in the other app's change sets them from
+        // code and must not look like an edit.
         private void AttachTextChangedEventContent(Panel pnls)
         {
             foreach (Control control in pnls.Controls)
             {
                 if (control is TextBox textBox)
-                {
                     textBox.TextChanged += TextBox_TextChangedContent;
-                }
+                else if (control is ComboBox comboBox)
+                    comboBox.SelectionChangeCommitted += TextBox_TextChangedContent;
+                else if (control is CheckBox checkBox)
+                    checkBox.Click += TextBox_TextChangedContent;
             }
         }
 
@@ -175,9 +184,34 @@ namespace smpc_sales_system.Pages.Sales
             foreach (Control control in pnls.Controls)
             {
                 if (control is TextBox textBox)
-                {
                     textBox.TextChanged += TextBox_TextChangedConditions;
-                }
+                else if (control is ComboBox comboBox)
+                    comboBox.SelectionChangeCommitted += TextBox_TextChangedConditions;
+                else if (control is CheckBox checkBox)
+                    checkBox.Click += TextBox_TextChangedConditions;
+            }
+        }
+
+        // Above zero while ProjectLiveMerge is putting the other app's change on screen. The
+        // rebinding raises the same TextChanged / CellValueChanged a keystroke does; those are
+        // not this user's edits and must not be autosaved back.
+        private int _applyingRemote;
+
+        /// <summary>
+        /// Runs a change that came from the other app, with this control's "the user changed
+        /// something" notifications held back. Anything the user typed just before stays
+        /// queued, so their own edit still autosaves.
+        /// </summary>
+        public void ApplyRemote(Action apply)
+        {
+            _applyingRemote++;
+            try
+            {
+                apply();
+            }
+            finally
+            {
+                _applyingRemote--;
             }
         }
 
@@ -196,6 +230,8 @@ namespace smpc_sales_system.Pages.Sales
         // project items
         private void DataGridView_CellValueChangedProjectItems(object sender, DataGridViewCellEventArgs e)
         {
+            if (_applyingRemote > 0) return;
+
             timer_send_message_cell_items.Stop();
             timer_send_message_cell_items.Start();
         }
@@ -203,6 +239,7 @@ namespace smpc_sales_system.Pages.Sales
         // wiring
         private void DataGridView_CellValueChangedWiring(object sender, DataGridViewCellEventArgs e)
         {
+            if (_applyingRemote > 0) return;
 
             timer_send_message_cell_wiring.Stop();
             timer_send_message_cell_wiring.Start();
@@ -222,6 +259,8 @@ namespace smpc_sales_system.Pages.Sales
         // live, and it already sends this exact same GetProjectContentsData() payload.
         private void TextBox_TextChangedContent(object sender, EventArgs e)
         {
+            if (_applyingRemote > 0) return;
+
             timer_send_message_content.Stop();
             timer_send_message_content.Start();
         }
@@ -231,9 +270,19 @@ namespace smpc_sales_system.Pages.Sales
         // pushes the identical GetAdvancedConditionsData() payload over the websocket.
         private void TextBox_TextChangedConditions(object sender, EventArgs e)
         {
+            if (_applyingRemote > 0) return;
+
             timer_send_message_conditions.Stop();
             timer_send_message_conditions.Start();
         }
+
+        /// <summary>
+        /// A change the user made here that has not reached the host yet (still inside this
+        /// control's short debounce). The other app's change waits for it to go out first.
+        /// </summary>
+        public bool HasPendingChangeEvents =>
+            timer_send_message_conditions.Enabled || timer_send_message_content.Enabled
+            || timer_send_message_cell_items.Enabled || timer_send_message_cell_wiring.Enabled;
 
         //
         //    TIMERS
@@ -425,6 +474,191 @@ namespace smpc_sales_system.Pages.Sales
         public bool HasLoadedItems()
         {
             return dgv_project_items?.DataSource is DataTable dt && dt.Columns.Count > 0;
+        }
+
+        // ---- For ProjectLiveMerge: what the user is in the middle of ----------------------
+        //
+        // A change from the other app is applied field by field and grid by grid, around
+        // whatever the user here is doing - never under the cursor.
+
+        /// <summary>
+        /// The field the user has focus in, in the CLIENT NEEDS / content panel or the
+        /// Advanced Conditions panel, named the way the save names it (control name without
+        /// its txt_/cmb_/rtxt_/chk_ prefix). Null when the focus is anywhere else.
+        /// </summary>
+        public string FocusedFieldName
+        {
+            get
+            {
+                Control focused = ActiveControl;
+                while (focused is ContainerControl container && container.ActiveControl != null)
+                    focused = container.ActiveControl;
+                if (focused == null) return null;
+
+                bool inPanels = false;
+                for (Control c = focused; c != null && c != this; c = c.Parent)
+                {
+                    if (c == pnl_project_content || c == pnl_advanced_conditions)
+                    {
+                        inPanels = true;
+                        break;
+                    }
+                }
+                if (!inPanels) return null;
+
+                string name = focused.Name ?? "";
+                foreach (string prefix in new[] { "rtxt_", "txt_", "cmb_", "chk_", "dtp_" })
+                {
+                    if (name.StartsWith(prefix, StringComparison.Ordinal))
+                        return name.Substring(prefix.Length);
+                }
+                return name;
+            }
+        }
+
+        /// <summary>A cell of the item table is being typed in.</summary>
+        public bool IsItemsGridEditing => dgv_project_items != null && dgv_project_items.IsCurrentCellInEditMode;
+
+        /// <summary>A cell of the wiring table is being typed in.</summary>
+        public bool IsWiringGridEditing => dgv_wiring != null && dgv_wiring.IsCurrentCellInEditMode;
+
+        /// <summary>
+        /// Gives rows this screen created the ids the server issued for them, matching items
+        /// by reference code and wiring rows by material - both unique within an item set.
+        /// A row still at id 0 after its save would be inserted again by the next one, which
+        /// is why a save with new rows used to force a full rebuild of every tab.
+        /// </summary>
+        public int AdoptServerIds(IEnumerable<SalesProjectItems> storedItems, IEnumerable<SalesWiringModel> storedWiring)
+        {
+            int adopted = 0;
+
+            if (dgv_project_items != null && storedItems != null
+                && dgv_project_items.Columns.Contains("project_items_id") && dgv_project_items.Columns.Contains("reference_code"))
+            {
+                var onScreen = new HashSet<int>(dgv_project_items.Rows.Cast<DataGridViewRow>()
+                    .Where(r => !r.IsNewRow)
+                    .Select(r => int.TryParse(r.Cells["project_items_id"].Value?.ToString(), out int id) ? id : 0)
+                    .Where(id => id > 0));
+
+                var unclaimed = storedItems
+                    .Where(i => i.items_id > 0 && !onScreen.Contains(i.items_id) && !string.IsNullOrWhiteSpace(i.reference_code))
+                    .GroupBy(i => i.reference_code.Trim())
+                    .Where(g => g.Count() == 1)
+                    .ToDictionary(g => g.Key, g => g.First());
+
+                foreach (DataGridViewRow row in dgv_project_items.Rows)
+                {
+                    if (row.IsNewRow) continue;
+                    if (int.TryParse(row.Cells["project_items_id"].Value?.ToString(), out int id) && id > 0) continue;
+
+                    string code = row.Cells["reference_code"].Value?.ToString()?.Trim();
+                    if (string.IsNullOrEmpty(code) || !unclaimed.TryGetValue(code, out var stored)) continue;
+
+                    int.TryParse(row.Cells["item_id"].Value?.ToString(), out int itemId);
+                    if (itemId != stored.item_id) continue;
+
+                    row.Cells["project_items_id"].Value = stored.items_id.ToString();
+                    if (dgv_project_items.Columns.Contains("project_items_based_id"))
+                        row.Cells["project_items_based_id"].Value = stored.based_id.ToString();
+                    unclaimed.Remove(code);
+                    adopted++;
+                }
+            }
+
+            if (dgv_wiring != null && storedWiring != null
+                && dgv_wiring.Columns.Contains("project_wiring_id") && dgv_wiring.Columns.Contains("project_wiring_materials"))
+            {
+                var onScreen = new HashSet<int>(dgv_wiring.Rows.Cast<DataGridViewRow>()
+                    .Where(r => !r.IsNewRow)
+                    .Select(r => int.TryParse(r.Cells["project_wiring_id"].Value?.ToString(), out int id) ? id : 0)
+                    .Where(id => id > 0));
+
+                var unclaimed = storedWiring
+                    .Where(w => w.id > 0 && !onScreen.Contains(w.id) && !string.IsNullOrWhiteSpace(w.materials))
+                    .GroupBy(w => w.materials.Trim().ToUpperInvariant())
+                    .Where(g => g.Count() == 1)
+                    .ToDictionary(g => g.Key, g => g.First());
+
+                foreach (DataGridViewRow row in dgv_wiring.Rows)
+                {
+                    if (row.IsNewRow) continue;
+                    if (int.TryParse(row.Cells["project_wiring_id"].Value?.ToString(), out int id) && id > 0) continue;
+
+                    string material = row.Cells["project_wiring_materials"].Value?.ToString()?.Trim().ToUpperInvariant();
+                    if (string.IsNullOrEmpty(material) || !unclaimed.TryGetValue(material, out var stored)) continue;
+
+                    row.Cells["project_wiring_id"].Value = stored.id.ToString();
+                    if (dgv_wiring.Columns.Contains("project_wiring_based_id"))
+                        row.Cells["project_wiring_based_id"].Value = stored.based_id.ToString();
+                    unclaimed.Remove(material);
+                    adopted++;
+                }
+            }
+
+            return adopted;
+        }
+
+        /// <summary>
+        /// Replaces the item table with what is stored, keeping the user's place in it: the
+        /// scroll position and the selected cell.
+        /// </summary>
+        public void ApplyStoredItems(DataTable items)
+        {
+            GridPlace place = GridPlace.Capture(dgv_project_items);
+            SetFetchedItemData(items);
+            place.Restore(dgv_project_items);
+        }
+
+        /// <summary>The same for the wiring table.</summary>
+        public void ApplyStoredWiring(DataTable wiring)
+        {
+            GridPlace place = GridPlace.Capture(dgv_wiring);
+            SetProjectWiring(wiring);
+            place.Restore(dgv_wiring);
+        }
+
+        private sealed class GridPlace
+        {
+            private int _firstRow = -1;
+            private int _hOffset;
+            private int _row = -1;
+            private string _column;
+
+            public static GridPlace Capture(DataGridView grid)
+            {
+                var place = new GridPlace();
+                if (grid == null) return place;
+
+                place._firstRow = grid.FirstDisplayedScrollingRowIndex;
+                place._hOffset = grid.HorizontalScrollingOffset;
+                if (grid.CurrentCell != null)
+                {
+                    place._row = grid.CurrentCell.RowIndex;
+                    place._column = grid.CurrentCell.OwningColumn?.Name;
+                }
+                return place;
+            }
+
+            public void Restore(DataGridView grid)
+            {
+                if (grid == null || grid.Rows.Count == 0) return;
+
+                try
+                {
+                    if (_firstRow >= 0)
+                        grid.FirstDisplayedScrollingRowIndex = Math.Min(_firstRow, grid.Rows.Count - 1);
+                    grid.HorizontalScrollingOffset = _hOffset;
+
+                    if (_row >= 0 && _row < grid.Rows.Count && _column != null && grid.Columns.Contains(_column)
+                        && grid.Columns[_column].Visible)
+                        grid.CurrentCell = grid.Rows[_row].Cells[_column];
+                }
+                catch (InvalidOperationException)
+                {
+                    // A grid that cannot take the position right now (mid-layout) simply
+                    // stays where the rebind left it.
+                }
+            }
         }
 
         public Dictionary<string, dynamic>  GetProjectContentsData()
@@ -825,6 +1059,36 @@ namespace smpc_sales_system.Pages.Sales
         {
             txt_template_id.Text = template_id;
         }
+
+        /// <summary>
+        /// Shows the template the other app picked, without applying it here. Its rows arrive
+        /// with the item table; applying it again would rebuild that table from scratch. The
+        /// dropdown applies a template only when the pick differs from the one the grid is
+        /// built from, so that is set first.
+        /// </summary>
+        public void ShowStoredTemplate(string templateId)
+        {
+            string id = NormalizeTemplateId(templateId);
+            txt_template_id.Text = id;
+            _lastAppliedTemplateId = id;
+
+            if (cmb_template_project.DataSource == null) return;
+
+            _restoringSavedTemplate = true;
+            try
+            {
+                // As a string, the way the load restores it (ItemSetUC_Load).
+                cmb_template_project.SelectedValue = id;
+            }
+            catch (ArgumentException)
+            {
+                // A template this screen's list does not have yet: the name stays as it was.
+            }
+            finally
+            {
+                _restoringSavedTemplate = false;
+            }
+        }
         // FLA / VOLTAGE are DERIVED from the FINAL list, not typed - spec 8.4 feeds both
         // amp formulas from them, and "with multiple pumps, base the calculation on the
         // largest FLA", hence the max rather than the last row.
@@ -1040,6 +1304,9 @@ namespace smpc_sales_system.Pages.Sales
             // Size Up is what FINAL may be chosen from, so a change here can change the
             // pump behind FLA. Cheap to refresh and keeps the amps from going stale.
             RefreshWiringAmpRequirements();
+
+            // A grid row added by code - see NotifyItemsChanged.
+            NotifyItemsChanged();
         }
 
         // Loads saved Size Up rows back onto the grid, mirroring SetFinalData. Nothing did
@@ -1495,9 +1762,13 @@ namespace smpc_sales_system.Pages.Sales
                 if (row.IsNewRow) continue;
 
 
-                if (row.Cells["project_items_components"].Value == null || row.Cells["project_items_qty"].Value.ToString() == null || row.Cells["project_items_qty"].Value.ToString() == "")
+                // A row with no component or no QTY - a heading, a template line not filled in
+                // yet - is skipped. This returned, which ended the whole method on the first
+                // such row: the wiring amps were never refreshed and the pick never autosaved,
+                // so a FINAL pump on a templated tab reached neither the wiring nor the other app.
+                if (row.Cells["project_items_components"].Value == null || string.IsNullOrEmpty(row.Cells["project_items_qty"].Value?.ToString()))
                 {
-                    return;
+                    continue;
                 }
                  
                 if (row.Cells["project_items_components"].Value.ToString().ToLower() == "pump")
@@ -1528,6 +1799,7 @@ namespace smpc_sales_system.Pages.Sales
             if (chk_wiring.Checked)
                 RefreshWiringAmpRequirements();
 
+            NotifyItemsChanged();
         }
 
         // Spec §5.1.4's "+add final pump ... inserted into the table as further pumps
@@ -2995,8 +3267,11 @@ namespace smpc_sales_system.Pages.Sales
                     .Where(row => row.Field<int>("id") == createModal.GetItemId())
                     .CopyToDataTable();
 
-                int templateId = int.Parse(dgv.Rows[index].Cells["project_items_template_id"].Value.ToString());
-                int itemIdTemplate = int.Parse(dgv  .Rows[index].Cells["item_id"].Value.ToString());
+                // TryParse: a pump FINAL added carries template_id "final_pump" (see
+                // AddFinalPumpToItemsGrid), and int.Parse threw on it - clicking that row's
+                // MODEL failed in both apps. Not a template, so it takes a plain model swap.
+                int.TryParse(dgv.Rows[index].Cells["project_items_template_id"].Value?.ToString(), out int templateId);
+                int.TryParse(dgv.Rows[index].Cells["item_id"].Value?.ToString(), out int itemIdTemplate);
 
                 if (templateId != 0)
                     ValidateAndApplyTemplateBOM(index, dgv, ItemId, referenceCode, templateId, BomId, isBom, itemIdTemplate);
@@ -3005,6 +3280,18 @@ namespace smpc_sales_system.Pages.Sales
                     AddModel(dgv, index, isBom, BomId, ItemId, referenceCode);
                 }
             }
+        }
+
+        // Rows put into the item table's DataTable directly - a model picked, a FINAL pump
+        // added - raise no CellValueChanged, so the host's autosave never heard of them and
+        // the change reached the other app only on an explicit UPDATE. This goes through the
+        // same debounce a typed cell does.
+        private void NotifyItemsChanged()
+        {
+            if (_applyingRemote > 0) return;
+
+            timer_send_message_cell_items.Stop();
+            timer_send_message_cell_items.Start();
         }
 
         private void ValidateAndApplyTemplateBOM(int rowIndex, DataGridView dgv, int itemId, string parentReferenceCode, int templateId, int BomId, bool isBom,int itemIdTemplate)

@@ -544,7 +544,10 @@ namespace smpc_sales_app.Pages.Sales
         private System.Windows.Forms.Label _autoSaveStatus;
         private bool _autoSaving;
 
-        private const int AutoSaveIdleMs = 2000;
+        // With the item-set control's own debounce in front of it (ItemSetUC's
+        // timer_send_message_*), an edit reached the other screen after ~2 + 2 + 2.5 s. Both
+        // shortened 2026-09-26 ("the possible other that will not update quickly").
+        private const int AutoSaveIdleMs = 1000;
 
         // One save this screen made, still waiting for its own broadcast to come back. See
         // HandleQuotationSavedNotification for why the echo has to be recognised at all.
@@ -564,7 +567,9 @@ namespace smpc_sales_app.Pages.Sales
         // The timer restarts on each notification and only fires once they stop.
         private System.Windows.Forms.Timer _remoteRefreshTimer;
 
-        private const int RemoteRefreshDebounceMs = 2500;
+        // Short now that the other app's change is merged in place (ProjectLiveMerge) rather
+        // than rebuilding every tab - it only has to collapse a burst of notifications.
+        private const int RemoteRefreshDebounceMs = 600;
 
         private void QueueRemoteRefresh()
         {
@@ -595,17 +600,21 @@ namespace smpc_sales_app.Pages.Sales
                     return;
                 }
 
-                // Nor on top of someone who is in the middle of an edit. A rebuild replaces
-                // every tab with what the server holds, so a change typed here and not yet
-                // saved would simply vanish - and the cell being typed in with it. The update
-                // waits until the user pauses; the user decides when, not the other app.
-                if (IsUserMidEdit())
+                // In place, field by field, around whatever the user is doing - no waiting for
+                // them to stop typing, no reload (ProjectLiveMerge). Only a change of shape - a
+                // tab added, removed or renamed - still rebuilds the page, and that still waits
+                // for a pause: a rebuild replaces every tab.
+                bool merged = await MergeRemoteChangesAsync(SalesProjectListData);
+                if (!merged)
                 {
-                    QueueRemoteRefresh();
-                    return;
+                    if (IsUserMidEdit())
+                    {
+                        QueueRemoteRefresh();
+                        return;
+                    }
+                    await RefreshCurrentProjectQuotationAsync();
                 }
 
-                await RefreshCurrentProjectQuotationAsync();
                 ShowAutoSaveStatus("updated by another user " + DateTime.Now.ToString("HH:mm"));
             }
             catch (Exception ex)
@@ -654,29 +663,24 @@ namespace smpc_sales_app.Pages.Sales
         // written. The exception is a save that INSERTED: new rows and tabs have ids now that
         // the screen does not, and a grid still holding 0 would insert them again next time,
         // so those get a real rebuild (which keeps the user's place).
-        private async Task RefreshBaselineAfterOwnSaveAsync(bool rebuild)
+        //
+        // The stored project is NOT simply taken as the new baseline any more. It can hold a
+        // change the other app saved while this save was on its way, which this screen does
+        // not show yet; a baseline that claimed otherwise told the NEXT save the screen had it,
+        // and that save undid it. So the stored project is merged in the same way as the other
+        // app's saves are (ProjectLiveMerge), against the data this save was diffed from: this
+        // screen's own changes read as its own and stay, anything else lands on screen, and
+        // rows this save created take the ids the server gave them.
+        private async Task RefreshBaselineAfterOwnSaveAsync(SalesProjectList savedFrom)
         {
             int id = ToInt(txt_id.Text);
             if (id <= 0) return;
 
             try
             {
-                if (rebuild)
-                {
-                    await RefreshCurrentProjectQuotationAsync();
-                    return;
-                }
-
-                SalesProjectList detail = await ProjectService.GetProjectDetail(id);
-                if (detail?.SalesQuotation != null && detail.SalesQuotation.Any())
-                {
-                    SalesProjectListData = detail;
-
-                    // The lines this save just wrote. Without a rebuild nothing else redraws the
-                    // panel, so your own change never appeared in CHANGE HISTORY until something
-                    // unrelated reloaded the page.
-                    RenderTabHistory();
-                }
+                bool merged = await MergeRemoteChangesAsync(savedFrom, adoptNewRowIds: true);
+                if (!merged)
+                    await RefreshCurrentProjectQuotationAsync();   // this save added a tab
             }
             catch (Exception ex)
             {
@@ -684,35 +688,105 @@ namespace smpc_sales_app.Pages.Sales
             }
         }
 
-        // Whether a payload from BuildProjectQuotationPayload creates anything: a tab added with
-        // "+", or an item or wiring row that has no id yet.
-        private static bool ProjectPayloadHasInserts(Dictionary<string, dynamic> payload)
+        // Reads the stored project and puts it on screen in place (ProjectLiveMerge), with
+        // `baseline` as what the screen was built from. False when that cannot be done in place
+        // - the shape changed, or (outside edit mode) the header or multipliers did - and the
+        // caller should rebuild.
+        private async Task<bool> MergeRemoteChangesAsync(SalesProjectList baseline, bool adoptNewRowIds = false)
         {
-            if (payload == null || !payload.ContainsKey("sales_project_all_tabs")) return false;
+            int id = ToInt(txt_id.Text);
+            if (id <= 0 || !isProject) return true;
 
-            object rawTabs = payload["sales_project_all_tabs"];
-            if (!(rawTabs is List<Dictionary<string, object>> tabs)) return false;
+            SalesProjectList fresh = await ProjectService.GetProjectDetail(id);
+            if (fresh?.SalesQuotation == null || !fresh.SalesQuotation.Any()) return true;
 
-            foreach (var tab in tabs)
+            // The record may have changed while the request was out.
+            if (ToInt(txt_id.Text) != id || _loadingProject || _isFetchingSalesProject) return true;
+
+            var tabs = new Dictionary<int, ItemSetUC>();
+            foreach (TabPage page in tabControl2.TabPages)
             {
-                if (tab.TryGetValue("sales_project_item_set", out object set)
-                    && set is Dictionary<string, object> setData
-                    && setData.TryGetValue("is_new_tab", out object isNew)
-                    && isNew is bool newTab && newTab)
-                    return true;
-
-                if (tab.TryGetValue("sales_project_items", out object items)
-                    && items is List<SalesProjectItems> itemList
-                    && itemList.Any(x => x.items_id == 0))
-                    return true;
-
-                if (tab.TryGetValue("sales_project_wiring", out object wiring)
-                    && wiring is List<SalesWiringModel> wiringList
-                    && wiringList.Any(x => x.id == 0))
-                    return true;
+                if (page.Text == "+" || _newlyCreatedTabs.Contains(page)) continue;
+                if (!(page.Controls.Count > 0 && page.Controls[0] is ItemSetUC uc)) continue;
+                if (int.TryParse(page.Tag?.ToString(), out int itemSetId) && itemSetId > 0)
+                    tabs[itemSetId] = uc;
             }
 
-            return false;
+            // Rows this screen created carry id 0 until it is told the ids the server issued.
+            // Left at 0, the next save would insert them a second time.
+            if (adoptNewRowIds)
+            {
+                foreach (var tab in tabs)
+                {
+                    tab.Value.AdoptServerIds(
+                        (fresh.sales_project_items ?? new List<SalesProjectItems>()).Where(i => i.based_id == tab.Key),
+                        (fresh.sales_project_wiring ?? new List<SalesWiringModel>()).Where(w => w.based_id == tab.Key));
+                }
+            }
+
+            var payload = BuildProjectQuotationPayload();
+            payload["id"] = id;
+
+            // Read before anything is applied: has the PROJECT MULTIPLIERS grid been edited here
+            // since the baseline?
+            bool multipliersUntouched = ProjectLiveMerge.SameMultipliers(
+                payload.TryGetValue("sales_project_multiplier", out object onScreen) ? onScreen as IEnumerable<SalesProjectMultiplier> : null,
+                ProjectLiveMerge.StoredMultipliers(baseline, id));
+
+            ProjectLiveMerge.Outcome outcome = ProjectLiveMerge.Apply(this, baseline, fresh, payload, id, tabs);
+
+            if (outcome.NeedsRebuild) return false;
+
+            // Outside edit mode the header on screen is simply the stored one, so a change to
+            // it is shown by rebinding. In edit mode it is the creator's own, being edited, and
+            // stays as it is.
+            if (!IsEdit && (outcome.HeaderChanged || outcome.MultipliersChanged)) return false;
+
+            // The multipliers are no longer Sales's alone - the engineer the quote was sent to
+            // edits them too (2026-09-28). In edit mode an engineer's change was left off this
+            // screen while the baseline took it, so this screen's next save put the old list
+            // back. Shown here unless this screen has edited the list itself, in which case its
+            // own list stays and its save sends it.
+            if (IsEdit && outcome.MultipliersChanged && multipliersUntouched)
+            {
+                dt_multiplier = JsonHelper.ToDataTable(fresh.sales_project_multiplier ?? new List<SalesProjectMultiplier>());
+                BindProjectMultipliers(id);
+                fetchProjectMultipliers();
+            }
+
+            SalesProjectListData = outcome.Baseline;
+
+            foreach (var flag in outcome.Exclusions)
+            {
+                TabPage page = tabControl2.TabPages.Cast<TabPage>()
+                    .FirstOrDefault(p => int.TryParse(p.Tag?.ToString(), out int tag) && tag == flag.Key);
+                if (page == null) continue;
+                if (flag.Value) _redFlaggedTabs.Add(page); else _redFlaggedTabs.Remove(page);
+            }
+            if (outcome.Exclusions.Count > 0) tabControl2.Invalidate();
+
+            // A grid was open for typing: its part waits for the next pass.
+            if (outcome.Deferred.Count > 0) QueueRemoteRefresh();
+
+            RenderTabHistory();
+            return true;
+        }
+
+        // Whether GetFullDiff found nothing to save: no header field, no multiplier, no tab, no
+        // tab removal. The header's history list is built from those, so it is empty too.
+        public static bool DiffIsEmpty(Dictionary<string, dynamic> changes)
+        {
+            if (changes == null) return true;
+            if (changes.ContainsKey("Tabs") || changes.ContainsKey("removed_item_set_ids")) return false;
+
+            if (changes.TryGetValue("Header", out dynamic header) && header is Dictionary<string, dynamic> parts)
+            {
+                if (parts.TryGetValue("QuotationFields", out dynamic fields) && fields is System.Collections.ICollection f && f.Count > 0)
+                    return false;
+                if (parts.TryGetValue("Multipliers", out dynamic multipliers) && multipliers is ModelUpdateDiff<SalesProjectMultiplier> m && m.HasChanges())
+                    return false;
+            }
+            return true;
         }
 
         // ---- Is the user in the middle of something? -------------------------------
@@ -1083,8 +1157,21 @@ namespace smpc_sales_app.Pages.Sales
                 var pnl_quotation = BuildProjectQuotationPayload();
                 pnl_quotation["id"] = ToInt(txt_id.Text);
 
+                // What this save is measured against - the merge that follows it needs the same.
+                SalesProjectList savedFrom = SalesProjectListData;
+
                 Dictionary<string, dynamic> changes = GetFullDiff(SalesProjectListData, pnl_quotation);
                 changes["id"] = ToInt(txt_id.Text);
+
+                // Nothing to send. A save with nothing in it still commits and still tells the
+                // other app to look again - a round trip, and a "saved" here, for nothing. It
+                // happened whenever a change event fired without anything changing (a dropdown
+                // re-picked to the same value).
+                if (DiffIsEmpty(changes))
+                {
+                    ShowAutoSaveStatus("");
+                    return;
+                }
 
                 // Last line of defence. Removing a tab is something a person does on purpose
                 // (right-click > Remove Tabs); there is no circumstance in which a save
@@ -1129,7 +1216,7 @@ namespace smpc_sales_app.Pages.Sales
                 {
                     // Written; nothing left to request.
                     _removedItemSetIds.Clear();
-                    await RefreshBaselineAfterOwnSaveAsync(ProjectPayloadHasInserts(pnl_quotation));
+                    await RefreshBaselineAfterOwnSaveAsync(savedFrom);
                 }
             }
             catch (Exception ex)
@@ -1149,7 +1236,7 @@ namespace smpc_sales_app.Pages.Sales
 
             if (IsEdit)
             {
-                if (tabControl2.SelectedTab.Controls[0] is ItemSetUC currentControl)
+                if (ItemSetFrom(sender) is ItemSetUC currentControl)
                 {
                     Dictionary<string, dynamic> data = new Dictionary<string, dynamic>();
                     var updatedConditionsData = currentControl.GetAdvancedConditionsData();
@@ -1169,7 +1256,7 @@ namespace smpc_sales_app.Pages.Sales
 
             if (IsEdit)
             {
-                if (tabControl2.SelectedTab.Controls[0] is ItemSetUC currentControl)
+                if (ItemSetFrom(sender) is ItemSetUC currentControl)
                 {
                     Dictionary<string, dynamic> data = new Dictionary<string, dynamic>();
                     var updatedContentsData = currentControl.GetProjectContentsData();
@@ -1187,7 +1274,7 @@ namespace smpc_sales_app.Pages.Sales
         {
             if (IsEdit)
             {
-                if (tabControl2.SelectedTab.Controls[0] is ItemSetUC currentControl)
+                if (ItemSetFrom(sender) is ItemSetUC currentControl)
                 {
                     var item_data = currentControl.GetProjectItems();
 
@@ -1220,9 +1307,15 @@ namespace smpc_sales_app.Pages.Sales
 
         private async void Cell_DataChanged(object sender, EventArgs e)
         {
+            // An item-table edit autosaves like the panels always have. It never did - only
+            // Advanced Conditions and the content panel queued a save - so an item typed here
+            // reached the Engineering screen only when somebody pressed UPDATE (user-reported
+            // 2026-09-26: "update ... items ... it will not update").
+            QueueAutoSave();
+
             if (IsEdit)
             {
-                if (tabControl2.SelectedTab.Controls[0] is ItemSetUC currentControl)
+                if (ItemSetFrom(sender) is ItemSetUC currentControl)
                 {
                     //var item_data = currentControl.GetProjectItems();
                     //if (item_data != null && item_data.ContainsKey("sales_project_items"))
@@ -1270,9 +1363,12 @@ namespace smpc_sales_app.Pages.Sales
 
         private async void Cell_WiringChanged(object sender, EventArgs e)
         {
+            // Same for the wiring table.
+            QueueAutoSave();
+
             if (IsEdit)
             {
-                if (tabControl2.SelectedTab.Controls[0] is ItemSetUC currentControl)
+                if (ItemSetFrom(sender) is ItemSetUC currentControl)
                 {
                     var item_data = currentControl.GetProjectWiringData();
 
@@ -1302,7 +1398,7 @@ namespace smpc_sales_app.Pages.Sales
             if (isProject && !isNewRecord && !IsEdit)
                 return;
 
-            if (tabControl2.SelectedTab.Controls[0] is ItemSetUC currentControl)
+            if (ItemSetFrom(sender) is ItemSetUC currentControl)
             {
                 int index = currentControl.GetIndex();
 
@@ -1383,31 +1479,13 @@ namespace smpc_sales_app.Pages.Sales
             }
         }
 
+        // The TEMPLATE button - in ProjectItemSetActions, shared with the Engineering app.
         private async void Button_ClickedUC(object sender, EventArgs e)
         {
-            var dt = await ItemSetLookups.Templates();
-            DataTable templates = JsonHelper.ToDataTable(dt.sales_project_template_child);
-
-            if (tabControl2.SelectedTab.Controls[0] is ItemSetUC currentControl)
+            if (ItemSetFrom(sender) is ItemSetUC currentControl)
             {
-                TemplateSelectionModal temp = new TemplateSelectionModal();
-                DialogResult r = temp.ShowDialog();
-
-                if (r == DialogResult.OK)
-                {
-                    Dictionary<string, dynamic> result = temp.GetResult();
-
-                    if (result != null)
-                    {
-                        dynamic id = "";
-
-                        result.TryGetValue("template_id", out id);
-
-                        var template_data = Helpers.FilterDataTable(templates, id, "based_id");
-                        
-                        currentControl.SetProjectItemsData(template_data, temp.GetTemplateName());
-                    }
-                }
+                await ProjectItemSetActions.ApplyTemplateAsync(currentControl);
+                QueueAutoSave();
             }
         }
 
@@ -1427,7 +1505,7 @@ namespace smpc_sales_app.Pages.Sales
         }
         private void CacheProjectData()
         {
-            if (tabControl2.SelectedTab.Controls[0] is ItemSetUC currentControl)
+            if (SelectedItemSet is ItemSetUC currentControl)
             {
                 CacheData.Cached_Advanced_Conditions_Data = currentControl.GetAdvancedConditionsData();
                 CacheData.Cached_Content_Data = currentControl.GetProjectContentsData();
@@ -2724,8 +2802,8 @@ namespace smpc_sales_app.Pages.Sales
             // a live update can add or remove a tab, and an index would then land on a
             // different item set than the one being worked on. Restored at the end of the
             // rebuild; without it every live update snaps whoever is editing back to tab 1.
-            object selectedTabKey = tabControl2.SelectedTab?.Tag;
-            bool wasOnAddTab = tabControl2.SelectedTab != null && tabControl2.SelectedTab.Text == "+";
+            // Only for the record already on screen: opening another one starts on its first tab.
+            object selectedTabKey = view != null ? tabControl2.SelectedTab?.Tag : null;
 
             SetRedraw(tabControl2, false);
             try
@@ -2733,6 +2811,12 @@ namespace smpc_sales_app.Pages.Sales
              ClearProjectTabs();
 
             var filteredtabs = fetchedTabs.Where(tab => tab.based_id.ToString() == selectedId).ToList();
+
+            // In edit mode the multipliers on screen are the user's, like the header - only the
+            // quote's creator edits them, and they are looking at them. A live refresh keeps
+            // them; anything else (opening, reloading after a save) binds what is stored.
+            if (!keepHeader)
+                BindProjectMultipliers(selectedIdInt);
             foreach (var tab in filteredtabs)
             {
                 TabPage newTab = new TabPage(tab.tab_number);
@@ -2880,7 +2964,7 @@ namespace smpc_sales_app.Pages.Sales
             // which would have made a persisted exclusion look like it had not been saved.
             tabControl2.Invalidate();
 
-            RestoreSelectedProjectTab(selectedTabKey, wasOnAddTab);
+            RestoreSelectedProjectTab(selectedTabKey);
 
             // Inside the no-redraw window, so the user never sees the in-between state.
             view?.Restore(tabControl2);
@@ -2917,7 +3001,7 @@ namespace smpc_sales_app.Pages.Sales
 
         private async void CellClickedModelUC(object sender, EventArgs e)
         {
-            if (tabControl2.SelectedTab.Controls[0] is ItemSetUC currentControl)
+            if (SelectedItemSet is ItemSetUC currentControl)
             {
 
                 int index = currentControl.GetIndex();
@@ -2928,7 +3012,7 @@ namespace smpc_sales_app.Pages.Sales
 
         private void fetchSalesProjectRT(JToken data)
         {
-            if (tabControl2.SelectedTab.Controls[0] is ItemSetUC currentControl)
+            if (SelectedItemSet is ItemSetUC currentControl)
             {
                 // for datagridview
                 if (data is JArray)
@@ -3509,7 +3593,7 @@ namespace smpc_sales_app.Pages.Sales
 
         // ─── Tab data container (replaces anonymous tuple) ──────────────────────────
 
-        private class TabDbData
+        public class TabDbData
         {
             public List<SalesProjectItemSet> ItemSets { get; set; } = new List<SalesProjectItemSet>();
             public List<SalesProjectContent> Contents { get; set; } = new List<SalesProjectContent>();
@@ -3642,9 +3726,76 @@ namespace smpc_sales_app.Pages.Sales
             return result;
         }
 
+        // What changed in the STORED project between two reads of it, per item set - the same
+        // section-by-section comparison a save makes, so "what the other app changed" and
+        // "what a save would send" can never disagree about what counts as a change. No
+        // history lines are generated: nothing is being saved. Used by ProjectLiveMerge.
+        public Dictionary<int, TabDiff> DiffStoredTabs(SalesProjectList from, SalesProjectList to, int quotationId)
+        {
+            var before = new Dictionary<int, TabDbData>();
+            var after = new Dictionary<int, TabDbData>();
+            if (from != null) PopulateDbByTab(from, before, quotationId);
+            if (to != null) PopulateDbByTab(to, after, quotationId);
+
+            var result = new Dictionary<int, TabDiff>();
+            foreach (int itemSetId in before.Keys.Union(after.Keys))
+            {
+                var a = before.TryGetValue(itemSetId, out var x) ? x : new TabDbData();
+                var b = after.TryGetValue(itemSetId, out var y) ? y : new TabDbData();
+
+                result[itemSetId] = new TabDiff
+                {
+                    BasedId = itemSetId,
+                    SalesProjectItemSet = DiffModels(a.ItemSets, b.ItemSets, s => s.itemset_id, GetItemSetChanges),
+                    SalesProjectContent = DiffModels(a.Contents, b.Contents, c => c.content_id, GetContentChanges),
+                    SalesProjectContentAdvancedCondition = DiffModels(a.Conditions, b.Conditions, c => c.conditions_id, GetAdvancedConditionsChanges),
+                    SalesProjectItems = DiffModels(a.Items, b.Items, i => i.items_id, GetItemFieldChanges),
+                    SalesProjectWirings = DiffModels(a.Wiring, b.Wiring, w => w.id, GetWiringChanges),
+                };
+            }
+
+            return result;
+        }
+
         // Builds and appends one tab's diff entry to result["Tabs"] if it has any changes.
         // Shared by GetFullDiff's existing-tab (id-matched) and new-tab (unconditional) paths.
         private void BuildTabDiffEntry(int itemSetId, TabDbData db, Dictionary<string, object> matchedTab, Dictionary<string, dynamic> result)
+        {
+            var tabDiff = ComputeTabDiff(itemSetId, db, matchedTab);
+
+            List<SalesProjectHistory> HistoryMatchedTab = DeserializeFromTab<SalesProjectHistory>(matchedTab, "sales_project_history");
+            tabDiff.SalesProjectHistory = DiffModels(db.History, HistoryMatchedTab, x => (int)x.history_id, GetHistoryChanges);
+
+            // Change History is an audit trail: a save adds to it and never takes from it.
+            // Sales sends each tab's history from ItemSetUC.GetHistoryList(), which has always
+            // returned an empty list - so every existing row came out of the diff as Removed
+            // and the server deleted it. Every sales save wiped the history of every tab it
+            // sent (on Q#0026, rows written at 4:37 PM were gone an hour later; 418 of 588
+            // rows ever written are missing). Nothing on either screen deletes history on
+            // purpose, so no save may.
+            tabDiff.SalesProjectHistory.Removed.Clear();
+            tabDiff.SalesProjectHistory.Updated.Clear();
+
+            // Auto-generate a readable Change History entry for every meaningful change this
+            // save is about to make - GetHistoryList() (ItemSetUC) never produced real entries
+            // on its own, so this is what actually populates the history table now, driven
+            // straight off the diffs already computed above rather than requiring anything to
+            // be logged manually.
+            string tabName = TabNameOf(matchedTab) ?? db.ItemSets?.FirstOrDefault()?.tab_number;
+            tabDiff.SalesProjectHistory.Added.AddRange(BuildAutoHistoryEntries(itemSetId, tabName, tabDiff));
+
+            if (tabDiff.HasChanges())
+            {
+                if (!result.ContainsKey("Tabs")) result["Tabs"] = new List<Dictionary<string, dynamic>>();
+
+                ((List<Dictionary<string, dynamic>>)result["Tabs"]).Add(JsonConvert.DeserializeObject<Dictionary<string, dynamic>>(JsonConvert.SerializeObject(tabDiff)));
+            }
+        }
+
+        // One tab's changes - item set, content, advanced conditions, items, wiring - between
+        // what is stored (db) and what a screen holds (matchedTab, a save payload's tab). No
+        // Change History: a save adds that (BuildTabDiffEntry), the live merge does not want it.
+        private TabDiff ComputeTabDiff(int itemSetId, TabDbData db, Dictionary<string, object> matchedTab)
         {
             var newItemSets = new List<SalesProjectItemSet>();
             if (matchedTab != null && matchedTab.ContainsKey("sales_project_item_set")
@@ -3689,7 +3840,6 @@ namespace smpc_sales_app.Pages.Sales
 
             List<SalesProjectItems> ItemsMatchedTab = DeserializeFromTab<SalesProjectItems>(matchedTab, "sales_project_items");
             List<SalesWiringModel> WiringMatchedTab = DeserializeFromTab<SalesWiringModel>(matchedTab, "sales_project_wiring");
-            List<SalesProjectHistory> HistoryMatchedTab = DeserializeFromTab<SalesProjectHistory>(matchedTab, "sales_project_history");
 
             tabDiff.SalesProjectItemSet = DiffModels(db.ItemSets, newItemSets, x => x.itemset_id, GetItemSetChanges);
             // Only diff these two when the payload actually carried them. Diffing a
@@ -3714,32 +3864,73 @@ namespace smpc_sales_app.Pages.Sales
                 : new ModelUpdateDiff<SalesProjectAdvancedConditions>();
             tabDiff.SalesProjectItems = DiffModels(db.Items, ItemsMatchedTab, x => x.items_id, GetItemFieldChanges);
             tabDiff.SalesProjectWirings = DiffModels(db.Wiring, WiringMatchedTab, x => x.id, GetWiringChanges);
-            tabDiff.SalesProjectHistory = DiffModels(db.History, HistoryMatchedTab, x => (int)x.history_id, GetHistoryChanges);
 
-            // Change History is an audit trail: a save adds to it and never takes from it.
-            // Sales sends each tab's history from ItemSetUC.GetHistoryList(), which has always
-            // returned an empty list - so every existing row came out of the diff as Removed
-            // and the server deleted it. Every sales save wiped the history of every tab it
-            // sent (on Q#0026, rows written at 4:37 PM were gone an hour later; 418 of 588
-            // rows ever written are missing). Nothing on either screen deletes history on
-            // purpose, so no save may.
-            tabDiff.SalesProjectHistory.Removed.Clear();
-            tabDiff.SalesProjectHistory.Updated.Clear();
+            return tabDiff;
+        }
 
-            // Auto-generate a readable Change History entry for every meaningful change this
-            // save is about to make - GetHistoryList() (ItemSetUC) never produced real entries
-            // on its own, so this is what actually populates the history table now, driven
-            // straight off the diffs already computed above rather than requiring anything to
-            // be logged manually.
-            string tabName = TabNameOf(matchedTab) ?? db.ItemSets?.FirstOrDefault()?.tab_number;
-            tabDiff.SalesProjectHistory.Added.AddRange(BuildAutoHistoryEntries(itemSetId, tabName, tabDiff));
+        // ---- For ProjectLiveMerge -------------------------------------------------------------
 
-            if (tabDiff.HasChanges())
+        // What this screen would save now, per existing item set - the same comparison, tab for
+        // tab, that GetFullDiff makes for a save, minus the Change History lines. A field listed
+        // here is one the user has changed and not saved yet.
+        public Dictionary<int, TabDiff> DiffScreenTabs(SalesProjectList baseline, Dictionary<string, object> payload)
+        {
+            var result = new Dictionary<int, TabDiff>();
+            if (baseline == null || payload == null || !payload.ContainsKey("id")) return result;
+
+            int quotationId = Convert.ToInt32(payload["id"]);
+            var dbByTab = new Dictionary<int, TabDbData>();
+            PopulateDbByTab(baseline, dbByTab, quotationId);
+
+            foreach (var tab in DeserializeList<Dictionary<string, object>>(payload, "sales_project_all_tabs"))
             {
-                if (!result.ContainsKey("Tabs")) result["Tabs"] = new List<Dictionary<string, dynamic>>();
+                if (IsNewTabFlag(tab)) continue;
 
-                ((List<Dictionary<string, dynamic>>)result["Tabs"]).Add(JsonConvert.DeserializeObject<Dictionary<string, dynamic>>(JsonConvert.SerializeObject(tabDiff)));
+                int itemSetId = GetItemSetIdFromTab(tab);
+                if (itemSetId <= 0) continue;
+
+                var db = dbByTab.TryGetValue(itemSetId, out var found) ? found : new TabDbData();
+                result[itemSetId] = ComputeTabDiff(itemSetId, db, tab);
             }
+
+            return result;
+        }
+
+        // One item set's stored rows.
+        public TabDbData StoredTab(SalesProjectList data, int quotationId, int itemSetId)
+        {
+            var byTab = new Dictionary<int, TabDbData>();
+            if (data != null) PopulateDbByTab(data, byTab, quotationId);
+            return byTab.TryGetValue(itemSetId, out var tab) ? tab : new TabDbData();
+        }
+
+        // One item set's rows as a save payload holds them - what is on screen. Fresh objects
+        // every call, so the caller may change them.
+        public TabDbData ScreenTab(Dictionary<string, object> payload, int itemSetId)
+        {
+            var result = new TabDbData();
+            if (payload == null) return result;
+
+            foreach (var tab in DeserializeList<Dictionary<string, object>>(payload, "sales_project_all_tabs"))
+            {
+                if (IsNewTabFlag(tab) || GetItemSetIdFromTab(tab) != itemSetId) continue;
+
+                if (TabCarriesValue(tab, "sales_project_content"))
+                {
+                    var content = DeserializeSingleFromTab<SalesProjectContent>(tab, "sales_project_content");
+                    if (content != null) { content.based_id = itemSetId; result.Contents.Add(content); }
+                }
+                if (TabCarriesValue(tab, "sales_project_content_advanced_condition"))
+                {
+                    var condition = DeserializeSingleFromTab<SalesProjectAdvancedConditions>(tab, "sales_project_content_advanced_condition");
+                    if (condition != null) { condition.based_id = itemSetId; result.Conditions.Add(condition); }
+                }
+                result.Items = DeserializeFromTab<SalesProjectItems>(tab, "sales_project_items") ?? new List<SalesProjectItems>();
+                result.Wiring = DeserializeFromTab<SalesWiringModel>(tab, "sales_project_wiring") ?? new List<SalesWiringModel>();
+                break;
+            }
+
+            return result;
         }
 
         // Turns the diffs already computed for one tab into readable Change History rows -
@@ -7664,10 +7855,31 @@ namespace smpc_sales_app.Pages.Sales
         // the Core methods below resolve anyway.
         private ItemSetUC PumpPickerControl(object sender)
         {
-            return sender as ItemSetUC
-                ?? (tabControl2?.SelectedTab?.Controls.Count > 0
-                        ? tabControl2.SelectedTab.Controls[0] as ItemSetUC
-                        : null);
+            return ItemSetFrom(sender);
+        }
+
+        // The Item/Set control on the selected tab - null when there is none to be had: the "+"
+        // tab, a tab still being built or taken down, or no tab selected. Fourteen places read
+        // SelectedItemSet directly, and an Item/Set event arriving while the
+        // selected tab was empty threw "Index 0 is out of range" (user-reported 2026-09-26, in
+        // ItemSet_DataChanged).
+        private ItemSetUC SelectedItemSet
+        {
+            get
+            {
+                TabPage tab = tabControl2?.SelectedTab;
+                return tab != null && tab.Controls.Count > 0 ? tab.Controls[0] as ItemSetUC : null;
+            }
+        }
+
+        // The Item/Set control an event came from. The sender IS that control for every Item/Set
+        // event but CellClickedModel (which sends the row index); acting on the selected tab
+        // instead sent one tab's Advanced Conditions or contents under another's name whenever
+        // the event fired from a tab that was not the one showing - a debounced save landing
+        // after the user switched tabs, or a live update from the other app.
+        private ItemSetUC ItemSetFrom(object sender)
+        {
+            return sender as ItemSetUC ?? SelectedItemSet;
         }
 
         private async void SizeUpClicked(object sender, EventArgs e)
@@ -7692,50 +7904,12 @@ namespace smpc_sales_app.Pages.Sales
             }
         }
 
+        // The picker itself is in ProjectItemSetActions, shared with the Engineering app.
         private async Task SizeUpClickedCore()
         {
-            // "Is this a pump" = ITEM NAME "PUMP" (spec §17.2, code PMP) - a required
-            // field on every item. Deliberately NOT item_class (spec §4.2.1:
-            // "There is no ... PUMP ... class; any code or report filter still
-            // keying on one is stale") and NOT the engineering specs table
-            // (tbl_setup_item_specs.template), which only exists for an item once
-            // someone has actually filled its electrical specs in - keying on that
-            // excluded every pump that hadn't been through that separate step yet.
-            //
-            // Phase 3: light pump rows from the server on modal open instead of
-            // filtering the old full-catalogue ItemList.
-            List<ItemPickerRow> pumpRows;
-            try
-            {
-                pumpRows = await ItemService.GetPumpPickerRows();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Could not load the pump list." + Environment.NewLine + ex.Message, "No Pump Data", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
+            if (!(SelectedItemSet is ItemSetUC sizeUpControl)) return;
 
-            if (pumpRows.Count == 0)
-            {
-                MessageBox.Show("No pump items are set up yet. Please add pump items before using this.", "No Pump Data", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
-            DataTable sizeUpItemListPump = JsonHelper.ToDataTable(pumpRows);
-
-            if (!(tabControl2.SelectedTab.Controls[0] is ItemSetUC sizeUpControl)) return;
-
-            // Multi-select picker, not ModelModal - see SizeUpPickerModal's class remarks
-            // for why this got its own modal instead of reusing/extending ModelModal.
-            // Pumps already on this tab's SIZE UP list arrive pre-checked.
-            using (var sizeUpModal = new SizeUpPickerModal(sizeUpItemListPump, sizeUpControl.GetSizeUpItemIds()))
-            {
-                if (sizeUpModal.ShowDialog() == DialogResult.OK)
-                {
-                    foreach (var pick in sizeUpModal.GetSelectedItems())
-                        sizeUpControl.AddSizeUpRow(pick.ItemId.ToString(), pick.Model);
-                }
-            }
+            await ProjectItemSetActions.PickSizeUpAsync(sizeUpControl);
         }
 
         private async void FinalTxtBoxClicked(object sender, EventArgs e)
@@ -7763,101 +7937,13 @@ namespace smpc_sales_app.Pages.Sales
             }
         }
 
+        // The picker itself, with each pick's FLA and VOLTAGE, is in ProjectItemSetActions,
+        // shared with the Engineering app.
         private async Task FinalTxtBoxClickedCore()
         {
-            // FINAL only ever offers what this tab's SIZE UP lists (spec §5.1.4: "Final
-            // Selection - dropdown limited to what is listed in Size Up"), and that list is
-            // already on screen in dgv_size_up. So it is read FIRST and the server is asked
-            // for those rows - it used to download every pump in the catalogue (3,684 rows
-            // on the rehearsal database) and every row of vw_PumpSpecifications (4,884) and
-            // then filter locally down to the three the user could actually pick.
-            //
-            // Reading it first also means the "add a candidate" message now appears on the
-            // click instead of after two round trips.
-            if (!(tabControl2.SelectedTab.Controls[0] is ItemSetUC currentControl2)) return;
+            if (!(SelectedItemSet is ItemSetUC currentControl2)) return;
 
-            var sizeUpIds = currentControl2.GetSizeUpItemIds();
-            if (sizeUpIds.Count == 0)
-            {
-                MessageBox.Show("Add at least one candidate under SIZE UP before selecting FINAL.", "Size Up Required", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
-            // "Is this a pump" for the purposes of what FINAL's picker OFFERS = ITEM NAME
-            // "PUMP" (spec §17.2), same as SizeUpClicked - NOT the pump specs view. That
-            // used to gate entry to this picker entirely, so a real SIZE UP list could
-            // never fully appear if some of its pumps lacked electrical specs. The specs
-            // are fetched further down, after the pick, for the pumps actually chosen.
-            List<ItemPickerRow> pumpRows;
-            try
-            {
-                pumpRows = await ItemService.GetPumpPickerRows(null, sizeUpIds);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Could not load the pump list." + Environment.NewLine + ex.Message, "No Matching Items", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
-            // Kept even though the server now filters: an API that predates ?ids= ignores
-            // the parameter and answers with every pump, and without this the picker would
-            // silently offer all of them - the one thing spec 5.1.4 forbids. Against a
-            // current API it has nothing to remove.
-            var sizeUpIdSet = new HashSet<int>(sizeUpIds);
-            pumpRows = pumpRows.Where(row => sizeUpIdSet.Contains(row.id)).ToList();
-
-            if (pumpRows.Count == 0)
-            {
-                MessageBox.Show("None of the items in the item list match the pump data. Please check that the pump items still exist in the item catalog.", "No Matching Items", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
-            DataTable ItemListPump = JsonHelper.ToDataTable(pumpRows);
-
-            // Multi-select, same as SIZE UP's own picker (Trello #044/#043/#049) - reuses
-            // SizeUpPickerModal rather than a second copy of it, since the picking UI
-            // (search + checkboxes + BRAND/MODEL NAME/LIST PRICE + Save/Cancel) is
-            // identical; only what happens with the picks afterward differs. Pumps
-            // already in FINAL arrive pre-checked.
-            using (var finalModal = new SizeUpPickerModal(ItemListPump, currentControl2.GetFinalItemIds(), "Select Pumps for Final"))
-            {
-                if (finalModal.ShowDialog() != DialogResult.OK) return;
-
-                var picks = finalModal.GetSelectedItems()
-                                      .Where(pick => !pick.Model.IsNullOrEmpty())
-                                      .ToList();
-
-                // The electrical specs of the pumps just picked, and nothing else. Which
-                // ids those are is not knowable before the pick, which is exactly why the
-                // call belongs here rather than ahead of the picker.
-                DataTable pumps = new DataTable();
-                if (picks.Count > 0)
-                {
-                    var pickedIds = picks.Select(pick => pick.ItemId).ToList();
-                    var data = await ProjectService.GetPumpsViewList(pickedIds);
-                    if (data?.ItemPumpsView != null)
-                        pumps = JsonHelper.ToDataTable(data.ItemPumpsView);
-                }
-
-                // FINAL's choices MUST match SIZE UP's exactly, regardless of whether
-                // FLA/VOLTAGE exist yet - added unconditionally, same as SIZE UP itself
-                // never gates on anything beyond "was it picked". A pump missing FLA/
-                // VOLTAGE just gets a blank cell here (SetFinalPumpData's own aggregate
-                // already treats an unparseable/blank FLA as 0 - see its decimal.TryParse
-                // fallback), not left out of FINAL entirely.
-                foreach (var pick in picks)
-                {
-                    string id = pick.ItemId.ToString();
-
-                    var FLA = pumps.AsEnumerable()
-                            .FirstOrDefault(row => row["item_title"].ToString() == "FLA" && row["item_id"].ToString() == id)?["item_value"].ToString();
-
-                    var Voltage = pumps.AsEnumerable()
-                                        .FirstOrDefault(row => row["item_title"].ToString() == "VOLTAGE" && row["item_id"].ToString() == id)?["item_value"].ToString();
-
-                    currentControl2.SetFinalPumpData(FLA ?? string.Empty, Voltage ?? string.Empty, pick.Model, id);
-                }
-            }
+            await ProjectItemSetActions.PickFinalAsync(currentControl2);
         }
         private async void btn_new_version_Click(object sender, EventArgs e)
         {
@@ -8754,7 +8840,7 @@ namespace smpc_sales_app.Pages.Sales
         {
             timer1.Stop();
 
-            if (tabControl2.SelectedTab.Controls[0] is ItemSetUC currentControl)
+            if (SelectedItemSet is ItemSetUC currentControl)
             {
 
 
@@ -8777,6 +8863,40 @@ namespace smpc_sales_app.Pages.Sales
         private void dgv_project_multiplier_CellEndEdit(object sender, DataGridViewCellEventArgs e)
         {
             fetchProjectMultipliers();
+
+            // A multiplier is an edit like any other, so it autosaves like one. It never did:
+            // typed multipliers existed only on screen until UPDATE, and any refresh in
+            // between - a live update, the five-minute poll - replaced them with what was
+            // stored (user-reported 2026-09-25: "the data delete on refresh").
+            QueueAutoSave();
+        }
+
+        private void dgv_project_multiplier_UserDeletedRow(object sender, DataGridViewRowEventArgs e)
+        {
+            fetchProjectMultipliers();
+            QueueAutoSave();
+        }
+
+        // The PROJECT MULTIPLIERS grid for one quotation.
+        //
+        // Bound to a TABLE holding just this quote's rows, never to a DataView filtered to
+        // based_id = this quote. A row typed into the grid starts with no based_id, so it failed
+        // that filter the moment it was committed and vanished - clicking away from a new row
+        // "didn't add it" (user-reported 2026-09-25). The table has no filter to fail, and new
+        // rows get this quote's id by default so the save files them correctly.
+        private void BindProjectMultipliers(int quotationId)
+        {
+            DataTable table = dt_multiplier != null && dt_multiplier.Columns.Contains("based_id")
+                ? new DataView(dt_multiplier) { RowFilter = $"based_id = '{quotationId}'" }.ToTable()
+                : (dt_multiplier?.Clone() ?? new DataTable());
+
+            if (table.Columns.Contains("based_id"))
+                table.Columns["based_id"].DefaultValue = Convert.ChangeType(quotationId, table.Columns["based_id"].DataType);
+
+            // Through bs_project_multipliers, as New and Close expect: both clear the grid by
+            // emptying that binding source, which does nothing to a grid bound around it.
+            bs_project_multipliers.DataSource = table;
+            dgv_project_multiplier.DataSource = bs_project_multipliers;
         }
         private void fetchProjectMultipliers()
         {
@@ -10030,31 +10150,33 @@ namespace smpc_sales_app.Pages.Sales
         // minutes - it was hit in engineering first because its reload is a full BuildTabs.
         // Put the user back on the item set they were on before the rebuild. Matched on the
         // tab's Tag (its itemset_id), never on index - see the capture site in
-        // fetchSalesProject. Falls back to leaving the selection where WinForms put it (the
-        // first tab) when that item set is genuinely gone, which is the honest answer.
-        private void RestoreSelectedProjectTab(object selectedTabKey, bool wasOnAddTab)
+        // fetchSalesProject. Everything else lands on the FIRST tab (user request 2026-09-26:
+        // "better if the first tab will be the default"): opening a quotation, the item set
+        // the user was on having gone, and the "+" tab, which is not an item set and shows an
+        // empty page.
+        //
+        // It used to leave the selection wherever WinForms put it in those cases, and
+        // WinForms keeps the old SelectedIndex across the rebuild - so a quotation opened after
+        // one left on "+" (or on a later tab than the new one has) opened on "+", blank.
+        private void RestoreSelectedProjectTab(object selectedTabKey)
         {
             if (tabControl2.TabPages.Count == 0) return;
 
-            if (wasOnAddTab)
+            if (selectedTabKey != null)
             {
-                // "+" is always last and is not an item set, so it has no Tag to match on.
-                tabControl2.SelectedIndex = tabControl2.TabPages.Count - 1;
-                return;
-            }
+                string key = selectedTabKey.ToString();
 
-            if (selectedTabKey == null) return;
-
-            string key = selectedTabKey.ToString();
-
-            foreach (TabPage page in tabControl2.TabPages)
-            {
-                if (page.Tag != null && page.Tag.ToString() == key)
+                foreach (TabPage page in tabControl2.TabPages)
                 {
-                    tabControl2.SelectedTab = page;
-                    return;
+                    if (page.Tag != null && page.Tag.ToString() == key)
+                    {
+                        tabControl2.SelectedTab = page;
+                        return;
+                    }
                 }
             }
+
+            tabControl2.SelectedIndex = 0;
         }
 
         // Painting held off while the item-set tabs are torn down and rebuilt.
