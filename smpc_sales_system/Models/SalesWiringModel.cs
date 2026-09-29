@@ -18,9 +18,11 @@ namespace smpc_sales_system.Models
         public string num_of_qty_set { get; set; }
         public string distance_travelled_set { get; set; }
         public string allowance_wire_set { get; set; }
-        public int qty { get; set; }
+        // Decimal: QTY = A x B x (C + D) is fractional whenever a distance is (10.5 m). As a
+        // whole number every save turned 31.5 into 0 (user-reported 2026-09-28).
+        public decimal qty { get; set; }
         public string num_of_sets { get; set; }
-        public int total_qty { get; set; }
+        public decimal total_qty { get; set; }
         public decimal cost { get; set; }
         public decimal total_cost { get; set; }
     }

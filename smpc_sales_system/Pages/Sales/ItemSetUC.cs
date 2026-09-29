@@ -72,6 +72,9 @@ namespace smpc_sales_system.Pages.Sales
         {
             InitializeComponent();
 
+            // Before anything below sizes, sorts or binds the wiring grid's columns.
+            EnsureAmpReqColumn();
+
             // Every column dgv_project_items needs is already defined explicitly in the
             // designer. With AutoGenerateColumns left at its WinForms default (true), each
             // rebind (ClearProjectItemsDgv assigns a fresh DataSource) makes WinForms append
@@ -772,9 +775,9 @@ namespace smpc_sales_system.Pages.Sales
                     num_of_qty_set = item["project_wiring_num_of_qty_set"]?.ToString() ?? string.Empty,
                     distance_travelled_set = item["project_wiring_distance_travelled"]?.ToString() ?? string.Empty,
                     allowance_wire_set = item["project_wiring_allowance"]?.ToString() ?? string.Empty,
-                    qty = int.TryParse(item["project_wiring_qty"]?.ToString(), out int qtyVal) ? qtyVal : 0,
+                    qty = decimal.TryParse(item["project_wiring_qty"]?.ToString(), out decimal qtyVal) ? qtyVal : 0m,
                     num_of_sets = item["project_wiring_num_of_sets"]?.ToString() ?? string.Empty,
-                    total_qty = int.TryParse(item["project_wiring_total_qty"]?.ToString(), out int totalQtyVal) ? totalQtyVal : 0,
+                    total_qty = decimal.TryParse(item["project_wiring_total_qty"]?.ToString(), out decimal totalQtyVal) ? totalQtyVal : 0m,
                     cost = decimal.TryParse(item["project_wiring_cost"]?.ToString(), out decimal costVal) ? costVal : 0m,
                     total_cost = decimal.TryParse(item["project_wiring_total_cost"]?.ToString(), out decimal totalCostVal) ? totalCostVal : 0m,
 
@@ -2611,7 +2614,12 @@ namespace smpc_sales_system.Pages.Sales
             {
                 DataRow newRow = dataSource.NewRow();
 
+                // Each line is one lot, QTY 1. Without a QTY the item table prices nothing: a
+                // parent's price is its children's price x QTY, and a line total is price x
+                // QTY - so the wiring cost never reached the quotation (user-reported
+                // 2026-09-28). ComputeWiringToProjectItem puts it on older quotes too.
                 newRow["components"] = "WIRING MATERIALS";
+                newRow["qty"] = "1";
                 newRow["item_id"] = 0;
                 newRow["reference_code"] = NewReference;
                 newRow["template_id"] = "wiring";
@@ -2621,6 +2629,7 @@ namespace smpc_sales_system.Pages.Sales
                 DataRow newRow2 = dataSource.NewRow();
 
                 newRow2["components"] = "    CTL-MOTOR";
+                newRow2["qty"] = "1";
                 newRow2["item_id"] = 0;
                 newRow2["reference_code"] = NewReference.ToString() + ".1";
                 newRow2["template_id"] = "wiring";
@@ -2631,6 +2640,7 @@ namespace smpc_sales_system.Pages.Sales
                 DataRow newRow3 = dataSource.NewRow();
 
                 newRow3["components"] = "    CTL-ECB";
+                newRow3["qty"] = "1";
                 newRow3["item_id"] = 0;
                 newRow3["reference_code"] = NewReference.ToString() + ".2";
                 newRow3["template_id"] = "wiring";
@@ -2640,6 +2650,7 @@ namespace smpc_sales_system.Pages.Sales
                 DataRow newRow4 = dataSource.NewRow();
 
                 newRow4["components"] = "WIRING LABOR";
+                newRow4["qty"] = "1";
                 newRow4["item_id"] = 0;
                 newRow4["reference_code"] = NewReference + 1;
                 newRow4["template_id"] = "wiring";
@@ -2744,6 +2755,41 @@ namespace smpc_sales_system.Pages.Sales
         // (dgv_project_items_CellClick), not from in-cell editing. _isEditable is what those
         // handlers actually check before opening a picker or assigning anything.
         private bool _isEditable = true;
+
+        // Spec 8.4's AMP REQ. - the computed requirement on rows 1 (ECB -> controller) and 7
+        // (controller -> motor), next to WIRE AMP., the rating of the wire actually chosen.
+        //
+        // Created here rather than left to the designer alone. It has gone missing from the
+        // designer twice: first it was declared but never instantiated (user-reported
+        // 2026-09-05), then the designer regeneration in c592f32 (2026-09-22) dropped it again.
+        // Both times every amp formula computed correctly and threw the answer away, because
+        // SetWiringAmpReq returns when the column is not there - so rows 1 and 7 stayed blank
+        // and "the computation is not working" (user-reported 2026-09-26). If the designer
+        // ever carries the column again, this steps aside.
+        private void EnsureAmpReqColumn()
+        {
+            if (dgv_wiring == null || dgv_wiring.Columns.Contains("project_wiring_amp_req")) return;
+
+            var column = new DataGridViewTextBoxColumn
+            {
+                Name = "project_wiring_amp_req",
+                HeaderText = "AMP REQ.",
+                // The column setProjectWirings' default table fills for a new quotation.
+                DataPropertyName = "AMPREQ",
+                AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill,
+                // A formula cell: grey and read-only (spec 8.4). SetEditable re-asserts the
+                // ReadOnly, which SetControlsEditable would otherwise clear.
+                ReadOnly = true,
+                SortMode = DataGridViewColumnSortMode.NotSortable,
+            };
+            column.DefaultCellStyle.BackColor = SystemColors.Control;
+
+            int at = dgv_wiring.Columns.Contains("project_wiring_materials")
+                ? dgv_wiring.Columns["project_wiring_materials"].Index + 1
+                : dgv_wiring.Columns.Count;
+            dgv_wiring.Columns.Insert(at, column);
+        }
+
         public void SetEditable(bool editable)
         {
             _isEditable = editable;
@@ -3889,10 +3935,20 @@ namespace smpc_sales_system.Pages.Sales
             // not just when a user picked a method. A change handler whose job is to
             // compute a value should no-op silently when its inputs aren't ready, which
             // is exactly what computeECBToController already does.
+            string startingMethod = StartingMethodCode(cmb_starting_method.Text);
+
+            // Remembered even while the grid is not there yet, so the first change after a
+            // load is measured from the method the quotation was loaded with. Only a change
+            // the user makes in the dropdown moves the wire count (see
+            // RetargetControllerWireCount); loading and live updates set the combo from code,
+            // with the focus elsewhere.
+            string previousMethod = _lastStartingMethod;
+            _lastStartingMethod = startingMethod;
+            bool pickedByUser = cmb_starting_method.Focused;
+
             if (dgv_wiring == null || dgv_wiring.Rows.Count == 0)
                 return;
 
-            string startingMethod = StartingMethodCode(cmb_starting_method.Text);
             bool hasFormula = StartingMethodHasAmpFormula(startingMethod);
 
             // Done before FLA is read, because it does not depend on it: a method with no
@@ -3900,22 +3956,143 @@ namespace smpc_sales_system.Pages.Sales
             // even on a quotation where FLA has not been entered yet.
             SetControllerToMotorAmpOpen(!hasFormula);
 
+            // Picked away from a method with a formula to one without (DOL -> VFD): row 7
+            // still held the old method's figure, which then read as computed. A method not
+            // in the wiring rules leaves the row blank for the user to fill (user, 2026-09-26:
+            // "other not here will leave blank and give the user free will to edit the
+            // wiring"). Only on a user's pick - a loaded VFD row keeps what was typed into it.
+            if (pickedByUser && !hasFormula && previousMethod != null && StartingMethodHasAmpFormula(previousMethod))
+                ClearWiringAmpReq(ControllerToMotorRow);
+
             // Was: txt_FLA.Text == "" && txt_VOLT.Text == "" - an AND, so a blank FLA with
             // a filled VOLTAGE fell straight through to double.Parse(txt_FLA.Text) and threw
             // a FormatException. Only FLA actually feeds the formulas below (VOLTAGE was
             // parsed into an unused local), so require that, and TryParse it.
-            if (!double.TryParse(txt_FLA.Text, out double FLA))
+            if (double.TryParse(txt_FLA.Text, out double FLA))
+            {
+                // Nothing is written when there is no formula - whatever the user typed into
+                // row 7 stays as they left it.
+                if (hasFormula)
+                    SetWiringAmpReq(ControllerToMotorRow, (decimal)StartingMethodAmp(startingMethod, FLA));
+
+                // Row 1 (ECB -> controller) shares FLA with the row 7 formulas above, so
+                // refresh it here too rather than leaving it stale until someone retypes NO.
+                // OF PUMP/SET. It no-ops when FLA or the pump count is blank.
+                computeECBToController();
+            }
+
+            if (pickedByUser && previousMethod != null && previousMethod != startingMethod)
+                RetargetControllerWireCount(previousMethod, startingMethod);
+
+            // Not tied to FLA: a wire typed into WIRE AMP. gets its count whether or not the
+            // amp formulas have anything to work with.
+            ApplyWireCountDefaults();
+        }
+
+        // The starting method the wire counts were last worked out for. null until the combo
+        // has been set once.
+        private string _lastStartingMethod;
+
+        private const string EcbToControllerRow = "ECB To Controller";
+        private const string GroundRow = "Ground";
+
+        // Spec 8.4 and the wiring notes (user, 2026-09-26): controller to motor is 3 wires +
+        // 1 ground for Direct Online and Soft Starter, 6 wires + 1 ground for Wye-Delta, open
+        // or closed. VFD and the auto-transformer methods are not in the rules, so they get no
+        // default at all - null - and the count is the user's to type.
+        private static string ControllerToMotorWireCount(string methodCode)
+        {
+            if (!StartingMethodHasAmpFormula(methodCode)) return null;
+            return methodCode == "WDO" || methodCode == "WDC" ? "6" : "3";
+        }
+
+        // # OF WIRES / SET defaults. Every count is a default and may be changed (spec 8.4:
+        // "wire/ground counts are defaults and may be overridden"), so a count already in the
+        // cell - typed, or saved - is never replaced; only a blank one is filled, and only on
+        // a row that carries a wire (an AMP REQ. or a WIRE AMP.):
+        //   row 1 ECB to controller   3 wires only
+        //   row 7 controller to motor 3, or 6 for Wye-Delta - for the starting methods the
+        //                             rules cover (DOL, Wye-Delta, Soft Starter) only
+        //   row 8 ground              1, whenever row 7 carries a wire under one of those
+        // Nothing else gets a default - rows 2-6, and row 7/8 for VFD or auto-transformer, are
+        // left blank for the user (user, 2026-09-26: "other not here will leave blank and give
+        // the user free will to edit the wiring"; this gave every other row 3 once a wire amp
+        // was entered). Each filled row is recomputed, so QTY and the costs follow at once.
+        private void ApplyWireCountDefaults()
+        {
+            if (dgv_wiring == null || !dgv_wiring.Columns.Contains("project_wiring_num_of_wiring_set")) return;
+
+            string method = StartingMethodCode(cmb_starting_method?.Text);
+
+            bool motorCarriesWire = dgv_wiring.Rows.Cast<DataGridViewRow>()
+                .Any(r => !r.IsNewRow && IsWiringRow(r, ControllerToMotorRow) && RowCarriesWire(r));
+
+            foreach (DataGridViewRow row in dgv_wiring.Rows)
+            {
+                if (row.IsNewRow) continue;
+
+                string wanted;
+                if (IsWiringRow(row, EcbToControllerRow))
+                    wanted = RowCarriesWire(row) ? "3" : null;
+                else if (IsWiringRow(row, ControllerToMotorRow))
+                    wanted = RowCarriesWire(row) ? ControllerToMotorWireCount(method) : null;
+                else if (IsWiringRow(row, GroundRow))
+                    wanted = StartingMethodHasAmpFormula(method) && (motorCarriesWire || RowCarriesWire(row)) ? "1" : null;
+                else
+                    wanted = null;
+
+                if (wanted == null) continue;
+
+                DataGridViewCell cell = row.Cells["project_wiring_num_of_wiring_set"];
+                if (!string.IsNullOrWhiteSpace(cell.Value?.ToString())) continue;
+
+                cell.Value = wanted;
+                ComputeWiringDGV(new DataGridViewCellEventArgs(cell.ColumnIndex, row.Index));
+            }
+        }
+
+        // The user changed the starting method: row 7's count follows it (3 <-> 6) if it
+        // still holds the previous method's default, and is left alone if someone set it by
+        // hand - a Wye-Delta run kept at 3 wires is a real choice on a small motor.
+        private void RetargetControllerWireCount(string fromMethod, string toMethod)
+        {
+            if (dgv_wiring == null || !dgv_wiring.Columns.Contains("project_wiring_num_of_wiring_set")) return;
+
+            foreach (DataGridViewRow row in dgv_wiring.Rows)
+            {
+                if (row.IsNewRow || !IsWiringRow(row, ControllerToMotorRow)) continue;
+
+                DataGridViewCell cell = row.Cells["project_wiring_num_of_wiring_set"];
+                string current = cell.Value?.ToString()?.Trim() ?? "";
+                string target = ControllerToMotorWireCount(toMethod) ?? "";   // no rule: blank
+
+                if (current != (ControllerToMotorWireCount(fromMethod) ?? "") || current == target) return;
+
+                cell.Value = target;
+                ComputeWiringDGV(new DataGridViewCellEventArgs(cell.ColumnIndex, row.Index));
                 return;
+            }
+        }
 
-            // Nothing is written when there is no formula - whatever the user typed into
-            // row 7 stays as they left it.
-            if (hasFormula)
-                SetWiringAmpReq(ControllerToMotorRow, (decimal)StartingMethodAmp(startingMethod, FLA));
+        private static bool IsWiringRow(DataGridViewRow row, string material)
+        {
+            return string.Equals(row.Cells["project_wiring_materials"].Value?.ToString()?.Trim(), material,
+                StringComparison.OrdinalIgnoreCase);
+        }
 
-            // Row 1 (ECB -> controller) shares FLA with the row 7 formulas above, so refresh
-            // it here too rather than leaving it stale until someone retypes NO. OF PUMP/SET.
-            // Safe to call unconditionally - it no-ops when FLA or the pump count is blank.
-            computeECBToController();
+        private static bool RowCarriesWire(DataGridViewRow row)
+        {
+            return WiringCellHasValue(row, "project_wiring_amp_req") || WiringCellHasValue(row, "project_wiring_wire_amp");
+        }
+
+        private static bool WiringCellHasValue(DataGridViewRow row, string column)
+        {
+            if (!row.DataGridView.Columns.Contains(column)) return false;
+
+            string text = row.Cells[column].Value?.ToString()?.Trim();
+            if (string.IsNullOrEmpty(text)) return false;
+
+            return !(decimal.TryParse(text, out decimal number) && number == 0);
         }
 
         private void ComputeWiringDGV(DataGridViewCellEventArgs e)
@@ -3976,6 +4153,17 @@ namespace smpc_sales_system.Pages.Sales
             ComputeWiringToProjectItem();
         }
 
+        // Rows 1-4's TOTAL COST go to the item table's CTL-ECB line and rows 5-8's to CTL-MOTOR
+        // (spec 8.4). WIRING MATERIALS, their parent, is priced from them like any parent line.
+        //
+        // Setting the two unit prices was all this did, and it never reached the quotation
+        // (user-reported 2026-09-28): the block's lines had no QTY - a parent is priced from
+        // its children's price x QTY and a line total is price x QTY, so both came to 0 - and
+        // nothing asked the item table or the quotation to recalculate after a wiring edit;
+        // they only did on the next edit in the item table itself. Now each block line has a
+        // QTY (1 when blank, which also repairs quotes saved before), and when anything
+        // changed, this tab recalculates its item lines and tells the host (CellEdited), which
+        // recomputes the quotation's totals.
         private void ComputeWiringToProjectItem()
         {
             double TotalECG = 0, TotalMotor = 0;
@@ -3986,32 +4174,62 @@ namespace smpc_sales_system.Pages.Sales
             for (int i = 4; i < 8; i++)
                 TotalMotor += GetRowValue(i);
 
-            var RowIndexCTLMotor = dgv_project_items.Rows
+            bool changed = false;
+            changed |= SetWiringBlockPrice("CTL-ECB", (decimal)TotalECG);
+            changed |= SetWiringBlockPrice("CTL-MOTOR", (decimal)TotalMotor);
+            changed |= EnsureWiringBlockQty(FindWiringBlockRow("WIRING MATERIALS"));
+            changed |= EnsureWiringBlockQty(FindWiringBlockRow("WIRING LABOR"));
+
+            if (!changed) return;
+
+            ComputeByReferenceHierarchy(dgv_project_items);
+            ComputeReferenceNonHierarchy(dgv_project_items);
+            CellEdited?.Invoke(this, EventArgs.Empty);
+        }
+
+        // A line of the wiring block in the item table (names are stored indented, "    CTL-ECB").
+        private DataGridViewRow FindWiringBlockRow(string component)
+        {
+            if (dgv_project_items == null || !dgv_project_items.Columns.Contains("project_items_components")) return null;
+
+            return dgv_project_items.Rows
                 .Cast<DataGridViewRow>()
-                .Where(r => !r.IsNewRow)
-                .FirstOrDefault(r =>
-                    r.Cells["project_items_components"].Value?.ToString().Trim() == "CTL-MOTOR"
-                )?.Index ?? -1;
+                .FirstOrDefault(r => !r.IsNewRow
+                    && string.Equals(r.Cells["project_items_components"].Value?.ToString()?.Trim(), component,
+                        StringComparison.OrdinalIgnoreCase));
+        }
 
+        // A blank or zero QTY on a wiring block line becomes 1. True when it changed anything.
+        private static bool EnsureWiringBlockQty(DataGridViewRow row)
+        {
+            if (row == null) return false;
 
-            var RowIndexCTLECB = dgv_project_items.Rows
-                .Cast<DataGridViewRow>()
-                .Where(r => !r.IsNewRow)
-                .FirstOrDefault(r =>
-                    r.Cells["project_items_components"].Value?.ToString().Trim() == "CTL-ECB"
-                )?.Index ?? -1;
+            DataGridViewCell qty = row.Cells["project_items_qty"];
+            if (decimal.TryParse(qty.Value?.ToString(), out decimal current) && current != 0m) return false;
 
+            qty.Value = "1";
+            return true;
+        }
 
-            if (RowIndexCTLECB != -1)
+        // Puts a wiring total on its block line; true when the line's price or QTY changed.
+        private bool SetWiringBlockPrice(string component, decimal price)
+        {
+            DataGridViewRow row = FindWiringBlockRow(component);
+            if (row == null) return false;
+
+            bool changed = EnsureWiringBlockQty(row);
+
+            DataGridViewCell unit = row.Cells["project_items_unit_price"];
+            string shown = unit.Value?.ToString();
+            decimal.TryParse(Helpers.GetCleanedPriceValue(shown ?? ""), out decimal current);
+            // A blank cell is written too, so an empty side reads 0 (spec 8.4: "CTL-Motor = 0").
+            if (string.IsNullOrWhiteSpace(shown) || current != price)
             {
-                dgv_project_items.Rows[RowIndexCTLECB].Cells["project_items_unit_price"].Value = TotalECG;
+                unit.Value = price;
+                changed = true;
             }
 
-            if (RowIndexCTLMotor != -1)
-            {
-                dgv_project_items.Rows[RowIndexCTLMotor].Cells["project_items_unit_price"].Value = TotalMotor;
-            }
-
+            return changed;
         }
 
         double GetRowValue(int rowIndex)
@@ -4029,6 +4247,9 @@ namespace smpc_sales_system.Pages.Sales
 
         private void dgv_wiring_CellEndEdit(object sender, DataGridViewCellEventArgs e)
         {
+            // A wire amp just typed gives its row a default count before the row is worked
+            // out - see ApplyWireCountDefaults.
+            ApplyWireCountDefaults();
             ComputeWiringDGV(e);
             CellChangedWiring?.Invoke(this, EventArgs.Empty);
 
@@ -4129,6 +4350,18 @@ namespace smpc_sales_system.Pages.Sales
                 // Color.Empty puts the cell back to whatever the column says, so a locked
                 // row 7 looks like every other formula cell again.
                 cell.Style.BackColor = cell.ReadOnly ? Color.Empty : SystemColors.Window;
+                return;
+            }
+        }
+
+        private void ClearWiringAmpReq(string materialName)
+        {
+            if (dgv_wiring == null || !dgv_wiring.Columns.Contains("project_wiring_amp_req")) return;
+
+            foreach (DataGridViewRow row in dgv_wiring.Rows)
+            {
+                if (row.IsNewRow || !IsWiringRow(row, materialName)) continue;
+                row.Cells["project_wiring_amp_req"].Value = DBNull.Value;
                 return;
             }
         }
