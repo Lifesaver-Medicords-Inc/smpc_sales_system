@@ -258,7 +258,19 @@ namespace smpc_sales_app.Pages.Sales
                     try { token = JToken.Parse(json); }
                     catch { continue; }
 
-                    if (token["event"]?.ToString() != "quotation_saved") continue;
+                    string evt = token["event"]?.ToString();
+
+                    // An Edit session somewhere made a newer copy of this one (see
+                    // HandleQuotationSuperseded).
+                    if (evt == "quotation_superseded")
+                    {
+                        int newId = token["new_id"]?.ToObject<int>() ?? 0;
+                        string code = token["code"]?.ToString();
+                        Invoke(new Action(() => HandleQuotationSuperseded(projectId, newId, code)));
+                        continue;
+                    }
+
+                    if (evt != "quotation_saved") continue;
 
                     Invoke(new Action(() => HandleQuotationSavedNotification(projectId)));
                 }
@@ -267,6 +279,156 @@ namespace smpc_sales_app.Pages.Sales
             {
                 // Connection dropped (server restart, network blip, etc.) - the 5-minute
                 // timer keeps things eventually-consistent even without reconnect logic here.
+            }
+        }
+
+        // ---- Versioning (user decision 2026-09-25) -------------------------------------------
+        //
+        // A quotation's code is Q#YYYY-nnnn.version.sub-version. New Version starts the next
+        // version; EDIT starts the next sub-version, a copy; Finalize freezes a sub-version as
+        // its FQ. The server numbers all three from what is stored - the client only says which
+        // one it is doing - because the client's own lookups never matched and every quote
+        // stayed at 1.0.
+
+        // What the next insert is: "new_version", "new_sub_version", or null for a brand-new
+        // quote. Set by New Version and (quick quotes) Edit; cleared by New, Duplicate and a
+        // successful save.
+        private string _pendingVersionAction;
+
+        // The copy an Edit session is being started from, while the request is out. The
+        // server announces the new copy on the old copy's channel before it answers, so this
+        // window's own announcement can arrive first; it must not be taken for someone else's.
+        private int _startingSubVersionFrom;
+
+        // EDIT on a project quote works on a copy: the next sub-version, made by the server
+        // from what is stored ("Clicking EDIT starts the next sub-version (a copy). Autosave
+        // keeps updating that one sub-version until you leave edit mode."). The screen moves
+        // onto the copy before edit mode starts, so every autosave from here on lands there,
+        // and nothing has been typed yet that the move could lose. False = stay in view mode.
+        private async Task<bool> StartProjectEditSessionAsync()
+        {
+            int sourceId = ToInt(txt_id.Text);
+            if (sourceId <= 0)
+            {
+                MessageBox.Show("Open a saved project quotation before editing it.", "Not Allowed", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return false;
+            }
+
+            var note = new Dictionary<string, dynamic>
+            {
+                ["user"] = CacheData.CurrentUser != null
+                    ? $"{CacheData.CurrentUser.first_name} {CacheData.CurrentUser.last_name}".Trim()
+                    : string.Empty,
+                ["date"] = DateTime.Now.ToString("M/d/yyyy"),
+                ["time"] = DateTime.Now.ToString("h:mm tt"),
+            };
+
+            _startingSubVersionFrom = sourceId;
+            try
+            {
+                // Not inside RunWithLoadingAsync: that re-runs its action after a dropped
+                // connection, and this request must never be sent twice.
+                ApiResponseModel response;
+                Helpers.Loading.ShowLoading(this);
+                try
+                {
+                    response = await ProjectService.StartSubVersion(sourceId, note);
+                }
+                finally
+                {
+                    Helpers.Loading.HideLoading(this);
+                }
+
+                if (response == null || !response.Success)
+                {
+                    string message = response?.message ?? response?.Message ?? "The edit session could not be started.";
+                    if (TryParseReplacementId(message, out int currentId)
+                        && MessageBox.Show(message + "\n\nOpen the current copy now?", "Edit",
+                               MessageBoxButtons.YesNo, MessageBoxIcon.Information) == DialogResult.Yes)
+                    {
+                        await RunWithLoadingAsync(async () => await fetchSalesProjectData(currentId));
+                        KeepCurrentView();
+                    }
+                    else if (currentId == 0)
+                    {
+                        MessageBox.Show(message, "Edit", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    }
+                    return false;
+                }
+
+                int newId = ExtractSavedId(response.Data);
+                await RunWithLoadingAsync(async () => await fetchSalesProjectData(newId));
+                KeepCurrentView();
+
+                if (ToInt(txt_id.Text) != newId)
+                {
+                    MessageBox.Show("The new copy was made but could not be opened. Reopen the quotation to continue.",
+                        "Edit", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return false;
+                }
+                return true;
+            }
+            finally
+            {
+                _startingSubVersionFrom = 0;
+            }
+        }
+
+        // "Q#2026-0001.2.0 has been replaced by Q#2026-0001.2.1 (id 57) - ..." -> 57. The API's
+        // refusal of any write to a copy that is no longer the newest.
+        private static bool TryParseReplacementId(string message, out int id)
+        {
+            id = 0;
+            if (string.IsNullOrEmpty(message) || message.IndexOf("has been replaced by", StringComparison.OrdinalIgnoreCase) < 0)
+                return false;
+
+            var match = System.Text.RegularExpressions.Regex.Match(message, @"\(id (\d+)\)");
+            return match.Success && int.TryParse(match.Groups[1].Value, out id) && id > 0;
+        }
+
+        // Someone started an Edit session on the copy on screen - in practice this same user
+        // in a second window, since only the creator edits - so the copy here is history and
+        // the server will refuse any save to it. Follow the new copy, as Engineering does.
+        private async void HandleQuotationSuperseded(string projectId, int newId, string code)
+        {
+            try
+            {
+                if (!isProject || newId <= 0) return;
+
+                int shown = ToInt(txt_id.Text);
+                if (shown != ToInt(projectId)) return;
+                if (shown == _startingSubVersionFrom) return;
+
+                await FollowReplacementCopyAsync(newId, code);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Following a newer copy failed: " + ex.Message);
+            }
+        }
+
+        private async Task FollowReplacementCopyAsync(int newId, string code)
+        {
+            _autoSaveTimer?.Stop();
+
+            bool wasEditing = IsEdit;
+            if (wasEditing)
+            {
+                SetNewFormMode(false);
+                isNewRecord = false;
+                IsEdit = false;
+            }
+
+            await RunWithLoadingAsync(async () => await fetchSalesProjectData(newId));
+            KeepCurrentView();
+
+            string name = string.IsNullOrEmpty(code) ? "a newer copy" : code;
+            ShowAutoSaveStatus("now showing " + name);
+            if (wasEditing)
+            {
+                MessageBox.Show($"This quotation was opened for editing somewhere else, as {name}. " +
+                    "You are now looking at that copy; click EDIT to continue working.",
+                    "Quotation replaced", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
 
@@ -948,6 +1110,15 @@ namespace smpc_sales_app.Pages.Sales
                 // Nothing was written, so nothing will be broadcast: stop waiting for an
                 // echo that is never coming, or it would swallow the next real update.
                 if (response == null || !response.Success) ForgetOwnSave();
+
+                // Refused for good: a newer copy replaced this one. Retrying would fail every
+                // time, so follow it instead.
+                if (response != null && !response.Success && TryParseReplacementId(response.message, out int currentId))
+                {
+                    ShowAutoSaveStatus("");
+                    await FollowReplacementCopyAsync(currentId, null);
+                    return;
+                }
 
                 // No mode change on either branch: the whole point is that you keep typing.
                 ShowAutoSaveStatus(response != null && response.Success
@@ -3166,11 +3337,17 @@ namespace smpc_sales_app.Pages.Sales
             {
                 if (isNewRecord)
                 {
+                    // New Version keeps the number and takes the next version, numbered by the
+                    // server. (An Edit session never comes through here - its copy already exists.)
+                    if (_pendingVersionAction == "new_version")
+                        pnl_quotation["version_action"] = "new_version";
+
                     var response = await ProjectService.Insert(pnl_quotation);
                     if (response.Success)
                     {
                         MessageBox.Show("Saved");
                         SetNewFormMode(false);
+                        _pendingVersionAction = null;
 
                         // A successful save should always drop back to read-only View mode -
                         // isNewRecord/IsEdit weren't being reset here, so the grids/textboxes
@@ -4944,6 +5121,11 @@ namespace smpc_sales_app.Pages.Sales
                 if (isNewRecord || isSubVersion)
                 {
                     parentData.Remove("id");
+
+                    // A New Version or an Edit's sub-version, so the server numbers it from
+                    // what is stored. Nothing for a brand-new quote or a Duplicate.
+                    if (!string.IsNullOrEmpty(_pendingVersionAction))
+                        parentData["version_action"] = _pendingVersionAction;
                 }
 
 
@@ -5122,6 +5304,7 @@ namespace smpc_sales_app.Pages.Sales
                                 // for is done - clear it so the next Edit-then-Save in the same
                                 // session updates in place instead of duplicating again.
                                 isSubVersion = false;
+                                _pendingVersionAction = null;
 
                                 SetNewFormMode(false);
                             }
@@ -7296,6 +7479,7 @@ namespace smpc_sales_app.Pages.Sales
             GetLatestDate();
             SetNewFormMode(true);
             isNewRecord = true;
+            _pendingVersionAction = null;
             IsEdit = false;
             IsView = false;
 
@@ -7681,6 +7865,7 @@ namespace smpc_sales_app.Pages.Sales
             SetNewFormMode(true);
             isNewRecord = true;
             IsEdit = false;
+            _pendingVersionAction = "new_version";
 
 
             Panel[] panels = { pnl_header, pnl_footer };
@@ -7695,19 +7880,20 @@ namespace smpc_sales_app.Pages.Sales
             //toolstrip_quotation.Enabled = false;
             dgv_quick_quote_details.Enabled = true;
 
+            // For show only - the server numbers the new version when it is saved.
             txt_version_no.Text = await GetNextVersionNoAsync(txt_document_no.Text);
+            txt_sub_version_no.Text = "0";
         }
         private string GetNextVersionNo(DataTable allTransactions, string rawDocNo)
         {
-            // Remove "Q#" prefix if present
-            string documentNo = rawDocNo.StartsWith("Q#")
-                ? rawDocNo.Substring(2)
-                : rawDocNo;
+            // Compared without the Q#/FQ# prefix on BOTH sides. Stripping only the argument
+            // ("0001" against a stored "Q#0001") never matched, so this always answered 1.
+            string documentNo = DocumentNo.Strip(rawDocNo);
 
             // Get the latest matching row by version_no
             var latestRow = allTransactions.AsEnumerable()
-                .Where(row => row["document_no"].ToString() == documentNo)
-                .OrderByDescending(row => Convert.ToInt32(row["version_no"]))
+                .Where(row => DocumentNo.Strip(row["document_no"].ToString()) == documentNo)
+                .OrderByDescending(row => ToInt(row["version_no"]?.ToString()))
                 .FirstOrDefault();
 
             if (latestRow != null && int.TryParse(latestRow["version_no"].ToString(), out int latestVersion))
@@ -7721,16 +7907,14 @@ namespace smpc_sales_app.Pages.Sales
         {
             string versionNo = rawVersionNo;
 
-            // Remove "Q#" prefix if present
-            string documentNo = rawDocNo.StartsWith("Q#")
-              ? rawDocNo.Substring(2)
-              : rawDocNo;
+            // Without the prefix on both sides - see GetNextVersionNo.
+            string documentNo = DocumentNo.Strip(rawDocNo);
 
             // Filter by both document_no and version_no
             var latestRow = allTransactions.AsEnumerable()
-                .Where(row => row["document_no"].ToString() == documentNo &&
+                .Where(row => DocumentNo.Strip(row["document_no"].ToString()) == documentNo &&
                               row["version_no"].ToString() == rawVersionNo)
-                .OrderByDescending(row => Convert.ToInt32(row["sub_version_no"]))
+                .OrderByDescending(row => ToInt(row["sub_version_no"]?.ToString()))
                 .FirstOrDefault();
 
             if (latestRow != null && int.TryParse(latestRow["sub_version_no"].ToString(), out int latestSubVersion))
@@ -8777,7 +8961,8 @@ namespace smpc_sales_app.Pages.Sales
             // the backstop if the fetch fails.
             DataTable projectVersionsForGuard = await GetProjectVersionsTableAsync(pnl_quotation["document_no"].ToString());
             var duplicateTransaction = (projectVersionsForGuard ?? transactionProjectDataTable).AsEnumerable()
-                .Where(t => t.Field<string>("document_no") == pnl_quotation["document_no"].ToString());
+                .Where(t => t.Field<string>("document_no") == pnl_quotation["document_no"].ToString()
+                         && IsSameVersion(t, txt_version_no.Text, txt_sub_version_no.Text));
 
             if (duplicateTransaction.Any())
             {
@@ -9010,7 +9195,8 @@ namespace smpc_sales_app.Pages.Sales
                     // unique index is the backstop if the fetch fails.
                     DataTable versionsForGuard = await GetQuickVersionsTableAsync(parentData["document_no"].ToString());
                     var duplicateTransaction = (versionsForGuard ?? allTransactionList).AsEnumerable()
-                                                .Where(t => t.Field<string>("document_no") == parentData["document_no"].ToString());
+                                                .Where(t => t.Field<string>("document_no") == parentData["document_no"].ToString()
+                                                         && IsSameVersion(t, txt_version_no.Text, txt_sub_version_no.Text));
 
                     if (duplicateTransaction.Any())
                     {
@@ -9073,6 +9259,17 @@ namespace smpc_sales_app.Pages.Sales
                 MessageBox.Show("ERROR: " + ex);
             }
         }
+        // Whether a row is this version and sub-version. Each sub-version may have its own FQ
+        // (user decision 2026-09-25), so "this number is already finalized" is only a duplicate
+        // when it is the same version AND sub-version - FQ#2026-0001.1.0 does not stop .2.1.
+        private static bool IsSameVersion(DataRow row, string versionNo, string subVersionNo)
+        {
+            string Norm(object v, string empty) => string.IsNullOrWhiteSpace(v?.ToString()) ? empty : v.ToString().Trim();
+
+            return Norm(row.Table.Columns.Contains("version_no") ? row["version_no"] : null, "1") == Norm(versionNo, "1")
+                && Norm(row.Table.Columns.Contains("sub_version_no") ? row["sub_version_no"] : null, "0") == Norm(subVersionNo, "0");
+        }
+
         private void btn_sales_order_Click(object sender, EventArgs e)
         {
             string documentNo = txt_document_no.Text;
@@ -9084,7 +9281,9 @@ namespace smpc_sales_app.Pages.Sales
             }
 
             // Create an instance of Orders user control
-            Orders ordersPage = new Orders(documentNo);
+            // With the FQ's id, not just its number: several FQs share a number once versions
+            // exist (FQ#2026-0001.1.0, FQ#2026-0001.2.1), and a lookup by number took the first.
+            Orders ordersPage = new Orders(documentNo, ToInt(txt_id.Text));
             // Sized by the tab it lands in: Layout re-fits the tab's page when one is added
             // (Helpers.PageFit). Anchoring it to the tab's right edge here would stretch it on
             // its own and stop it ever shrinking back.
@@ -9118,7 +9317,11 @@ namespace smpc_sales_app.Pages.Sales
             }
             else
             {
-                SalesPrintModal printPage = new SalesPrintModal(true, false, documentNo, InclusionsRichTextBox.Text, ExclusionsRichTextBox.Text, TermAndConditionsRichTextBox.Text);
+                SalesPrintModal printPage = new SalesPrintModal(true, false, documentNo, InclusionsRichTextBox.Text, ExclusionsRichTextBox.Text, TermAndConditionsRichTextBox.Text)
+                {
+                    // The version on screen, not whichever shares its number first.
+                    QuotationId = ToInt(txt_id.Text)
+                };
                 int screenHeight = Screen.PrimaryScreen.Bounds.Height;
                 printPage.Height = (int)(screenHeight);
                 printPage.StartPosition = FormStartPosition.CenterParent;
@@ -9475,8 +9678,11 @@ namespace smpc_sales_app.Pages.Sales
                 return;
             }
 
-            IsEdit = true;
-            MessageBox.Show("EDIT MODE ON");
+            // The same way into edit mode as EDIT. This only switched edit mode on, so a
+            // project's autosave then wrote straight into the copy on screen - around the
+            // rule that an edit session is a new sub-version (user decision 2026-09-25) - and
+            // skipped Edit's finalized check too.
+            btn_edit_Click(sender, e);
         }
         private void LoadApplicationSetup()
         {
@@ -9550,6 +9756,11 @@ namespace smpc_sales_app.Pages.Sales
                 return;
             }
 
+            // A project's Edit session works on a copy - the next sub-version - made now, before
+            // edit mode starts (see StartProjectEditSessionAsync).
+            if (isProject && !await StartProjectEditSessionAsync())
+                return;
+
             IsView = false;
 
             // dgv_quick_quote_details_DataBindingComplete is what normally populates the
@@ -9577,11 +9788,16 @@ namespace smpc_sales_app.Pages.Sales
                 return;
             }
 
-            isSubVersion = true;
+            // A quick quote's Edit becomes its next sub-version when it is saved (its Save always
+            // inserts). A project's copy was made above and is what is on screen now, so its
+            // saves update that copy in place.
+            isSubVersion = !isProject;
+            _pendingVersionAction = isProject ? null : "new_sub_version";
             SetFormEditMode(docNo.StartsWith("Q#") ? "Finalize" : "Order");
 
-
-            txt_sub_version_no.Text = await GetNextSubVersionNoAsync(txt_document_no.Text, txt_version_no.Text);
+            // For show only - the server numbers the copy when it is saved.
+            if (!isProject)
+                txt_sub_version_no.Text = await GetNextSubVersionNoAsync(txt_document_no.Text, txt_version_no.Text);
 
             // New Quick Quote
             if (!isProject)
@@ -9618,8 +9834,9 @@ namespace smpc_sales_app.Pages.Sales
 
                 dgv_quick_quote_details.DataSource = dgvCopy;
 
-
-                DocumentIncrementer();
+                // The number stays: an Edit is the next sub-version OF THIS QUOTE. This used to
+                // blank it to "-", which the save then sent as a brand-new quotation - every
+                // edit of a quick quote came back under a new number.
 
                 txt_created_by.Text = CacheData.CurrentUser.first_name + " " + CacheData.CurrentUser.last_name;
                 txt_vat_percent.Text = "12";
@@ -9956,6 +10173,15 @@ namespace smpc_sales_app.Pages.Sales
             GetLatestDate();
             isNewRecord = true;
             IsEdit = false;
+
+            // A duplicate is a new quotation - its own number, from 1.0. It used to keep the
+            // source's number, version and sub-version: from a 1.0 the server happened to issue
+            // a new number, but from any later copy it collided with the source and the save
+            // was refused.
+            _pendingVersionAction = null;
+            DocumentIncrementer();
+            txt_version_no.Text = "1";
+            txt_sub_version_no.Text = "0";
         }
         // ComputeQuickQuoteTotal (empty stub) deleted along with the rest of the dead
         // compute path (ComputeDgvHierarchy / computationLoop / DGVComputation) - none
@@ -10720,7 +10946,11 @@ namespace smpc_sales_app.Pages.Sales
             }
             else
             {
-                SalesPrintModal printPage = new SalesPrintModal(true, false, documentNo, InclusionsRichTextBox.Text, ExclusionsRichTextBox.Text, TermAndConditionsRichTextBox.Text);
+                SalesPrintModal printPage = new SalesPrintModal(true, false, documentNo, InclusionsRichTextBox.Text, ExclusionsRichTextBox.Text, TermAndConditionsRichTextBox.Text)
+                {
+                    // The version on screen, not whichever shares its number first.
+                    QuotationId = ToInt(txt_id.Text)
+                };
                 int screenHeight = Screen.PrimaryScreen.Bounds.Height;
                 printPage.Height = (int)(screenHeight);
                 printPage.StartPosition = FormStartPosition.CenterParent;

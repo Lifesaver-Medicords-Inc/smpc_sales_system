@@ -101,6 +101,16 @@ namespace smpc_sales_system.Services.Sales
             return response;
         }
 
+        // EDIT on a project quotation: the server copies the stored project onto its version's
+        // next sub-version and returns the copy (Data = its header). forkNote is who started
+        // the Edit session and when, by this PC's clock, for the Change History line.
+        public static async Task<ApiResponseModel> StartSubVersion(int id, Dictionary<string, dynamic> forkNote)
+        {
+            var body = new Dictionary<string, dynamic> { ["fork_note"] = forkNote };
+            var response = await RequestToApi<ApiResponseModel>.Post(url + "/" + id + "/sub-version", body);
+            return response;
+        }
+
         public static async Task<ApiResponseModel> Update(Dictionary<string, dynamic> data)
         {
             var response = await RequestToApi<ApiResponseModel>.Put(url, data);

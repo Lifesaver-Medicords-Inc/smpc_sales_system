@@ -190,8 +190,12 @@ namespace smpc_sales_system.Pages.Sales
             // array serializes fine, but a missing/omitted field deserializes to null) -
             // calling .Where() directly on a null source throws ArgumentNullException, so
             // fall back to an empty list instead of assuming these are always populated.
+            // The record on screen, by id, when the caller says which. Every version of a quote
+            // and its FQ share the number (Q#2026-0001.1.0, .2.1, FQ#2026-0001.2.1), and the
+            // first match by number printed whichever came first - an FQ's print could carry a
+            // draft's lines. Same fix as the project print (ProjectId).
             var filteredSalesQuotation = (data.SalesQuotation ?? Enumerable.Empty<SalesQuotationModel>())
-                .Where(q => NormalizeDocumentNo(q.document_no) == documentNo)
+                .Where(q => QuotationId > 0 ? q.id == QuotationId : NormalizeDocumentNo(q.document_no) == documentNo)
                 .ToList();
             var quotationId = filteredSalesQuotation.FirstOrDefault()?.id;
 
@@ -208,7 +212,7 @@ namespace smpc_sales_system.Pages.Sales
                     .Where(q => idsQuotationQuick.Contains(q.quotation_quick_id))
                     .ToList();
 
-                transactionList = JsonHelper.ToDataTable(filteredSalesQuotation);
+                transactionList = WithFullCode(JsonHelper.ToDataTable(filteredSalesQuotation));
                 childList = JsonHelper.ToDataTable(filteredSalesQuotationQuick);
                 selectedImageList = JsonHelper.ToDataTable(filteredSalesQuotationImage);
 
@@ -235,6 +239,32 @@ namespace smpc_sales_system.Pages.Sales
         // record is on screen - see fetchQuotationProjectByDocumentNo for why the number
         // alone is not enough.
         public int ProjectId { get; set; }
+
+        // The quick quotation to print, by id - see fetchQuotationDetailsByDocumentNo.
+        public int QuotationId { get; set; }
+
+        // QUOTATION NO. on the printout is the quote's full code - FQ#2026-0001.2.1 - not the
+        // bare number, which since versioning (2026-09-25) names several quotes and several
+        // FQs. The reports print the header row's document_no, so that is what carries it.
+        private static DataTable WithFullCode(DataTable header)
+        {
+            if (header == null || !header.Columns.Contains("document_no")) return header;
+
+            foreach (DataRow row in header.Rows)
+            {
+                string code = header.Columns.Contains("quote_code") ? row["quote_code"]?.ToString() : null;
+                if (string.IsNullOrWhiteSpace(code))
+                {
+                    string version = header.Columns.Contains("version_no") ? row["version_no"]?.ToString() : null;
+                    string sub = header.Columns.Contains("sub_version_no") ? row["sub_version_no"]?.ToString() : null;
+                    code = string.Format("{0}.{1}.{2}", row["document_no"],
+                        string.IsNullOrWhiteSpace(version) ? "1" : version.Trim(),
+                        string.IsNullOrWhiteSpace(sub) ? "0" : sub.Trim());
+                }
+                row["document_no"] = code;
+            }
+            return header;
+        }
 
         private async Task fetchQuotationProjectByDocumentNo(string documentNo)
         {
@@ -278,7 +308,7 @@ namespace smpc_sales_system.Pages.Sales
                 var filteredItemSets = (data.sales_project_item_set ?? Enumerable.Empty<SalesProjectItemSet>())
                     .Where(q => q.based_id == quotationId)
                     .ToList();
-                transactionList = JsonHelper.ToDataTable(filteredSalesQuotation);
+                transactionList = WithFullCode(JsonHelper.ToDataTable(filteredSalesQuotation));
                 ItemSets = JsonHelper.ToDataTable(filteredItemSets);
 
                 var itemsIds = filteredItemSets.Select(q => q.itemset_id).ToList();

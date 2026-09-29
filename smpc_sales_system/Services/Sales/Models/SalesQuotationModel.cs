@@ -39,6 +39,8 @@ namespace smpc_sales_system.Services.Sales.Models
         public bool is_finalized { get; set; }
         public string version_no { get; set; }
         public string sub_version_no { get; set; }
+        // The full code, Q#2026-0001.2.1 - worked out by the API from the three fields above.
+        public string quote_code { get; set; }
         public string version_description { get; set; }
         public string version_remarks { get; set; }
         public string created_by { get; set; }

@@ -47,12 +47,17 @@ namespace smpc_sales_app.Pages.Sales
         private ImageList imageList = new ImageList(), imageList2 = new ImageList();
         string SalesPath = Settings.Default.SALESPATH;
         string AfterSalesPath = Settings.Default.AFTERSALESPATH;
-        public Orders(string documentNo = null)
+        // The FQ this screen was opened from, when the caller knows it (the Quotation page's
+        // SO button). See QuotationFilter.
+        private readonly int quotationId;
+
+        public Orders(string documentNo = null, int quotationId = 0)
         {
             InitializeComponent();
             Helpers.ResetControls(pnl_header);
             Helpers.ResetControls(pnl_footer);
             this.documentNo = documentNo;
+            this.quotationId = quotationId;
 
             imageList.ImageSize = new Size(64, 64);
             imageList2.ImageSize = new Size(16, 16);
@@ -210,6 +215,20 @@ namespace smpc_sales_app.Pages.Sales
                 CheckStatus();
             }
         }
+        // Which rows are "this quotation" and "its order". By id when the caller gave one: once
+        // versions exist several FQs share a number (FQ#2026-0001.1.0, FQ#2026-0001.2.1), and
+        // the first match by number could be the wrong FQ - or, for the order, miss it, since an
+        // SO now records the FQ's full code. By number otherwise, as before.
+        private string QuotationFilter(string documentNo)
+        {
+            return quotationId > 0 ? $"id = '{quotationId}'" : $"document_no = '{documentNo}'";
+        }
+
+        private string OrderFilter(string documentNo)
+        {
+            return quotationId > 0 ? $"quotation_id = '{quotationId}'" : $"document_no = '{documentNo}'";
+        }
+
         private void bindOrderByDocNo(string documentNo, bool isBind = false)
         {
             if (isBind)
@@ -223,7 +242,7 @@ namespace smpc_sales_app.Pages.Sales
                 HeaderList.Columns.Add("ship_to", typeof(string));
                 HeaderList.Columns.Add("tin", typeof(string));
 
-                DataRow[] filteredRows = this.OrderList.Select($"document_no = '{documentNo}'");
+                DataRow[] filteredRows = this.OrderList.Select(OrderFilter(documentNo));
 
                 if (filteredRows.Length > 0)
                 {
@@ -261,7 +280,7 @@ namespace smpc_sales_app.Pages.Sales
                     dtp_date.Value = Convert.ToDateTime(parentRow["date"]);
                     dtp_delivery_date.Value = Convert.ToDateTime(parentRow["delivery_date"]);
                     DataView ordertable = new DataView(this.OrderList);
-                    ordertable.RowFilter = $"document_no = '{documentNo}'";
+                    ordertable.RowFilter = OrderFilter(documentNo);
                     string orderId = ordertable[0]["order_id"].ToString();
 
                     DataView filteredDetailsView = new DataView(this.DetailsList);
@@ -295,11 +314,11 @@ namespace smpc_sales_app.Pages.Sales
                 HeaderList.Columns.Add("ship_to", typeof(string));
                 HeaderList.Columns.Add("tin", typeof(string));
 
-                DataRow[] filteredRows = this.transactionList.Select($"document_no = '{documentNo}'");
+                DataRow[] filteredRows = this.transactionList.Select(QuotationFilter(documentNo));
 
                 if (filteredRows.Length == 0)
                 {
-                    filteredRows = this.transactionProjectList.Select($"document_no = '{documentNo}'");
+                    filteredRows = this.transactionProjectList.Select(QuotationFilter(documentNo));
                 }
 
                 if (filteredRows.Length > 0)
@@ -427,7 +446,7 @@ namespace smpc_sales_app.Pages.Sales
                 HeaderList.Columns.Add("ship_to", typeof(string));
                 HeaderList.Columns.Add("tin", typeof(string));
 
-                DataRow[] filteredRows = this.transactionProjectList.Select($"document_no = '{documentNo}'");
+                DataRow[] filteredRows = this.transactionProjectList.Select(QuotationFilter(documentNo));
 
                 if (filteredRows.Length > 0)
                 {
@@ -741,7 +760,7 @@ namespace smpc_sales_app.Pages.Sales
             {
                 if (OrderList != null && OrderList.Rows.Count > 0)
                 {
-                    DataRow[] matchingRows = OrderList.Select($"document_no = '{documentNo}'");
+                    DataRow[] matchingRows = OrderList.Select(OrderFilter(documentNo));
 
                     if (matchingRows.Length > 0)
                     {
@@ -2218,7 +2237,7 @@ namespace smpc_sales_app.Pages.Sales
 
             bool matchesExistingOrder = !string.IsNullOrEmpty(documentNo)
                 && OrderList != null
-                && OrderList.Select($"document_no = '{documentNo}'").Length > 0;
+                && OrderList.Select(OrderFilter(documentNo)).Length > 0;
 
             if (matchesExistingOrder)
             {
