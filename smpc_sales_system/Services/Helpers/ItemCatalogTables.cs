@@ -181,13 +181,20 @@ namespace smpc_app.Services.Helpers
             if (grid == null || items == null)
                 return;
 
+            // By the grid column's name or the field it is bound to. Quick Quote's UOM column is
+            // named quick_unit_of_measure and bound to unit_of_measure, so asking for it by name
+            // alone found nothing and the backfill quietly never ran: a BOM's children kept a
+            // blank UOM unless their item happened to be loaded already (user-reported 2026-09-29).
+            itemCol = GridColumnName(grid, itemCol);
+            uomCol = GridColumnName(grid, uomCol);
+            if (itemCol == null)
+                return;
+
             var missing = new HashSet<int>();
             foreach (DataGridViewRow gridRow in grid.Rows)
             {
                 if (gridRow.IsNewRow)
                     continue;
-                if (!grid.Columns.Contains(itemCol))
-                    return;
                 if (int.TryParse(gridRow.Cells[itemCol].Value?.ToString(), out int id) && id > 0 && !ContainsId(items, id))
                     missing.Add(id);
             }
@@ -198,7 +205,7 @@ namespace smpc_app.Services.Helpers
                 await Task.WhenAll(fetches);
             }
 
-            if (!grid.Columns.Contains(uomCol) || !items.Columns.Contains("unit_of_measure"))
+            if (uomCol == null || !items.Columns.Contains("unit_of_measure"))
                 return;
             foreach (DataGridViewRow gridRow in grid.Rows)
             {
@@ -212,6 +219,21 @@ namespace smpc_app.Services.Helpers
                 if (match != null)
                     gridRow.Cells[uomCol].Value = match["unit_of_measure"]?.ToString() ?? "";
             }
+        }
+
+        // The name of the grid column called `key`, or else bound to the field `key`; null if neither.
+        private static string GridColumnName(DataGridView grid, string key)
+        {
+            if (string.IsNullOrEmpty(key))
+                return null;
+            if (grid.Columns.Contains(key))
+                return key;
+            foreach (DataGridViewColumn column in grid.Columns)
+            {
+                if (string.Equals(column.DataPropertyName, key, StringComparison.OrdinalIgnoreCase))
+                    return column.Name;
+            }
+            return null;
         }
 
         // Every positive int in a table's column (skips blanks/non-numeric).
