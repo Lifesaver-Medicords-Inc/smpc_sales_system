@@ -3,6 +3,7 @@ using smpc_sales_app.Data;
 using smpc_sales_app.Pages.Sales;
 using smpc_sales_app.Services.Helpers;
 using smpc_sales_app.Services.Sales;
+using smpc_sales_system.Models;
 using smpc_sales_system.Printing;
 using System;
 using System.Collections.Generic;
@@ -37,6 +38,11 @@ namespace smpc_sales_system.Pages.Sales
         private DataTable _orders = new DataTable();
         private DataTable _details = new DataTable();
         private readonly DataTable _view = new DataTable();
+
+        // Customer name by BPI id (general_based_id -> branch_name), the way RedBox and the
+        // order form name the customer. The order row's own customer_name is never filled in
+        // - the order form does not save it - so CUSTOMER read it and was blank on every row.
+        private Dictionary<int, string> _customerNames = new Dictionary<int, string>();
 
         public SOApprovals()
         {
@@ -120,12 +126,44 @@ namespace smpc_sales_system.Pages.Sales
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
                 _orders = new DataTable();
             }
+
+            try
+            {
+                _customerNames = CustomerNames(await QuotationService.GetBpiCustomers());
+            }
+            catch (Exception ex)
+            {
+                // The list still works without names; CUSTOMER falls back to the order's own.
+                Console.WriteLine("SO Approvals: could not load customer names: " + ex.Message);
+            }
             finally
             {
                 lbl_loading.Visible = false;
             }
 
             Rebind();
+        }
+
+        private static Dictionary<int, string> CustomerNames(Bpi_Class bpi)
+        {
+            var names = new Dictionary<int, string>();
+            foreach (var general in bpi?.general ?? Enumerable.Empty<BpiGeneral>())
+            {
+                // The first branch listed is the partner's own name, as RedBox takes it.
+                if (general != null && !names.ContainsKey(general.general_based_id))
+                    names[general.general_based_id] = general.branch_name;
+            }
+            return names;
+        }
+
+        private string CustomerName(DataRow row)
+        {
+            int customerId;
+            if (int.TryParse(Text(row, "customer_id"), out customerId)
+                && _customerNames.TryGetValue(customerId, out string name)
+                && !string.IsNullOrWhiteSpace(name))
+                return name;
+            return Text(row, "customer_name");
         }
 
         private static string Text(DataRow row, string column)
@@ -149,10 +187,11 @@ namespace smpc_sales_system.Pages.Sales
             {
                 if (ApprovalStatus(Text(row, "status")) != wanted) continue;
 
-                string docNo = Text(row, "document_no");
-                if (string.IsNullOrWhiteSpace(docNo)) docNo = DocumentNo.Apply(Text(row, "doc"), "SO#");
+                // The order's own number. document_no on an order row is the quotation it was
+                // made from (FQ#2026-0022.1.0), not the order - it showed here as "SO #".
+                string docNo = DocumentNo.Apply(Text(row, "doc"), "SO#");
 
-                string customer = Text(row, "customer_name");
+                string customer = CustomerName(row);
                 string project = Text(row, "project_name");
                 string executive = Text(row, "sales_executive");
 

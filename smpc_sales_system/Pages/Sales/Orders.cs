@@ -1073,11 +1073,9 @@ namespace smpc_sales_app.Pages.Sales
                         }
 
                         int orderId = Convert.ToInt32(selectedOrder["order_id"]);
-                        string docNo = selectedOrder["document_no"]?.ToString();
-                        if (string.IsNullOrWhiteSpace(docNo))
-                        {
-                            docNo = DocumentNo.Apply(selectedOrder["doc"]?.ToString(), "SO#");
-                        }
+                        // The order's own number: an order row's document_no is the
+                        // quotation it was made from (FQ#...), not the SO.
+                        string docNo = DocumentNo.Apply(selectedOrder["doc"]?.ToString(), "SO#");
 
                         // The confirmation is REPLACED by the charges modal (5.4 step
                         // 2), not shown alongside it.
@@ -1258,7 +1256,7 @@ namespace smpc_sales_app.Pages.Sales
                     return;
                 }
 
-                string docNoDisplay = selectedOrder["document_no"]?.ToString() ?? selectedDoc.ToString();
+                string docNoDisplay = DocumentNo.Apply(selectedOrder["doc"]?.ToString(), "SO#");
                 DialogResult confirm = MessageBox.Show(
                     $"Are you sure you want to permanently delete order {docNoDisplay}? This cannot be undone.",
                     "Confirm Delete", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
