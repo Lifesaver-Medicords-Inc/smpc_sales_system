@@ -4950,6 +4950,15 @@ namespace smpc_sales_app.Pages.Sales
             // Change History line for free.
             Compare(c, "size_up", DescribeSizeUps(db.sales_project_size_up), DescribeSizeUps(upd.sales_project_size_up));
             Compare(c, "final_selection", DescribeFinals(db.sales_project_content_final), DescribeFinals(upd.sales_project_content_final));
+
+            // The rows this screen had read, sent with the lists. The server replaces a stored
+            // list with the one a save sends, so without these a screen that had not yet been
+            // shown the other app's new pump deleted it (2026-09-28): it may now delete only a
+            // row it saw and took off. `upd` is the row the save sends.
+            upd.size_up_known_ids = (db.sales_project_size_up ?? new SalesProjectSizeUp[0])
+                .Where(r => r != null && r.id > 0).Select(r => r.id).ToArray();
+            upd.final_known_ids = (db.sales_project_content_final ?? new SalesProjectContentFinal[0])
+                .Where(r => r != null && r.id > 0).Select(r => r.id).ToArray();
             return c;
         }
 

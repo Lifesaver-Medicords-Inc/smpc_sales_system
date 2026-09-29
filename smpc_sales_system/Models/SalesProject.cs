@@ -138,6 +138,12 @@ namespace smpc_sales_system.Models
 
         public SalesProjectContentFinal []sales_project_content_final { get; set; }
         public SalesProjectSizeUp []sales_project_size_up { get; set; }
+
+        // The Size Up / FINAL row ids the saving screen had read (stamped by the diff, see
+        // Quotation.GetContentChanges). Not stored - the server deletes a row this save left
+        // out only if it is named here, so a pump the other app added since is kept.
+        public int[] size_up_known_ids { get; set; }
+        public int[] final_known_ids { get; set; }
     }
 
     public class SalesProjectContentFinal

@@ -1156,10 +1156,19 @@ namespace smpc_sales_system.Pages.Sales
             }
         }
 
+        // Replaces the FINAL list with dt, as SetSizeUpData does for SIZE UP. It appended: fine
+        // on a freshly built tab, but the live update (ProjectLiveMerge) calls it on a tab that
+        // already shows the list, so every update from the other app stacked the whole list a
+        // second time, and a list the other app had emptied was never emptied here
+        // (2026-09-28).
         public void SetFinalData(DataTable dt)
         {
+            if (dgv_final == null) return;
 
-            if(dt.Rows.Count > 0)
+            dgv_final.DataSource = null;
+            dgv_final.Rows.Clear();
+
+            if (dt != null && dt.Rows.Count > 0)
             {
                 foreach (DataRow row in dt.Rows)
                 {
