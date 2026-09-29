@@ -311,7 +311,7 @@
             this.lbl_how_to.Location = new System.Drawing.Point(21, 88);
             this.lbl_how_to.Name = "lbl_how_to";
             this.lbl_how_to.TabIndex = 4;
-            this.lbl_how_to.Text = "Press Edit first - the list is read-only until then.\r\n\r\nAdd a component by clicking the COMPONENTS cell on the blank row at the bottom. It goes\r\nin at the top level.\r\nClick a COMPONENTS cell that already has a component to swap the item; the row keeps its\r\nplace in the list.\r\nRight-click a row and choose Add Child to put a component one level under it.\r\nSelect a row and press Delete to remove it.\r\n\r\nThe # column numbers itself from the indent - 1, 2, 2.1, 2.2.1 - and closes up again\r\nafter a delete. There is no level 0: a top-level component is 1.";
+            this.lbl_how_to.Text = "Press Edit first - the list is read-only until then.\r\n\r\nRight-click the list and choose Add Parent for a top-level component. It goes in below the\r\ngroup you right-clicked, or at the end if you right-click the empty space.\r\nRight-click a component and choose Add Child to put one under it, after its other children.\r\nClick a COMPONENTS cell to swap the item; the row keeps its place in the list.\r\nDelete (menu or key) removes a component together with everything under it.\r\n\r\nThe # column numbers itself - 1, 2, 2.1, 2.2.1 - and moves up or down after an insert\r\nor a delete. A child is always one level under its parent: 9 is followed by 9.1.";
             // 
             // txt_template_name
             // 

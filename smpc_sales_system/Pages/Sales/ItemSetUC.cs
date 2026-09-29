@@ -2167,6 +2167,7 @@ namespace smpc_sales_system.Pages.Sales
 
                 // Stack for hierarchical numbering
                 List<int> levelCounters = new List<int>();
+                List<int> openLevels = new List<int>();
 
                 foreach (var row in childRows)
                 {
@@ -2178,6 +2179,15 @@ namespace smpc_sales_system.Pages.Sales
                     // from slot 0 - which is not part of the code, so the row would arrive
                     // with a blank reference_code.
                     int level = Math.Max(1, row.Field<int?>("Level") ?? 1);
+
+                    // A child is always one level under its parent - the same rule as Template
+                    // Setup (RenumberTemplateRows, which explains it). CPS's valves are stored
+                    // two levels under BLADDER TANK; they arrive as 7.1, 7.2, not 7.1.1 (user
+                    // ruling 2026-09-25).
+                    while (openLevels.Count > 0 && openLevels[openLevels.Count - 1] >= level)
+                        openLevels.RemoveAt(openLevels.Count - 1);
+                    openLevels.Add(level);
+                    level = openLevels.Count;
 
                     // Expand counters list to match this level
                     while (levelCounters.Count <= level)
@@ -2215,7 +2225,10 @@ namespace smpc_sales_system.Pages.Sales
                     // (the 4-space gaps between levels were still correct) but wrong for
                     // level 1, which should have no indent at all. Subtract 1 to match.
                     string indent = new string(' ', Math.Max(0, level - 1) * 4);
-                    string componentText = (row["Components"]?.ToString() ?? "").TrimStart();
+                    // Named as Template Setup shows it: the item's name, plus any note.
+                    string componentText = ProjectTemplateChildModel.ComponentText(
+                        row["Components"]?.ToString(),
+                        templatesChild.Columns.Contains("ItemName") ? row["ItemName"]?.ToString() : null);
 
                     newRow["components"] = indent + componentText;
                     newRow["item_id"] = row["ItemId"];

@@ -36,6 +36,27 @@ namespace smpc_sales_system.Models
         // total changes. Nothing defaults it - see the Go model's own note.
         [JsonProperty("qty")]
         public int? Qty { get; set; }
+
+        // What a template row is called: its item's NAME as Item Entry has it today (the
+        // item's item_name_id), so the template names a kind of component and follows a
+        // rename. A note in brackets after the old name stays with it - "BLADDER TANK (at
+        // least 60L)", "FLOAT SWITCH (cistern)" - because it says something the item's name
+        // does not. With no name to go on (an API that does not send one), the stored text.
+        public static string ComponentText(string components, string itemName)
+        {
+            string stored = (components ?? "").Trim();
+            string name = (itemName ?? "").Trim();
+            if (name.Length == 0) return stored;
+
+            if (stored.StartsWith(name, StringComparison.OrdinalIgnoreCase))
+                return name + stored.Substring(name.Length);
+
+            var note = System.Text.RegularExpressions.Regex.Match(stored, @"\(.*\)\s*$");
+            if (!note.Success || name.EndsWith(note.Value.Trim(), StringComparison.OrdinalIgnoreCase))
+                return name;
+
+            return name + " " + note.Value.Trim();
+        }
     }
 
     public class ProjectTemplateList

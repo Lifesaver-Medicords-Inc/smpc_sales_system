@@ -25,7 +25,31 @@ namespace smpc_sales_system.Pages
         public ProjectTemplate()
         {
             InitializeComponent();
+
+            // Only the designer's columns. Left at the default, every column of the bound table
+            // became a grid column as well: ItemName showed up as a raw column, and RefCode -
+            // added to the table after binding - came back as a column of its own on Next and
+            // pushed the designer's # column out (user-reported 2026-09-25).
+            dgv_template.AutoGenerateColumns = false;
+            dgv_template.MultiSelect = false;
+
+            // Rows are added from the right-click menu, never from a blank row at the bottom:
+            // that row half-exists in the bound table while the item picker is open, and what
+            // it left behind was a stray empty row, or an insert in the wrong place.
+            dgv_template.AllowUserToAddRows = false;
+
+            addParentMenuItem.Click += addParentMenuItem_Click;
+            deleteMenuItem.Click += deleteMenuItem_Click;
+            contextMenuStrip1.Items.Insert(0, addParentMenuItem);
+            contextMenuStrip1.Items.Add(deleteMenuItem);
+            contextMenuStrip1.Opening += contextMenuStrip1_Opening;
+
+            dgv_template.MouseDown += dgv_template_MouseDown;
+            dgv_template.UserDeletingRow += dgv_template_UserDeletingRow;
         }
+
+        private readonly ToolStripMenuItem addParentMenuItem = new ToolStripMenuItem("Add Parent");
+        private readonly ToolStripMenuItem deleteMenuItem = new ToolStripMenuItem("Delete (with everything under it)");
 
         private DataTable Template = new DataTable();
         private DataTable TemplateChild = new DataTable();
@@ -88,7 +112,11 @@ namespace smpc_sales_system.Pages
             // and is called at the end of this method; ReadOnly is set true here
             // only so the grid is never briefly editable while loading.
             dgv_template.ReadOnly = true;
-            stockQuickDataTable = Helpers.GetDataTableFromUnboundGrid(dgv_template);
+
+            // The empty shape of the list. It used to be scraped off the grid, so whatever
+            // columns the grid had grown by then (see the constructor) came along too - two
+            // RefCode columns, for one.
+            stockQuickDataTable = EmptyTemplateTable();
 
             if (Template.Rows.Count > 0 && TemplateChild.Rows.Count > 0)
             {
@@ -107,16 +135,12 @@ namespace smpc_sales_system.Pages
                 var filteredRows = TemplateChild.AsEnumerable()
                                 .Where(row => row.Field<int>("ParentId") == template_id);
 
-                foreach(DataRow row in TemplateChild.Rows)
-                {
-                    Console.WriteLine(row["Id"] + " " + row["ParentId"] + " " + row["ItemId"] + " " + row["Components"]);
-                }
-
                 DataTable firstDetailsRow = filteredRows.Any()
                     ? filteredRows.CopyToDataTable()
                     : TemplateChild.Clone(); // Returns empty DataTable with same schema
 
-                dgv_template.DataSource = firstDetailsRow;
+                // RefCode before binding, so the # column has its property from the start.
+                dgv_template.DataSource = WithRefCode(firstDetailsRow);
             }
             else
             {
@@ -233,13 +257,15 @@ namespace smpc_sales_system.Pages
             // component cell is clicked to open the item picker), so it must be
             // gone in view mode and present while editing.
             dgv_template.ReadOnly = Visibled;
-            dgv_template.AllowUserToAddRows = !Visibled;
+            dgv_template.AllowUserToAddRows = false;
+            dgv_template.AllowUserToDeleteRows = !Visibled;
 
-            // The "Add Child" menu is attached to the component COLUMN in the
-            // designer, so guarding its handler is not enough on its own - the
-            // menu would still appear on right-click and simply do nothing,
-            // which looks broken. Detach it outright in view mode.
-            component.ContextMenuStrip = Visibled ? null : contextMenuStrip1;
+            // The menu is the way rows are added, so it belongs to the whole list - including
+            // the empty space under the last row, which is where an empty template starts. The
+            // designer attaches it to the COMPONENTS column only. None in view mode: a menu that
+            // appears and then does nothing looks broken.
+            component.ContextMenuStrip = null;
+            dgv_template.ContextMenuStrip = Visibled ? null : contextMenuStrip1;
         }
 
         private async void btn_save_Click(object sender, EventArgs e)
@@ -359,10 +385,10 @@ namespace smpc_sales_system.Pages
                 if (!isEditing)
                     return;
 
-                // Components Column
+                // Clicking a component swaps the item on that row; the row keeps its place.
                 if (dgv_template.Columns[e.ColumnIndex].Name == "component")
                 {
-                    HandleItemSelectionClick(e.RowIndex, dgv_template, false);
+                    ReplaceComponentAt(e.RowIndex);
                 }
             }
             catch (Exception ex)
@@ -389,15 +415,7 @@ namespace smpc_sales_system.Pages
                 if (!isEditing)
                     return;
 
-                if (dgv_template.Rows[contextRowIndex].Cells["component"].Value.ToString() == ""
-                    && dgv_template.Rows[contextRowIndex].Cells["component"].Value == DBNull.Value)
-                    return;
-
-                // Components Column
-                if (dgv_template.Columns[contextColIndex].Name == "component")
-                {
-                    HandleItemSelectionClick(contextRowIndex, dgv_template, true);
-                }
+                AddChild(contextRowIndex);
             }
             catch (Exception ex)
             {
@@ -408,73 +426,37 @@ namespace smpc_sales_system.Pages
             }
         }
 
-        private void HandleItemSelectionClick(int rowIndex, DataGridView dgv, bool child = false)
-        {
-            SalesItemModal itemModal = new SalesItemModal(ItemList);
-            DialogResult r = itemModal.ShowDialog();
-
-            if (r == DialogResult.OK)
-            {
-                int itemid = itemModal.GetParentItemId();
-
-                // Level 1 is the top - there is no level 0. Every template row already
-                // stored is 1-based (levels 1/2/3 on the live data), which is also what the
-                // quotation assumes when it applies a template: it indents by
-                // (level - 1) * 4 and numbers from counter 1. A parent written as 0 here
-                // therefore disagreed with every row saved before it, and reached the
-                // quotation as a row it numbers from a counter slot that is not part of the
-                // code at all - a blank reference_code.
-                if (dgv.Rows[rowIndex].Cells["level"].Value == DBNull.Value)
-                    dgv.Rows[rowIndex].Cells["level"].Value = 1;
-
-
-
-                if (dgv.Rows[rowIndex].Cells["ItemId"].Value == DBNull.Value)
-                    dgv.Rows[rowIndex].Cells["ItemId"].Value = 0;
-
-                int parentItemId = Convert.ToInt32(dgv.Rows[rowIndex].Cells["ItemId"].Value);
-                int level = Convert.ToInt32(dgv.Rows[rowIndex].Cells["level"].Value);
-
-                // Clicking a row that already holds a component means "this one, not that
-                // one" - so the item is swapped on the row and its place in the tree is
-                // left exactly as it was. It used to insert a NEW row at the top level
-                // instead, which is how a child came back as a parent after somebody tried
-                // to rename it: nothing on screen says the way to change a component is to
-                // delete the row and add it again in the right place.
-                //
-                // Add Child still adds; only a plain click on a filled row replaces.
-                if (!child && parentItemId > 0)
-                {
-                    ReplaceComponent(rowIndex, itemid, dgv, Math.Max(level, 1));
-                    return;
-                }
-
-                if (!child)
-                {
-                    level = 1;
-                }
-                else
-                {
-                    // A row saved before the top level was settled at 1 reads as 0; its
-                    // child is still level 2, not level 1.
-                    level = Math.Max(level, 1) + 1;
-                }
-
-                    GetItemData(rowIndex, itemid, dgv, level, parentItemId);
-
-            }
-        }
+        // ---- Building the list ------------------------------------------------------------
+        //
+        // Right-click menu (edit mode only):
+        //   Add Parent - a new top-level component, below the whole group of the row that was
+        //                right-clicked (at the end when the click was on empty space). Clicking
+        //                2 CONTROLLER and adding BLADDER TANK gives 3 BLADDER TANK, and VFD moves
+        //                from 3 to 4.
+        //   Add Child  - a component one level under the row, as its LAST child, so children
+        //                read in the order they were added: 3.1, then 3.2.
+        //   Delete     - the row and everything under it. A child left behind would be
+        //                re-numbered into whatever row is now above it.
+        // Clicking a COMPONENTS cell swaps the item on that row and keeps its place.
+        //
+        // Every change rebuilds the list in its new order (Rebind), so the grid, the table
+        // behind it and the save always agree on the order.
 
         private int contextRowIndex = -1;
         private int contextColIndex = -1;
 
-        // Deleting a row shifts everything below it, so the codes have to be worked out
-        // again - otherwise the list keeps the numbers of a shape it no longer has, with a
-        // gap where the deleted row was and children still quoting a parent number that has
-        // moved. UserDeletedRow fires after the row has gone from the bound table.
-        private void dgv_template_UserDeletedRow(object sender, DataGridViewRowEventArgs e)
+        // The row the menu is for - or -1 for the empty space under the rows.
+        private void dgv_template_MouseDown(object sender, MouseEventArgs e)
         {
-            RenumberTemplateRows();
+            if (e.Button != MouseButtons.Right) return;
+
+            DataGridView.HitTestInfo hit = dgv_template.HitTest(e.X, e.Y);
+            contextRowIndex = hit.RowIndex;
+            contextColIndex = hit.ColumnIndex;
+
+            dgv_template.ClearSelection();
+            if (contextRowIndex >= 0)
+                dgv_template.Rows[contextRowIndex].Selected = true;
         }
 
         private void dgv_template_CellMouseDown(object sender, DataGridViewCellMouseEventArgs e)
@@ -489,73 +471,267 @@ namespace smpc_sales_system.Pages
             }
         }
 
-        // Swaps the item on an existing row, keeping its level and therefore its place in
-        // the hierarchy. The name comes from the item, never from what was in the cell.
-        private void ReplaceComponent(int rowIndex, int itemID, DataGridView dgv, int level)
+        private void contextMenuStrip1_Opening(object sender, CancelEventArgs e)
         {
-            DataTable itemList = Helpers.FilterExactDataTable(ItemList, itemID.ToString(), "id");
-            if (itemList.Rows.Count == 0)
+            if (!isEditing)
             {
-                MessageBox.Show("Invalid selection. Item not found.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                e.Cancel = true;
                 return;
             }
 
-            DataTable dataSource = dgv.DataSource as DataTable;
-            if (dataSource == null || rowIndex < 0 || rowIndex >= dataSource.Rows.Count) return;
+            bool onRow = RowAtGridIndex(contextRowIndex) != null;
+            addChildToolStripMenuItem.Enabled = onRow;
+            deleteMenuItem.Enabled = onRow;
+        }
 
-            DataRow target = dataSource.Rows[rowIndex];
-            DataRow picked = itemList.Rows[0];
+        private void addParentMenuItem_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (!isEditing) return;
+                AddParent(contextRowIndex);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("The component could not be added: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void deleteMenuItem_Click(object sender, EventArgs e)
+        {
+            if (!isEditing) return;
+            DeleteWithChildren(contextRowIndex);
+        }
+
+        // The Delete key goes the same way as the menu, so a parent never leaves its children.
+        private void dgv_template_UserDeletingRow(object sender, DataGridViewRowCancelEventArgs e)
+        {
+            e.Cancel = true;
+            if (!isEditing) return;
+
+            int index = e.Row.Index;
+            BeginInvoke(new Action(() => DeleteWithChildren(index)));
+        }
+
+        // Nothing reaches here any more - deletes are cancelled and done by
+        // DeleteWithChildren - but the designer still wires it.
+        private void dgv_template_UserDeletedRow(object sender, DataGridViewRowEventArgs e)
+        {
+            RenumberTemplateRows();
+        }
+
+        private void AddParent(int gridIndex)
+        {
+            CommitGridEdit();
+            List<DataRow> rows = LiveRows();
+
+            int at = rows.Count;
+            DataRow anchor = RowAtGridIndex(gridIndex);
+            if (anchor != null)
+            {
+                // Below the whole group the right-clicked row belongs to: up to its top-level
+                // row, then past everything under that.
+                int i = rows.IndexOf(anchor);
+                while (i > 0 && LevelOf(rows[i]) > 1) i--;
+                at = SubtreeEnd(rows, i);
+            }
+
+            DataRow added = NewComponentRow(1);
+            if (added == null) return;
+
+            rows.Insert(at, added);
+            Rebind(rows, added);
+        }
+
+        private void AddChild(int gridIndex)
+        {
+            CommitGridEdit();
+            List<DataRow> rows = LiveRows();
+
+            DataRow parent = RowAtGridIndex(gridIndex);
+            if (parent == null) return;
+
+            int i = rows.IndexOf(parent);
+            DataRow added = NewComponentRow(LevelOf(parent) + 1);
+            if (added == null) return;
+
+            rows.Insert(SubtreeEnd(rows, i), added);
+            Rebind(rows, added);
+        }
+
+        private void DeleteWithChildren(int gridIndex)
+        {
+            CommitGridEdit();
+            List<DataRow> rows = LiveRows();
+
+            DataRow target = RowAtGridIndex(gridIndex);
+            if (target == null) return;
+
+            int i = rows.IndexOf(target);
+            int end = SubtreeEnd(rows, i);
+            int under = end - i - 1;
+
+            if (under > 0)
+            {
+                string name = (target["Components"]?.ToString() ?? "").Trim();
+                if (MessageBox.Show($"Delete {name} and the {under} component{(under == 1 ? "" : "s")} under it?",
+                        "Delete", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
+                    return;
+            }
+
+            rows.RemoveRange(i, end - i);
+            Rebind(rows, rows.Count == 0 ? null : rows[Math.Min(i, rows.Count - 1)]);
+        }
+
+        // Swaps the item on an existing row, keeping its level and therefore its place in
+        // the hierarchy. The name comes from the new item; a note in brackets belonged to the
+        // old one and goes with it.
+        private void ReplaceComponentAt(int gridIndex)
+        {
+            CommitGridEdit();
+            DataRow target = RowAtGridIndex(gridIndex);
+            if (target == null) return;
+
+            DataRow picked = PickItem();
+            if (picked == null) return;
 
             target["ItemId"] = picked["id"];
-            target["Components"] = new string(' ', Math.Max(0, level - 1) * IndentPerLevel)
-                                 + picked["item_name"];
-            target["Level"] = level;
-
-            if (dataSource.Columns.Contains("unit_of_measure") && itemList.Columns.Contains("unit_of_measure"))
+            target["Components"] = picked["item_name"];
+            if (target.Table.Columns.Contains("ItemName"))
+                target["ItemName"] = picked["item_name"];
+            if (target.Table.Columns.Contains("unit_of_measure") && picked.Table.Columns.Contains("unit_of_measure"))
                 target["unit_of_measure"] = picked["unit_of_measure"];
 
             RenumberTemplateRows();
         }
 
-        private void GetItemData(int rowIndex, int itemID, DataGridView dgv, int level, int ParentItemId)
+        // A new row for the item the user picks, at the given level - or null if they picked
+        // nothing. Not yet in the list: the caller puts it where it belongs.
+        //
+        // The component is the item's NAME - the picker lists one row per item name (the
+        // item's item_name_id), and a template names a kind of component, not one model of
+        // it. The row keeps the item id the picker handed back, which is what the quotation
+        // uses when the template is applied.
+        private DataRow NewComponentRow(int level)
         {
-            DataTable itemList = Helpers.FilterExactDataTable(ItemList, itemID.ToString(), "id");
+            DataRow picked = PickItem();
+            if (picked == null) return null;
 
-            if (itemList.Rows.Count == 0)
+            DataTable table = GridTable;
+            DataRow row = table.NewRow();
+            row["ItemId"] = picked["id"];
+            row["Components"] = picked["item_name"];
+            row["Level"] = level;
+            if (table.Columns.Contains("ItemName"))
+                row["ItemName"] = picked["item_name"];
+            if (table.Columns.Contains("unit_of_measure") && picked.Table.Columns.Contains("unit_of_measure"))
+                row["unit_of_measure"] = picked["unit_of_measure"];
+            return row;
+        }
+
+        // The picker's choice, as a row of ItemList (the picker leaves it there).
+        private DataRow PickItem()
+        {
+            using (SalesItemModal itemModal = new SalesItemModal(ItemList))
             {
-                MessageBox.Show("Invalid selection. Item not found.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
+                if (itemModal.ShowDialog() != DialogResult.OK) return null;
 
-            DataTable dataSource = dgv.DataSource as DataTable;
-            if (dataSource == null) return;
-
-            foreach (DataRow row in itemList.Rows)
-            {
-                DataRow newRow = dataSource.NewRow();
-                if (dataSource.Columns.Contains("unit_of_measure"))
-                    newRow["unit_of_measure"] = row["unit_of_measure"];
-
-                newRow["ItemId"] = row["id"];
-                newRow["Components"] = new string(' ', Math.Max(0, level - 1) * IndentPerLevel) + row["item_name"];
-                newRow["Level"] = level;
-
-                if (ParentItemId != 0)
+                int itemId = itemModal.GetParentItemId();
+                DataTable found = Helpers.FilterExactDataTable(ItemList, itemId.ToString(), "id");
+                if (found.Rows.Count == 0)
                 {
-                    rowIndex += 1;
+                    MessageBox.Show("Invalid selection. Item not found.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return null;
                 }
+                return found.Rows[0];
+            }
+        }
 
-                dataSource.Rows.InsertAt(newRow, rowIndex);
+        private DataTable GridTable => dgv_template.DataSource as DataTable;
 
-                // 🎨 Style as Single Item
-                int addedRowIndex = dataSource.Rows.Count - 1;
-                Helpers.SalesItemRowStyler.ApplyStyle(dgv, addedRowIndex, "single"); 
+        // The rows in the order the list shows them.
+        private List<DataRow> LiveRows()
+        {
+            DataTable table = GridTable;
+            if (table == null) return new List<DataRow>();
+            return table.Rows.Cast<DataRow>().Where(r => r.RowState != DataRowState.Deleted).ToList();
+        }
+
+        private DataRow RowAtGridIndex(int gridIndex)
+        {
+            if (gridIndex < 0 || gridIndex >= dgv_template.Rows.Count) return null;
+            return (dgv_template.Rows[gridIndex].DataBoundItem as DataRowView)?.Row;
+        }
+
+        private static int LevelOf(DataRow row)
+        {
+            int.TryParse(row["Level"]?.ToString(), out int level);
+            return Math.Max(1, level);
+        }
+
+        // Just past row i's group: everything after it that sits deeper than it.
+        private static int SubtreeEnd(List<DataRow> rows, int i)
+        {
+            int level = LevelOf(rows[i]);
+            int j = i + 1;
+            while (j < rows.Count && LevelOf(rows[j]) > level) j++;
+            return j;
+        }
+
+        // A typed QTY still in its cell belongs to the row before the list is rebuilt.
+        private void CommitGridEdit()
+        {
+            dgv_template.EndEdit();
+            if (GridTable != null)
+                BindingContext[GridTable].EndCurrentEdit();
+        }
+
+        // Rebinds the list to a fresh table holding `rows` in this order, renumbers it, and
+        // selects `select`. A fresh table rather than InsertAt/Remove on the bound one: a
+        // bound view does not reliably show an InsertAt row where it was inserted, and the
+        // numbering, the grid and the save all have to agree on one order.
+        private void Rebind(List<DataRow> rows, DataRow select)
+        {
+            DataTable source = GridTable ?? stockQuickDataTable;
+            DataTable fresh = WithRefCode(source.Clone());
+
+            DataRow selectCopy = null;
+            foreach (DataRow row in rows)
+            {
+                DataRow copy = fresh.Rows.Add(row.ItemArray);
+                if (row == select) selectCopy = copy;
             }
 
-            // The new row shifts everything below it, so the codes and indents below are
-            // now wrong - rebuild the lot rather than trying to patch the difference.
+            dgv_template.DataSource = fresh;
             RenumberTemplateRows();
 
+            if (selectCopy != null)
+            {
+                int index = fresh.Rows.IndexOf(selectCopy);
+                if (index >= 0 && index < dgv_template.Rows.Count)
+                {
+                    dgv_template.ClearSelection();
+                    dgv_template.Rows[index].Selected = true;
+                    dgv_template.CurrentCell = dgv_template.Rows[index].Cells["component"];
+                }
+            }
+        }
+
+        // The list's table with no rows: the shape the API sends, or the model's own before
+        // anything has been fetched - with RefCode, which the # column shows.
+        private DataTable EmptyTemplateTable()
+        {
+            DataTable empty = TemplateChild != null && TemplateChild.Columns.Count > 0
+                ? TemplateChild.Clone()
+                : JsonHelper.ToDataTable(new List<ProjectTemplateChildModel>());
+            return WithRefCode(empty);
+        }
+
+        private static DataTable WithRefCode(DataTable table)
+        {
+            if (!table.Columns.Contains("RefCode"))
+                table.Columns.Add("RefCode", typeof(string));
+            return table;
         }
 
         // Four spaces per level, the same step the quotation uses when it applies a
@@ -591,6 +767,10 @@ namespace smpc_sales_system.Pages
             // it.
             List<int> counters = new List<int>();
 
+            // The stored levels of the rows still "open" above this one - its parent, the
+            // parent's parent... See below.
+            List<int> openLevels = new List<int>();
+
             foreach (DataRow row in rows.Rows)
             {
                 if (row.RowState == DataRowState.Deleted) continue;
@@ -602,6 +782,25 @@ namespace smpc_sales_system.Pages
                 // A row saved by an older build as level 0 is a top-level row.
                 if (level < 1) level = 1;
 
+                // A child is always ONE level under its parent: the child of 9 is 9.1. The
+                // stored data has rows two levels under their parent (CPS's valves sit at 3
+                // under the level-1 BLADDER TANK), which this used to number 9.1.1 on purpose
+                // - the user ruled that a bug (2026-09-25).
+                //
+                // So the level used is the row's depth among the rows open above it, not the
+                // stored number: close every open row stored at this level or deeper, and
+                // what is left is this row's ancestors. Siblings stored at the same level stay
+                // siblings (GATE VALVE and BALL VALVE both become 9.x), which pulling each row
+                // up to "one under the row above" would not do. The corrected level is written
+                // back, so the next Save stores it.
+                while (openLevels.Count > 0 && openLevels[openLevels.Count - 1] >= level)
+                    openLevels.RemoveAt(openLevels.Count - 1);
+                openLevels.Add(level);
+                level = openLevels.Count;
+
+                if (rows.Columns.Contains("Level") && row["Level"]?.ToString() != level.ToString())
+                    row["Level"] = level;
+
                 while (counters.Count <= level)
                     counters.Add(0);
 
@@ -612,30 +811,22 @@ namespace smpc_sales_system.Pages
 
                 counters[level]++;
 
-                // A depth nobody has used yet still counts as the first of its family, so a
-                // child above any parent reads as 1.1 rather than 0.1 (user decision,
-                // 2026-09-23), and a jump from level 1 to level 3 gives 7.1.1 rather than
-                // 7.1 - which is a level-2 code belonging to a different row.
-                for (int above = 1; above < level; above++)
-                    if (counters[above] == 0) counters[above] = 1;
-
                 // Skip(1): slot 0 is not part of any code.
                 row["RefCode"] = string.Join(".", counters.Skip(1).Take(level));
 
                 if (rows.Columns.Contains("Components"))
                 {
-                    // The name comes from the item wherever the row has one, so a rename in
-                    // Item Entry shows here without anybody editing the template, and a row
-                    // cannot drift from the item it points at. A row with no item - a
-                    // heading somebody typed - keeps its own text.
+                    // The component is its item's name (see ProjectTemplateChildModel.
+                    // ComponentText), so a rename in Item Entry shows here without anybody
+                    // editing the template; a note in brackets after the name is kept. A row
+                    // with no item - a heading somebody typed - keeps its own text.
                     string text = (row["Components"]?.ToString() ?? "").TrimStart();
 
                     if (rows.Columns.Contains("ItemName") && rows.Columns.Contains("ItemId"))
                     {
-                        string itemName = row["ItemName"]?.ToString() ?? "";
                         int.TryParse(row["ItemId"]?.ToString(), out int itemId);
-                        if (itemId > 0 && !string.IsNullOrWhiteSpace(itemName))
-                            text = itemName.Trim();
+                        if (itemId > 0)
+                            text = ProjectTemplateChildModel.ComponentText(text, row["ItemName"]?.ToString());
                     }
 
                     row["Components"] = new string(' ', (level - 1) * IndentPerLevel) + text;
