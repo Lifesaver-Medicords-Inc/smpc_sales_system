@@ -32,6 +32,14 @@ namespace smpc_sales_app.Services.Sales
             SalesQuotationList quotationData = response.Data;
             return quotationData;
         }
+        // GET: the Sales red box's quote cards - one per open quote, Quick and Project alike,
+        // no lines or images. Null when the API does not have the endpoint yet (an API older
+        // than 2026-09-26): silent, so the red box can fall back without an error dialog.
+        public static async Task<List<RedBoxQuotationModel>> GetRedBoxQuotations()
+        {
+            var response = await RequestToApi<ApiResponseModel<List<RedBoxQuotationModel>>>.Get(url + "/redbox", silent: true);
+            return response != null && response.Success ? (response.Data ?? new List<RedBoxQuotationModel>()) : null;
+        }
         // GET: latest quotation list (one row per document - the module's
         // default view; the full history lives behind GetQuotationVersions)
         public static async Task<SalesQuotationList> GetLatestQuotations()
@@ -119,6 +127,7 @@ namespace smpc_sales_app.Services.Sales
         public static async Task<ApiResponseModel> Insert(Dictionary<string, dynamic> data)
         {
             var response = await RequestToApi<ApiResponseModel>.Post(url, data);
+            if (response != null && response.Success) RedBoxSignal.QuotationsChanged();
             return response;
         }
 
@@ -152,5 +161,19 @@ namespace smpc_sales_app.Services.Sales
             return response;
         }
 
+    }
+
+    // Tells the Sales red box that a quote or SO was just created, so the card shows (or goes)
+    // at once instead of on the rail's next 5-minute refresh (user-reported 2026-09-26: "I
+    // created a sales quotation but not reflected on redbox"). Raised by the services that
+    // create quotes, their copies and SOs; the red box collapses a burst into one reload.
+    internal static class RedBoxSignal
+    {
+        public static event Action Changed;
+
+        public static void QuotationsChanged()
+        {
+            Changed?.Invoke();
+        }
     }
 }

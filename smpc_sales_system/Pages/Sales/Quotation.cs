@@ -44,6 +44,14 @@ namespace smpc_sales_app.Pages.Sales
         private string versionNo;
         private string subVersionNo;
         private bool isFinalized;
+        // The exact copy to open (the red box's cards, the version table). A version's FQ and
+        // the draft it was finalized from share a number, version and sub-version, so without
+        // the id the first match wins. 0 = match by number/version/sub-version as before.
+        private int openQuotationId;
+
+        // Opens another page in a tab of its own (Layout.showForm): the version table's copies
+        // and their SOs.
+        public event Action<string, Control> TriggerNewForm;
         private bool isNewRecord;
 
         // Phase 2 - the list pages headers only (50/page, newest first). These
@@ -90,7 +98,7 @@ namespace smpc_sales_app.Pages.Sales
         private CancellationTokenSource _saveNotifyCts;
         private string _saveNotifyProjectId;
 
-        public Quotation(string documentNo = null, string version_no = null, string sub_version_no = null, bool is_finalized = false)
+        public Quotation(string documentNo = null, string version_no = null, string sub_version_no = null, bool is_finalized = false, int quotation_id = 0)
         {
             InitializeComponent();
 
@@ -127,6 +135,7 @@ namespace smpc_sales_app.Pages.Sales
             this.versionNo = version_no;
             this.subVersionNo = sub_version_no;
             this.isFinalized = is_finalized;
+            this.openQuotationId = quotation_id;
 
             // websocket related
             _websocket = new ClientWebSocket();
@@ -8314,11 +8323,6 @@ namespace smpc_sales_app.Pages.Sales
         // DGVComputation class deleted: only consumer was ComputeDgvHierarchy (also
         // deleted, dead code). The live per-row math is in ComputeReferenceNonHierarchy.
 
-        private void fetchQuotationBasedOnVersion()
-        {
-            bindVersion(true);
-        }
-
         // Adds rows from source that target doesn't already have (matched on
         // idColumn) - used to fold one document's older version lines/images
         // into the working tables without duplicating what's already there.
@@ -8334,60 +8338,137 @@ namespace smpc_sales_app.Pages.Sales
             }
         }
 
+        // The version table (spec 5.1): double-click the version (or sub-version) number. Lists
+        // every copy of this quote - versions, EDIT sub-versions, FQs - and opens the one picked,
+        // or the SO in its STATUS, in a tab of its own.
+        //
+        // This was unreachable: both boxes were Enabled = false in the designer, and a disabled
+        // control gets no mouse events. Behind that it asked only the Quick Quote endpoint (a
+        // project quote found nothing), and bound the picked version by pouring its header into
+        // this form at this form's own row index (ver.Rows[SelectedRow] on a one-row table -
+        // "no row at position n" for any quote not first in the list), leaving the form's id
+        // and state on the copy it was showing before, so an EDIT after it acted on the wrong
+        // copy. A copy now opens as itself, in view mode, like any other document link.
         private async void txt_version_no_DoubleClick(object sender, EventArgs e)
         {
-            string docNum = txt_document_no.Text.ToString();
+            string docNum = NormalizeDocumentNo(txt_document_no.Text);
+            int currentId = ToInt(txt_id.Text);
+            if (string.IsNullOrWhiteSpace(docNum) || currentId <= 0)
+                return; // not saved yet - there is no history to show
 
-            // Version history lives behind the per-document endpoint now -
-            // the main list only carries latest versions, so an older
-            // version (and its lines) would no longer be found locally.
-            SalesQuotationList versions = await QuotationService.GetQuotationVersions(docNum);
-            if (versions == null || versions.SalesQuotation == null || !versions.SalesQuotation.Any())
+            List<SalesQuotationModel> copies = null;
+            List<OrderModel> orders = null;
+            await RunWithLoadingAsync(async () =>
             {
-                MessageBox.Show("No versions found for this document.");
+                SalesQuotationList versions = isProject
+                    ? await ProjectService.GetProjectVersions(docNum)
+                    : await QuotationService.GetQuotationVersions(docNum);
+                copies = versions?.SalesQuotation;
+
+                OrderList orderData = await OrderService.GetOrders();
+                orders = orderData?.order;
+            });
+
+            if (copies == null || copies.Count == 0)
+            {
+                MessageBox.Show("No versions found for this document.", "Versions", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
-            DataTable versionsTable = JsonHelper.ToDataTable(versions.SalesQuotation);
-            MergeRowsById(childList, JsonHelper.ToDataTable(versions.SalesQuotationQuick), "id");
-            MergeRowsById(selectedImageList, JsonHelper.ToDataTable(versions.SalesQuotationSelectedImages), "id");
+            DataTable table = BuildVersionTable(copies, orders);
 
-            VersionModal vm = new VersionModal(versionsTable, docNum);
-            DialogResult r = vm.ShowDialog();
-
-            if (r == DialogResult.OK)
+            int pickedId;
+            bool openSo;
+            using (VersionModal vm = new VersionModal(table, DocumentNo.Apply(docNum, "Q#"), currentId))
             {
-                Dictionary<string, string> result = vm.GetResult();
-
-                if (result != null)
-                {
-                    string ver;
-                    string doc;
-
-                    result.TryGetValue("version_no", out ver);
-                    result.TryGetValue("document_no", out doc);
-
-                    var versionFilter = versionsTable.AsEnumerable()
-                        .Where(row => row["document_no"].ToString() == doc && row["version_no"].ToString() == ver)
-                        .CopyToDataTable();
-
-                    bindVersion(true, versionFilter);
-                }
+                if (vm.ShowDialog(this) != DialogResult.OK || vm.SelectedQuotationId <= 0) return;
+                pickedId = vm.SelectedQuotationId;
+                openSo = vm.OpenSalesOrder;
             }
+
+            SalesQuotationModel picked = copies.FirstOrDefault(c => c.id == pickedId);
+            if (picked == null) return;
+
+            DataRow pickedRow = table.AsEnumerable().First(r => ToInt(r["id"]) == pickedId);
+            if (openSo)
+            {
+                OpenInNewTab(pickedRow["so_ref"].ToString(), new Orders(docNum, pickedId));
+                return;
+            }
+
+            OpenInNewTab(pickedRow["version_code"].ToString(),
+                new Quotation(docNum, picked.version_no, picked.sub_version_no, picked.is_finalized, picked.id));
         }
 
-        private void bindVersion(bool isBind = false, DataTable ver = null)
+        // One row per copy, oldest first: VERSION NO. is the copy's full code, STATUS the SO made
+        // from it, REMARK where it came from. DESCRIPTION has nothing to show: there is no column
+        // for it (nor for a remark) on the quotation, so REMARK is derived - provisional standard,
+        // 2026-09-26: an FQ is "finalized from" the draft it shares its number with; any other
+        // copy after the first is "based on" the copy before it (an EDIT copies the latest
+        // sub-version, NEW VERSION the latest copy).
+        private static DataTable BuildVersionTable(List<SalesQuotationModel> copies, List<OrderModel> orders)
         {
-            if (isBind && ver != null)
-            {
-                Panel[] pnlList = { pnl_header, pnl_footer };
+            DataTable table = new DataTable();
+            table.Columns.Add("id", typeof(int));
+            table.Columns.Add("version_description", typeof(string));
+            table.Columns.Add("version_code", typeof(string));
+            table.Columns.Add("date", typeof(string));
+            table.Columns.Add("so_ref", typeof(string));
+            table.Columns.Add("version_remark", typeof(string));
 
-                Helpers.BindControls(pnlList, ver, SelectedRow);
-                DataView dataview = new DataView(this.childList);
-                dataview.RowFilter = "based_id = '" + ver.Rows[this.SelectedRow]["id"].ToString() + "'";
-                dgv_quick_quote_details.DataSource = dataview;
-                SeedSelectedImagesByRowFromView(dataview);
+            string VersionOf(SalesQuotationModel q) =>
+                (string.IsNullOrWhiteSpace(q.version_no) ? "1" : q.version_no) + "." +
+                (string.IsNullOrWhiteSpace(q.sub_version_no) ? "0" : q.sub_version_no);
+
+            var ordered = copies
+                .OrderBy(q => VersionNoAsInt(q.version_no))
+                .ThenBy(q => VersionNoAsInt(q.sub_version_no))
+                .ThenBy(q => q.id)
+                .ToList();
+
+            SalesQuotationModel previousDraft = null;
+            foreach (var q in ordered)
+            {
+                // The SO made from this copy - a live one before a cancelled one.
+                OrderModel so = (orders ?? new List<OrderModel>())
+                    .Where(o => o.quotation_id == (uint)q.id)
+                    .OrderBy(o => string.Equals(o.status, "CANCELLED", StringComparison.OrdinalIgnoreCase) ? 1 : 0)
+                    .ThenByDescending(o => o.order_id)
+                    .FirstOrDefault();
+
+                string remark = q.is_finalized
+                    ? "finalized from " + VersionOf(q)
+                    : previousDraft != null ? "based on " + VersionOf(previousDraft) : "";
+
+                table.Rows.Add(
+                    q.id,
+                    q.version_description ?? "",
+                    q.document_no + "." + VersionOf(q),
+                    DateTime.TryParse(q.date, out DateTime created) ? created.ToString("MMM dd, yyyy h:mm tt") : q.date,
+                    so != null ? DocumentNo.Apply(so.doc, "SO#") : "",
+                    remark);
+
+                if (!q.is_finalized) previousDraft = q;
             }
+
+            return table;
+        }
+
+        // A tab of its own when this page lives in one (Layout wires TriggerNewForm); otherwise -
+        // a Quotation that another page swapped itself for - the new page takes this one's place,
+        // the way Opportunities opens a quote.
+        private void OpenInNewTab(string title, Control page)
+        {
+            if (TriggerNewForm != null)
+            {
+                TriggerNewForm(title, page);
+                return;
+            }
+
+            if (Parent == null) return;
+            Parent.Controls.Add(page);
+            page.BringToFront();
+            Hide();
         }
 
         // Only the user who created a quotation (quick quote or project) should see it in
@@ -9485,8 +9566,10 @@ namespace smpc_sales_app.Pages.Sales
             // null source.
             var filteredSalesQuotation = (data.SalesQuotation ?? Enumerable.Empty<SalesQuotationModel>())
                 .Where(q => NormalizeDocumentNo(q.document_no) == documentNo &&
-                           (version_no == null || q.version_no == version_no) &&
-                           (sub_version_no == null || q.sub_version_no == sub_version_no))
+                           (openQuotationId > 0
+                               ? q.id == openQuotationId
+                               : (version_no == null || q.version_no == version_no) &&
+                                 (sub_version_no == null || q.sub_version_no == sub_version_no)))
                 .ToList();
 
             var quotationId = filteredSalesQuotation.FirstOrDefault()?.id;
@@ -9584,8 +9667,10 @@ namespace smpc_sales_app.Pages.Sales
             // instead of letting .Where() throw ArgumentNullException on a null source.
             var filteredSalesQuotation = (data.SalesQuotation ?? Enumerable.Empty<SalesQuotationModel>())
                 .Where(q => NormalizeDocumentNo(q.document_no) == documentNo &&
-                           (version_no == null || q.version_no == version_no) &&
-                           (sub_version_no == null || q.sub_version_no == sub_version_no))
+                           (openQuotationId > 0
+                               ? q.id == openQuotationId
+                               : (version_no == null || q.version_no == version_no) &&
+                                 (sub_version_no == null || q.sub_version_no == sub_version_no)))
                 .ToList();
 
             var quotationId = filteredSalesQuotation.FirstOrDefault()?.id;

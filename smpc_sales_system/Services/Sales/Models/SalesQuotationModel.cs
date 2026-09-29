@@ -56,4 +56,21 @@ namespace smpc_sales_system.Services.Sales.Models
         public string requested_engr_name { get; set; }
         public string requested_for_engr_date { get; set; }
     }
+
+    // One quote card of the Sales red box (GET /sales/quotation/redbox, spec 9): the latest copy
+    // of a quote that has no SO yet, Quick or Project, with who raised it and when (its first
+    // copy). quote_code is the full Q#/FQ#YYYY-nnnn.v.s.
+    public class RedBoxQuotationModel
+    {
+        public int id { get; set; }
+        public string document_no { get; set; }
+        public string version_no { get; set; }
+        public string sub_version_no { get; set; }
+        public string quote_code { get; set; }
+        public bool is_finalized { get; set; }
+        public string project_name { get; set; }
+        public int customer_id { get; set; }
+        public string created_by { get; set; }
+        public string date { get; set; }
+    }
 }

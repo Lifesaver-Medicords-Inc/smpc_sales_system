@@ -25,7 +25,8 @@ namespace smpc_sales_system.Services.Sales.Models
         public decimal net_discount { get; set; }
         public decimal net_total { get; set; }
         public decimal line_total { get; set; }
-        public string short_description { get; set; }
+        public string short_description { get; set; } 
+        public string status { get; set; }
     }
 
     public class SalesQuotationSelectedImageModel

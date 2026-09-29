@@ -969,7 +969,6 @@
             // 
             // txt_version_no
             // 
-            this.txt_version_no.Enabled = false;
             this.txt_version_no.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.txt_version_no.Location = new System.Drawing.Point(854, 38);
             this.txt_version_no.Name = "txt_version_no";
@@ -1314,7 +1313,6 @@
             // 
             // txt_sub_version_no
             // 
-            this.txt_sub_version_no.Enabled = false;
             this.txt_sub_version_no.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.txt_sub_version_no.Location = new System.Drawing.Point(943, 38);
             this.txt_sub_version_no.Name = "txt_sub_version_no";
@@ -1323,6 +1321,7 @@
             this.txt_sub_version_no.TabIndex = 117;
             this.txt_sub_version_no.Text = "0";
             this.txt_sub_version_no.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.txt_sub_version_no.DoubleClick += new System.EventHandler(this.txt_version_no_DoubleClick);
             // 
             // pnl_header
             // 

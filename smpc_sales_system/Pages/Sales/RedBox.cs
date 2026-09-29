@@ -35,11 +35,38 @@ namespace smpc_sales_system.Pages.Sales
         // actually completed.
         private readonly Timer _autoRefreshTimer = new Timer { Interval = 5 * 60 * 1000 };
 
+        // A quote or SO saved anywhere in this app reloads the rail (RedBoxSignal), after a short
+        // pause so a save that creates several rows reloads it once.
+        private readonly Timer _signalTimer = new Timer { Interval = 1500 };
+        private bool _loading;
+
         public RedBox()
         {
             InitializeComponent();
             _autoRefreshTimer.Tick += async (s, e) => await LoadData();
-            this.Disposed += (s, e) => _autoRefreshTimer.Dispose();
+            _signalTimer.Tick += async (s, e) => { _signalTimer.Stop(); await LoadData(); };
+            RedBoxSignal.Changed += OnRedBoxSignal;
+            this.Disposed += (s, e) =>
+            {
+                RedBoxSignal.Changed -= OnRedBoxSignal;
+                _autoRefreshTimer.Dispose();
+                _signalTimer.Dispose();
+            };
+        }
+
+        private void OnRedBoxSignal()
+        {
+            // Only once RefreshData has run - i.e. after login (see RefreshData below).
+            if (IsDisposed || !_autoRefreshTimer.Enabled) return;
+
+            if (InvokeRequired)
+            {
+                BeginInvoke(new Action(OnRedBoxSignal));
+                return;
+            }
+
+            _signalTimer.Stop();
+            _signalTimer.Start();
         }
 
         private class QuoteOrderEntry
@@ -48,6 +75,9 @@ namespace smpc_sales_system.Pages.Sales
             public string ProjectName;
             public string DocumentNoDisplay; // e.g. "SO#0004" / "FQ#0012"
             public string DocumentNoRaw;     // bare number, for opening the source record
+            public string VersionNo;         // quotes: the copy the card opens
+            public string SubVersionNo;
+            public bool IsFinalized;
             public bool IsOrder;
             public string Status;
             public DateTime BasisDate;       // date the final quote/SO was created
@@ -91,11 +121,18 @@ namespace smpc_sales_system.Pages.Sales
 
         private async Task LoadData()
         {
+            if (_loading) return;
+            _loading = true;
+
             btn_refresh.Enabled = false;
             lbl_status.Text = "Loading...";
             try
             {
-                var quotationData = await QuotationService.GetQuotations();
+                // One row per open quote, Quick and Project (GET /sales/quotation/redbox). An
+                // API older than 2026-09-26 does not have it; then the old list - Quick Quotes
+                // only, every copy - is read and collapsed here instead.
+                var redBoxQuotes = await QuotationService.GetRedBoxQuotations();
+                SalesQuotationList quotationData = redBoxQuotes == null ? await QuotationService.GetQuotations() : null;
                 var orderData = await OrderService.GetOrders();
                 var bpiData = await QuotationService.GetBpiCustomers();
                 DataTable crm = await CRMService.GetAsDatatable();
@@ -118,23 +155,16 @@ namespace smpc_sales_system.Pages.Sales
                     (invoices?.sales_invoice_details ?? new List<SalesInvoiceDetailsModel>())
                         .Select(d => d.sales_order_details_id));
 
-                var quoteOrderEntries = BuildQuoteOrderEntries(quotationData, orderData, bpiGeneral, invoicedOrderDetailIds);
+                var quoteOrderEntries = BuildQuoteOrderEntries(redBoxQuotes, quotationData, orderData, bpiGeneral, invoicedOrderDetailIds);
                 await AttachReservationsAtLimit(quoteOrderEntries);
                 RenderQuoteOrderSection(quoteOrderEntries);
 
                 var retentionEntries = BuildRetentionEntries(crm);
                 RenderRetentionSection(retentionEntries);
 
-                // Temporary diagnostic breakdown while we track down why nothing is
-                // showing: total orders fetched / how many are ACTIVE / how many of
-                // those survived the invoiced-removal check / how many order-detail
-                // lines came back in total / how many distinct order_details_id values
-                // the invoiced-lookup set actually contains.
-                int totalOrders = orderData?.order?.Count ?? 0;
-                int activeOrders = orderData?.order?.Count(o => string.Equals(o.status, "ACTIVE", StringComparison.OrdinalIgnoreCase)) ?? 0;
+                int shownQuotes = quoteOrderEntries.Count(en => !en.IsOrder);
                 int shownOrders = quoteOrderEntries.Count(en => en.IsOrder);
-                int totalLines = orderData?.sales_order_details?.Count ?? 0;
-                lbl_status.Text = $"{DateTime.Now:h:mm tt} - SO {shownOrders}/{activeOrders}/{totalOrders} - lines {totalLines} - inv {invoicedOrderDetailIds.Count}";
+                lbl_status.Text = $"{DateTime.Now:h:mm tt} - {shownQuotes} quote(s), {shownOrders} SO(s)";
             }
             catch (Exception ex)
             {
@@ -143,8 +173,19 @@ namespace smpc_sales_system.Pages.Sales
             finally
             {
                 btn_refresh.Enabled = true;
+                _loading = false;
             }
         }
+
+        // Names are stamped as "first last" - with a trailing space when the last name is blank
+        // ("Gids "), while the logged-in name here is trimmed ("Gids"). Compared exactly, that
+        // user never saw a single card of their own (user-reported 2026-09-26). Spacing and
+        // case are ignored now.
+        private static string NormalizeName(string name) =>
+            System.Text.RegularExpressions.Regex.Replace(name ?? "", @"\s+", " ").Trim();
+
+        private static bool SameUser(string stamped, string currentUserName) =>
+            string.Equals(NormalizeName(stamped), NormalizeName(currentUserName), StringComparison.OrdinalIgnoreCase);
 
         // ------------------------------------------------------------------
         // SECTION 1: Quotes and Sales Orders
@@ -176,6 +217,7 @@ namespace smpc_sales_system.Pages.Sales
         //    an order's very first save, so an order resaved/edited later still keeps its
         //    original creator for this filter, which is the intended behavior.
         private List<QuoteOrderEntry> BuildQuoteOrderEntries(
+            List<RedBoxQuotationModel> redBoxQuotes,
             SalesQuotationList quotationData,
             OrderList orderData,
             DataTable bpiGeneral,
@@ -197,8 +239,7 @@ namespace smpc_sales_system.Pages.Sales
                 if (!string.Equals(order.status, "ACTIVE", StringComparison.OrdinalIgnoreCase))
                     continue;
 
-                if (!string.IsNullOrEmpty(currentUserName) &&
-                    !string.Equals(order.sales_executive, currentUserName, StringComparison.OrdinalIgnoreCase))
+                if (!string.IsNullOrEmpty(currentUserName) && !SameUser(order.sales_executive, currentUserName))
                     continue;
 
                 var lines = orderDetails.Where(d => d.based_id == (int)order.order_id).ToList();
@@ -225,14 +266,9 @@ namespace smpc_sales_system.Pages.Sales
                 });
             }
 
-            var quotations = quotationData?.SalesQuotation ?? new List<SalesQuotationModel>();
-            foreach (var q in quotations)
+            foreach (var q in redBoxQuotes ?? CollapseToLatestCopies(quotationData, convertedQuotationIds))
             {
-                if (convertedQuotationIds.Contains(q.id))
-                    continue;
-
-                if (!string.IsNullOrEmpty(currentUserName) &&
-                    !string.Equals(q.created_by, currentUserName, StringComparison.OrdinalIgnoreCase))
+                if (!string.IsNullOrEmpty(currentUserName) && !SameUser(q.created_by, currentUserName))
                     continue;
 
                 DateTime basisDate;
@@ -240,18 +276,22 @@ namespace smpc_sales_system.Pages.Sales
                     basisDate = DateTime.Now;
 
                 // "FQ#" is this app's actual designation for a FINALIZED quotation - an
-                // unfinalized one is just "Q#". Using "FQ#" here regardless of is_finalized
-                // was the bug: it displayed "FQ#0012" for a still-BIDDING quote, but opening
-                // it landed on a record the Quotation screen itself identifies as "Q#0012",
-                // which looked like the link was going to a different document.
+                // unfinalized one is just "Q#" - and the card shows the full code of the copy
+                // it opens (Q#2026-0007.1.2), the same code the Quotation screen shows.
                 string docPrefix = q.is_finalized ? "FQ#" : "Q#";
+                string code = !string.IsNullOrWhiteSpace(q.quote_code)
+                    ? q.quote_code
+                    : smpc_app.Services.Helpers.DocumentNo.Apply(q.document_no, docPrefix);
 
                 result.Add(new QuoteOrderEntry
                 {
                     ClientName = LookupBranchName(bpiGeneral, q.customer_id),
                     ProjectName = string.IsNullOrWhiteSpace(q.project_name) ? "-" : q.project_name,
-                    DocumentNoDisplay = smpc_app.Services.Helpers.DocumentNo.Apply(q.document_no, docPrefix),
+                    DocumentNoDisplay = code,
                     DocumentNoRaw = StripDocPrefix(q.document_no),
+                    VersionNo = q.version_no,
+                    SubVersionNo = q.sub_version_no,
+                    IsFinalized = q.is_finalized,
                     IsOrder = false,
                     Status = q.is_finalized ? "QUOTED" : "BIDDING",
                     BasisDate = basisDate,
@@ -261,6 +301,46 @@ namespace smpc_sales_system.Pages.Sales
             }
 
             return result.OrderByDescending(en => DateTime.Now - en.BasisDate).ToList();
+        }
+
+        // Only for an API without GET /sales/quotation/redbox: the old list holds every copy of
+        // every Quick Quote (each version, each Edit sub-version, the FQ), so a quote showed as
+        // one card per copy. Collapse to one card per quote - its latest copy, aged from its
+        // first - and drop every quote an SO was made from (from any copy, since the SO is made
+        // from the FQ, which need not be the latest). Project quotes are not in that list at all.
+        private static IEnumerable<RedBoxQuotationModel> CollapseToLatestCopies(
+            SalesQuotationList quotationData, HashSet<int> convertedQuotationIds)
+        {
+            var copies = quotationData?.SalesQuotation ?? new List<SalesQuotationModel>();
+
+            foreach (var quote in copies.GroupBy(q => StripDocPrefix(q.document_no)))
+            {
+                if (quote.Any(q => convertedQuotationIds.Contains(q.id)))
+                    continue;
+
+                var latest = quote
+                    .OrderByDescending(q => int.TryParse(q.version_no, out int v) ? v : 0)
+                    .ThenByDescending(q => int.TryParse(q.sub_version_no, out int sv) ? sv : 0)
+                    .ThenByDescending(q => q.id)
+                    .First();
+                var first = quote.OrderBy(q => q.id).First();
+
+                yield return new RedBoxQuotationModel
+                {
+                    id = latest.id,
+                    document_no = latest.document_no,
+                    version_no = latest.version_no,
+                    sub_version_no = latest.sub_version_no,
+                    quote_code = latest.document_no
+                        + "." + (string.IsNullOrWhiteSpace(latest.version_no) ? "1" : latest.version_no)
+                        + "." + (string.IsNullOrWhiteSpace(latest.sub_version_no) ? "0" : latest.sub_version_no),
+                    is_finalized = latest.is_finalized,
+                    project_name = latest.project_name,
+                    customer_id = latest.customer_id,
+                    created_by = first.created_by,
+                    date = first.date
+                };
+            }
         }
 
         // ------------------------------------------------------------------
@@ -571,7 +651,10 @@ namespace smpc_sales_system.Pages.Sales
             }
             else
             {
-                Quotation quotationPage = new Quotation(entry.DocumentNoRaw);
+                // The copy on the card - by id, since a version's FQ and the draft it was
+                // finalized from share a version and sub-version. With the number alone this
+                // opened whichever copy came first, usually the oldest.
+                Quotation quotationPage = new Quotation(entry.DocumentNoRaw, entry.VersionNo, entry.SubVersionNo, entry.IsFinalized, entry.QuotationId);
                 // Reuse the exact same prefix shown on the card (DocumentNoDisplay is
                 // already "FQ#..." or "Q#..." depending on is_finalized) rather than
                 // hardcoding "FQ#" again here, so the opened tab's title can never drift

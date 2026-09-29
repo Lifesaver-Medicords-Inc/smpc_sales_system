@@ -93,6 +93,7 @@ namespace smpc_sales_system.Services.Sales
         public static async Task<ApiResponseModel> Insert(Dictionary<string, dynamic> data)
         {
             var response = await RequestToApi<ApiResponseModel>.Post(url, data);
+            if (response != null && response.Success) smpc_sales_app.Services.Sales.RedBoxSignal.QuotationsChanged();
             return response;
         }
         public static async Task<ApiResponseModel> UpdateChange(Dictionary<string, dynamic> data)
@@ -108,6 +109,7 @@ namespace smpc_sales_system.Services.Sales
         {
             var body = new Dictionary<string, dynamic> { ["fork_note"] = forkNote };
             var response = await RequestToApi<ApiResponseModel>.Post(url + "/" + id + "/sub-version", body);
+            if (response != null && response.Success) smpc_sales_app.Services.Sales.RedBoxSignal.QuotationsChanged();
             return response;
         }
 

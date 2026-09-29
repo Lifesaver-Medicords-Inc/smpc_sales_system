@@ -84,7 +84,7 @@ namespace smpc_sales_system.Pages
             // 
             // v_no
             // 
-            this.v_no.DataPropertyName = "version_no";
+            this.v_no.DataPropertyName = "version_code";
             this.v_no.HeaderText = "VERSION NO.";
             this.v_no.Name = "v_no";
             // 
@@ -96,6 +96,7 @@ namespace smpc_sales_system.Pages
             // 
             // ver_status
             // 
+            this.ver_status.DataPropertyName = "so_ref";
             this.ver_status.HeaderText = "STATUS";
             this.ver_status.Name = "ver_status";
             // 
@@ -114,7 +115,7 @@ namespace smpc_sales_system.Pages
             this.Controls.Add(this.dgv_version_modal);
             this.Controls.Add(this.panel1);
             this.Name = "VersionModal";
-            this.Text = "Form1";
+            this.Text = "Versions";
             this.Load += new System.EventHandler(this.VersionModal_Load);
             this.panel1.ResumeLayout(false);
             this.panel1.PerformLayout();

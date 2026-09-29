@@ -45,6 +45,8 @@ namespace smpc_sales_app.Services.Sales
         public static async Task<ApiResponseModel> Insert(Dictionary<string, dynamic> data)
         {
             var response = await RequestToApi<ApiResponseModel>.Post(url, data);
+            // A new SO takes its quote's card off the red box and puts its own on.
+            if (response != null && response.Success) RedBoxSignal.QuotationsChanged();
             return response;
         }
 
